@@ -19,13 +19,13 @@ public class Camera2D {
 		this.width = width;
 		this.height = height;
 		this.orthographic = Matrix4.createIdentity();
-		computeOrthographic();
+		this.computeOrthographic();
 	}
 	
 	private void computeOrthographic() {
-		final int left = Math.round(position.getX()) - this.width/2;
-		final int bottom = Math.round(position.getY()) - this.height/2;
-		orthographic.setOrthographic(left, left + this.width, bottom, bottom + this.height);
+		int left = Math.round(position.getX()) - this.width/2;
+		int bottom = Math.round(position.getY()) - this.height/2;
+		this.orthographic.setOrthographic(left, left + this.width, bottom, bottom + this.height);
 		this.dirty = false;
 	}
 	
@@ -35,7 +35,7 @@ public class Camera2D {
 	}
 	
 	public Vector2 getPosition() {
-		return position;
+		return this.position;
 	}
 	
 	public void setPosition(Vector2 position) {
@@ -45,18 +45,18 @@ public class Camera2D {
 	}
 	
 	public int getWidth() {
-		return width;
+		return this.width;
 	}
 
 	public int getHeight() {
-		return height;
+		return this.height;
 	}
 	
 	public Matrix4 getOrthographic() {
-		if(dirty) {
-			computeOrthographic();
+		if(this.dirty) {
+			this.computeOrthographic();
 		}
-		return orthographic;
+		return this.orthographic;
 	}
 	
 }

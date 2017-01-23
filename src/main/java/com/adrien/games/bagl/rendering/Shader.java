@@ -21,7 +21,11 @@ import com.adrien.games.bagl.parser.GLSLParser;
  */
 public class Shader
 {
-
+	/**
+	 * Currently bound shader.
+	 */
+	private static Shader boundShader;
+	
 	private ArrayList<String> uniforms;
 	private HashMap<String, Integer> uniformToLocationMap;
 	private ArrayList<Integer> attachedShaders; 
@@ -137,6 +141,7 @@ public class Shader
 	 */
 	public void setUniform(String name, float value)
 	{
+		checkIsShaderBound();
 		int location = uniformToLocationMap.get(name);
 		GL20.glUniform1f(location, value);
 	}
@@ -149,6 +154,7 @@ public class Shader
 	 */
 	public void setUniform(String name, Matrix4 matrix)
 	{
+		checkIsShaderBound();
 		//TODO: find a better way (using pools ?)
 		int location = uniformToLocationMap.get(name);
 		FloatBuffer buffer = BufferUtils.createFloatBuffer(16);
@@ -165,6 +171,7 @@ public class Shader
 	 */
 	public void setUniform(String name, Vector3 vector)
 	{
+		checkIsShaderBound();
 		int location = uniformToLocationMap.get(name);
 		GL20.glUniform3f(location, vector.getX(), vector.getY(), vector.getZ());
 	}
@@ -198,8 +205,21 @@ public class Shader
 	public void bind()
 	{
 		GL20.glUseProgram(handle);
+		boundShader = this;
 	}
 
+	/**
+	 * Checks whether the shader is bound.
+	 * <p>If not bound throws a runtime exception. This is used to prevent any operation on  
+	 * unbound shader.
+	 */
+	private void checkIsShaderBound() {
+		if(this != boundShader) {
+			throw new RuntimeException("You're trying to do an operation on an unbound shader."
+					+ "Please bind the shader first.");
+		}
+	}
+	
 	/**
 	 * Unbind currently bound OpenGL program object.
 	 * @author Adrien.
@@ -207,6 +227,7 @@ public class Shader
 	public static void unbind()
 	{
 		GL20.glUseProgram(0);
+		boundShader = null;
 	}
 
 	/**

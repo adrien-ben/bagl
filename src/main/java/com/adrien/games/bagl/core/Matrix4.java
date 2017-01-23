@@ -228,7 +228,7 @@ public final class Matrix4
 	
 	public void setOrthographic(float left, float right, float bottom, float top)
 	{
-		float near = 0.1f;
+		float near = -0.1f;
 		float far = 1000f;
 		
 		matrix[M11] = 2f/(right - left);	matrix[M12] = 0; 					matrix[M13] = 0; 					matrix[M14] = -(right + left)/(right - left);

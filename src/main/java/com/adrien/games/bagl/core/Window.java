@@ -57,7 +57,7 @@ public final class Window
 	
 	public int getHeight()
 	{
-		return this.width;
+		return this.height;
 	}
 	
 	public String getGLVersion()
