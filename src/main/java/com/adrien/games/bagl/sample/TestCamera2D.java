@@ -36,10 +36,14 @@ public class TestCamera2D {
 		@Override
 		public void init() {
 			
-			Vertex v0 = new VertexPositionTexture(new Vector3(-100, -100, 0), new Vector2(0, 0));
-			Vertex v1 = new VertexPositionTexture(new Vector3(100, -100, 0), new Vector2(1, 0));
-			Vertex v2 = new VertexPositionTexture(new Vector3(100, 100, 0), new Vector2(1, 1));
-			Vertex v3 = new VertexPositionTexture(new Vector3(-100, 100, 0), new Vector2(0, 1));
+			this.texture = new Texture("/default.png");
+			float xOffset = 0.5f / this.texture.getWidth();
+			float yOffset = 0.5f / this.texture.getHeight();
+			
+			Vertex v0 = new VertexPositionTexture(new Vector3(-100, -100, 0), new Vector2(xOffset, yOffset));
+			Vertex v1 = new VertexPositionTexture(new Vector3(100, -100, 0), new Vector2(1 - xOffset, yOffset));
+			Vertex v2 = new VertexPositionTexture(new Vector3(100, 100, 0), new Vector2(1 - xOffset, 1 - yOffset));
+			Vertex v3 = new VertexPositionTexture(new Vector3(-100, 100, 0), new Vector2(xOffset, 1 - yOffset));
 			this.vertexBuffer = new VertexBuffer(VertexPositionTexture.DESCRIPTION, new Vertex[]{v0, v1, v2, v3});
 			
 			this.indexBuffer = new IndexBuffer(new int[]{0, 1, 3, 3, 1, 2});
@@ -48,8 +52,6 @@ public class TestCamera2D {
 			this.shader.addVertexShader("/base.vert");
 			this.shader.addFragmentShader("/texture.frag");
 			this.shader.compile();
-			
-			this.texture = new Texture("/default.png");
 			
 			this.camera = new Camera2D(new Vector2(), WIDTH, HEIGHT);
 		}
