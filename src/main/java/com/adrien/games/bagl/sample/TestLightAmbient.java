@@ -2,109 +2,69 @@ package com.adrien.games.bagl.sample;
 
 import org.lwjgl.opengl.GL11;
 
+import com.adrien.games.bagl.core.Camera;
 import com.adrien.games.bagl.core.Engine;
 import com.adrien.games.bagl.core.Game;
 import com.adrien.games.bagl.core.Matrix4;
 import com.adrien.games.bagl.core.Time;
-import com.adrien.games.bagl.core.Vector2;
 import com.adrien.games.bagl.core.Vector3;
 import com.adrien.games.bagl.rendering.IndexBuffer;
+import com.adrien.games.bagl.rendering.Mesh;
 import com.adrien.games.bagl.rendering.Shader;
 import com.adrien.games.bagl.rendering.Texture;
-import com.adrien.games.bagl.rendering.Vertex;
 import com.adrien.games.bagl.rendering.VertexBuffer;
-import com.adrien.games.bagl.rendering.VertexPositionNormalTexture;
+import com.adrien.games.bagl.utils.MeshFactory;
 
-public final class TestLightAmbient
-{
-	private final static class TestGame implements Game
-	{
+public final class TestLightAmbient {
+	
+	private final static class TestGame implements Game {
 		public final static String TITLE = "Ambient Light";
 		public final static int WIDTH = 1024;
 		public final static int HEIGHT = WIDTH * 9 / 16;
-		
-		private VertexBuffer vb;
-		private IndexBuffer ib;
-		private Shader shader;
-		private Texture texture;
-		private Matrix4 transform;
+
+		private Mesh mesh;
 		private Matrix4 model;
-		private Vector3 eyePosition;
+		private Shader shader;
+		private Camera camera;
 		
 		private float lightIntensity;
 		private Vector3 lightColor;
 		
 		@Override
-		public void init()
-		{
-			Vertex[] vertices = new Vertex[12];
-			vertices[0] = new VertexPositionNormalTexture(new Vector3(-10,  0, 10), new Vector3(0, 1, 0), new Vector2(0, 0));
-			vertices[1] = new VertexPositionNormalTexture(new Vector3(10,  0, 10), new Vector3(0, 1, 0), new Vector2(10, 0));
-			vertices[2] = new VertexPositionNormalTexture(new Vector3(-10,  0, -10), new Vector3(0, 1, 0), new Vector2(0, 10));
-			vertices[3] = new VertexPositionNormalTexture(new Vector3(10,  0, -10), new Vector3(0, 1, 0), new Vector2(10, 10));
+		public void init() {
+			this.mesh = MeshFactory.createRoom(20, 10, 20);
 			
-			vertices[4] = new VertexPositionNormalTexture(new Vector3(10,  0, -10), new Vector3(-1, 0, 0), new Vector2(0, 0));
-			vertices[5] = new VertexPositionNormalTexture(new Vector3(10,  0, 10), new Vector3(-1, 0, 0), new Vector2(10, 0));
-			vertices[6] = new VertexPositionNormalTexture(new Vector3(10,  10, 10), new Vector3(-1, 0, 0), new Vector2(10, 5));
-			vertices[7] = new VertexPositionNormalTexture(new Vector3(10,  10, -10), new Vector3(-1, 0, 0), new Vector2(0, 5));
+			this.shader = new Shader();
+			this.shader.addVertexShader("/ambient.vert");
+			this.shader.addFragmentShader("/ambient.frag");
+			this.shader.compile();
 			
-			vertices[8] = new VertexPositionNormalTexture(new Vector3(-10,  0, -10), new Vector3(0, 0, 1), new Vector2(0, 0));
-			vertices[9] = new VertexPositionNormalTexture(new Vector3(10,  0, -10), new Vector3(0, 0, 1), new Vector2(10, 0));
-			vertices[10] = new VertexPositionNormalTexture(new Vector3(10,  10, -10), new Vector3(0, 0, 1), new Vector2(10, 5));
-			vertices[11] = new VertexPositionNormalTexture(new Vector3(-10,  10, -10), new Vector3(0, 0, 1), new Vector2(0, 5));
-
-			int[] indices = new int[]{
-					0, 1, 2, 2, 1, 3,
-					4, 5, 6, 6, 7, 4,
-					8, 9, 10, 10, 11, 8,
-					};
+			this.camera = new Camera(new Vector3(-10, 2, 10), new Vector3(10, -2, -10), Vector3.UP, 
+					(float)Math.toRadians(70f), (float)WIDTH/(float)HEIGHT, 0.1f, 1000f);		
 			
-			ib = new IndexBuffer(indices);
-			vb = new VertexBuffer(VertexPositionNormalTexture.DESCRIPTION, vertices);
+			this.model = new Matrix4();
 			
-			shader = new Shader();
-			shader.addVertexShader("/ambient.vert");
-			shader.addFragmentShader("/ambient.frag");
-			shader.compile();
-			
-			texture = new Texture("/default.png");
-			
-			eyePosition = new Vector3(-10, 2, 10);
-			
-			Matrix4 proj = new Matrix4();
-			proj.setPerspective((float)Math.toRadians(70f), (float)WIDTH / (float)HEIGHT, 0.1f, 1000f);
-			
-			Matrix4 view = new Matrix4();
-			view.setLookAt(eyePosition, Vector3.ZERO, Vector3.UP);
-			
-			transform = Matrix4.mul(proj, view);
-			
-			model = new Matrix4();
-			
-			lightIntensity = .3f;
-			lightColor = new Vector3(1.f, 1f, 1.f);
+			this.lightIntensity = .3f;
+			this.lightColor = new Vector3(1.f, 1f, 1.f);
 		}
 
 		@Override
-		public void update(Time time)
-		{
-			
+		public void update(Time time) {
 		}
 
 		@Override
-		public void render()
-		{	
-			shader.bind();
-			shader.setUniform("uMatrices.model", model);
-			shader.setUniform("uMatrices.mvp", transform);
-			shader.setUniform("uBaseLight.intensity", lightIntensity);
-			shader.setUniform("uBaseLight.color", lightColor);
+		public void render() {	
+			this.shader.bind();
+			this.shader.setUniform("uMatrices.model", model);
+			this.shader.setUniform("uMatrices.mvp", camera.getViewProj());
+			this.shader.setUniform("uBaseLight.intensity", lightIntensity);
+			this.shader.setUniform("uBaseLight.color", lightColor);
 			
-			texture.bind();
-			vb.bind();
-			ib.bind();
+			this.mesh.getMaterial().getDiffuseTexture().bind();
+			this.mesh.getVertices().bind();
+			this.mesh.getIndices().bind();
 			
-			GL11.glDrawElements(GL11.GL_TRIANGLES, ib.getSize(), GL11.GL_UNSIGNED_INT, 0);
+			GL11.glDrawElements(GL11.GL_TRIANGLES, mesh.getIndices().getSize(), GL11.GL_UNSIGNED_INT, 0);
 			
 			IndexBuffer.unbind();
 			VertexBuffer.unbind();
@@ -113,18 +73,14 @@ public final class TestLightAmbient
 		}
 
 		@Override
-		public void destroy()
-		{
-			shader.destroy();
-			ib.destroy();
-			vb.destroy();
-			texture.destroy();
+		public void destroy() {
+			this.shader.destroy();
+			this.mesh.destroy();
 		}
 
 	}
 	
-	public static void main(String [] args)
-	{
+	public static void main(String [] args) {
 		new Engine(new TestGame(), TestGame.TITLE, TestGame.WIDTH, TestGame.HEIGHT).start();
 	}
 }
