@@ -55,16 +55,16 @@ public final class TestLightAmbient {
 		@Override
 		public void render() {	
 			this.shader.bind();
-			this.shader.setUniform("uMatrices.model", model);
-			this.shader.setUniform("uMatrices.mvp", camera.getViewProj());
-			this.shader.setUniform("uBaseLight.intensity", lightIntensity);
-			this.shader.setUniform("uBaseLight.color", lightColor);
+			this.shader.setUniform("uMatrices.model", this.model);
+			this.shader.setUniform("uMatrices.mvp", this.camera.getViewProj());
+			this.shader.setUniform("uBaseLight.intensity", this.lightIntensity);
+			this.shader.setUniform("uBaseLight.color", this.lightColor);
 			
 			this.mesh.getMaterial().getDiffuseTexture().bind();
 			this.mesh.getVertices().bind();
 			this.mesh.getIndices().bind();
 			
-			GL11.glDrawElements(GL11.GL_TRIANGLES, mesh.getIndices().getSize(), GL11.GL_UNSIGNED_INT, 0);
+			GL11.glDrawElements(GL11.GL_TRIANGLES, this.mesh.getIndices().getSize(), GL11.GL_UNSIGNED_INT, 0);
 			
 			IndexBuffer.unbind();
 			VertexBuffer.unbind();
