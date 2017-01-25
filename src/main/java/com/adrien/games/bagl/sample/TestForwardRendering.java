@@ -159,7 +159,7 @@ public final class TestForwardRendering {
 			this.ambientShader.setUniform("uBaseLight.color", this.ambientColor);
 			this.ambientShader.setUniform("uBaseLight.intensity", this.ambientIntensity);
 			
-			GL11.glDrawElements(GL11.GL_TRIANGLES, mesh.getIndices().getSize(), GL11.GL_UNSIGNED_INT, 0);
+			GL11.glDrawElements(GL11.GL_TRIANGLES, this.mesh.getIndices().getSize(), GL11.GL_UNSIGNED_INT, 0);
 
 			GL11.glEnable(GL11.GL_BLEND);
 			GL11.glDepthFunc(GL11.GL_EQUAL);

@@ -60,7 +60,7 @@ public final class TestLightDir
 		}
 
 		@Override
-		public void render() {	
+		public void render() {
 			this.shader.bind();
 			this.shader.setUniform("uMatrices.model", this.model);
 			this.shader.setUniform("uMatrices.mvp", this.camera.getViewProj());
