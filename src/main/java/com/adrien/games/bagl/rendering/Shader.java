@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Objects;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
@@ -141,8 +142,8 @@ public class Shader
 	 */
 	public void setUniform(String name, float value)
 	{
-		checkIsShaderBound();
-		int location = uniformToLocationMap.get(name);
+		this.checkIsShaderBound();
+		int location = this.getLocation(name);
 		GL20.glUniform1f(location, value);
 	}
 
@@ -154,9 +155,8 @@ public class Shader
 	 */
 	public void setUniform(String name, Matrix4 matrix)
 	{
-		checkIsShaderBound();
-		//TODO: find a better way (using pools ?)
-		int location = uniformToLocationMap.get(name);
+		this.checkIsShaderBound();
+		int location = this.getLocation(name);
 		FloatBuffer buffer = BufferUtils.createFloatBuffer(16);
 		buffer.put(matrix.get());		
 		buffer.flip();
@@ -171,11 +171,25 @@ public class Shader
 	 */
 	public void setUniform(String name, Vector3 vector)
 	{
-		checkIsShaderBound();
-		int location = uniformToLocationMap.get(name);
+		this.checkIsShaderBound();
+		int location = this.getLocation(name);
 		GL20.glUniform3f(location, vector.getX(), vector.getY(), vector.getZ());
 	}
 
+	/**
+	 * Gets the location of a uniform parameter.
+	 * @param name the name of the uniform parameter.
+	 * @return The location of it.
+	 * @throws IllegalArgumentException if it does not exists.
+	 */
+	private int getLocation(String name) {
+		int location = uniformToLocationMap.get(name);
+		if(Objects.isNull(location)) {
+			throw new IllegalArgumentException("The uniform '" + name +"' does not exist for the current shader.");
+		}
+		return location;
+	}
+	
 	/**
 	 * Compile the OpenGL program object. If it fails, displays the program's log on the 
 	 * error output. Adds all the uniforms parsed in the shaders' source.
