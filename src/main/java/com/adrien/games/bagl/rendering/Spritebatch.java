@@ -22,9 +22,10 @@ public class Spritebatch {
 	private final Vertex[] vertices;
 	private int drawnSprites;
 	private boolean started;
+	private Texture currentTexture;
 	
 	public Spritebatch(int size, int width, int height) {
-		this.camera = new Camera2D(new Vector2(-width/2, -height/2), width, height);
+		this.camera = new Camera2D(new Vector2(width/2, height/2), width, height);
 		this.shader = new Shader();
 		this.shader.addVertexShader(VERTEX_SHADER);
 		this.shader.addFragmentShader(FRAGMENT_SHADER);
@@ -74,9 +75,11 @@ public class Spritebatch {
 	
 	public void draw(Texture texture, Vector2 position) {
 		this.checkStarted();
-		if(this.drawnSprites >= this.size) {
+		if(this.drawnSprites >= this.size || (this.currentTexture != null && texture != this.currentTexture)) {
 			renderBatch();
 		}
+		
+		this.currentTexture = texture;
 		
 		float width = texture.getWidth();
 		float height = texture.getHeight();
@@ -99,6 +102,7 @@ public class Spritebatch {
 	private void renderBatch() {
 		this.shader.bind();
 		this.shader.setUniform("uCamera", this.camera.getOrthographic());
+		this.currentTexture.bind();
 		
 		this.vertexBuffer.setData(this.vertices, this.drawnSprites*VERTICES_PER_SPRITE);
 		
@@ -111,6 +115,7 @@ public class Spritebatch {
 		
 		IndexBuffer.unbind();
 		VertexBuffer.unbind();
+		Texture.unbind();
 		Shader.unbind();
 	}
 	
