@@ -33,17 +33,17 @@ public final class VertexBuffer
 		setData(vertices);
 	}
 	
-	public void setData(Vertex[] vertices)
+	public void setData(Vertex[] vertices, int limit)
 	{
-		if(vertices.length > vertexCount)
-			throw new IllegalArgumentException("indices is too big");
+		if(limit > vertexCount) {			
+			throw new IllegalArgumentException("Too much vertices.");
+		}
 		
 		int stride = description.getStride();
 		
-		FloatBuffer buffer = BufferUtils.createFloatBuffer(vertexCount*stride);
-		for(Vertex v : vertices)
-		{
-			buffer.put(v.getData());
+		FloatBuffer buffer = BufferUtils.createFloatBuffer(limit*stride);
+		for(int i = 0; i < limit; i++) {
+			buffer.put(vertices[i].getData());
 		}
 		buffer.flip();
 		
@@ -63,6 +63,11 @@ public final class VertexBuffer
 		
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
 		GL30.glBindVertexArray(0);
+	}
+	
+	public void setData(Vertex[] vertices)
+	{
+		this.setData(vertices, vertices.length);
 	}
 	
 	public void bind()

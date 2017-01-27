@@ -30,9 +30,14 @@ private final static class TestGame implements Game {
 
 		@Override
 		public void render() {
+			
+			this.texture.bind();
+			
 			this.spritebatch.start();
 			this.spritebatch.draw(this.texture, Vector2.ZERO);
 			this.spritebatch.end();
+			
+			Texture.unbind();
 		}
 
 		@Override

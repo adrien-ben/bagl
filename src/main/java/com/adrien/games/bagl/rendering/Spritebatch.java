@@ -1,5 +1,7 @@
 package com.adrien.games.bagl.rendering;
 
+import org.lwjgl.opengl.GL11;
+
 import com.adrien.games.bagl.core.Camera2D;
 import com.adrien.games.bagl.core.Vector2;
 import com.adrien.games.bagl.core.Vector3;
@@ -98,8 +100,17 @@ public class Spritebatch {
 		this.shader.bind();
 		this.shader.setUniform("uCamera", this.camera.getOrthographic());
 		
+		this.vertexBuffer.setData(this.vertices, this.drawnSprites*VERTICES_PER_SPRITE);
+		
+		this.vertexBuffer.bind();
+		this.indexBuffer.bind();
+		
+		GL11.glDrawElements(GL11.GL_TRIANGLES, this.drawnSprites*INDICES_PER_SPRITE, GL11.GL_UNSIGNED_INT, 0);
+		
 		this.drawnSprites = 0;
 		
+		IndexBuffer.unbind();
+		VertexBuffer.unbind();
 		Shader.unbind();
 	}
 	
