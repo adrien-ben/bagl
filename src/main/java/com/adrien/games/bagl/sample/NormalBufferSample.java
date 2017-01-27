@@ -30,17 +30,20 @@ public class NormalBufferSample {
 				
 		@Override
 		public void init() {
-			this.mesh = MeshFactory.createRoom(20, 10, 20);
+			this.mesh = MeshFactory.createBox(5, 5, 5);
 			
 			this.shader = new Shader();
 			this.shader.addVertexShader("/model.vert");
 			this.shader.addFragmentShader("/normal.frag");
 			this.shader.compile();
 			
-			this.camera = new Camera(new Vector3(-10, 2, 10), new Vector3(10, -2, -10), Vector3.UP, 
+			this.camera = new Camera(new Vector3(-5, 3, 8), new Vector3(5, -3, -8), Vector3.UP, 
 					(float)Math.toRadians(70f), (float)WIDTH/(float)HEIGHT, 0.1f, 1000f);		
 			
 			this.model = new Matrix4();
+			
+			GL11.glEnable(GL11.GL_CULL_FACE);
+			GL11.glEnable(GL11.GL_DEPTH_TEST);
 		}
 
 		@Override

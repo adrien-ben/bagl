@@ -32,20 +32,23 @@ public final class TestLightAmbient {
 		
 		@Override
 		public void init() {
-			this.mesh = MeshFactory.createRoom(20, 10, 20);
+			this.mesh = MeshFactory.createBox(5, 5, 5);
 			
 			this.shader = new Shader();
 			this.shader.addVertexShader("/ambient.vert");
 			this.shader.addFragmentShader("/ambient.frag");
 			this.shader.compile();
 			
-			this.camera = new Camera(new Vector3(-10, 2, 10), new Vector3(10, -2, -10), Vector3.UP, 
+			this.camera = new Camera(new Vector3(-10, 5, 10), new Vector3(10, -5, -10), Vector3.UP, 
 					(float)Math.toRadians(70f), (float)WIDTH/(float)HEIGHT, 0.1f, 1000f);		
 			
 			this.model = new Matrix4();
 			
 			this.lightIntensity = .3f;
 			this.lightColor = new Vector3(1.f, 1f, 1.f);
+			
+			GL11.glEnable(GL11.GL_CULL_FACE);
+			GL11.glEnable(GL11.GL_DEPTH_TEST);
 		}
 
 		@Override

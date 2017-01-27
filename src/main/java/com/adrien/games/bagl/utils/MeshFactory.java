@@ -63,4 +63,61 @@ public final class MeshFactory {
 		Material material = new Material(texture, 12, 1);
 		return new Mesh(vertexBuffer, indexBuffer, material);
 	}
+	
+	public static Mesh createBox(int width, int height, int depth) {
+		Texture texture = new Texture("/default.png");
+		float xOffset = 0.5f / texture.getWidth();
+		float yOffset = 0.5f / texture.getHeight();
+		
+		float haftWidth = width/2;
+		float haftHeight = height/2;
+		float haftDepth = depth/2;
+		
+		Vertex[] vertices = new Vertex[] {
+			new VertexPositionNormalTexture(new Vector3(-haftWidth,  -haftHeight, haftDepth), new Vector3(0, 0, 1), new Vector2(xOffset, yOffset)),
+			new VertexPositionNormalTexture(new Vector3(haftWidth,  -haftHeight, haftDepth), new Vector3(0, 0, 1), new Vector2(1 - xOffset, yOffset)),
+			new VertexPositionNormalTexture(new Vector3(-haftWidth,  haftHeight, haftDepth), new Vector3(0, 0, 1), new Vector2(xOffset, 1 - yOffset)),
+			new VertexPositionNormalTexture(new Vector3(haftWidth,  haftHeight, haftDepth), new Vector3(0, 0, 1), new Vector2(1 - xOffset, 1 - yOffset)),
+			
+			new VertexPositionNormalTexture(new Vector3(haftWidth,  -haftHeight, haftDepth), new Vector3(1, 0, 0), new Vector2(xOffset, yOffset)),
+			new VertexPositionNormalTexture(new Vector3(haftWidth,  -haftHeight, -haftDepth), new Vector3(1, 0, 0), new Vector2(1 - xOffset, yOffset)),
+			new VertexPositionNormalTexture(new Vector3(haftWidth,  haftHeight, haftDepth), new Vector3(1, 0, 0), new Vector2(xOffset, 1 - yOffset)),
+			new VertexPositionNormalTexture(new Vector3(haftWidth,  haftHeight, -haftDepth), new Vector3(1, 0, 0), new Vector2(1 - xOffset, 1 - yOffset)),
+			
+			new VertexPositionNormalTexture(new Vector3(haftWidth,  -haftHeight, -haftDepth), new Vector3(0, 0, -1), new Vector2(xOffset, yOffset)),
+			new VertexPositionNormalTexture(new Vector3(-haftWidth,  -haftHeight, -haftDepth), new Vector3(0, 0, -1), new Vector2(1 - xOffset, yOffset)),
+			new VertexPositionNormalTexture(new Vector3(haftWidth,  haftHeight, -haftDepth), new Vector3(0, 0, -1), new Vector2(xOffset, 1 - yOffset)),
+			new VertexPositionNormalTexture(new Vector3(-haftWidth,  haftHeight, -haftDepth), new Vector3(0, 0, -1), new Vector2(1 - xOffset, 1 - yOffset)),
+			
+			new VertexPositionNormalTexture(new Vector3(-haftWidth,  -haftHeight, -haftDepth), new Vector3(-1, 0, 0), new Vector2(xOffset, yOffset)),
+			new VertexPositionNormalTexture(new Vector3(-haftWidth,  -haftHeight, haftDepth), new Vector3(-1, 0, 0), new Vector2(1 - xOffset, yOffset)),
+			new VertexPositionNormalTexture(new Vector3(-haftWidth,  haftHeight, -haftDepth), new Vector3(-1, 0, 0), new Vector2(xOffset, 1 - yOffset)),
+			new VertexPositionNormalTexture(new Vector3(-haftWidth,  haftHeight, haftDepth), new Vector3(-1, 0, 0), new Vector2(1 - xOffset, 1 - yOffset)),
+			
+			new VertexPositionNormalTexture(new Vector3(-haftWidth,  haftHeight, haftDepth), new Vector3(0, 1, 0), new Vector2(xOffset, yOffset)),
+			new VertexPositionNormalTexture(new Vector3(haftWidth,  haftHeight, haftDepth), new Vector3(0, 1, 0), new Vector2(1 - xOffset, yOffset)),
+			new VertexPositionNormalTexture(new Vector3(-haftWidth,  haftHeight, -haftDepth), new Vector3(0, 1, 0), new Vector2(xOffset, 1 - yOffset)),
+			new VertexPositionNormalTexture(new Vector3(haftWidth,  haftHeight, -haftDepth), new Vector3(0, 1, 0), new Vector2(1 - xOffset, 1 - yOffset)),
+			
+			new VertexPositionNormalTexture(new Vector3(-haftWidth,  -haftHeight, -haftDepth), new Vector3(0, -1, 0), new Vector2(xOffset, yOffset)),
+			new VertexPositionNormalTexture(new Vector3(haftWidth,  -haftHeight, -haftDepth), new Vector3(0, -1, 0), new Vector2(1 - xOffset, yOffset)),
+			new VertexPositionNormalTexture(new Vector3(-haftWidth,  -haftHeight, haftDepth), new Vector3(0, -1, 0), new Vector2(xOffset, 1 - yOffset)),
+			new VertexPositionNormalTexture(new Vector3(haftWidth, -haftHeight, haftDepth), new Vector3(0, -1, 0), new Vector2(1 - xOffset, 1 - yOffset))
+		};
+	
+		int[] indices = new int[]{
+			0, 1, 2, 2, 1, 3,
+			4, 5, 6, 6, 5, 7,
+			8, 9, 10, 10, 9, 11,
+			12, 13, 14, 14, 13, 15,
+			16, 17, 18, 18, 17, 19,
+			20, 21, 22, 22, 21, 23
+		};
+		
+		IndexBuffer indexBuffer = new IndexBuffer(indices);
+		VertexBuffer vertexBuffer = new VertexBuffer(VertexPositionNormalTexture.DESCRIPTION, vertices);
+		
+		Material material = new Material(texture, 12, 1);
+		return new Mesh(vertexBuffer, indexBuffer, material);
+	}
 }
