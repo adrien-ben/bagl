@@ -13,7 +13,7 @@ public class SpritebatchSample {
 
 private final static class TestGame implements Game {
 		
-		public final static String TITLE = "Normal buffer";
+		public final static String TITLE = "Spritebatch";
 		public final static int WIDTH = 512;
 		public final static int HEIGHT = WIDTH * 9 / 16;
 
@@ -36,6 +36,7 @@ private final static class TestGame implements Game {
 			this.spritebatch.start();
 			this.spritebatch.draw(this.texture, Vector2.ZERO);
 			this.spritebatch.draw(this.texture, new Vector2(200, 1), 64, 64);
+			this.spritebatch.draw(this.texture, new Vector2(200, 200), 64, 64, 45);
 			this.spritebatch.end();
 		}
 
