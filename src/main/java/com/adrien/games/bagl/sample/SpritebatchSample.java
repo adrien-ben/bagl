@@ -1,5 +1,7 @@
 package com.adrien.games.bagl.sample;
 
+import org.lwjgl.opengl.GL11;
+
 import com.adrien.games.bagl.core.Engine;
 import com.adrien.games.bagl.core.Game;
 import com.adrien.games.bagl.core.Time;
@@ -12,7 +14,7 @@ public class SpritebatchSample {
 private final static class TestGame implements Game {
 		
 		public final static String TITLE = "Normal buffer";
-		public final static int WIDTH = 1024;
+		public final static int WIDTH = 512;
 		public final static int HEIGHT = WIDTH * 9 / 16;
 
 		private Texture texture;
@@ -20,8 +22,9 @@ private final static class TestGame implements Game {
 				
 		@Override
 		public void init() {
-			this.spritebatch = new Spritebatch(2, WIDTH, HEIGHT);
+			this.spritebatch = new Spritebatch(512, WIDTH, HEIGHT);
 			this.texture = new Texture("/default.png");
+			GL11.glClearColor(100f/255, 149f/255, 237f/255, 1);
 		}
 
 		@Override
@@ -30,11 +33,10 @@ private final static class TestGame implements Game {
 
 		@Override
 		public void render() {
-			
 			this.spritebatch.start();
 			this.spritebatch.draw(this.texture, Vector2.ZERO);
+			this.spritebatch.draw(this.texture, new Vector2(200, 1), 64, 64);
 			this.spritebatch.end();
-
 		}
 
 		@Override

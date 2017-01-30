@@ -74,17 +74,18 @@ public class Spritebatch {
 	}
 	
 	public void draw(Texture texture, Vector2 position) {
+		this.draw(texture, position, texture.getWidth(), texture.getHeight());
+	}	
+	
+	public void draw(Texture texture, Vector2 position, float width, float height) {
 		this.checkStarted();
 		if(this.drawnSprites >= this.size || (this.currentTexture != null && texture != this.currentTexture)) {
 			renderBatch();
 		}
 		
 		this.currentTexture = texture;
-		
-		float width = texture.getWidth();
-		float height = texture.getHeight();
-		float xTexelOffset = 0.5f/width;
-		float yTexelOffset = 0.5f/height;
+		float xTexelOffset = 0.5f/texture.getWidth();
+		float yTexelOffset = 0.5f/texture.getHeight();
 		int offset = this.drawnSprites*VERTICES_PER_SPRITE;
 		
 		this.vertices[offset] = new VertexPositionTexture(new Vector3(position.getX(), position.getY(), 0), 
