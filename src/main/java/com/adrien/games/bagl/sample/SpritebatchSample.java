@@ -16,10 +16,10 @@ public class SpritebatchSample {
 private final static class TestGame implements Game {
 		
 		public final static String TITLE = "Spritebatch";
-		public final static int WIDTH = 512;
+		public final static int WIDTH = 1024;
 		public final static int HEIGHT = WIDTH * 9 / 16;
 		
-		public final static int SPRITE_COUNT = 100;
+		public final static int SPRITE_COUNT = 1000;
 
 		private Texture texture;
 		private Spritebatch spritebatch;
@@ -45,6 +45,10 @@ private final static class TestGame implements Game {
 
 		@Override
 		public void update(Time time) {
+			System.out.println(time.getElapsedTime());
+			for(int i = 0; i < SPRITE_COUNT; i++) {
+				rotations[i] += time.getElapsedTime()*10;
+			}
 		}
 
 		@Override
