@@ -3,6 +3,7 @@ package com.adrien.games.bagl.rendering;
 import org.lwjgl.opengl.GL11;
 
 import com.adrien.games.bagl.core.Camera2D;
+import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.core.Vector2;
 import com.adrien.games.bagl.core.Vector3;
 
@@ -30,7 +31,7 @@ public class Spritebatch {
 	private final int size;
 	private final VertexBuffer vertexBuffer;
 	private final IndexBuffer indexBuffer;
-	private final VertexPositionTexture[] vertices;
+	private final VertexPositionColorTexture[] vertices;
 	private int drawnSprites;
 	private boolean started;
 	private Texture currentTexture;
@@ -49,7 +50,7 @@ public class Spritebatch {
 		this.shader.addFragmentShader(FRAGMENT_SHADER);
 		this.shader.compile();
 		this.size = size < MAX_SIZE ? size : MAX_SIZE;
-		this.vertexBuffer = new VertexBuffer(VertexPositionTexture.DESCRIPTION, this.size*VERTICES_PER_SPRITE);
+		this.vertexBuffer = new VertexBuffer(VertexPositionColorTexture.DESCRIPTION, this.size*VERTICES_PER_SPRITE);
 		this.vertices = this.initVertices(this.size);
 		this.indexBuffer = this.initIndexBuffer(this.size);
 		this.drawnSprites = 0;
@@ -81,10 +82,10 @@ public class Spritebatch {
 	 * @param size The size of the spritebatch.
 	 * @return An initialized array of {@link VertexPositionTexture}.
 	 */
-	private VertexPositionTexture[] initVertices(int size) {
-		VertexPositionTexture[] vertices = new VertexPositionTexture[size*VERTICES_PER_SPRITE];
+	private VertexPositionColorTexture[] initVertices(int size) {
+		VertexPositionColorTexture[] vertices = new VertexPositionColorTexture[size*VERTICES_PER_SPRITE];
 		for(int i = 0; i < vertices.length; i++) {
-			vertices[i] = new VertexPositionTexture(new Vector3(), new Vector2());
+			vertices[i] = new VertexPositionColorTexture(new Vector3(), new Color(1, 1, 1, 1), new Vector2());
 		}
 		return vertices;
 	}
@@ -151,6 +152,19 @@ public class Spritebatch {
 	 * @param rotation The rotation of the sprite.
 	 */
 	public void draw(Texture texture, Vector2 position, float width, float height, float rotation) {
+		this.draw(texture, position, width, height, rotation, Color.WHITE);
+	}
+	
+	/**
+	 * Renders a sprite at a given position, with a given size and a given rotation.
+	 * @param texture The texture to render.
+	 * @param position The position where to render the sprite.
+	 * @param width The width of the sprite to render.
+	 * @param height The height of the sprite to render.
+	 * @param rotation The rotation of the sprite.
+	 * @param color The tint of the sprite.
+	 */
+	public void draw(Texture texture, Vector2 position, float width, float height, float rotation, Color color) {
 		this.checkStarted();
 		if(this.drawnSprites >= this.size || (this.currentTexture != null && texture != this.currentTexture)) {
 			renderBatch();
@@ -168,10 +182,10 @@ public class Spritebatch {
 		
 		int offset = this.drawnSprites*VERTICES_PER_SPRITE;
 		
-		this.computeVertex(offset, x, y, xTexelOffset, yTexelOffset, rotation, xCenter, yCenter);
-		this.computeVertex(offset + 1, x + width, y, 1 - xTexelOffset, yTexelOffset, rotation, xCenter, yCenter);
-		this.computeVertex(offset + 2, x, y + height, xTexelOffset, 1 - yTexelOffset, rotation, xCenter, yCenter);
-		this.computeVertex(offset + 3, x + width, y + height, 1 - xTexelOffset, 1 - yTexelOffset, rotation, xCenter, yCenter);
+		this.computeVertex(offset, x, y, xTexelOffset, yTexelOffset, rotation, xCenter, yCenter, color);
+		this.computeVertex(offset + 1, x + width, y, 1 - xTexelOffset, yTexelOffset, rotation, xCenter, yCenter, color);
+		this.computeVertex(offset + 2, x, y + height, xTexelOffset, 1 - yTexelOffset, rotation, xCenter, yCenter, color);
+		this.computeVertex(offset + 3, x + width, y + height, 1 - xTexelOffset, 1 - yTexelOffset, rotation, xCenter, yCenter, color);
 		
 		this.drawnSprites++;
 	}
@@ -187,7 +201,8 @@ public class Spritebatch {
 	 * @param xCenter The x component of the rotation center.
 	 * @param yCenter The y component of the rotation center.
 	 */
-	private void computeVertex(int index, float x, float y, float xCoord, float yCoord, float rotation, float xCenter, float yCenter) {
+	private void computeVertex(int index, float x, float y, float xCoord, float yCoord, 
+			float rotation, float xCenter, float yCenter, Color color) {
 		if(rotation != 0) {
 			float xOrigin = x - xCenter;
 			float yOrigin = y - yCenter;
@@ -205,6 +220,9 @@ public class Spritebatch {
 		
 		this.vertices[index].getPosition().setX(x);
 		this.vertices[index].getPosition().setY(y);
+		this.vertices[index].getColor().setRed(color.getRed());
+		this.vertices[index].getColor().setGreen(color.getGreen());
+		this.vertices[index].getColor().setBlue(color.getBlue());
 		this.vertices[index].getCoords().setX(xCoord);
 		this.vertices[index].getCoords().setY(yCoord);
 	}
