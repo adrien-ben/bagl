@@ -20,7 +20,7 @@ private final static class TestGame implements Game {
 		public final static int WIDTH = 512;
 		public final static int HEIGHT = WIDTH * 9 / 16;
 		
-		public final static int SPRITE_COUNT = 1000;
+		public final static int SPRITE_COUNT = 100;
 
 		private Texture texture;
 		private Spritebatch spritebatch;
@@ -56,7 +56,7 @@ private final static class TestGame implements Game {
 		public void render() {
 			this.spritebatch.start();
 			for(int i = 0; i < SPRITE_COUNT; i++) {
-				this.spritebatch.draw(this.texture, positions[i], sizes[i], sizes[i], rotations[i], Color.GREEN);
+				this.spritebatch.draw(this.texture, positions[i], sizes[i], sizes[i], rotations[i], Color.WHITE);
 			}
 			this.spritebatch.end();
 		}

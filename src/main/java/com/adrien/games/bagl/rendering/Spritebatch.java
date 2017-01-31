@@ -129,7 +129,7 @@ public class Spritebatch {
 	 * @param position The position where to render the sprite.
 	 */
 	public void draw(Texture texture, Vector2 position) {
-		this.draw(texture, position, texture.getWidth(), texture.getHeight(), 0);
+		this.draw(texture, position, texture.getWidth(), texture.getHeight(), 0, Color.WHITE);
 	}	
 	
 	/**
@@ -140,7 +140,7 @@ public class Spritebatch {
 	 * @param height The height of the sprite to render.
 	 */
 	public void draw(Texture texture, Vector2 position, float width, float height) {
-		this.draw(texture, position, width, height, 0);
+		this.draw(texture, position, width, height, 0, Color.WHITE);
 	}
 	
 	/**
