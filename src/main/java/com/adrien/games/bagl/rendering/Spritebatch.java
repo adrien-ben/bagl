@@ -129,7 +129,7 @@ public class Spritebatch {
 	 * @param position The position where to render the sprite.
 	 */
 	public void draw(Texture texture, Vector2 position) {
-		this.draw(texture, position, texture.getWidth(), texture.getHeight(), 0, Color.WHITE);
+		this.draw(texture, position, texture.getWidth(), texture.getHeight(), 0, 0, 1, 1, 0, Color.WHITE);
 	}	
 	
 	/**
@@ -140,7 +140,7 @@ public class Spritebatch {
 	 * @param height The height of the sprite to render.
 	 */
 	public void draw(Texture texture, Vector2 position, float width, float height) {
-		this.draw(texture, position, width, height, 0, Color.WHITE);
+		this.draw(texture, position, width, height, 0, 0, 1, 1, 0, Color.WHITE);
 	}
 	
 	/**
@@ -152,11 +152,11 @@ public class Spritebatch {
 	 * @param rotation The rotation of the sprite.
 	 */
 	public void draw(Texture texture, Vector2 position, float width, float height, float rotation) {
-		this.draw(texture, position, width, height, rotation, Color.WHITE);
+		this.draw(texture, position, width, height, 0, 0, 1, 1, rotation, Color.WHITE);
 	}
 	
 	/**
-	 * Renders a sprite at a given position, with a given size and a given rotation.
+	 * Renders a sprite at a given position, with a given size, a given rotation and a color.
 	 * @param texture The texture to render.
 	 * @param position The position where to render the sprite.
 	 * @param width The width of the sprite to render.
@@ -165,27 +165,47 @@ public class Spritebatch {
 	 * @param color The tint of the sprite.
 	 */
 	public void draw(Texture texture, Vector2 position, float width, float height, float rotation, Color color) {
+		this.draw(texture, position, width, height, 0, 0, 1, 1, rotation, color);
+	}
+	
+	/**
+	 * Renders a sprite at a given position, with a given size, a given rotation and a color.
+	 * @param texture The texture to render.
+	 * @param position The position where to render the sprite.
+	 * @param width The width of the sprite to render.
+	 * @param height The height of the sprite to render.
+	 * @param rotation The rotation of the sprite.
+	 * @param color The tint of the sprite.
+	 */
+	public void draw(Texture texture, Vector2 position, float width, float height, 
+			float texRegionLeft, float texRegionBotton, float texRegionRight, 
+			float texRegionTop, float rotation, Color color) {
 		this.checkStarted();
 		if(this.drawnSprites >= this.size || (this.currentTexture != null && texture != this.currentTexture)) {
 			renderBatch();
 		}
 		
 		this.currentTexture = texture;
-		float xTexelOffset = 0.5f/texture.getWidth();
-		float yTexelOffset = 0.5f/texture.getHeight();
+		
+		float halfPixelWidth = 0.5f/texture.getWidth();
+		float halfPixelHeight = 0.5f/texture.getHeight();
 		
 		float x = position.getX();
 		float y = position.getY();
 		
-		float xCenter = position.getX() + width/2;
-		float yCenter = position.getY() + height/2;
+		float xCenter = x + width/2;
+		float yCenter = y + height/2;
 		
 		int offset = this.drawnSprites*VERTICES_PER_SPRITE;
 		
-		this.computeVertex(offset, x, y, xTexelOffset, yTexelOffset, rotation, xCenter, yCenter, color);
-		this.computeVertex(offset + 1, x + width, y, 1 - xTexelOffset, yTexelOffset, rotation, xCenter, yCenter, color);
-		this.computeVertex(offset + 2, x, y + height, xTexelOffset, 1 - yTexelOffset, rotation, xCenter, yCenter, color);
-		this.computeVertex(offset + 3, x + width, y + height, 1 - xTexelOffset, 1 - yTexelOffset, rotation, xCenter, yCenter, color);
+		this.computeVertex(offset, x, y, texRegionLeft + halfPixelWidth, texRegionBotton + halfPixelHeight, 
+				rotation, xCenter, yCenter, color);
+		this.computeVertex(offset + 1, x + width, y, texRegionRight - halfPixelWidth, texRegionBotton + halfPixelHeight, 
+				rotation, xCenter, yCenter, color);
+		this.computeVertex(offset + 2, x, y + height, texRegionLeft + halfPixelWidth, texRegionTop - halfPixelHeight, 
+				rotation, xCenter, yCenter, color);
+		this.computeVertex(offset + 3, x + width, y + height, texRegionRight - halfPixelWidth, texRegionTop - halfPixelHeight, 
+				rotation, xCenter, yCenter, color);
 		
 		this.drawnSprites++;
 	}
