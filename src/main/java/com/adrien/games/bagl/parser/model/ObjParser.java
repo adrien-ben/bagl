@@ -29,6 +29,7 @@ public class ObjParser implements ModelParser {
 	private static final Logger log = LogManager.getLogger(ObjParser.class);
 	
 	private static final String SPACE_SEP = " ";
+	private static final String COMMENT_LINE_FLAG = "#";
 	private static final String POSITION_LINE_FLAG = "v";
 	private static final String TEXTURE_LINE_FLAG = "vt";
 	private static final String NORMAL_LINE_FLAG = "vn";
@@ -88,23 +89,18 @@ public class ObjParser implements ModelParser {
 		String[] tokens = line.split(SPACE_SEP);
 		if(tokens.length > 0) {
 			String first = tokens[0];
-			switch (first) {
-			case POSITION_LINE_FLAG:
+			if(COMMENT_LINE_FLAG.equals(first)) {
+				return;
+			} else if(POSITION_LINE_FLAG.equals(first)) {
 				this.parsePosition(tokens);
-				break;
-			case TEXTURE_LINE_FLAG:
+			} else if(TEXTURE_LINE_FLAG.equals(first)) {
 				this.parseTextureCoords(tokens);
-				break;
-			case NORMAL_LINE_FLAG:
+			} else if(NORMAL_LINE_FLAG.equals(first)) {
 				this.parseNormal(tokens);
-				break;
-			case FACE_LINE_FLAG:
+			} else if(FACE_LINE_FLAG.equals(first)) {
 				this.parseFace(tokens);
-				break;
-			default:
-				log.warn("Found line flag '{}' at line {}. This line will be ignored.", 
-						first, this.currentLine);
-				break;
+			} else {
+				log.warn("Found line flag '{}' at line {}. This line will be ignored.",  first, this.currentLine);
 			}
 		}
 	}
