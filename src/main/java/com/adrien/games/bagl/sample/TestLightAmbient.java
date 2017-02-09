@@ -19,7 +19,7 @@ public final class TestLightAmbient {
 	
 	private final static class TestGame implements Game {
 		public final static String TITLE = "Ambient Light";
-		public final static int WIDTH = 1024;
+		public final static int WIDTH = 512;
 		public final static int HEIGHT = WIDTH * 9 / 16;
 
 		private Mesh mesh;
@@ -40,7 +40,7 @@ public final class TestLightAmbient {
 			this.shader.compile();
 			
 			this.camera = new Camera(new Vector3(-10, 5, 10), new Vector3(10, -5, -10), Vector3.UP, 
-					(float)Math.toRadians(70f), (float)WIDTH/(float)HEIGHT, 0.1f, 1000f);		
+					(float)Math.toRadians(70f), (float)WIDTH/(float)HEIGHT, 0.1f, 1000f);
 			
 			this.model = new Matrix4();
 			

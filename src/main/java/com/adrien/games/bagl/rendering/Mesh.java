@@ -1,5 +1,7 @@
 package com.adrien.games.bagl.rendering;
 
+import java.util.Objects;
+
 public class Mesh {
 	
 	private VertexBuffer vertices;
@@ -13,9 +15,15 @@ public class Mesh {
 	}
 	
 	public void destroy() {
-		vertices.destroy();
-		indices.destroy();
-		material.destroy();
+		if(Objects.nonNull(vertices)) {			
+			vertices.destroy();
+		}
+		if(Objects.nonNull(indices)) {			
+			indices.destroy();
+		}
+		if(Objects.nonNull(material)) {
+			material.destroy();
+		}			
 	}
 
 	public VertexBuffer getVertices() {

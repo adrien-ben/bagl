@@ -1,73 +1,61 @@
 package com.adrien.games.bagl.core;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.GL11;
 
-
-public final class Engine
-{	
+public final class Engine {
+	
+	private static final Logger log = LogManager.getLogger(Engine.class);
+	
 	private Game game;
 	private Window window;
 	private Time time;
 	private boolean isRunning;
 
-	public Engine(Game game, String title, int width, int height)
-	{
-		if (game == null)
-			throw new IllegalArgumentException(
-					"The argument game cannot be null.");
-
+	public Engine(Game game, String title, int width, int height) {
+		log.info("Initializing engine");
+		if (game == null) {
+			throw new IllegalArgumentException("The argument game cannot be null.");
+		}
 		this.game = game;
 		this.window = new Window(title, width, height);
 		this.time = new Time();
-		this.isRunning = false;
-		
-		System.out.println("Engine.constructor:\n\t-width:"
-				+ window.getWidth() + "\n\t-height:"
-				+ window.getHeight() + "\n\t-gl:"
-				+ window.getGLVersion());
-		
+		this.isRunning = false;		
 		this.game.init();
 	}
 
-	public void start()
-	{
-		isRunning = true;
-
-		while (isRunning)
-		{
-			if (window.isCloseRequested())
-			{
+	public void start() {
+		log.info("Starting engine");
+		this.isRunning = true;
+		while (this.isRunning) {
+			if (this.window.isCloseRequested()) {
 				stop();
 			}
-
-			update();
-			render();
-			window.update();
+			this.update();
+			this.render();
+			this.window.update();
 		}
-
-		destroy();
+		this.destroy();
 	}
 
-	private void update()
-	{
-		time.update();
-		game.update(time);
+	private void update() {
+		this.time.update();
+		this.game.update(this.time);
 	}
 
-	private void render()
-	{
+	private void render() {
 		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-		
-		game.render();
+		this.game.render();
 	}
 
-	public void stop()
-	{
-		isRunning = false;
+	public void stop() {
+		log.info("Stopping engine");
+		this.isRunning = false;
 	}
 
-	private void destroy()
-	{
+	private void destroy() {
+		log.info("Destroying engine");
 		game.destroy();
 		window.destroy();
 	}

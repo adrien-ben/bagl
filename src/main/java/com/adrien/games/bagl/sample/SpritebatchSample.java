@@ -14,13 +14,13 @@ import com.adrien.games.bagl.rendering.Texture;
 
 public class SpritebatchSample {
 
-private final static class TestGame implements Game {
+	private final static class TestGame implements Game {
 		
 		public final static String TITLE = "Spritebatch";
-		public final static int WIDTH = 512;
+		public final static int WIDTH = 1024;
 		public final static int HEIGHT = WIDTH * 9 / 16;
 		
-		public final static int SPRITE_COUNT = 100;
+		public final static int SPRITE_COUNT = 1000;
 
 		private Texture texture;
 		private Spritebatch spritebatch;
@@ -41,6 +41,7 @@ private final static class TestGame implements Game {
 				rotations[i] = r.nextFloat() * 360;
 			}
 			
+			GL11.glEnable(GL11.GL_CULL_FACE);
 			GL11.glClearColor(100f/255, 149f/255, 237f/255, 1);
 		}
 

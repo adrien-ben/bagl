@@ -1,5 +1,8 @@
 package com.adrien.games.bagl.sample;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.adrien.games.bagl.core.Engine;
 import com.adrien.games.bagl.core.Game;
 import com.adrien.games.bagl.core.Time;
@@ -11,6 +14,8 @@ import com.adrien.games.bagl.core.Time;
 public final class TestEngine {
 	
 	private final static class TestGame implements Game {
+		
+		private static final Logger log = LogManager.getLogger(TestGame.class);
 
 		public final static String TITLE = "Engine";
 		public final static int WIDTH = 1024;
@@ -18,22 +23,22 @@ public final class TestEngine {
 		
 		@Override
 		public void init() {
-			System.out.println("Game initialized");	
+			log.info("Game initialized");	
 		}
 
 		@Override
 		public void update(Time time) {
-			System.out.println("Game updated");			
+			log.info("Game updated");			
 		}
 
 		@Override
 		public void render() {
-			System.out.println("Game renderered");
+			log.info("Game renderered");
 		}
 
 		@Override
 		public void destroy() {
-			System.out.println("Game destroyed");	
+			log.info("Game destroyed");	
 		}
 
 	}
