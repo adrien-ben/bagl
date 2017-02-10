@@ -23,7 +23,7 @@ public class TestTransform
 	{
 
 		public final static String TITLE = "Transform";
-		public final static int WIDTH = 1024;
+		public final static int WIDTH = 512;
 		public final static int HEIGHT = WIDTH * 9 / 16;
 		
 		private Mesh mesh;

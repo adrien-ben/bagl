@@ -44,7 +44,7 @@ public class MtlParser {
 		log.info("Parsing .mtl file '{}'.", filePath);
 		this.reset(filePath);
 		try(Stream<String> stream = Files.lines(Paths.get(filePath))) {
-			stream.forEach(this::parseLine);
+			stream.filter(StringUtils::isNotBlank).forEach(this::parseLine);
 		} catch (IOException e) {
 			log.error("Failed to parse file '{}'.", filePath, e);
 			throw new RuntimeException("Failed to parse material file", e);

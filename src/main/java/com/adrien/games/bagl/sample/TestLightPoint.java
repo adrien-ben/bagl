@@ -20,7 +20,7 @@ public final class TestLightPoint {
 	private final static class TestGame implements Game {
 		
 		public final static String TITLE = "Point Light";
-		public final static int WIDTH = 1024;
+		public final static int WIDTH = 512;
 		public final static int HEIGHT = WIDTH * 9 / 16;
 		
 		private Mesh mesh;

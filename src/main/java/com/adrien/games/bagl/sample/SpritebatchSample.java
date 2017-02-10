@@ -1,5 +1,6 @@
 package com.adrien.games.bagl.sample;
 
+import java.io.File;
 import java.util.Random;
 
 import org.lwjgl.opengl.GL11;
@@ -17,7 +18,7 @@ public class SpritebatchSample {
 	private final static class TestGame implements Game {
 		
 		public final static String TITLE = "Spritebatch";
-		public final static int WIDTH = 1024;
+		public final static int WIDTH = 512;
 		public final static int HEIGHT = WIDTH * 9 / 16;
 		
 		public final static int SPRITE_COUNT = 1000;
@@ -32,7 +33,8 @@ public class SpritebatchSample {
 		@Override
 		public void init() {
 			this.spritebatch = new Spritebatch(512, WIDTH, HEIGHT);
-			this.texture = new Texture("/default.png");
+			
+			this.texture = new Texture(new File(TestGame.class.getResource("/default.png").getFile()).getAbsolutePath());
 			
 			Random r = new Random();
 			for(int i = 0; i < SPRITE_COUNT; i++) {

@@ -1,5 +1,7 @@
 package com.adrien.games.bagl.utils;
 
+import java.io.File;
+
 import com.adrien.games.bagl.core.Vector2;
 import com.adrien.games.bagl.core.Vector3;
 import com.adrien.games.bagl.rendering.IndexBuffer;
@@ -17,7 +19,7 @@ public final class MeshFactory {
 	}
 	
 	public static Mesh createRoom(int width , int height, int depth) {
-		Texture texture = new Texture("/default.png");
+		Texture texture = new Texture(new File(MeshFactory.class.getResource("/default.png").getFile()).getAbsolutePath());
 		float xOffset = 0.5f / texture.getWidth();
 		float yOffset = 0.5f / texture.getHeight();
 		
@@ -45,7 +47,7 @@ public final class MeshFactory {
 	}
 	
 	public static Mesh createPlane(int width, int depth) {
-		Texture texture = new Texture("/default.png");
+		Texture texture = new Texture(new File(MeshFactory.class.getResource("/default.png").getFile()).getAbsolutePath());
 		float xOffset = 0.5f / texture.getWidth();
 		float yOffset = 0.5f / texture.getHeight();
 		
@@ -65,7 +67,7 @@ public final class MeshFactory {
 	}
 	
 	public static Mesh createBox(int width, int height, int depth) {
-		Texture texture = new Texture("/default.png");
+		Texture texture = new Texture(new File(MeshFactory.class.getResource("/default.png").getFile()).getAbsolutePath());
 		float xOffset = 0.5f / texture.getWidth();
 		float yOffset = 0.5f / texture.getHeight();
 		

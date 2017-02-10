@@ -65,7 +65,7 @@ public class ObjParser implements ModelParser {
 		log.info("Parsing .obj file '{}'", filePath);
 		this.resetParser(filePath);
 		try(Stream<String> stream = Files.lines(Paths.get(filePath))) {
-			stream.forEach(this::parseLine);
+			stream.filter(StringUtils::isNotBlank).forEach(this::parseLine);
 		} catch (IOException e) {
 			log.error("Failed to parse file '{}'.", filePath, e);
 			throw new RuntimeException("Failed to parse model file", e);

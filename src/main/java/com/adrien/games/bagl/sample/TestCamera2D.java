@@ -1,5 +1,7 @@
 package com.adrien.games.bagl.sample;
 
+import java.io.File;
+
 import org.lwjgl.opengl.GL11;
 
 import com.adrien.games.bagl.core.Camera2D;
@@ -36,7 +38,7 @@ public class TestCamera2D {
 		@Override
 		public void init() {
 			
-			this.texture = new Texture("/default.png");
+			this.texture = new Texture(new File(TestGame.class.getResource("/default.png").getFile()).getAbsolutePath());
 			float xOffset = 0.5f / this.texture.getWidth();
 			float yOffset = 0.5f / this.texture.getHeight();
 			

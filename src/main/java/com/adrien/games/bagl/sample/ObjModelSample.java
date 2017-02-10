@@ -44,12 +44,12 @@ public class ObjModelSample {
 			this.shader.addFragmentShader("/ambient.frag");
 			this.shader.compile();
 			
-			this.camera = new Camera(new Vector3(-2, -1, -2), new Vector3(2, 1, 2), Vector3.UP, 
+			this.camera = new Camera(new Vector3(-2, 1, -2), new Vector3(2, -1, 2), Vector3.UP, 
 					(float)Math.toRadians(70f), (float)WIDTH/(float)HEIGHT, 0.1f, 1000f);
 			
 			this.model = new Matrix4();
 			
-			this.lightIntensity = .3f;
+			this.lightIntensity = .8f;
 			this.lightColor = new Vector3(1.f, 1f, 1.f);
 			
 			GL11.glEnable(GL11.GL_CULL_FACE);
