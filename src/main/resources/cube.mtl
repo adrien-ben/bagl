@@ -1,0 +1,4 @@
+newmtl cube_mtl_1
+
+map_Kd default.png
+Ns 10

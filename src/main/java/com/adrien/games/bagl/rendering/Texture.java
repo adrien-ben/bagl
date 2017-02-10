@@ -3,6 +3,8 @@ package com.adrien.games.bagl.rendering;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
@@ -20,14 +22,14 @@ public final class Texture {
 		handle = loadTexture(file);
 	}
 	
-	private int loadTexture(String name) {
+	private int loadTexture(String path) {
 		int handle = 0;
 		int channelCount = 0;
 		ByteBuffer buffer = null;
 		int internalFormat = 0;
 		int format;
 		
-		try (InputStream in = Texture.class.getResourceAsStream(name)) {
+		try (InputStream in = Files.newInputStream(Paths.get(path))) {
 			PNGDecoder decoder = new PNGDecoder(in);
 			this.width = decoder.getWidth();
 			this.height = decoder.getHeight();
@@ -37,7 +39,7 @@ public final class Texture {
 			decoder.decodeFlipped(buffer, width*channelCount, imgformat);
 			buffer.flip();
 		} catch (IOException e) {
-			throw new RuntimeException("Failed to load texture '" + name + "'.", e);
+			throw new RuntimeException("Failed to load texture '" + path + "'.", e);
 		}	
 		
 		internalFormat = (channelCount == 4) ? GL11.GL_RGBA8 : GL11.GL_RGB8;

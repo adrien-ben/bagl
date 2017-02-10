@@ -28,7 +28,6 @@ public class ObjModelSample {
 		
 		private ModelParser parser = new ObjParser();
 		private Mesh mesh;
-		private Texture texture;
 		private Matrix4 model;
 		private Shader shader;
 		private Camera camera;
@@ -40,7 +39,6 @@ public class ObjModelSample {
 		public void init() {
 			this.mesh = parser.parse(new File(TestGame.class.getResource("/cube.obj").getFile()).getAbsolutePath());
 			
-			this.texture = new Texture("/default.png");
 			this.shader = new Shader();
 			this.shader.addVertexShader("/ambient.vert");
 			this.shader.addFragmentShader("/ambient.frag");
@@ -70,7 +68,7 @@ public class ObjModelSample {
 			this.shader.setUniform("uBaseLight.intensity", this.lightIntensity);
 			this.shader.setUniform("uBaseLight.color", this.lightColor);
 			
-			this.texture.bind();
+			this.mesh.getMaterial().getDiffuseTexture().bind();
 			this.mesh.getVertices().bind();
 			this.mesh.getIndices().bind();
 			
