@@ -49,7 +49,6 @@ public class SpritebatchSample {
 
 		@Override
 		public void update(Time time) {
-			System.out.println(time.getElapsedTime());
 			for(int i = 0; i < SPRITE_COUNT; i++) {
 				rotations[i] += time.getElapsedTime()*50;
 			}
