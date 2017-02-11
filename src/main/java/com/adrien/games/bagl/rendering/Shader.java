@@ -22,6 +22,8 @@ import com.adrien.games.bagl.parser.GLSLParser;
  */
 public class Shader
 {
+	private static final String BASE_SHADER_DIRECTORY = "/shaders/";
+	
 	/**
 	 * Currently bound shader.
 	 */
@@ -98,8 +100,9 @@ public class Shader
 	 */
 	private static String loadSource(String name)
 	{
+		String resourcePath = BASE_SHADER_DIRECTORY + name;
 		StringBuilder sourceBuilder = new StringBuilder();
-		try (BufferedReader sourceReader = new BufferedReader(new InputStreamReader(Shader.class.getResourceAsStream(name)))) {
+		try (BufferedReader sourceReader = new BufferedReader(new InputStreamReader(Shader.class.getResourceAsStream(resourcePath)))) {
 			while(sourceReader.ready())
 			{
 				sourceBuilder.append(sourceReader.readLine());
