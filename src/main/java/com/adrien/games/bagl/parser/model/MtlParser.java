@@ -82,7 +82,7 @@ public class MtlParser {
 	private void parseDiffuseMap(String fileName) {
 		this.checkCurrentMaterial();
 		String folderPath = Paths.get(this.currentFile).getParent().toString();
-		String texturePath = StringUtils.join(folderPath, "/", fileName);
+		String texturePath = folderPath + "/" + fileName;
 		this.currentMaterial.setDiffuse(new Texture(texturePath));
 	}
 	
@@ -92,7 +92,7 @@ public class MtlParser {
 	
 	private void checkCurrentMaterial() {
 		if(Objects.isNull(this.currentMaterial)) {
-			handleParseError(StringUtils.join("Missing 'newmtl' declaration in '", this.currentFile, "'."));
+			handleParseError("Missing 'newmtl' declaration in '" + this.currentFile + "'.");
 		}
 	}
 	

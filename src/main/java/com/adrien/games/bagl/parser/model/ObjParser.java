@@ -129,8 +129,7 @@ public class ObjParser implements ModelParser {
 			float z = Float.parseFloat(tokens[3]);
 			this.positions.add(new Vector3(x, y, z));
 		} else {
-			this.handleParseError(StringUtils.join("Found position with less than 3 components at line ", 
-					Integer.toString(this.currentLine), "."));
+			this.handleParseError("Found position with less than 3 components at line " +  this.currentLine + ".");
 		}
 	}
 	
@@ -140,8 +139,7 @@ public class ObjParser implements ModelParser {
 			float v = Float.parseFloat(tokens[2]);
 			this.coords.add(new Vector2(u, v));
 		} else {
-			this.handleParseError(StringUtils.join("Found texture coordinates with less than 2 components at line ", 
-					Integer.toString(this.currentLine), "."));
+			this.handleParseError("Found texture coordinates with less than 2 components at line " + this.currentLine + ".");
 		}
 	}
 
@@ -152,8 +150,7 @@ public class ObjParser implements ModelParser {
 			float z = Float.parseFloat(tokens[3]);
 			this.normals.add(new Vector3(x, y, z));
 		} else {
-			this.handleParseError(StringUtils.join("Found normal with less than 3 components at line ", 
-					Integer.toString(this.currentLine), "."));
+			this.handleParseError("Found normal with less than 3 components at line " + this.currentLine + ".");
 		}
 	}
 	
@@ -163,8 +160,8 @@ public class ObjParser implements ModelParser {
 			this.parseFaceVertex(tokens[2]);
 			this.parseFaceVertex(tokens[3]);
 		} else {
-			this.handleParseError(StringUtils.join("Found vertex with more or less than 3 components at line ", 
-					Integer.toString(this.currentLine), ". Only triangle faces are supported."));
+			this.handleParseError("Found vertex with more or less than 3 components at line " + this.currentLine + 
+					". Only triangle faces are supported.");
 		}
 	}
 	
@@ -177,8 +174,8 @@ public class ObjParser implements ModelParser {
 			int normalIndex = Integer.parseInt(tokens[2]) - 1;
 			this.reconstructVertex(positionIndex, textCoordIndex, normalIndex);
 		} else {
-			this.handleParseError(StringUtils.join("A face vertex does not reference a position, coords and/or a normal at line ", 
-					Integer.toString(this.currentLine), ". Only triangle faces are supported."));
+			this.handleParseError("A face vertex does not reference a position, coords and/or a normal at line " + 
+					this.currentLine + ". Only triangle faces are supported.");
 		}
 	}
 	
@@ -193,12 +190,11 @@ public class ObjParser implements ModelParser {
 		if(tokens.length > 1) {
 			String fileName = this.getContentInBrackets(tokens[1]);
 			String folderPath = Paths.get(this.currentFile).getParent().toString();
-			String mtlPath = StringUtils.join(folderPath, "/", fileName);
+			String mtlPath = folderPath + "/" + fileName;
 			this.mtlParser.parse(mtlPath).entrySet().stream()
 				.forEach(entry -> this.materialLib.put(entry.getKey(), entry.getValue()));
 		} else {
-			this.handleParseError(StringUtils.join("A material lib reference is incorrect at line ", 
-					Integer.toString(this.currentLine), "."));
+			this.handleParseError("A material lib reference is incorrect at line " + this.currentLine + ".");
 		}
 	}
 	
@@ -206,13 +202,12 @@ public class ObjParser implements ModelParser {
 		String mtlName = getContentInBrackets(tokens[1]);
 		this.usedMaterial = materialLib.get(mtlName);
 		if(Objects.isNull(this.usedMaterial)) {
-			handleParseError(StringUtils.join("Material '", mtlName, "' at line '", 
-					Integer.toString(this.currentLine), " does not exists."));
+			handleParseError("Material '" + mtlName + "' at line '" + this.currentLine + " does not exists.");
 		}
 	}
 	
 	private String getContentInBrackets(String str) {
-		return str.replaceAll("[\\[\\]]", "");
+		return str.replaceAll("[\\[\\]]", "").trim();
 	}
 
 	private void handleParseError(String error) {
