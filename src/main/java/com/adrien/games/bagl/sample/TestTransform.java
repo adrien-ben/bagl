@@ -17,10 +17,9 @@ import com.adrien.games.bagl.rendering.Texture;
 import com.adrien.games.bagl.rendering.VertexBuffer;
 import com.adrien.games.bagl.utils.MeshFactory;
 
-public class TestTransform
-{
-	private final static class TestGame implements Game
-	{
+public class TestTransform {
+	
+	private final static class TestGame implements Game {
 
 		public final static String TITLE = "Transform";
 		public final static int WIDTH = 512;
@@ -33,8 +32,7 @@ public class TestTransform
 		private Transform transform;
 				
 		@Override
-		public void init()
-		{
+		public void init() {
 			this.mesh = MeshFactory.createPlane(20, 20);
 			
 			this.shader = new Shader();

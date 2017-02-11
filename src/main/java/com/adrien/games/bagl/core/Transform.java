@@ -1,7 +1,7 @@
 package com.adrien.games.bagl.core;
 
-public class Transform
-{
+public class Transform {
+	
 	private Vector3 position;
 	private Quaternion rotation;
 	private Vector3 scale;
@@ -11,8 +11,7 @@ public class Transform
 	private Matrix4 scaleM;
 	private Matrix4 transformM;
 	
-	public Transform()
-	{
+	public Transform() {
 		position = new Vector3();
 		rotation = new Quaternion();
 		scale = new Vector3(1, 1, 1);
@@ -23,24 +22,21 @@ public class Transform
 		transformM = Matrix4.createIdentity();
 	}
 	
-	public void transform(Transform transform)
-	{
+	public void transform(Transform transform) {
 		Matrix4 transformMatrix = transform.getTransformMatrix();
 		Vector3.transform(transformMatrix, position, position);
 		Quaternion.mul(transform.getRotation(), rotation, rotation);
 		Vector3.transform(transformMatrix, scale, scale);
 	}
 	
-	public static void transform(Transform toTransform, Transform transform, Transform result)
-	{
+	public static void transform(Transform toTransform, Transform transform, Transform result) {
 		Matrix4 transformMatrix = transform.getTransformMatrix();
 		Vector3.transform(transformMatrix, toTransform.getPosition(), result.getPosition());
 		Quaternion.mul(transform.getRotation(), toTransform.getRotation(), result.getRotation());
 		Vector3.transform(transformMatrix, toTransform.getScale(), result.getScale());
 	}
 
-	public Matrix4 getTransformMatrix()
-	{
+	public Matrix4 getTransformMatrix() {
 		translationM.setTranslation(position);
 		rotationM.setRotation(rotation);
 		scaleM.setScale(scale);
@@ -51,36 +47,28 @@ public class Transform
 		return transformM;
 	}
 	
-	public Vector3 getPosition()
-	{
+	public Vector3 getPosition() {
 		return position;
 	}
 
-	public Quaternion getRotation()
-	{
+	public Quaternion getRotation() {
 		return rotation;
 	}
 
-	public Vector3 getScale()
-	{
+	public Vector3 getScale() {
 		return scale;
 	}
 
-	public void setPosition(Vector3 position)
-	{
+	public void setPosition(Vector3 position) {
 		this.position = position;
 	}
 
-	public void setRotation(Quaternion rotation)
-	{
+	public void setRotation(Quaternion rotation) {
 		this.rotation = rotation;
 	}
 
-	public void setScale(Vector3 scale)
-	{
+	public void setScale(Vector3 scale) {
 		this.scale = scale;
 	}
-	
-	
 	
 }

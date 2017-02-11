@@ -16,9 +16,16 @@ public class GLSLAttribute {
 	}
 
 	@Override
-	public String toString() { return type + " " + name + ";"; }
+	public String toString() { 
+		return type + " " + name + ";"; 
+	}
 
-	public String getType() { return type; }
-	public String getName() { return name; }
+	public String getType() { 
+		return type; 
+	}
+	
+	public String getName() { 
+		return name;
+	}
 
 }

@@ -15,11 +15,10 @@ import com.adrien.games.bagl.rendering.Texture;
 import com.adrien.games.bagl.rendering.VertexBuffer;
 import com.adrien.games.bagl.utils.MeshFactory;
 
-public final class TestLightDir
-{
+public final class TestLightDir {
 	
-	private final static class TestGame implements Game
-	{
+	private final static class TestGame implements Game {
+		
 		public final static String TITLE = "Directional Light";
 		public final static int WIDTH = 512;
 		public final static int HEIGHT = WIDTH * 9 / 16;

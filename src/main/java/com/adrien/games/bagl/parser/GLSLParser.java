@@ -14,33 +14,25 @@ public class GLSLParser {
 	private ArrayList<String> uniforms;
 
 	public GLSLParser() {
-
 		this.structures = new HashMap<String, GLSLStructure>();
 		this.inAttributes = new ArrayList<GLSLAttribute>();
 		this.outAttributes = new ArrayList<GLSLAttribute>();
 		this.uniformAttributes = new ArrayList<GLSLAttribute>();
 		this.uniforms = new ArrayList<String>();
-
 	}
 
 	public Boolean parse(String glslSource) {
-
 		if(!constructSourceSkeleton(glslSource)) {
 			return false;
 		}
 		generateUniforms();
-
 		return true;
 	}
 
 	private Boolean constructSourceSkeleton(String glslSource) {
-
 		StringTokenizer tokenizer = new StringTokenizer(glslSource, " \r\n\t;{");
-
 		while(tokenizer.hasMoreTokens()) {
-
 			String token = tokenizer.nextToken();
-
 			if(token.equals("#version")) {
 				version = tokenizer.nextToken();
 			} else if(token.equals("in")) {
@@ -54,21 +46,17 @@ public class GLSLParser {
 				structures.put(structure.getName(), structure);
 			}
 		}
-
 		return true;
 	}
 
 	private GLSLAttribute parseAttribute(StringTokenizer tokenizer) {
-
 		return new GLSLAttribute(tokenizer.nextToken(), tokenizer.nextToken());
 	}
 
 	private GLSLStructure parseStructure(StringTokenizer tokenizer) {
-
 		String name = tokenizer.nextToken();
 		ArrayList<GLSLAttribute> attributes = new ArrayList<GLSLAttribute>();
 		Boolean hasMoreAttributes = true;
-
 		while(hasMoreAttributes) {
 			String attrType = tokenizer.nextToken();
 
@@ -79,12 +67,10 @@ public class GLSLParser {
 				attributes.add(new GLSLAttribute(attrType, attrName));
 			}
 		}
-
 		return new GLSLStructure(name, attributes);
 	}
 
 	private void generateUniforms() {
-
 		for(GLSLAttribute uniform : uniformAttributes) {
 			GLSLStructure struct = structures.get(uniform.getType());
 			String uniformName = uniform.getName();
@@ -98,9 +84,7 @@ public class GLSLParser {
 	}
 
 	private ArrayList<String> generateUniformsFormStructure(String uniformName, GLSLStructure structure) {
-
 		ArrayList<String> structUniforms = new ArrayList<String>();
-
 		for(GLSLAttribute attribute : structure.getAttributes()) {
 			GLSLStructure struct = structures.get(attribute.getType());
 			if(struct == null) {
@@ -112,13 +96,11 @@ public class GLSLParser {
 				}
 			}
 		}
-
 		return structUniforms;
 	}
 
 	@Override
 	public String toString() {
-
 		StringBuilder strBldr = new StringBuilder();
 
 		if(version != null) {
@@ -169,11 +151,28 @@ public class GLSLParser {
 		return strBldr.toString();
 	}
 
-	public String getVersion() { return version; }
-	public HashMap<String, GLSLStructure> getStructure() { return structures; }
-	public ArrayList<GLSLAttribute> getIns() { return inAttributes; }
-	public ArrayList<GLSLAttribute> getOuts() { return outAttributes; }
-	public ArrayList<GLSLAttribute> getUniformAttributes() { return uniformAttributes; }
-	public ArrayList<String> getUniforms() { return uniforms; }
+	public String getVersion() { 
+		return version; 
+	}
+	
+	public HashMap<String, GLSLStructure> getStructure() { 
+		return structures; 
+	}
+	
+	public ArrayList<GLSLAttribute> getIns() { 
+		return inAttributes; 
+	}
+	
+	public ArrayList<GLSLAttribute> getOuts() { 
+		return outAttributes; 
+	}
+	
+	public ArrayList<GLSLAttribute> getUniformAttributes() { 
+		return uniformAttributes; 
+	}
+	
+	public ArrayList<String> getUniforms() { 
+		return uniforms; 
+	}
 
 }

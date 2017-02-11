@@ -5,16 +5,14 @@ import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
 
-public final class Window
-{
+public final class Window {
 
 	private final String title;
 	private final int width;
 	private final int height;
 	private final long windowHandle;
 	
-	public Window(String title, int width, int height)
-	{
+	public Window(String title, int width, int height) {
 		this.title = title;
 		this.width = width;
 		this.height = height;
@@ -33,35 +31,29 @@ public final class Window
 		GLFW.glfwShowWindow(this.windowHandle);
 	}
 	
-	public void update()
-	{
+	public void update() {
 		GLFW.glfwPollEvents();
 		GLFW.glfwSwapBuffers(windowHandle);
 	}
 
-	public boolean isCloseRequested()
-	{
+	public boolean isCloseRequested() {
 		return GLFW.glfwWindowShouldClose(windowHandle);
 	}
 	
-	public void destroy()
-	{
+	public void destroy() {
 		GLFW.glfwDestroyWindow(this.windowHandle);
 		GLFW.glfwTerminate();
 	}
 	
-	public int getWidth()
-	{
+	public int getWidth() {
 		return this.width;
 	}
 	
-	public int getHeight()
-	{
+	public int getHeight() {
 		return this.height;
 	}
 	
-	public String getGLVersion()
-	{
+	public String getGLVersion() {
 		return GL11.glGetString(GL11.GL_VERSION);
 	}
 	

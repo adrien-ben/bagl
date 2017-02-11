@@ -2,52 +2,44 @@ package com.adrien.games.bagl.rendering;
 
 import java.util.ArrayList;
 
-public final class VertexDescription
-{
+public final class VertexDescription {
 	private ArrayList<VertexElement> vertexElements;
 	private int vertexElementCount;
 	private int stride;
 	
-	public VertexDescription()
-	{
+	public VertexDescription() {
 		this.vertexElements = new ArrayList<VertexElement>();
 		this.vertexElementCount = 0;
 		this.stride = 0;
 	}
 	
-	public VertexDescription(VertexElement[] vertexElements)
-	{
+	public VertexDescription(VertexElement[] vertexElements) {
 		this.vertexElements = new ArrayList<VertexElement>();
 		this.vertexElementCount = 0;
 		this.stride = 0;
 		
-		for(VertexElement element : vertexElements)
-		{
+		for(VertexElement element : vertexElements) {
 			this.vertexElements.add(element);
 			this.vertexElementCount++;
 			this.stride += element.getSize();
 		}
 	}
 	
-	public void addVertexElement(VertexElement vertexElement)
-	{
+	public void addVertexElement(VertexElement vertexElement) {
 		vertexElements.add(vertexElement);
 		vertexElementCount++;
 		stride += vertexElement.getSize();
 	}
 	
-	public ArrayList<VertexElement> getVertexElements()
-	{
+	public ArrayList<VertexElement> getVertexElements() {
 		return vertexElements;
 	}
 	
-	public int getVertexElementCount()
-	{
+	public int getVertexElementCount() {
 		return vertexElementCount;
 	}
 	
-	public int getStride()
-	{
+	public int getStride() {
 		return stride;
 	}
 	

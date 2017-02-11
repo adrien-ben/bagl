@@ -20,8 +20,8 @@ import com.adrien.games.bagl.parser.GLSLParser;
  * @author Adrien
  *
  */
-public class Shader
-{
+public class Shader {
+	
 	private static final String BASE_SHADER_DIRECTORY = "/shaders/";
 	
 	/**
@@ -34,8 +34,7 @@ public class Shader
 	private ArrayList<Integer> attachedShaders; 
 	private int handle;
 
-	public Shader()
-	{
+	public Shader() {
 		this.uniforms = new ArrayList<String>();
 		this.uniformToLocationMap = new HashMap<String, Integer>();
 		this.attachedShaders = new ArrayList<Integer>();
@@ -47,8 +46,7 @@ public class Shader
 	 * Calls the addShader function for a vertex shader.
 	 * @param file The path to the source file;
 	 */
-	public void addVertexShader(String file)
-	{
+	public void addVertexShader(String file) {
 		addShader(file, GL20.GL_VERTEX_SHADER);
 	}
 
@@ -56,8 +54,7 @@ public class Shader
 	 * Calls the addShader function for a fragment shader.
 	 * @param file The path to the source file;
 	 */
-	public void addFragmentShader(String file)
-	{
+	public void addFragmentShader(String file) {
 		addShader(file, GL20.GL_FRAGMENT_SHADER);
 	}
 
@@ -70,8 +67,7 @@ public class Shader
 	 * @param type The type of shader to load.
 	 * @author Adrien.
 	 */
-	private void addShader(String file, int type)
-	{
+	private void addShader(String file, int type) {
 		String source = loadSource(file);
 		//TODO: check
 		parseShader(source);
@@ -81,14 +77,11 @@ public class Shader
 		GL20.glShaderSource(shader, source);
 		GL20.glCompileShader(shader);
 
-		if(GL20.glGetShaderi(shader, GL20.GL_COMPILE_STATUS) == GL11.GL_FALSE)
-		{
+		if(GL20.glGetShaderi(shader, GL20.GL_COMPILE_STATUS) == GL11.GL_FALSE) {
 			int loglength = GL20.glGetShaderi(shader, GL20.GL_INFO_LOG_LENGTH);
 			System.err.println(GL20.glGetShaderInfoLog(shader, loglength));
 		}
-
 		GL20.glAttachShader(handle, shader);
-
 		attachedShaders.add(shader);
 	}
 
@@ -98,13 +91,11 @@ public class Shader
 	 * @return The shader's source code.
 	 * @author Adrien.
 	 */
-	private static String loadSource(String name)
-	{
+	private static String loadSource(String name) {
 		String resourcePath = BASE_SHADER_DIRECTORY + name;
 		StringBuilder sourceBuilder = new StringBuilder();
 		try (BufferedReader sourceReader = new BufferedReader(new InputStreamReader(Shader.class.getResourceAsStream(resourcePath)))) {
-			while(sourceReader.ready())
-			{
+			while(sourceReader.ready()) {
 				sourceBuilder.append(sourceReader.readLine());
 				sourceBuilder.append('\n');
 			}
@@ -119,8 +110,7 @@ public class Shader
 	 * @param source The glsl source code.
 	 * @author Adrien.
 	 */
-	private void parseShader(String source)
-	{
+	private void parseShader(String source) {
 		GLSLParser glslParser = new GLSLParser();
 		glslParser.parse(source);
 		uniforms.addAll(glslParser.getUniforms());
@@ -131,8 +121,7 @@ public class Shader
 	 * @param name The name of the uniform.
 	 * @author Adrien.
 	 */
-	private void addUniform(String name)
-	{
+	private void addUniform(String name) {
 		int location = GL20.glGetUniformLocation(handle, name);
 		uniformToLocationMap.put(name, location);
 	}
@@ -143,8 +132,7 @@ public class Shader
 	 * @param value The value of the uniform.
 	 * @author Adrien.
 	 */
-	public void setUniform(String name, float value)
-	{
+	public void setUniform(String name, float value) {
 		this.checkIsShaderBound();
 		int location = this.getLocation(name);
 		GL20.glUniform1f(location, value);
@@ -156,8 +144,7 @@ public class Shader
 	 * @param matrix The value of the uniform.
 	 * @author Adrien.
 	 */
-	public void setUniform(String name, Matrix4 matrix)
-	{
+	public void setUniform(String name, Matrix4 matrix) {
 		this.checkIsShaderBound();
 		int location = this.getLocation(name);
 		FloatBuffer buffer = BufferUtils.createFloatBuffer(16);
@@ -172,8 +159,7 @@ public class Shader
 	 * @param vector The value of the uniform.
 	 * @author Adrien.
 	 */
-	public void setUniform(String name, Vector3 vector)
-	{
+	public void setUniform(String name, Vector3 vector) {
 		this.checkIsShaderBound();
 		int location = this.getLocation(name);
 		GL20.glUniform3f(location, vector.getX(), vector.getY(), vector.getZ());
@@ -198,18 +184,15 @@ public class Shader
 	 * error output. Adds all the uniforms parsed in the shaders' source.
 	 * @author Adrien.
 	 */
-	public void compile()
-	{
+	public void compile() {
 		GL20.glLinkProgram(handle);
 
-		if(GL20.glGetProgrami(handle, GL20.GL_LINK_STATUS) == GL11.GL_FALSE)
-		{
+		if(GL20.glGetProgrami(handle, GL20.GL_LINK_STATUS) == GL11.GL_FALSE) {
 			int logLength = GL20.glGetProgrami(handle, GL20.GL_INFO_LOG_LENGTH);
 			System.err.println(GL20.glGetProgramInfoLog(handle, logLength));
 		}
 
-		for(String uniform : uniforms)
-		{
+		for(String uniform : uniforms) {
 			addUniform(uniform);
 		}
 		uniforms.clear();
@@ -219,8 +202,7 @@ public class Shader
 	 * Bind the OpenGL program object.
 	 * @author Adrien.
 	 */
-	public void bind()
-	{
+	public void bind() {
 		GL20.glUseProgram(handle);
 		boundShader = this;
 	}
@@ -241,8 +223,7 @@ public class Shader
 	 * Unbind currently bound OpenGL program object.
 	 * @author Adrien.
 	 */
-	public static void unbind()
-	{
+	public static void unbind() {
 		GL20.glUseProgram(0);
 		boundShader = null;
 	}
@@ -251,12 +232,11 @@ public class Shader
 	 * Release OpenGL resources.
 	 * @author Adrien.
 	 */
-	public void destroy()
-	{
-		for(Integer i : attachedShaders)
-		{
+	public void destroy() {
+		for(Integer i : attachedShaders) {
 			GL20.glDeleteShader(i);
 		}
 		GL20.glDeleteProgram(handle);
 	}
+	
 }

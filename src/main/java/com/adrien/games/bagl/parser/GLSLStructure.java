@@ -32,6 +32,12 @@ public class GLSLStructure {
 		return strBldr.toString();
 	}
 
-	public String getName() { return name; }
-	public ArrayList<GLSLAttribute> getAttributes() { return attributes; }
+	public String getName() { 
+		return name; 
+	}
+	
+	public ArrayList<GLSLAttribute> getAttributes() { 
+		return attributes; 
+	}
+	
 }
