@@ -39,7 +39,7 @@ private final static class TestGame implements Game {
 					(float)Math.toRadians(70f), (float)WIDTH/(float)HEIGHT, 1f, 100f);		
 			
 			GL11.glEnable(GL11.GL_CULL_FACE);
-			//GL11.glEnable(GL11.GL_DEPTH_TEST);
+			GL11.glEnable(GL11.GL_DEPTH_TEST);
 		}
 
 		@Override
