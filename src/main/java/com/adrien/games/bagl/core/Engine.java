@@ -45,6 +45,7 @@ public final class Engine {
 	}
 
 	private void render() {
+		GL11.glClearColor(0, 0, 0, 0);
 		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 		this.game.render();
 	}

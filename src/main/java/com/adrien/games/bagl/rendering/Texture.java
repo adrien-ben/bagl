@@ -17,7 +17,20 @@ public final class Texture {
 	private int handle;
 	private int width;
 	private int height;
-
+	
+	public Texture(int width, int height) {
+		this.width = width;
+		this.height = height;
+		this.handle = GL11.glGenTextures();
+		GL11.glBindTexture(GL11.GL_TEXTURE_2D, this.handle);
+		GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA8, this.width, this.height, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, new float[width*height]);
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL11.GL_REPEAT);
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL11.GL_REPEAT);
+		GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
+	}
+	
 	public Texture(String file) {
 		handle = loadTexture(file);
 	}
@@ -55,6 +68,10 @@ public final class Texture {
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
 		
 		return handle;
+	}
+	
+	public int getHandle() {
+		return this.handle;
 	}
 	
 	public int getWidth() {

@@ -16,7 +16,7 @@ import com.adrien.games.bagl.utils.MeshFactory;
 
 public class DepthBufferSample {
 
-private final static class TestGame implements Game {
+	private final static class TestGame implements Game {
 		
 		public final static String TITLE = "Depth buffer";
 		public final static int WIDTH = 512;
