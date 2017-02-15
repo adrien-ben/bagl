@@ -1,7 +1,31 @@
 package com.adrien.games.bagl.sample;
 
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
+import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_DEPTH_TEST;
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
+import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
+import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
+import static org.lwjgl.opengl.GL11.glClear;
+import static org.lwjgl.opengl.GL11.glClearColor;
+import static org.lwjgl.opengl.GL11.glDrawElements;
+import static org.lwjgl.opengl.GL11.glEnable;
+import static org.lwjgl.opengl.GL30.GL_COLOR_ATTACHMENT0;
+import static org.lwjgl.opengl.GL30.GL_DEPTH_ATTACHMENT;
+import static org.lwjgl.opengl.GL30.GL_DEPTH_COMPONENT32F;
+import static org.lwjgl.opengl.GL30.GL_FRAMEBUFFER;
+import static org.lwjgl.opengl.GL30.GL_RENDERBUFFER;
+import static org.lwjgl.opengl.GL30.glBindFramebuffer;
+import static org.lwjgl.opengl.GL30.glBindRenderbuffer;
+import static org.lwjgl.opengl.GL30.glCheckFramebufferStatus;
+import static org.lwjgl.opengl.GL30.glDeleteFramebuffers;
+import static org.lwjgl.opengl.GL30.glDeleteRenderbuffers;
+import static org.lwjgl.opengl.GL30.glFramebufferRenderbuffer;
+import static org.lwjgl.opengl.GL30.glFramebufferTexture2D;
+import static org.lwjgl.opengl.GL30.glGenFramebuffers;
+import static org.lwjgl.opengl.GL30.glGenRenderbuffers;
+import static org.lwjgl.opengl.GL30.glRenderbufferStorage;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,14 +52,17 @@ public class FrameBufferSample {
 		private static final Logger log = LogManager.getLogger(TestGame.class);
 		
 		public final static String TITLE = "FrameBuffer";
-		public final static int WIDTH = 512;
+		public final static int WIDTH = 1024;
 		public final static int HEIGHT = WIDTH * 9 / 16;
 
 		private Mesh mesh;
 		private Matrix4 model;
-		private Shader shader;
+		private Shader normalShader;
+		private Shader colorShader;
 		private Camera camera;
 
+		private Vector3 color = new Vector3(1, 1, 1);
+		
 		private Spritebatch spritebatch;
 		
 		private Texture colorBuffer;
@@ -48,10 +75,15 @@ public class FrameBufferSample {
 
 			this.mesh = MeshFactory.createBox(5, 5, 5);
 
-			this.shader = new Shader();
-			this.shader.addVertexShader("/model.vert");
-			this.shader.addFragmentShader("/normal.frag");
-			this.shader.compile();
+			this.normalShader = new Shader();
+			this.normalShader.addVertexShader("/model.vert");
+			this.normalShader.addFragmentShader("/normal.frag");
+			this.normalShader.compile();
+			
+			this.colorShader = new Shader();
+			this.colorShader.addVertexShader("/model.vert");
+			this.colorShader.addFragmentShader("/ambient.frag");
+			this.colorShader.compile();
 
 			this.camera = new Camera(new Vector3(-5, 3, 8), new Vector3(5, -3, -8), Vector3.UP, 
 					(float)Math.toRadians(70f), (float)WIDTH/(float)HEIGHT, 0.1f, 1000f);		
@@ -88,9 +120,9 @@ public class FrameBufferSample {
 
 		@Override
 		public void render() {
-			this.shader.bind();
-			this.shader.setUniform("uMatrices.model", this.model);
-			this.shader.setUniform("uMatrices.mvp", this.camera.getViewProj());
+			this.normalShader.bind();
+			this.normalShader.setUniform("uMatrices.model", this.model);
+			this.normalShader.setUniform("uMatrices.mvp", this.camera.getViewProj());
 
 			this.mesh.getMaterial().getDiffuseTexture().bind();
 			this.mesh.getVertices().bind();
@@ -103,19 +135,28 @@ public class FrameBufferSample {
 			glDrawElements(GL_TRIANGLES, this.mesh.getIndices().getSize(), GL_UNSIGNED_INT, 0);
 
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			
+			this.colorShader.bind();
+			this.colorShader.setUniform("uMatrices.model", this.model);
+			this.colorShader.setUniform("uMatrices.mvp", this.camera.getViewProj());
+			this.colorShader.setUniform("uBaseLight.color", this.color);
+			this.colorShader.setUniform("uBaseLight.intensity", 1);
+			this.colorShader.setUniform("uMatrices.mvp", this.camera.getViewProj());
+			glDrawElements(GL_TRIANGLES, this.mesh.getIndices().getSize(), GL_UNSIGNED_INT, 0);
+			
 			IndexBuffer.unbind();
 			VertexBuffer.unbind();
 			Texture.unbind();
 			Shader.unbind();
 		
 			this.spritebatch.start();
-			this.spritebatch.draw(this.colorBuffer, Vector2.ZERO, WIDTH/2, HEIGHT/2);
+			this.spritebatch.draw(this.colorBuffer, Vector2.ZERO, WIDTH/3, HEIGHT/3);
 			this.spritebatch.end();
 		}
 
 		@Override
 		public void destroy() {
-			this.shader.destroy();
+			this.normalShader.destroy();
 			this.mesh.destroy();
 			this.destroyFrameBuffer();
 		}
