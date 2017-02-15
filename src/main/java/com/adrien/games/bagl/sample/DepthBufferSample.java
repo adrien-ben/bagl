@@ -35,7 +35,7 @@ public class DepthBufferSample {
 			this.shader.addFragmentShader("/depth.frag");
 			this.shader.compile();
 			
-			this.camera = new Camera(new Vector3(0, 1, 6), new Vector3(0, -1, -6), Vector3.UP, 
+			this.camera = new Camera(new Vector3(0, 2, 7), new Vector3(0, -2, -7), Vector3.UP, 
 					(float)Math.toRadians(70f), (float)WIDTH/(float)HEIGHT, 1f, 100f);		
 			
 			GL11.glEnable(GL11.GL_CULL_FACE);
