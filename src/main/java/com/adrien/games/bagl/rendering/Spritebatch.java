@@ -267,7 +267,9 @@ public class Spritebatch {
 			this.vertexBuffer.bind();
 			this.indexBuffer.bind();
 			
+			GL11.glDisable(GL11.GL_DEPTH_TEST);
 			GL11.glDrawElements(GL11.GL_TRIANGLES, this.drawnSprites*INDICES_PER_SPRITE, GL11.GL_UNSIGNED_INT, 0);
+			GL11.glEnable(GL11.GL_DEPTH_TEST);
 			
 			this.drawnSprites = 0;
 			
