@@ -163,7 +163,7 @@ public class FrameBuffer {
 	}
 
 	public Texture getColorTexture() {
-		return this.getColorTexture(1);
+		return this.getColorTexture(0);
 	}
 	
 	public Texture getColorTexture(int index) {
