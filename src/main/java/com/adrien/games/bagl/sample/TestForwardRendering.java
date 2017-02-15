@@ -166,8 +166,8 @@ public final class TestForwardRendering {
 			
 			//render with directional	
 			this.directionalShader.bind();
-			this.directionalShader.setUniform("uMatrices.model", this.transform);
-			this.directionalShader.setUniform("uMatrices.mvp", this.camera.getViewProj());
+			this.directionalShader.setUniform("uMatrices.world", this.transform);
+			this.directionalShader.setUniform("uMatrices.wvp", this.camera.getViewProj());
 			this.directionalShader.setUniform("uEyePosition", this.camera.getPosition());
 			this.directionalShader.setUniform("uLight.base.color", this.directionalColor);
 			this.directionalShader.setUniform("uLight.direction", this.directionalDirection);
@@ -179,8 +179,8 @@ public final class TestForwardRendering {
 			
 			//render with point
 			this.pointShader.bind();
-			this.pointShader.setUniform("uMatrices.model", this.transform);
-			this.pointShader.setUniform("uMatrices.mvp", this.camera.getViewProj());
+			this.pointShader.setUniform("uMatrices.world", this.transform);
+			this.pointShader.setUniform("uMatrices.wvp", this.camera.getViewProj());
 			this.pointShader.setUniform("uEyePosition", this.camera.getPosition());
 			this.pointShader.setUniform("uLight.base.color", this.pointColor);
 			this.pointShader.setUniform("uLight.position", this.pointPosition);
@@ -194,8 +194,8 @@ public final class TestForwardRendering {
 			
 			//render with spot
 			this.spotShader.bind();
-			this.spotShader.setUniform("uMatrices.model", this.transform);
-			this.spotShader.setUniform("uMatrices.mvp", this.camera.getViewProj());
+			this.spotShader.setUniform("uMatrices.world", this.transform);
+			this.spotShader.setUniform("uMatrices.wvp", this.camera.getViewProj());
 			this.spotShader.setUniform("uEyePosition", this.camera.getPosition());
 			this.spotShader.setUniform("uLight.point.base.color", this.spotColor);
 			this.spotShader.setUniform("uLight.point.base.intensity", this.spotIntensity);

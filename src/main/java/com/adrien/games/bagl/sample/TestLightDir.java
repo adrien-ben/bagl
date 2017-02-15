@@ -61,8 +61,8 @@ public final class TestLightDir {
 		@Override
 		public void render() {
 			this.shader.bind();
-			this.shader.setUniform("uMatrices.model", this.model);
-			this.shader.setUniform("uMatrices.mvp", this.camera.getViewProj());
+			this.shader.setUniform("uMatrices.world", this.model);
+			this.shader.setUniform("uMatrices.wvp", this.camera.getViewProj());
 			this.shader.setUniform("uEyePosition", this.camera.getPosition());
 			this.shader.setUniform("uLight.base.intensity", this.lightIntensity);
 			this.shader.setUniform("uLight.base.color", this.lightColor);

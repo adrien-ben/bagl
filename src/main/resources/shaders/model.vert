@@ -10,17 +10,17 @@ out vec2 passCoords;
 
 struct Matrices
 {
-	mat4 model;
-	mat4 mvp;
+	mat4 world;
+	mat4 wvp;
 };
 
 uniform Matrices uMatrices;
 
 void main()
 {
-	passPosition = uMatrices.model*vPosition;
-	passNormal = (uMatrices.model*vec4(vNormal, 0.0)).xyz;
+	passPosition = uMatrices.world*vPosition;
+	passNormal = (uMatrices.world*vec4(vNormal, 0.0)).xyz;
 	passCoords = vCoords;
 
-	gl_Position = uMatrices.mvp*vPosition;
+	gl_Position = uMatrices.wvp*vPosition;
 }

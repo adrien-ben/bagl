@@ -49,7 +49,7 @@ public class DepthBufferSample {
 		@Override
 		public void render() {	
 			this.shader.bind();
-			this.shader.setUniform("uMatrices.viewProj", this.camera.getViewProj());
+			this.shader.setUniform("uMatrices.wvp", this.camera.getViewProj());
 			
 			this.mesh.getMaterial().getDiffuseTexture().bind();
 			this.mesh.getVertices().bind();

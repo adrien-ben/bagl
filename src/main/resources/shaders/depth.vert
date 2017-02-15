@@ -7,13 +7,13 @@ out vec2 passDepth;
 
 struct Matrices
 {
-	mat4 viewProj;
+	mat4 wvp;
 };
 
 uniform Matrices uMatrices;
 
 void main()
 {
-	gl_Position = uMatrices.viewProj*vPosition;
+	gl_Position = uMatrices.wvp*vPosition;
 	passDepth = gl_Position.zw;
 }

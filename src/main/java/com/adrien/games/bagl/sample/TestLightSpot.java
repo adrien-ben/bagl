@@ -73,8 +73,8 @@ public final class TestLightSpot {
 		@Override
 		public void render() {	
 			this.shader.bind();
-			this.shader.setUniform("uMatrices.model", this.model);
-			this.shader.setUniform("uMatrices.mvp", this.camera.getViewProj());
+			this.shader.setUniform("uMatrices.world", this.model);
+			this.shader.setUniform("uMatrices.wvp", this.camera.getViewProj());
 			this.shader.setUniform("uLight.point.attenuation", this.lightAtten);
 			this.shader.setUniform("uLight.point.base.intensity", this.lightIntensity);
 			this.shader.setUniform("uLight.point.base.color", this.lightColor);

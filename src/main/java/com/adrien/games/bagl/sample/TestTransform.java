@@ -65,8 +65,8 @@ public class TestTransform {
 		@Override
 		public void render() {			
 			this.shader.bind();
-			this.shader.setUniform("uMatrices.model", this.transform.getTransformMatrix());
-			this.shader.setUniform("uMatrices.mvp", Matrix4.mul(this.camera.getViewProj(), this.transform.getTransformMatrix()));
+			this.shader.setUniform("uMatrices.world", this.transform.getTransformMatrix());
+			this.shader.setUniform("uMatrices.wvp", Matrix4.mul(this.camera.getViewProj(), this.transform.getTransformMatrix()));
 			
 			this.mesh.getMaterial().getDiffuseTexture().bind();
 			this.mesh.getVertices().bind();

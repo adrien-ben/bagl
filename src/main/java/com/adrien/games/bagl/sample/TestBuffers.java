@@ -45,7 +45,7 @@ public final class TestBuffers {
 		@Override
 		public void render() {			
 			this.shader.bind();
-			this.shader.setUniform("uMatrices.mvp", this.camera.getViewProj());
+			this.shader.setUniform("uMatrices.wvp", this.camera.getViewProj());
 			
 			this.mesh.getMaterial().getDiffuseTexture().bind();
 			this.mesh.getVertices().bind();

@@ -1,8 +1,14 @@
 package com.adrien.games.bagl.sample;
 
-import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
+import static org.lwjgl.opengl.GL11.GL_DEPTH_TEST;
+import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
+import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
+import static org.lwjgl.opengl.GL11.glDrawElements;
+import static org.lwjgl.opengl.GL11.glEnable;
 
-import com.adrien.games.bagl.core.Camera;import com.adrien.games.bagl.core.Color;
+import com.adrien.games.bagl.core.Camera;
+import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.core.Engine;
 import com.adrien.games.bagl.core.Game;
 import com.adrien.games.bagl.core.Matrix4;
@@ -30,7 +36,10 @@ public class FrameBufferSample {
 		private final static Color GREENISH = new Color(178f/255, 226f/255, 120f/255);
 
 		private Mesh mesh;
-		private Matrix4 model;
+		private Matrix4 world;
+		private Matrix4 wvp;
+		private float rotation;
+		
 		private Shader normalShader;
 		private Shader colorShader;
 		private Shader depthShader;
@@ -51,6 +60,10 @@ public class FrameBufferSample {
 			this.depthBuffer = new FrameBuffer(WIDTH, HEIGHT);
 
 			this.mesh = MeshFactory.createBox(5, 5, 5);
+			
+			this.world = new Matrix4();
+			this.wvp = new Matrix4();
+			this.rotation = 0f;
 
 			this.normalShader = new Shader();
 			this.normalShader.addVertexShader("/model.vert");
@@ -67,10 +80,8 @@ public class FrameBufferSample {
 			this.depthShader.addFragmentShader("/depth.frag");
 			this.depthShader.compile();
 
-			this.camera = new Camera(new Vector3(-5, 3, 8), new Vector3(5, -3, -8), Vector3.UP, 
+			this.camera = new Camera(new Vector3(0, 3, 8), new Vector3(0, -3, -8), Vector3.UP, 
 					(float)Math.toRadians(70f), (float)WIDTH/(float)HEIGHT, 1, 1000);		
-
-			this.model = new Matrix4();
 			
 			this.spritebatch = new Spritebatch(1024, WIDTH, HEIGHT);
 			
@@ -80,6 +91,9 @@ public class FrameBufferSample {
 
 		@Override
 		public void update(Time time) {
+			this.rotation += 1/(2*Math.PI)*time.getElapsedTime();
+			this.world.setRotation(Vector3.UP, this.rotation);
+			Matrix4.mul(this.camera.getViewProj(), this.world, this.wvp);
 		}
 
 		@Override
@@ -107,8 +121,8 @@ public class FrameBufferSample {
 		
 		private void renderNormals() {
 			this.normalShader.bind();
-			this.normalShader.setUniform("uMatrices.model", this.model);
-			this.normalShader.setUniform("uMatrices.mvp", this.camera.getViewProj());
+			this.normalShader.setUniform("uMatrices.world", this.world);
+			this.normalShader.setUniform("uMatrices.wvp", this.wvp);
 			
 			this.normalBuffer.bind();
 			FrameBuffer.clear(GREENISH);
@@ -118,11 +132,10 @@ public class FrameBufferSample {
 
 		private void renderColors() {
 			this.colorShader.bind();
-			this.colorShader.setUniform("uMatrices.model", this.model);
-			this.colorShader.setUniform("uMatrices.mvp", this.camera.getViewProj());
+			this.colorShader.setUniform("uMatrices.world", this.world);
+			this.colorShader.setUniform("uMatrices.wvp", this.wvp);
 			this.colorShader.setUniform("uBaseLight.color", this.color);
 			this.colorShader.setUniform("uBaseLight.intensity", 1);
-			this.colorShader.setUniform("uMatrices.mvp", this.camera.getViewProj());
 			
 			this.colorBuffer.bind();
 			FrameBuffer.clear(BLUEISH);
@@ -132,7 +145,7 @@ public class FrameBufferSample {
 		
 		private void renderDepth() {
 			this.depthShader.bind();
-			this.depthShader.setUniform("uMatrices.viewProj", this.camera.getViewProj());
+			this.depthShader.setUniform("uMatrices.wvp", this.wvp);
 			
 			this.depthBuffer.bind();
 			FrameBuffer.clear();

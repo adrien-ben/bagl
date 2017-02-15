@@ -172,7 +172,7 @@ public class Shader {
 	 * @throws IllegalArgumentException if it does not exists.
 	 */
 	private int getLocation(String name) {
-		int location = uniformToLocationMap.get(name);
+		Integer location = uniformToLocationMap.get(name);
 		if(Objects.isNull(location)) {
 			throw new IllegalArgumentException("The uniform '" + name +"' does not exist for the current shader.");
 		}

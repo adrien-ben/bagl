@@ -53,8 +53,8 @@ public class NormalBufferSample {
 		@Override
 		public void render() {	
 			this.shader.bind();
-			this.shader.setUniform("uMatrices.model", this.model);
-			this.shader.setUniform("uMatrices.mvp", this.camera.getViewProj());
+			this.shader.setUniform("uMatrices.world", this.model);
+			this.shader.setUniform("uMatrices.wvp", this.camera.getViewProj());
 			
 			this.mesh.getMaterial().getDiffuseTexture().bind();
 			this.mesh.getVertices().bind();
