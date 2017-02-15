@@ -26,6 +26,8 @@ public final class Window {
 			throw new RuntimeException("Failed to create window");
 		}
 		
+		GLFW.glfwSetKeyCallback(this.windowHandle, Input::handleInput);
+		
 		GLFW.glfwMakeContextCurrent(this.windowHandle);
 		GL.createCapabilities();
 		GLFW.glfwShowWindow(this.windowHandle);
