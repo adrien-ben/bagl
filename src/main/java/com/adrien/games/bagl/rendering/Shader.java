@@ -137,6 +137,18 @@ public class Shader {
 		int location = this.getLocation(name);
 		GL20.glUniform1f(location, value);
 	}
+	
+	/**
+	 * Sets the value of a int uniform.
+	 * @param name The name of the uniform.
+	 * @param value The value of the uniform.
+	 * @author Adrien.
+	 */
+	public void setUniform(String name, int value) {
+		this.checkIsShaderBound();
+		int location = this.getLocation(name);
+		GL20.glUniform1i(location, value);
+	}
 
 	/**
 	 * Sets the value of a Matrix4 uniform.

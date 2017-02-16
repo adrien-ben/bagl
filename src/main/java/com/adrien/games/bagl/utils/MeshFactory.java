@@ -18,7 +18,7 @@ public final class MeshFactory {
 	private MeshFactory() {
 	}
 	
-	public static Mesh createRoom(int width , int height, int depth) {
+	public static Mesh createRoom(float width , float height, float depth) {
 		Texture texture = new Texture(new File(MeshFactory.class.getResource("/default.png").getFile()).getAbsolutePath());
 		float xOffset = 0.5f / texture.getWidth();
 		float yOffset = 0.5f / texture.getHeight();
@@ -46,7 +46,7 @@ public final class MeshFactory {
 		return new Mesh(vertexBuffer, indexBuffer, material);
 	}
 	
-	public static Mesh createPlane(int width, int depth) {
+	public static Mesh createPlane(float width, float depth) {
 		Texture texture = new Texture(new File(MeshFactory.class.getResource("/default.png").getFile()).getAbsolutePath());
 		float xOffset = 0.5f / texture.getWidth();
 		float yOffset = 0.5f / texture.getHeight();
@@ -66,7 +66,7 @@ public final class MeshFactory {
 		return new Mesh(vertexBuffer, indexBuffer, material);
 	}
 	
-	public static Mesh createBox(int width, int height, int depth) {
+	public static Mesh createBox(float width, float height, float depth) {
 		Texture texture = new Texture(new File(MeshFactory.class.getResource("/default.png").getFile()).getAbsolutePath());
 		float xOffset = 0.5f / texture.getWidth();
 		float yOffset = 0.5f / texture.getHeight();

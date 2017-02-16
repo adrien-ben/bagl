@@ -19,10 +19,10 @@ import com.adrien.games.bagl.core.Color;
 public class FrameBuffer {
 
 	private final int handle;
-	private final int depthBufferHandle;
 	private final int width;
 	private final int height; 
 	private final Texture[] colorOutputs;
+	private final Texture depthTexture;
 	
 	/**
 	 * Creates a new {@link FrameBuffer}.
@@ -42,9 +42,9 @@ public class FrameBuffer {
 	public FrameBuffer(int width, int height, int colorOutputs) {
 		this.width = width;
 		this.height = height;
-		this.depthBufferHandle = this.createDepthBuffer(this.width, this.height);
 		this.colorOutputs = this.createColorOutputs(colorOutputs, this.width, this.height);
-		this.handle = this.createBuffer(this.colorOutputs, this.depthBufferHandle);
+		this.depthTexture = new Texture(this.width, this.height, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT);
+		this.handle = this.createBuffer(this.colorOutputs, this.depthTexture);
 	}
 	
 	/**
@@ -69,13 +69,13 @@ public class FrameBuffer {
 	 * @param depthBufferHandle The handle of the OpenGL render buffer.
 	 * @return The handle of the OpengGL frame buffer.
 	 */
-	private int createBuffer(Texture[] textures, int depthBufferHandle) {
+	private int createBuffer(Texture[] textures, Texture depth) {
 		int bufferHandle = glGenFramebuffers();
 		glBindFramebuffer(GL_FRAMEBUFFER, bufferHandle);
 		for(int i = 0; i < textures.length; i++) {			
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, textures[i].getHandle(), 0);
 		}
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBufferHandle);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth.getHandle(), 0);
 		glDrawBuffers(this.generateBuffersToDraw(textures.length));
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		return bufferHandle;
@@ -92,21 +92,6 @@ public class FrameBuffer {
 			buffers[i] = GL_COLOR_ATTACHMENT0 + i;
 		}
 		return buffers;
-	}
-	
-	/**
-	 * Generates an OpenGL render buffer which will be used as
-	 * the depth buffer of the frame buffer.
-	 * @param width The width of the depth buffer.
-	 * @param height The height of the depth buffer.
-	 * @return The handle of the OpenGL render buffer.
-	 */
-	private int createDepthBuffer(int width, int height) {
-		int bufferHandle = glGenRenderbuffers();
-		glBindRenderbuffer(GL_RENDERBUFFER, bufferHandle);
-		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32F, width, height);
-		glBindRenderbuffer(GL_RENDERBUFFER, 0);
-		return bufferHandle;
 	}
 	
 	/**
@@ -143,23 +128,11 @@ public class FrameBuffer {
 	 * Releases resources.
 	 */
 	public void destroy() {
-		for(Texture t : colorOutputs) {
+		for(Texture t : this.colorOutputs) {
 			t.destroy();
 		}
-		glDeleteRenderbuffers(this.depthBufferHandle);
+		this.depthTexture.destroy();
 		glDeleteFramebuffers(this.handle);
-	}
-	
-	public int getHandle() {
-		return handle;
-	}
-
-	public int getWidth() {
-		return width;
-	}
-
-	public int getHeight() {
-		return height;
 	}
 
 	public Texture getColorTexture() {
@@ -167,7 +140,23 @@ public class FrameBuffer {
 	}
 	
 	public Texture getColorTexture(int index) {
-		return colorOutputs[index];
+		return this.colorOutputs[index];
+	}
+	
+	public int getHandle() {
+		return this.handle;
+	}
+
+	public int getWidth() {
+		return this.width;
+	}
+
+	public int getHeight() {
+		return this.height;
+	}
+	
+	public Texture getDepthTexture() {
+		return this.depthTexture;
 	}
 	
 }
