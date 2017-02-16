@@ -9,10 +9,8 @@ uniform sampler2D colors;
 uniform sampler2D normals;
 uniform sampler2D depth;
 
-vec4 screenSpaceFromDepth(float depth, vec2 texCoords) {
-	float x = texCoords.x*2 - 1;
-	float y = texCoords.y*2 - 1;
-	return vec4(x, y, depth, 0);
+vec4 screenSpaceFromDepth(float depthValue, vec2 texCoords) {
+	return vec4(texCoords*2 - 1, depthValue, 1);
 }
 
 void main() {
@@ -22,9 +20,8 @@ void main() {
 	} else {
 		vec3 normal = texture2D(normals, passCoords).xyz*2 - 1;
 		vec4 color = texture2D(colors, passCoords);
-		float depth = texture2D(depth, passCoords).r;
-		
-		vec4 ssPosition = screenSpaceFromDepth(depth, passCoords);
+		float depthValue = texture2D(depth, passCoords).r*2 - 1;
+		vec4 ssPosition = screenSpaceFromDepth(depthValue, passCoords);
 		vec4 position = inverse(viewProj)*ssPosition;
 		finalColor = vec4(position.xyz/position.w, 1);
 	} 
