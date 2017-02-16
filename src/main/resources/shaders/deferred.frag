@@ -16,11 +16,17 @@ vec4 screenSpaceFromDepth(float depth, vec2 texCoords) {
 }
 
 void main() {
-	vec3 normal = texture2D(normals, passCoords).xyz*2 - 1;
-	vec4 color = texture2D(colors, passCoords);
-	float depth = texture2D(depth, passCoords).r;
-	
-	vec4 ssPosition = screenSpaceFromDepth(depth, passCoords);
-	vec4 position = inverse(viewProj)*ssPosition;
-	finalColor = vec4(depth, depth, depth, 1);
+	vec3 normal = texture2D(normals, passCoords).xyz;
+	if(normal.x == 0 && normal.y == 0 && normal.z == 0) {
+		finalColor = vec4(0, 0, 0, 1);
+	} else {
+		vec3 normal = texture2D(normals, passCoords).xyz*2 - 1;
+		vec4 color = texture2D(colors, passCoords);
+		float depth = texture2D(depth, passCoords).r;
+		
+		vec4 ssPosition = screenSpaceFromDepth(depth, passCoords);
+		vec4 position = inverse(viewProj)*ssPosition;
+		finalColor = vec4(position.xyz/position.w, 1);
+	} 
+
 }
