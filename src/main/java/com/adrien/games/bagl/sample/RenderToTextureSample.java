@@ -24,61 +24,44 @@ import com.adrien.games.bagl.rendering.Texture;
 import com.adrien.games.bagl.rendering.VertexBuffer;
 import com.adrien.games.bagl.utils.MeshFactory;
 
-public class FrameBufferSample {
+public class RenderToTextureSample {
 
 	private final static class TestGame implements Game {
 		
-		public final static String TITLE = "FrameBuffer";
-		public final static int WIDTH = 512;
-		public final static int HEIGHT = WIDTH * 9 / 16;
+		private static final String TITLE = "RTT";
+		private static final int WIDTH = 512;
+		private static final int HEIGHT = WIDTH * 9 / 16;
+		private static final int PADDING_H = (int)(HEIGHT*0.2);
+		private static final int PADDING_V = (int)(WIDTH*0.2);
 		
 		private final static Color BLUEISH = new Color(100f/255, 149f/255, 237f/255);
-		private final static Color GREENISH = new Color(178f/255, 226f/255, 120f/255);
 
 		private Mesh mesh;
 		private Matrix4 world;
 		private Matrix4 wvp;
 		private float rotation;
 		
-		private Shader normalShader;
-		private Shader colorShader;
-		private Shader depthShader;
-		private Camera camera;
-
+		private Shader shader;
 		private Vector3 color = new Vector3(1, 1, 1);
-		
+
+		private Camera camera;		
 		private Spritebatch spritebatch;
-		
-		private FrameBuffer normalBuffer;
-		private FrameBuffer colorBuffer;
-		private FrameBuffer depthBuffer;
+		private FrameBuffer frameBuffer;
 		
 		@Override
 		public void init() {
-			this.normalBuffer = new FrameBuffer(WIDTH, HEIGHT);
-			this.colorBuffer = new FrameBuffer(WIDTH, HEIGHT);
-			this.depthBuffer = new FrameBuffer(WIDTH, HEIGHT);
+			this.frameBuffer = new FrameBuffer(WIDTH, HEIGHT);
 
 			this.mesh = MeshFactory.createBox(5, 5, 5);
 			
 			this.world = new Matrix4();
 			this.wvp = new Matrix4();
 			this.rotation = 0f;
-
-			this.normalShader = new Shader();
-			this.normalShader.addVertexShader("/model.vert");
-			this.normalShader.addFragmentShader("/normal.frag");
-			this.normalShader.compile();
 			
-			this.colorShader = new Shader();
-			this.colorShader.addVertexShader("/model.vert");
-			this.colorShader.addFragmentShader("/ambient.frag");
-			this.colorShader.compile();
-			
-			this.depthShader = new Shader();
-			this.depthShader.addVertexShader("/depth.vert");
-			this.depthShader.addFragmentShader("/depth.frag");
-			this.depthShader.compile();
+			this.shader = new Shader();
+			this.shader.addVertexShader("/model.vert");
+			this.shader.addFragmentShader("/ambient.frag");
+			this.shader.compile();
 
 			this.camera = new Camera(new Vector3(0, 3, 8), new Vector3(0, -3, -8), Vector3.UP, 
 					(float)Math.toRadians(70f), (float)WIDTH/(float)HEIGHT, 1, 1000);		
@@ -103,61 +86,38 @@ public class FrameBufferSample {
 			this.mesh.getVertices().bind();
 			this.mesh.getIndices().bind();
 
-			this.renderNormals();
 			this.renderColors();
-			this.renderDepth();
 			
 			IndexBuffer.unbind();
 			VertexBuffer.unbind();
 			Texture.unbind();
-			Shader.unbind();
-		
-			this.spritebatch.start();
-			this.spritebatch.draw(this.colorBuffer.getColorTexture(), Vector2.ZERO);
-			this.spritebatch.draw(this.depthBuffer.getColorTexture(), Vector2.ZERO, WIDTH/3, HEIGHT/3);
-			this.spritebatch.draw(this.normalBuffer.getColorTexture(), new Vector2(0, HEIGHT/3), WIDTH/3, HEIGHT/3);
-			this.spritebatch.end();
-		}
-		
-		private void renderNormals() {
-			this.normalShader.bind();
-			this.normalShader.setUniform("uMatrices.world", this.world);
-			this.normalShader.setUniform("uMatrices.wvp", this.wvp);
 			
-			this.normalBuffer.bind();
-			FrameBuffer.clear(GREENISH);
-			glDrawElements(GL_TRIANGLES, this.mesh.getIndices().getSize(), GL_UNSIGNED_INT, 0);
-			FrameBuffer.unbind();
+			this.spritebatch.start();
+			this.spritebatch.draw(this.frameBuffer.getColorTexture(), new Vector2(PADDING_V, PADDING_H), WIDTH - 2*PADDING_V, 
+					HEIGHT - 2*PADDING_H);
+			this.spritebatch.end();
 		}
 
 		private void renderColors() {
-			this.colorShader.bind();
-			this.colorShader.setUniform("uMatrices.world", this.world);
-			this.colorShader.setUniform("uMatrices.wvp", this.wvp);
-			this.colorShader.setUniform("uBaseLight.color", this.color);
-			this.colorShader.setUniform("uBaseLight.intensity", 1);
+			this.shader.bind();
+			this.shader.setUniform("uMatrices.world", this.world);
+			this.shader.setUniform("uMatrices.wvp", this.wvp);
+			this.shader.setUniform("uBaseLight.color", this.color);
+			this.shader.setUniform("uBaseLight.intensity", 1);
+			this.frameBuffer.bind();
 			
-			this.colorBuffer.bind();
 			FrameBuffer.clear(BLUEISH);
-			glDrawElements(GL_TRIANGLES, this.mesh.getIndices().getSize(), GL_UNSIGNED_INT, 0);			
-			FrameBuffer.unbind();
-		}
-		
-		private void renderDepth() {
-			this.depthShader.bind();
-			this.depthShader.setUniform("uMatrices.wvp", this.wvp);
+			glDrawElements(GL_TRIANGLES, this.mesh.getIndices().getSize(), GL_UNSIGNED_INT, 0);
 			
-			this.depthBuffer.bind();
-			FrameBuffer.clear();
-			glDrawElements(GL_TRIANGLES, this.mesh.getIndices().getSize(), GL_UNSIGNED_INT, 0);			
 			FrameBuffer.unbind();
+			Shader.unbind();
 		}
 		
 		@Override
 		public void destroy() {
-			this.normalShader.destroy();
+			this.shader.destroy();
 			this.mesh.destroy();
-			this.normalBuffer.destroy();
+			this.frameBuffer.destroy();
 		}
 
 	}
