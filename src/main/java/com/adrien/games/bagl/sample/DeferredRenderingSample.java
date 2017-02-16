@@ -49,7 +49,7 @@ public class DeferredRenderingSample {
 		@Override
 		public void init() {
 
-			this.gbuffer = new FrameBuffer(WIDTH, HEIGHT, 3);
+			this.gbuffer = new FrameBuffer(WIDTH, HEIGHT, 2);
 			
 			this.mesh = MeshFactory.createBox(1, 1, 1);
 			this.world = new Matrix4();
@@ -109,8 +109,6 @@ public class DeferredRenderingSample {
 			this.spritebatch.draw(this.gbuffer.getColorTexture(0), Vector2.ZERO, WIDTH/3, HEIGHT/3);
 			this.spritebatch.draw(this.gbuffer.getColorTexture(1), new Vector2(0, HEIGHT/3), WIDTH/3, HEIGHT/3);
 			this.spritebatch.draw(this.gbuffer.getDepthTexture(), new Vector2(0, 2*HEIGHT/3), WIDTH/3, HEIGHT/3);
-			this.spritebatch.draw(this.gbuffer.getColorTexture(2), new Vector2(2*WIDTH/3, 2*HEIGHT/3), 
-					WIDTH/3, HEIGHT/3);
 			this.spritebatch.end();
 		}
 

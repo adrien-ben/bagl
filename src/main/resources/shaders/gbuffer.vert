@@ -11,13 +11,11 @@ layout (location = 2) in vec2 vCoords;
 
 out vec2 passCoords;
 out vec3 passNormal;
-out vec4 passPosition;
 
 uniform Matrices uMatrices;
 
 void main() {
 	passCoords = vCoords;
 	passNormal = (uMatrices.world*vec4(vNormal, 0)).xyz;
-	passPosition = uMatrices.world*vPosition;
 	gl_Position = uMatrices.wvp*vPosition;
 }
