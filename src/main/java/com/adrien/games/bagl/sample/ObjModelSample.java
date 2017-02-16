@@ -20,11 +20,11 @@ import com.adrien.games.bagl.rendering.VertexBuffer;
 
 public class ObjModelSample {
 
-	private final static class TestGame implements Game {
+	private static final class TestGame implements Game {
 				
-		public final static String TITLE = "ObjModel";
-		public final static int WIDTH = 512;
-		public final static int HEIGHT = WIDTH * 9 / 16;
+		private static final String TITLE = "ObjModel";
+		private static final int WIDTH = 512;
+		private static final int HEIGHT = WIDTH * 9 / 16;
 		
 		private ModelParser parser = new ObjParser();
 		private Mesh mesh;

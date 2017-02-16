@@ -20,11 +20,11 @@ import com.adrien.games.bagl.utils.MeshFactory;
 
 public class MultipleRenderTargetSample {
 
-	private final static class TestGame implements Game {
+	private static final class TestGame implements Game {
 				
-		public static final String TITLE = "MRT";
-		public static final int WIDTH = 512;
-		public static final int HEIGHT = WIDTH * 9 / 16;
+		private static final String TITLE = "MRT";
+		private static final int WIDTH = 512;
+		private static final int HEIGHT = WIDTH * 9 / 16;
 		
 		private FrameBuffer mrt;
 		

@@ -17,11 +17,11 @@ import com.adrien.games.bagl.utils.MeshFactory;
 
 public final class TestForwardRendering {
 	
-	private final static class TestGame implements Game	{
+	private static final class TestGame implements Game	{
 		
-		public final static String TITLE = "Forward Rendering";
-		public final static int WIDTH = 512;
-		public final static int HEIGHT = WIDTH * 9 / 16;
+		private static final String TITLE = "Forward Rendering";
+		private static final int WIDTH = 512;
+		private static final int HEIGHT = WIDTH * 9 / 16;
 		
 		//mesh
 		private Mesh mesh;

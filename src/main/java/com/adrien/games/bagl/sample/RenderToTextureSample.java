@@ -26,7 +26,7 @@ import com.adrien.games.bagl.utils.MeshFactory;
 
 public class RenderToTextureSample {
 
-	private final static class TestGame implements Game {
+	private static final class TestGame implements Game {
 		
 		private static final String TITLE = "RTT";
 		private static final int WIDTH = 512;

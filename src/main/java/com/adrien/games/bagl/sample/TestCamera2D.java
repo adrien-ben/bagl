@@ -23,11 +23,11 @@ import com.adrien.games.bagl.rendering.VertexPositionTexture;
  */
 public class TestCamera2D {
 
-	private final static class TestGame implements Game {
+	private static final class TestGame implements Game {
 
-		public final static String TITLE = "Camera2D";
-		public final static int WIDTH = 640;
-		public final static int HEIGHT = WIDTH * 9 / 16;
+		private static final String TITLE = "Camera2D";
+		private static final int WIDTH = 512;
+		private static final int HEIGHT = WIDTH * 9 / 16;
 		
 		private VertexBuffer vertexBuffer;
 		private IndexBuffer indexBuffer;

@@ -17,11 +17,11 @@ import com.adrien.games.bagl.utils.MeshFactory;
 
 public class NormalBufferSample {
 
-	private final static class TestGame implements Game {
+	private static final class TestGame implements Game {
 		
-		public final static String TITLE = "Normal buffer";
-		public final static int WIDTH = 512;
-		public final static int HEIGHT = WIDTH * 9 / 16;
+		private static final String TITLE = "Normal buffer";
+		private static final int WIDTH = 512;
+		private static final int HEIGHT = WIDTH * 9 / 16;
 
 		private Mesh mesh;
 		private Matrix4 model;

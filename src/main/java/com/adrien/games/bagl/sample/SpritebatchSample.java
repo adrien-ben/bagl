@@ -15,13 +15,12 @@ import com.adrien.games.bagl.rendering.Texture;
 
 public class SpritebatchSample {
 
-	private final static class TestGame implements Game {
+	private static final class TestGame implements Game {
 		
-		public final static String TITLE = "Spritebatch";
-		public final static int WIDTH = 512;
-		public final static int HEIGHT = WIDTH * 9 / 16;
-		
-		public final static int SPRITE_COUNT = 1000;
+		private static final String TITLE = "Spritebatch";
+		private static final int WIDTH = 512;
+		private static final int HEIGHT = WIDTH * 9 / 16;
+		private static final int SPRITE_COUNT = 1000;
 
 		private Texture texture;
 		private Spritebatch spritebatch;
