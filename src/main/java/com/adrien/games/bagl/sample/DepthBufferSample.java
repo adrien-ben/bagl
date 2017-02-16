@@ -18,7 +18,7 @@ public class DepthBufferSample {
 
 	private static final class TestGame implements Game {
 		
-		private static final String TITLE = "Depth buffer";
+		private static final String TITLE = "Depth Buffer";
 		private static final int WIDTH = 512;
 		private static final int HEIGHT = WIDTH * 9 / 16;
 
