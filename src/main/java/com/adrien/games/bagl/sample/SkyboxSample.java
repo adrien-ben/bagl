@@ -54,23 +54,23 @@ public class SkyboxSample {
 			this.shader.addFragmentShader("skybox.frag");
 			this.shader.compile();
 			
-			this.camera = new Camera(Vector3.ZERO, new Vector3(1, 0.5f, 1), Vector3.UP, (float)Math.toRadians(60), 
+			this.camera = new Camera(Vector3.ZERO, new Vector3(1, -0.5f, 1), Vector3.UP, (float)Math.toRadians(60), 
 					(float)WIDTH/HEIGHT, 1, 100);
 			
 			this.cubemap = glGenTextures();
 			glBindTexture(GL_TEXTURE_CUBE_MAP, this.cubemap);
 			
-			loadImageBuffer(new File(MeshFactory.class.getResource("/skybox/left.png").getFile())
+			this.loadImageBuffer(new File(MeshFactory.class.getResource("/skybox/left.png").getFile())
 					.getAbsolutePath(), GL_TEXTURE_CUBE_MAP_NEGATIVE_X);
-			loadImageBuffer(new File(MeshFactory.class.getResource("/skybox/right.png").getFile())
+			this.loadImageBuffer(new File(MeshFactory.class.getResource("/skybox/right.png").getFile())
 					.getAbsolutePath(), GL_TEXTURE_CUBE_MAP_POSITIVE_X);
-			loadImageBuffer(new File(MeshFactory.class.getResource("/skybox/top.png").getFile())
+			this.loadImageBuffer(new File(MeshFactory.class.getResource("/skybox/bottom.png").getFile())
 					.getAbsolutePath(), GL_TEXTURE_CUBE_MAP_NEGATIVE_Y);
-			loadImageBuffer(new File(MeshFactory.class.getResource("/skybox/bottom.png").getFile())
+			this.loadImageBuffer(new File(MeshFactory.class.getResource("/skybox/top.png").getFile())
 					.getAbsolutePath(), GL_TEXTURE_CUBE_MAP_POSITIVE_Y);
-			loadImageBuffer(new File(MeshFactory.class.getResource("/skybox/front.png").getFile())
+			this.loadImageBuffer(new File(MeshFactory.class.getResource("/skybox/back.png").getFile())
 					.getAbsolutePath(), GL_TEXTURE_CUBE_MAP_NEGATIVE_Z);
-			loadImageBuffer(new File(MeshFactory.class.getResource("/skybox/back.png").getFile())
+			this.loadImageBuffer(new File(MeshFactory.class.getResource("/skybox/front.png").getFile())
 					.getAbsolutePath(), GL_TEXTURE_CUBE_MAP_POSITIVE_Z);
 			
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -118,12 +118,11 @@ public class SkyboxSample {
 				ByteBuffer byteBuffer = BufferUtils.createByteBuffer(width*height*3);
 				decoder.decodeFlipped(byteBuffer, width*3, Format.RGB);
 				byteBuffer.flip();
-				glTexImage2D(target, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, byteBuffer);
+				glTexImage2D(target, 0, GL_RGB8, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, byteBuffer);
 			} catch (IOException e) {
 				throw new RuntimeException("Failed to load texture '" + path + "'.", e);
 			}
 		}
-		
 		
 		@Override
 		public void update(Time time) {
