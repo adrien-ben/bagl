@@ -122,4 +122,5 @@ public final class MeshFactory {
 		Material material = new Material(texture, 12, 1);
 		return new Mesh(vertexBuffer, indexBuffer, material);
 	}
+	
 }
