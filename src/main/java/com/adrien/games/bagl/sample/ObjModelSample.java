@@ -15,8 +15,8 @@ import com.adrien.games.bagl.parser.model.ObjParser;
 import com.adrien.games.bagl.rendering.IndexBuffer;
 import com.adrien.games.bagl.rendering.Mesh;
 import com.adrien.games.bagl.rendering.Shader;
-import com.adrien.games.bagl.rendering.Texture;
 import com.adrien.games.bagl.rendering.VertexBuffer;
+import com.adrien.games.bagl.rendering.texture.Texture;
 
 public class ObjModelSample {
 

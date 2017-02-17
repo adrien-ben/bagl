@@ -1,4 +1,4 @@
-package com.adrien.games.bagl.rendering;
+package com.adrien.games.bagl.rendering.texture;
 
 import java.io.IOException;
 import java.io.InputStream;

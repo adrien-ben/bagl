@@ -1,4 +1,4 @@
-package com.adrien.games.bagl.rendering;
+package com.adrien.games.bagl.rendering.texture;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.*;

@@ -10,11 +10,11 @@ import com.adrien.games.bagl.core.Game;
 import com.adrien.games.bagl.core.Matrix4;
 import com.adrien.games.bagl.core.Time;
 import com.adrien.games.bagl.core.Vector3;
-import com.adrien.games.bagl.rendering.Cubemap;
 import com.adrien.games.bagl.rendering.IndexBuffer;
 import com.adrien.games.bagl.rendering.Shader;
 import com.adrien.games.bagl.rendering.Skybox;
 import com.adrien.games.bagl.rendering.VertexBuffer;
+import com.adrien.games.bagl.rendering.texture.Cubemap;
 
 public class SkyboxSample {
 

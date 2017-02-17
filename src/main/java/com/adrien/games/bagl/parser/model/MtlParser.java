@@ -13,7 +13,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.adrien.games.bagl.rendering.Material;
-import com.adrien.games.bagl.rendering.Texture;
+import com.adrien.games.bagl.rendering.texture.Texture;
 
 /**
  * Super basic Wavefronts's mtl files parser.

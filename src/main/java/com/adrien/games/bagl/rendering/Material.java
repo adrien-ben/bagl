@@ -2,6 +2,8 @@ package com.adrien.games.bagl.rendering;
 
 import java.util.Objects;
 
+import com.adrien.games.bagl.rendering.texture.Texture;
+
 public class Material {
 	
 	private Texture diffuse;

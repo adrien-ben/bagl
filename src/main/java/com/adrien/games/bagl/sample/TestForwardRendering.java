@@ -11,8 +11,8 @@ import com.adrien.games.bagl.core.Vector3;
 import com.adrien.games.bagl.rendering.IndexBuffer;
 import com.adrien.games.bagl.rendering.Mesh;
 import com.adrien.games.bagl.rendering.Shader;
-import com.adrien.games.bagl.rendering.Texture;
 import com.adrien.games.bagl.rendering.VertexBuffer;
+import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.utils.MeshFactory;
 
 public final class TestForwardRendering {

@@ -11,7 +11,7 @@ import com.adrien.games.bagl.core.Game;
 import com.adrien.games.bagl.core.Time;
 import com.adrien.games.bagl.core.Vector2;
 import com.adrien.games.bagl.rendering.Spritebatch;
-import com.adrien.games.bagl.rendering.Texture;
+import com.adrien.games.bagl.rendering.texture.Texture;
 
 public class SpritebatchSample {
 
