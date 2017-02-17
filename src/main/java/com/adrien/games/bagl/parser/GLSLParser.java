@@ -2,10 +2,15 @@ package com.adrien.games.bagl.parser;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.StringTokenizer;
+import java.util.StringTokenizer;import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class GLSLParser {
 
+	private static final Pattern ARRAY_PATTERN = Pattern.compile("^.+\\[\\d+\\]$");
+	private static final Pattern ARRAY_SIZE_PATTERN = Pattern.compile("^.+\\[(\\d+)?\\]$");
+	private static final Pattern ARRAY_NAME_PATTERN = Pattern.compile("^(.+)?\\[\\d+\\]$");
+	
 	private String version;
 	private HashMap<String, GLSLStructure> structures;
 	private ArrayList<GLSLAttribute> inAttributes;
@@ -85,18 +90,47 @@ public class GLSLParser {
 
 	private ArrayList<String> generateUniformsFormStructure(String uniformName, GLSLStructure structure) {
 		ArrayList<String> structUniforms = new ArrayList<String>();
-		for(GLSLAttribute attribute : structure.getAttributes()) {
-			GLSLStructure struct = structures.get(attribute.getType());
-			if(struct == null) {
-				structUniforms.add(uniformName + "." + attribute.getName());
-			} else { //nested structure
-				ArrayList<String> nestedUniforms = generateUniformsFormStructure(attribute.getName(), struct);
-				for(String nestedUniform : nestedUniforms) {
-					structUniforms.add(uniformName + "." + nestedUniform);
+		
+		boolean isArray = this.isArray(uniformName);
+		int size = isArray ? this.getArraySize(uniformName) : 1;
+		if(isArray) {			
+			uniformName = this.getArrayName(uniformName);
+		}
+		
+		for(int i = 0; i < size; i++) {
+			String finalUniformName = uniformName;
+			if(isArray) {
+				finalUniformName += "[" + i + "]";
+			}
+			for(GLSLAttribute attribute : structure.getAttributes()) {
+				GLSLStructure struct = structures.get(attribute.getType());
+				if(struct == null) {
+					structUniforms.add(finalUniformName + "." + attribute.getName());
+				} else { //nested structure
+					ArrayList<String> nestedUniforms = generateUniformsFormStructure(attribute.getName(), struct);
+					for(String nestedUniform : nestedUniforms) {
+						structUniforms.add(finalUniformName + "." + nestedUniform);
+					}
 				}
 			}
 		}
 		return structUniforms;
+	}
+
+	private boolean isArray(String uniformName) {
+		return ARRAY_PATTERN.matcher(uniformName).matches();
+	}
+	
+	private int getArraySize(String uniformName) {
+		Matcher matcher = ARRAY_SIZE_PATTERN.matcher(uniformName);
+		matcher.matches();
+		return Integer.parseInt(matcher.group(1));
+	}
+	
+	private String getArrayName(String uniformName) {
+		Matcher matcher = ARRAY_NAME_PATTERN.matcher(uniformName);
+		matcher.matches();
+		return matcher.group(1);
 	}
 
 	@Override
