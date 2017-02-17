@@ -13,9 +13,8 @@ import com.adrien.games.bagl.core.Vector3;
 import com.adrien.games.bagl.rendering.Cubemap;
 import com.adrien.games.bagl.rendering.IndexBuffer;
 import com.adrien.games.bagl.rendering.Shader;
+import com.adrien.games.bagl.rendering.Skybox;
 import com.adrien.games.bagl.rendering.VertexBuffer;
-import com.adrien.games.bagl.rendering.vertex.Vertex;
-import com.adrien.games.bagl.rendering.vertex.VertexPosition;
 
 public class SkyboxSample {
 
@@ -25,19 +24,14 @@ public class SkyboxSample {
 		private static final int WIDTH = 512;
 		private static final int HEIGHT = WIDTH * 9 / 16;
 		
-		private VertexBuffer vertexBuffer;
-		private IndexBuffer indexBuffer;
-		
+		private Skybox skybox;
 		private Shader shader;
 		private Camera camera;
-		private Cubemap cubemap;
 		
 		private Matrix4 transform;
 		
 		@Override
 		public void init() {
-
-			this.initMesh();
 			
 			this.shader = new Shader();
 			this.shader.addVertexShader("skybox.vert");
@@ -47,7 +41,7 @@ public class SkyboxSample {
 			this.camera = new Camera(new Vector3(1000, 0, 0), Vector3.FORWARD, Vector3.UP, (float)Math.toRadians(60), 
 					(float)WIDTH/HEIGHT, 1, 100);
 			
-			this.cubemap = new Cubemap(this.getResourcePath("/skybox/left.png"),
+			this.skybox = new Skybox(this.getResourcePath("/skybox/left.png"),
 					this.getResourcePath("/skybox/right.png"),
 					this.getResourcePath("/skybox/bottom.png"),
 					this.getResourcePath("/skybox/top.png"),
@@ -64,31 +58,6 @@ public class SkyboxSample {
 			return new File(TestGame.class.getResource(resource).getFile()).getAbsolutePath();
 		}
 		
-		private void initMesh() {
-			Vertex[] vertices = new VertexPosition[] {
-				new VertexPosition(new Vector3(-2f, -2f, 2f)),
-				new VertexPosition(new Vector3(2f, -2f, 2f)),
-				new VertexPosition(new Vector3(-2f, 2f, 2f)),
-				new VertexPosition(new Vector3(2f, 2f, 2f)),
-				new VertexPosition(new Vector3(-2f, -2f, -2f)),
-				new VertexPosition(new Vector3(2f, -2f, -2f)),
-				new VertexPosition(new Vector3(-2f, 2f, -2f)),
-				new VertexPosition(new Vector3(2f, 2f, -2f))
-			};
-			
-			int[] indices = new int[] {
-				1, 0, 3, 3, 0, 2,
-				5, 1, 7, 7, 1, 3,
-				4, 5, 6, 6, 5, 7,
-				0, 4, 2, 2, 4, 6,
-				6, 7, 2, 2, 7, 3,
-				0, 1, 4, 4, 1, 5
-			};
-			
-			this.vertexBuffer = new VertexBuffer(VertexPosition.DESCRIPTION, vertices);
-			this.indexBuffer = new IndexBuffer(indices);
-		}
-		
 		@Override
 		public void update(Time time) {
 			Matrix4.mul(this.camera.getViewProj(), Matrix4.createRotation(Vector3.UP, 
@@ -99,13 +68,13 @@ public class SkyboxSample {
 		@Override
 		public void render() {
 			
-			this.vertexBuffer.bind();
-			this.indexBuffer.bind();
-			this.cubemap.bind();
+			this.skybox.getVertexBuffer().bind();
+			this.skybox.getIndexBuffer().bind();
+			this.skybox.getCubemap().bind();
 			this.shader.bind();
 			this.shader.setUniform("viewProj", transform);
 
-			glDrawElements(GL_TRIANGLES, this.indexBuffer.getSize(), GL_UNSIGNED_INT, 0);
+			glDrawElements(GL_TRIANGLES, this.skybox.getIndexBuffer().getSize(), GL_UNSIGNED_INT, 0);
 			
 			Shader.unbind();
 			Cubemap.unbind();
@@ -116,8 +85,7 @@ public class SkyboxSample {
 		@Override
 		public void destroy() {
 			this.shader.destroy();
-			this.vertexBuffer.destroy();
-			this.indexBuffer.destroy();
+			this.skybox.destroy();
 		}
 
 	}
