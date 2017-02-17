@@ -15,7 +15,7 @@ import org.lwjgl.stb.STBImage;
  * OpenGL cube map.
  *
  */
-public class CubeMap {
+public class Cubemap {
 
 	private int handle;
 	
@@ -28,7 +28,7 @@ public class CubeMap {
 	 * @param back The path to the file containing the back face.
 	 * @param front The path to the file containing the front face.
 	 */
-	public CubeMap(String left, String right, String bottom, String top, String back, String front) {
+	public Cubemap(String left, String right, String bottom, String top, String back, String front) {
 		this.handle = glGenTextures();
 		glBindTexture(GL_TEXTURE_CUBE_MAP, this.handle);
         

@@ -10,7 +10,7 @@ import com.adrien.games.bagl.core.Game;
 import com.adrien.games.bagl.core.Matrix4;
 import com.adrien.games.bagl.core.Time;
 import com.adrien.games.bagl.core.Vector3;
-import com.adrien.games.bagl.rendering.CubeMap;
+import com.adrien.games.bagl.rendering.Cubemap;
 import com.adrien.games.bagl.rendering.IndexBuffer;
 import com.adrien.games.bagl.rendering.Shader;
 import com.adrien.games.bagl.rendering.VertexBuffer;
@@ -30,7 +30,7 @@ public class SkyboxSample {
 		
 		private Shader shader;
 		private Camera camera;
-		private CubeMap cubemap;
+		private Cubemap cubemap;
 		
 		private Matrix4 transform;
 		
@@ -47,7 +47,7 @@ public class SkyboxSample {
 			this.camera = new Camera(new Vector3(1000, 0, 0), Vector3.FORWARD, Vector3.UP, (float)Math.toRadians(60), 
 					(float)WIDTH/HEIGHT, 1, 100);
 			
-			this.cubemap = new CubeMap(this.getResourcePath("/skybox/left.png"),
+			this.cubemap = new Cubemap(this.getResourcePath("/skybox/left.png"),
 					this.getResourcePath("/skybox/right.png"),
 					this.getResourcePath("/skybox/bottom.png"),
 					this.getResourcePath("/skybox/top.png"),
@@ -108,7 +108,7 @@ public class SkyboxSample {
 			glDrawElements(GL_TRIANGLES, this.indexBuffer.getSize(), GL_UNSIGNED_INT, 0);
 			
 			Shader.unbind();
-			CubeMap.unbind();
+			Cubemap.unbind();
 			IndexBuffer.unbind();
 			VertexBuffer.unbind();
 		}
