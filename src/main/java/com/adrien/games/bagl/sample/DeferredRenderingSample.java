@@ -3,6 +3,7 @@ package com.adrien.games.bagl.sample;
 import static org.lwjgl.opengl.GL11.*;
 
 import com.adrien.games.bagl.core.Camera;
+import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.core.Engine;
 import com.adrien.games.bagl.core.Game;
 import com.adrien.games.bagl.core.Matrix4;
@@ -18,6 +19,8 @@ import com.adrien.games.bagl.rendering.Texture;
 import com.adrien.games.bagl.rendering.Vertex;
 import com.adrien.games.bagl.rendering.VertexBuffer;
 import com.adrien.games.bagl.rendering.VertexPositionTexture;
+import com.adrien.games.bagl.rendering.light.Light;
+import com.adrien.games.bagl.rendering.light.PointLight;
 import com.adrien.games.bagl.utils.MeshFactory;
 
 public class DeferredRenderingSample {
@@ -36,6 +39,9 @@ public class DeferredRenderingSample {
 		private Matrix4 world3;
 		private Matrix4 wvp;
 		private float rotation;
+		
+		private Light ambient;
+		private PointLight point;
 		
 		private VertexBuffer vertexBuffer;
 		private IndexBuffer indexBuffer;
@@ -56,6 +62,9 @@ public class DeferredRenderingSample {
 			this.world2 = Matrix4.createTranslation(new Vector3(-1, 0, -2));
 			this.world3 = Matrix4.createTranslation(new Vector3(1, 0, -3));
 			this.wvp = new Matrix4();
+			
+			this.ambient = new Light(0.1f);
+			this.point = new PointLight(0.2f, Color.RED, new Vector3(2f, 2, -0.5f), 3f);
 			
 			this.initQuad();
 
@@ -152,6 +161,12 @@ public class DeferredRenderingSample {
 			this.indexBuffer.bind();
 			this.deferredShader.bind();
 			this.deferredShader.setUniform("viewProj", this.camera.getViewProj());
+			this.deferredShader.setUniform("uAmbient.intensity", this.ambient.getIntensity());
+			this.deferredShader.setUniform("uAmbient.color", this.ambient.getColor());
+			this.deferredShader.setUniform("uPoints[0].base.intensity", this.point.getIntensity());
+			this.deferredShader.setUniform("uPoints[0].base.color", this.point.getColor());
+			this.deferredShader.setUniform("uPoints[0].position", this.point.getPosition());
+			this.deferredShader.setUniform("uPoints[0].radius", this.point.getRadius());
 			this.deferredShader.setUniform("colors", 0);
 			this.deferredShader.setUniform("normals", 1);
 			this.deferredShader.setUniform("depth", 2);

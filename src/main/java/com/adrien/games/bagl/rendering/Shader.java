@@ -12,6 +12,7 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 
+import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.core.Matrix4;
 import com.adrien.games.bagl.core.Vector3;
 import com.adrien.games.bagl.parser.GLSLParser;
@@ -175,6 +176,18 @@ public class Shader {
 		this.checkIsShaderBound();
 		int location = this.getLocation(name);
 		GL20.glUniform3f(location, vector.getX(), vector.getY(), vector.getZ());
+	}
+	
+	/**
+	 * Sets the value of a {@link Color} uniform.
+	 * @param name The name of the uniform.
+	 * @param color The value of the uniform.
+	 * @author Adrien.
+	 */
+	public void setUniform(String name, Color color) {
+		this.checkIsShaderBound();
+		int location = this.getLocation(name);
+		GL20.glUniform4f(location, color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
 	}
 
 	/**
