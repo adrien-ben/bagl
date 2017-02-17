@@ -6,7 +6,7 @@ out vec4 color;
 
 struct BaseLight
 {
-	vec3 color;
+	vec4 color;
 	float intensity;
 };
 
@@ -15,5 +15,5 @@ uniform sampler2D uTexture;
 
 void main()
 {
-	color = texture2D(uTexture, passCoords)*vec4(uBaseLight.color, 1.0)*uBaseLight.intensity;
+	color = texture2D(uTexture, passCoords)*vec4(uBaseLight.color.xyz, 1.0)*uBaseLight.intensity;
 }

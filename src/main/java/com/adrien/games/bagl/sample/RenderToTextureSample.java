@@ -42,7 +42,6 @@ public class RenderToTextureSample {
 		private float rotation;
 		
 		private Shader shader;
-		private Vector3 color = new Vector3(1, 1, 1);
 
 		private Camera camera;		
 		private Spritebatch spritebatch;
@@ -102,8 +101,8 @@ public class RenderToTextureSample {
 			this.shader.bind();
 			this.shader.setUniform("uMatrices.world", this.world);
 			this.shader.setUniform("uMatrices.wvp", this.wvp);
-			this.shader.setUniform("uBaseLight.color", this.color);
-			this.shader.setUniform("uBaseLight.intensity", 1);
+			this.shader.setUniform("uBaseLight.color", Color.WHITE);
+			this.shader.setUniform("uBaseLight.intensity", 1.f);
 			this.frameBuffer.bind();
 			
 			FrameBuffer.clear(BLUEISH);

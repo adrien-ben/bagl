@@ -3,6 +3,7 @@ package com.adrien.games.bagl.sample;
 import org.lwjgl.opengl.GL11;
 
 import com.adrien.games.bagl.core.Camera;
+import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.core.Engine;
 import com.adrien.games.bagl.core.Game;
 import com.adrien.games.bagl.core.Matrix4;
@@ -29,7 +30,6 @@ public final class TestLightAmbient {
 		private Camera camera;
 		
 		private float lightIntensity;
-		private Vector3 lightColor;
 		
 		@Override
 		public void init() {
@@ -46,7 +46,6 @@ public final class TestLightAmbient {
 			this.model = new Matrix4();
 			
 			this.lightIntensity = .3f;
-			this.lightColor = new Vector3(1.f, 1f, 1.f);
 			
 			GL11.glEnable(GL11.GL_CULL_FACE);
 			GL11.glEnable(GL11.GL_DEPTH_TEST);
@@ -62,7 +61,7 @@ public final class TestLightAmbient {
 			this.shader.setUniform("uMatrices.model", this.model);
 			this.shader.setUniform("uMatrices.mvp", this.camera.getViewProj());
 			this.shader.setUniform("uBaseLight.intensity", this.lightIntensity);
-			this.shader.setUniform("uBaseLight.color", this.lightColor);
+			this.shader.setUniform("uBaseLight.color", Color.WHITE);
 			
 			this.mesh.getMaterial().getDiffuseTexture().bind();
 			this.mesh.getVertices().bind();

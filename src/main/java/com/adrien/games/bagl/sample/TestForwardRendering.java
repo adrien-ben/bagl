@@ -3,6 +3,7 @@ package com.adrien.games.bagl.sample;
 import org.lwjgl.opengl.GL11;
 
 import com.adrien.games.bagl.core.Camera;
+import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.core.Engine;
 import com.adrien.games.bagl.core.Game;
 import com.adrien.games.bagl.core.Matrix4;
@@ -37,7 +38,6 @@ public final class TestForwardRendering {
 		private Shader spotShader;
 		
 		//ambient light
-		private Vector3 ambientColor;
 		private float ambientIntensity;
 		
 		//directional light 1
@@ -113,7 +113,6 @@ public final class TestForwardRendering {
 		
 		private void initLights() {
 			//ambient light
-			this.ambientColor = new Vector3(1.0f, 1.0f, 1.0f);
 			this.ambientIntensity = 0.1f;
 			
 			//directional light 1
@@ -156,7 +155,7 @@ public final class TestForwardRendering {
 			this.ambientShader.bind();
 			this.ambientShader.setUniform("uMatrices.model", this.transform);
 			this.ambientShader.setUniform("uMatrices.mvp", this.camera.getViewProj());
-			this.ambientShader.setUniform("uBaseLight.color", this.ambientColor);
+			this.ambientShader.setUniform("uBaseLight.color", Color.WHITE);
 			this.ambientShader.setUniform("uBaseLight.intensity", this.ambientIntensity);
 			
 			GL11.glDrawElements(GL11.GL_TRIANGLES, this.mesh.getIndices().getSize(), GL11.GL_UNSIGNED_INT, 0);
