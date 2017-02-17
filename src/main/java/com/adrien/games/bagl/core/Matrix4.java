@@ -214,6 +214,20 @@ public final class Matrix4 {
 		matrix[M41] = 0;					matrix[M42] = 0; 					matrix[M43] = 0; 					matrix[M44] = 1; 
 	}
 	
+	public Matrix4 removeTranslation() {
+		Matrix4 result = new Matrix4();
+		this.removeTranslation(result);
+		return result;
+	}
+	
+	public void removeTranslation(Matrix4 result) {
+		result.set(this);
+		result.setM14(0);
+		result.setM24(0);
+		result.setM34(0);
+		result.setM44(1);
+	}
+	
 	public static Matrix4 mul(Matrix4 left, Matrix4 right) {
 		Matrix4 res = new Matrix4();
 		for(int row = 0; row < 4; ++row) {
@@ -239,6 +253,28 @@ public final class Matrix4 {
 			}
 		}
 	}
+	
+	public float get(int row, int column) {
+		if(row < 1 || row > 4 || column < 1 || column > 4) {			
+			throw new IllegalArgumentException();
+		}
+		int index = (column - 1) * 4 + (row - 1);
+		return matrix[index];
+	}
+	
+	public void set(Matrix4 other) {
+		for(int i = 0; i < 16; ++i) {
+			matrix[i] = other.get()[i];
+		}
+	}
+	
+	public void set(int row, int column, float value) {
+		if(row < 1 || row > 4 || column < 1 || column > 4) {			
+			throw new IllegalArgumentException();
+		}
+		int index = (column - 1) * 4 + (row - 1);
+		matrix[index] = value;
+	}
 
 	@Override
 	public String toString() {
@@ -253,14 +289,6 @@ public final class Matrix4 {
 	
 	public float[] get() {
 		return matrix;
-	}
-	
-	public float get(int row, int column) {
-		if(row < 1 || row > 4 || column < 1 || column > 4) {			
-			throw new IllegalArgumentException();
-		}
-		int index = (column - 1) * 4 + (row - 1);
-		return matrix[index];
 	}
 	
 	public float getM11() {
@@ -325,20 +353,6 @@ public final class Matrix4 {
 
 	public float getM44() {
 		return matrix[M44];
-	}
-	
-	public void set(Matrix4 other) {
-		for(int i = 0; i < 16; ++i) {
-			matrix[i] = other.get()[i];
-		}
-	}
-	
-	public void set(int row, int column, float value) {
-		if(row < 1 || row > 4 || column < 1 || column > 4) {			
-			throw new IllegalArgumentException();
-		}
-		int index = (column - 1) * 4 + (row - 1);
-		matrix[index] = value;
 	}
 	
 	public void setM11(float value) {
