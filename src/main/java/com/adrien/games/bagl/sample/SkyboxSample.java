@@ -26,7 +26,7 @@ public class SkyboxSample {
 		private static final int HEIGHT = WIDTH * 9 / 16;
 		
 		private VertexBuffer vertexBuffer;
-		private IndexBuffer indexBuffer; 
+		private IndexBuffer indexBuffer;
 		
 		private Shader shader;
 		private Camera camera;
@@ -42,7 +42,7 @@ public class SkyboxSample {
 			this.shader.addFragmentShader("skybox.frag");
 			this.shader.compile();
 			
-			this.camera = new Camera(Vector3.ZERO, new Vector3(0, -0.5f, -1), Vector3.UP, (float)Math.toRadians(60), 
+			this.camera = new Camera(Vector3.ZERO, new Vector3(0, -0.2f, -1), Vector3.UP, (float)Math.toRadians(60), 
 					(float)WIDTH/HEIGHT, 1, 100);
 			
 			this.cubemap = new CubeMap(this.getResourcePath("/skybox/left.png"),
@@ -87,6 +87,8 @@ public class SkyboxSample {
 		
 		@Override
 		public void update(Time time) {
+			Matrix4.mul(this.camera.getViewProj(), Matrix4.createRotation(Vector3.UP, 
+					(float)Math.toRadians(5*time.getElapsedTime())), this.camera.getViewProj());
 		}
 
 		@Override
@@ -96,8 +98,6 @@ public class SkyboxSample {
 			this.indexBuffer.bind();
 			this.cubemap.bind();
 			this.shader.bind();
-			Matrix4.mul(this.camera.getViewProj(), Matrix4.createRotation(Vector3.UP, 
-					(float)Math.toRadians(0.05)), this.camera.getViewProj());
 			this.shader.setUniform("viewProj", this.camera.getViewProj());
 
 			glDrawElements(GL_TRIANGLES, this.indexBuffer.getSize(), GL_UNSIGNED_INT, 0);
