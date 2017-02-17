@@ -8,10 +8,10 @@ import com.adrien.games.bagl.rendering.IndexBuffer;
 import com.adrien.games.bagl.rendering.Material;
 import com.adrien.games.bagl.rendering.Mesh;
 import com.adrien.games.bagl.rendering.Texture;
-import com.adrien.games.bagl.rendering.Vertex;
 import com.adrien.games.bagl.rendering.VertexBuffer;
-import com.adrien.games.bagl.rendering.VertexPositionNormalTexture;
-import com.adrien.games.bagl.rendering.VertexPositionTexture;
+import com.adrien.games.bagl.rendering.vertex.Vertex;
+import com.adrien.games.bagl.rendering.vertex.VertexPositionNormalTexture;
+import com.adrien.games.bagl.rendering.vertex.VertexPositionTexture;
 
 public final class MeshFactory {
 

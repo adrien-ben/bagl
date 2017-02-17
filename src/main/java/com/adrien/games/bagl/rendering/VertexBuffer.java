@@ -8,6 +8,10 @@ import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 
+import com.adrien.games.bagl.rendering.vertex.Vertex;
+import com.adrien.games.bagl.rendering.vertex.VertexDescription;
+import com.adrien.games.bagl.rendering.vertex.VertexElement;
+
 public final class VertexBuffer {
 	private VertexDescription description;
 	private int vertexCount;

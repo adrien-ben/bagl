@@ -16,11 +16,11 @@ import com.adrien.games.bagl.rendering.Mesh;
 import com.adrien.games.bagl.rendering.Shader;
 import com.adrien.games.bagl.rendering.Spritebatch;
 import com.adrien.games.bagl.rendering.Texture;
-import com.adrien.games.bagl.rendering.Vertex;
 import com.adrien.games.bagl.rendering.VertexBuffer;
-import com.adrien.games.bagl.rendering.VertexPositionTexture;
 import com.adrien.games.bagl.rendering.light.Light;
 import com.adrien.games.bagl.rendering.light.PointLight;
+import com.adrien.games.bagl.rendering.vertex.Vertex;
+import com.adrien.games.bagl.rendering.vertex.VertexPositionTexture;
 import com.adrien.games.bagl.utils.MeshFactory;
 
 public class DeferredRenderingSample {

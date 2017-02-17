@@ -13,9 +13,9 @@ import com.adrien.games.bagl.core.Vector3;
 import com.adrien.games.bagl.rendering.CubeMap;
 import com.adrien.games.bagl.rendering.IndexBuffer;
 import com.adrien.games.bagl.rendering.Shader;
-import com.adrien.games.bagl.rendering.Vertex;
 import com.adrien.games.bagl.rendering.VertexBuffer;
-import com.adrien.games.bagl.rendering.VertexPosition;
+import com.adrien.games.bagl.rendering.vertex.Vertex;
+import com.adrien.games.bagl.rendering.vertex.VertexPosition;
 
 public class SkyboxSample {
 

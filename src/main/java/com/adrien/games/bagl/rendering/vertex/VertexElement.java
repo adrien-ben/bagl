@@ -1,4 +1,4 @@
-package com.adrien.games.bagl.rendering;
+package com.adrien.games.bagl.rendering.vertex;
 
 public final class VertexElement {
 	

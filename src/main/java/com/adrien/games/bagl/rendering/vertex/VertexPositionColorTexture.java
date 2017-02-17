@@ -1,4 +1,4 @@
-package com.adrien.games.bagl.rendering;
+package com.adrien.games.bagl.rendering.vertex;
 
 import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.core.Vector2;
