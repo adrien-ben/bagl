@@ -32,6 +32,8 @@ public class SkyboxSample {
 		private Camera camera;
 		private CubeMap cubemap;
 		
+		private Matrix4 transform;
+		
 		@Override
 		public void init() {
 
@@ -42,7 +44,7 @@ public class SkyboxSample {
 			this.shader.addFragmentShader("skybox.frag");
 			this.shader.compile();
 			
-			this.camera = new Camera(Vector3.ZERO, new Vector3(0, -0.2f, -1), Vector3.UP, (float)Math.toRadians(60), 
+			this.camera = new Camera(new Vector3(1000, 0, 0), Vector3.FORWARD, Vector3.UP, (float)Math.toRadians(60), 
 					(float)WIDTH/HEIGHT, 1, 100);
 			
 			this.cubemap = new CubeMap(this.getResourcePath("/skybox/left.png"),
@@ -51,6 +53,8 @@ public class SkyboxSample {
 					this.getResourcePath("/skybox/top.png"),
 					this.getResourcePath("/skybox/back.png"),
 					this.getResourcePath("/skybox/front.png"));
+			
+			this.transform = new Matrix4();
 			
 			glEnable(GL_DEPTH_TEST);
 			glEnable(GL_CULL_FACE);
@@ -89,6 +93,7 @@ public class SkyboxSample {
 		public void update(Time time) {
 			Matrix4.mul(this.camera.getViewProj(), Matrix4.createRotation(Vector3.UP, 
 					(float)Math.toRadians(5*time.getElapsedTime())), this.camera.getViewProj());
+			this.camera.getViewProj().removeTranslation(transform);
 		}
 
 		@Override
@@ -98,7 +103,7 @@ public class SkyboxSample {
 			this.indexBuffer.bind();
 			this.cubemap.bind();
 			this.shader.bind();
-			this.shader.setUniform("viewProj", this.camera.getViewProj());
+			this.shader.setUniform("viewProj", transform);
 
 			glDrawElements(GL_TRIANGLES, this.indexBuffer.getSize(), GL_UNSIGNED_INT, 0);
 			
