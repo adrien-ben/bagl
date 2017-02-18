@@ -43,8 +43,8 @@ out vec4 finalColor;
 uniform Camera uCamera;
 uniform Light uAmbient;
 uniform DirectionalLight uDirectional;
-uniform PointLight uPoints[3];
-uniform SpotLight uSpots[2];
+uniform PointLight uPoints[4];
+uniform SpotLight uSpots[3];
 
 uniform sampler2D colors;
 uniform sampler2D normals;
@@ -125,12 +125,12 @@ void main() {
 		vec4 directional = computeDirectional(normal, position);
 
 		vec4 point = vec4(0, 0, 0, 1);
-		for(int i = 0; i < 3; i++) {
+		for(int i = 0; i < 4; i++) {
 			point += computePointLight(uPoints[i], position, normal);
 		}
 
 		vec4 spot = vec4(0, 0, 0, 1);
-		for(int i = 0; i < 2; i++) {
+		for(int i = 0; i < 3; i++) {
 			spot += computeSpotLight(uSpots[i], position, normal);
 		}
 

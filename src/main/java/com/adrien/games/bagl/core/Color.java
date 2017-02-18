@@ -8,6 +8,8 @@ public class Color {
 	public static final Color GREEN = new Color(0, 1, 0);
 	public static final Color BLUE = new Color(0, 0, 1);
 	public static final Color YELLOW = new Color(1, 1, 0);
+	public static final Color PURPLE = new Color(1, 0, 1);
+	public static final Color ORANGE = new Color(1, 165f/255, 0);
 	
 	private float red;
 	private float green;

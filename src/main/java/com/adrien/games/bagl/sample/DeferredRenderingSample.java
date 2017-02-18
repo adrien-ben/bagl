@@ -2,10 +2,13 @@ package com.adrien.games.bagl.sample;
 
 import static org.lwjgl.opengl.GL11.*;
 
+import org.lwjgl.glfw.GLFW;
+
 import com.adrien.games.bagl.core.Camera;
 import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.core.Engine;
 import com.adrien.games.bagl.core.Game;
+import com.adrien.games.bagl.core.Input;
 import com.adrien.games.bagl.core.Matrix4;
 import com.adrien.games.bagl.core.Time;
 import com.adrien.games.bagl.core.Vector2;
@@ -36,8 +39,11 @@ public class DeferredRenderingSample {
 		
 		private FrameBuffer gbuffer;
 		
-		private Mesh mesh;
+		private Mesh plane;
 		private Matrix4 world;
+		private Mesh cube;
+		private Matrix4 cubeWorld;
+		
 		private Matrix4 wvp;
 		
 		private Light ambient;
@@ -45,8 +51,10 @@ public class DeferredRenderingSample {
 		private PointLight point;
 		private PointLight point2;
 		private PointLight point3;
+		private PointLight point4;
 		private SpotLight spot;
 		private SpotLight spot1;
+		private SpotLight spot2;
 		
 		private VertexBuffer vertexBuffer;
 		private IndexBuffer indexBuffer;
@@ -57,24 +65,33 @@ public class DeferredRenderingSample {
 		
 		private Spritebatch spritebatch;
 		
+		private boolean isKeyPressed = false;
+		private boolean displayGbuffer = true;
+		
 		@Override
 		public void init() {
 
 			this.gbuffer = new FrameBuffer(WIDTH, HEIGHT, 2);
 			
-			this.mesh = MeshFactory.createPlane(10, 10);
+			this.plane = MeshFactory.createPlane(10, 10);
 			this.world = new Matrix4();
+			this.cube = MeshFactory.createBox(1, 1, 1);
+			this.cubeWorld = Matrix4.createTranslation(new Vector3(0, 0.5f, 0));
+			
 			this.wvp = new Matrix4();
 			
 			this.ambient = new Light(0.1f);
-			this.directional = new DirectionalLight(0.1f, Color.WHITE, new Vector3(0.5f, -1, 4));
+			this.directional = new DirectionalLight(0.2f, Color.WHITE, new Vector3(0.5f, -2, 4));
 			this.point = new PointLight(1f, Color.GREEN, new Vector3(4f, 0.5f, 2f), 7f, new Attenuation(1, 0.7f, 1.8f));
-			this.point2 = new PointLight(1f, Color.YELLOW, new Vector3(1f, 0.5f, -1f), 7f, new Attenuation(1, 0.7f, 1.8f));
-			this.point3 = new PointLight(1f, Color.BLUE, new Vector3(4f, 0.5f, -3f), 7f, new Attenuation(1, 0.7f, 1.8f));
-			this.spot = new SpotLight(1f, Color.RED, new Vector3(0, 0.5f, 0f), 7f, new Attenuation(1, 0.7f, 1.8f), 
-					new Vector3(0, -1, 0.8f), 20f, 5f);
-			this.spot1 = new SpotLight(1f, Color.WHITE, new Vector3(1, 0.3f, 2f), 7f, new Attenuation(1, 0.7f, 1.8f), 
-					new Vector3(1, -1, -1.2f), 20f, 5f);
+			this.point2 = new PointLight(1f, Color.YELLOW, new Vector3(-4f, 0.2f, 2f), 7f, new Attenuation(1, 0.7f, 1.8f));
+			this.point3 = new PointLight(1f, Color.BLUE, new Vector3(0f, 0.5f, 3f), 7f, new Attenuation(1, 0.7f, 1.8f));
+			this.point4 = new PointLight(1f, Color.PURPLE, new Vector3(0f, 2.5f, 1f), 7f, new Attenuation(1, 0.7f, 1.8f));
+			this.spot = new SpotLight(1f, Color.RED, new Vector3(-1f, 0.5f, -3f), 7f, new Attenuation(1, 0.7f, 1.8f), 
+					new Vector3(0f, -1f, 0.8f), 20f, 5f);
+			this.spot1 = new SpotLight(1f, Color.WHITE, new Vector3(4f, 0.5f, -3f), 7f, new Attenuation(1, 0.7f, 1.8f), 
+					new Vector3(-1f, -1f, 1.2f), 10f, 2f);
+			this.spot2 = new SpotLight(1f, Color.ORANGE, new Vector3(-0.5f, 0.5f, 1f), 7f, new Attenuation(1, 0.7f, 1.8f), 
+					new Vector3(2f, 0.7f, -1f), 10f, 5f);
 			
 			this.initQuad();
 
@@ -88,7 +105,7 @@ public class DeferredRenderingSample {
 			this.deferredShader.addFragmentShader("/deferred.frag");
 			this.deferredShader.compile();
 
-			this.camera = new Camera(new Vector3(0, 2f, 6f), new Vector3(0, -2f, -6f), Vector3.UP, 
+			this.camera = new Camera(new Vector3(0f, 2f, 6f), new Vector3(0f, -2f, -6f), Vector3.UP, 
 					(float)Math.toRadians(60f), (float)WIDTH/(float)HEIGHT, 1, 1000);		
 			
 			this.spritebatch = new Spritebatch(1024, WIDTH, HEIGHT);
@@ -115,6 +132,15 @@ public class DeferredRenderingSample {
 		
 		@Override
 		public void update(Time time) {
+			Matrix4.mul(this.cubeWorld, Matrix4.createRotation(Vector3.UP, (float)Math.toRadians(10*time.getElapsedTime())), this.cubeWorld);
+			
+			if(Input.isKeyPressed(GLFW.GLFW_KEY_SPACE) && !this.isKeyPressed) {
+				this.displayGbuffer = !this.displayGbuffer;
+				this.isKeyPressed = true;
+			}
+			if(!Input.isKeyPressed(GLFW.GLFW_KEY_SPACE) && this.isKeyPressed) {
+				this.isKeyPressed = false;
+			}
 		}
 
 		@Override
@@ -122,27 +148,38 @@ public class DeferredRenderingSample {
 			this.renderGbuffer();			
 			this.renderDeferred();
 			
-			this.spritebatch.start();
-			this.spritebatch.draw(this.gbuffer.getColorTexture(0), Vector2.ZERO, WIDTH/3, HEIGHT/3);
-			this.spritebatch.draw(this.gbuffer.getColorTexture(1), new Vector2(0, HEIGHT/3), WIDTH/3, HEIGHT/3);
-			this.spritebatch.draw(this.gbuffer.getDepthTexture(), new Vector2(0, 2*HEIGHT/3), WIDTH/3, HEIGHT/3);
-			this.spritebatch.end();
+			if(this.displayGbuffer) {
+				this.spritebatch.start();
+				this.spritebatch.draw(this.gbuffer.getColorTexture(0), Vector2.ZERO, WIDTH/3, HEIGHT/3);
+				this.spritebatch.draw(this.gbuffer.getColorTexture(1), new Vector2(0, HEIGHT/3), WIDTH/3, HEIGHT/3);
+				this.spritebatch.draw(this.gbuffer.getDepthTexture(), new Vector2(0, 2*HEIGHT/3), WIDTH/3, HEIGHT/3);
+				this.spritebatch.end();
+			}
 		}
 
 		private void renderGbuffer() {
 			
 			Matrix4.mul(this.camera.getViewProj(), this.world, this.wvp);
 			
-			this.mesh.getMaterial().getDiffuseTexture().bind();
-			this.mesh.getVertices().bind();
-			this.mesh.getIndices().bind();
+			this.plane.getMaterial().getDiffuseTexture().bind();
+			this.plane.getVertices().bind();
+			this.plane.getIndices().bind();
 			this.gbufferShader.bind();
 			this.gbufferShader.setUniform("uMatrices.world", this.world);
 			this.gbufferShader.setUniform("uMatrices.wvp", this.wvp);
 			this.gbuffer.bind();
 			FrameBuffer.clear();
 			
-			glDrawElements(GL_TRIANGLES, this.mesh.getIndices().getSize(), GL_UNSIGNED_INT, 0);
+			glDrawElements(GL_TRIANGLES, this.plane.getIndices().getSize(), GL_UNSIGNED_INT, 0);
+			
+			Matrix4.mul(this.camera.getViewProj(), this.cubeWorld, this.wvp);
+			this.cube.getMaterial().getDiffuseTexture().bind();
+			this.cube.getVertices().bind();
+			this.cube.getIndices().bind();
+			this.gbufferShader.setUniform("uMatrices.world", this.cubeWorld);
+			this.gbufferShader.setUniform("uMatrices.wvp", this.wvp);
+			
+			glDrawElements(GL_TRIANGLES, this.cube.getIndices().getSize(), GL_UNSIGNED_INT, 0);
 			
 			FrameBuffer.unbind();
 			Shader.unbind();
@@ -168,8 +205,10 @@ public class DeferredRenderingSample {
 			this.setPointLight(this.deferredShader, 0, this.point);
 			this.setPointLight(this.deferredShader, 1, this.point2);
 			this.setPointLight(this.deferredShader, 2, this.point3);
+			this.setPointLight(this.deferredShader, 3, this.point4);
 			this.setSpotLight(this.deferredShader, 0, this.spot);
 			this.setSpotLight(this.deferredShader, 1, this.spot1);
+			this.setSpotLight(this.deferredShader, 2, this.spot2);
 			this.deferredShader.setUniform("colors", 0);
 			this.deferredShader.setUniform("normals", 1);
 			this.deferredShader.setUniform("depth", 2);
@@ -211,7 +250,7 @@ public class DeferredRenderingSample {
 		public void destroy() {
 			this.gbufferShader.destroy();
 			this.deferredShader.destroy();
-			this.mesh.destroy();
+			this.plane.destroy();
 			this.gbuffer.destroy();
 			this.indexBuffer.destroy();
 			this.vertexBuffer.destroy();
