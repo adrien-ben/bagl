@@ -35,6 +35,7 @@ struct SpotLight {
 	float outerCutOff;
 };
 
+
 in vec2 passCoords;
 
 out vec4 finalColor;
@@ -42,8 +43,8 @@ out vec4 finalColor;
 uniform Camera uCamera;
 uniform Light uAmbient;
 uniform DirectionalLight uDirectional;
-uniform PointLight uPoints[1];
-uniform SpotLight uSpots[1];
+uniform PointLight uPoints[3];
+uniform SpotLight uSpots[2];
 
 uniform sampler2D colors;
 uniform sampler2D normals;
@@ -51,7 +52,7 @@ uniform sampler2D depth;
 
 vec4 positionFromDepth(float depth) {
 	depth = depth*2 - 1;
-	vec4 screenSpace = vec4(passCoords*2 - 1, depth, 1); 
+	vec4 screenSpace = vec4(passCoords*2 - 1, depth, 1);
 	vec4 position = inverse(uCamera.vp)*screenSpace;
 	position.xyz /= position.w;
 	return vec4(position.xyz, 1);
@@ -122,8 +123,16 @@ void main() {
 		
 		vec4 ambient = computeAmbient(uAmbient);
 		vec4 directional = computeDirectional(normal, position);
-		vec4 point = computePointLight(uPoints[0], position, normal);
-		vec4 spot = computeSpotLight(uSpots[0], position, normal);
+
+		vec4 point = vec4(0, 0, 0, 1);
+		for(int i = 0; i < 3; i++) {
+			point += computePointLight(uPoints[i], position, normal);
+		}
+
+		vec4 spot = vec4(0, 0, 0, 1);
+		for(int i = 0; i < 2; i++) {
+			spot += computeSpotLight(uSpots[i], position, normal);
+		}
 
 		finalColor = (ambient + directional + point + spot)*color;
 	} 

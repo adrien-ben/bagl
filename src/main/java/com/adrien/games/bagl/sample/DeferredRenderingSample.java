@@ -43,7 +43,10 @@ public class DeferredRenderingSample {
 		private Light ambient;
 		private DirectionalLight directional;
 		private PointLight point;
+		private PointLight point2;
+		private PointLight point3;
 		private SpotLight spot;
+		private SpotLight spot1;
 		
 		private VertexBuffer vertexBuffer;
 		private IndexBuffer indexBuffer;
@@ -65,9 +68,13 @@ public class DeferredRenderingSample {
 			
 			this.ambient = new Light(0.1f);
 			this.directional = new DirectionalLight(0.1f, Color.WHITE, new Vector3(0.5f, -1, 4));
-			this.point = new PointLight(1f, Color.GREEN, new Vector3(4f, 0.5f, 1f), 7f, new Attenuation(1, 0.7f, 1.8f));
+			this.point = new PointLight(1f, Color.GREEN, new Vector3(4f, 0.5f, 2f), 7f, new Attenuation(1, 0.7f, 1.8f));
+			this.point2 = new PointLight(1f, Color.YELLOW, new Vector3(1f, 0.5f, -1f), 7f, new Attenuation(1, 0.7f, 1.8f));
+			this.point3 = new PointLight(1f, Color.BLUE, new Vector3(4f, 0.5f, -3f), 7f, new Attenuation(1, 0.7f, 1.8f));
 			this.spot = new SpotLight(1f, Color.RED, new Vector3(0, 0.5f, 0f), 7f, new Attenuation(1, 0.7f, 1.8f), 
 					new Vector3(0, -1, 0.8f), 20f, 5f);
+			this.spot1 = new SpotLight(1f, Color.WHITE, new Vector3(1, 0.3f, 2f), 7f, new Attenuation(1, 0.7f, 1.8f), 
+					new Vector3(1, -1, -1.2f), 20f, 5f);
 			
 			this.initQuad();
 
@@ -158,23 +165,11 @@ public class DeferredRenderingSample {
 			this.deferredShader.setUniform("uDirectional.base.intensity", this.directional.getIntensity());
 			this.deferredShader.setUniform("uDirectional.base.color", this.directional.getColor());
 			this.deferredShader.setUniform("uDirectional.direction", this.directional.getDirection());
-			this.deferredShader.setUniform("uPoints[0].base.intensity", this.point.getIntensity());
-			this.deferredShader.setUniform("uPoints[0].base.color", this.point.getColor());
-			this.deferredShader.setUniform("uPoints[0].position", this.point.getPosition());
-			this.deferredShader.setUniform("uPoints[0].radius", this.point.getRadius());
-			this.deferredShader.setUniform("uPoints[0].attenuation.constant", this.point.getAttenuation().getConstant());
-			this.deferredShader.setUniform("uPoints[0].attenuation.linear", this.point.getAttenuation().getLinear());
-			this.deferredShader.setUniform("uPoints[0].attenuation.quadratic", this.point.getAttenuation().getQuadratic());
-			this.deferredShader.setUniform("uSpots[0].point.base.intensity", this.spot.getIntensity());
-			this.deferredShader.setUniform("uSpots[0].point.base.color", this.spot.getColor());
-			this.deferredShader.setUniform("uSpots[0].point.position", this.spot.getPosition());
-			this.deferredShader.setUniform("uSpots[0].point.radius", this.spot.getRadius());
-			this.deferredShader.setUniform("uSpots[0].point.attenuation.constant", this.spot.getAttenuation().getConstant());
-			this.deferredShader.setUniform("uSpots[0].point.attenuation.linear", this.spot.getAttenuation().getLinear());
-			this.deferredShader.setUniform("uSpots[0].point.attenuation.quadratic", this.spot.getAttenuation().getQuadratic());
-			this.deferredShader.setUniform("uSpots[0].direction", this.spot.getDirection());
-			this.deferredShader.setUniform("uSpots[0].cutOff", this.spot.getCutOff());
-			this.deferredShader.setUniform("uSpots[0].outerCutOff", this.spot.getOuterCutOff());
+			this.setPointLight(this.deferredShader, 0, this.point);
+			this.setPointLight(this.deferredShader, 1, this.point2);
+			this.setPointLight(this.deferredShader, 2, this.point3);
+			this.setSpotLight(this.deferredShader, 0, this.spot);
+			this.setSpotLight(this.deferredShader, 1, this.spot1);
 			this.deferredShader.setUniform("colors", 0);
 			this.deferredShader.setUniform("normals", 1);
 			this.deferredShader.setUniform("depth", 2);
@@ -187,6 +182,29 @@ public class DeferredRenderingSample {
 			Texture.unbind(0);
 			Texture.unbind(1);
 			Texture.unbind(2);
+		}
+		
+		private void setPointLight(Shader shader, int index, PointLight light) {
+			this.deferredShader.setUniform("uPoints[" + index + "].base.intensity", light.getIntensity());
+			this.deferredShader.setUniform("uPoints[" + index + "].base.color", light.getColor());
+			this.deferredShader.setUniform("uPoints[" + index + "].position", light.getPosition());
+			this.deferredShader.setUniform("uPoints[" + index + "].radius", light.getRadius());
+			this.deferredShader.setUniform("uPoints[" + index + "].attenuation.constant", light.getAttenuation().getConstant());
+			this.deferredShader.setUniform("uPoints[" + index + "].attenuation.linear", light.getAttenuation().getLinear());
+			this.deferredShader.setUniform("uPoints[" + index + "].attenuation.quadratic", light.getAttenuation().getQuadratic());
+		}
+		
+		private void setSpotLight(Shader shader, int index, SpotLight light) {
+			this.deferredShader.setUniform("uSpots[" + index + "].point.base.intensity", light.getIntensity());
+			this.deferredShader.setUniform("uSpots[" + index + "].point.base.color", light.getColor());
+			this.deferredShader.setUniform("uSpots[" + index + "].point.position", light.getPosition());
+			this.deferredShader.setUniform("uSpots[" + index + "].point.radius", light.getRadius());
+			this.deferredShader.setUniform("uSpots[" + index + "].point.attenuation.constant", light.getAttenuation().getConstant());
+			this.deferredShader.setUniform("uSpots[" + index + "].point.attenuation.linear", light.getAttenuation().getLinear());
+			this.deferredShader.setUniform("uSpots[" + index + "].point.attenuation.quadratic", light.getAttenuation().getQuadratic());
+			this.deferredShader.setUniform("uSpots[" + index + "].direction", light.getDirection());
+			this.deferredShader.setUniform("uSpots[" + index + "].cutOff", light.getCutOff());
+			this.deferredShader.setUniform("uSpots[" + index + "].outerCutOff", light.getOuterCutOff());
 		}
 		
 		@Override
