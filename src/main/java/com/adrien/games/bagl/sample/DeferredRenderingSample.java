@@ -59,14 +59,15 @@ public class DeferredRenderingSample {
 
 			this.gbuffer = new FrameBuffer(WIDTH, HEIGHT, 2);
 			
-			this.mesh = MeshFactory.createPlane(100, 100);
+			this.mesh = MeshFactory.createPlane(10, 10);
 			this.world = new Matrix4();
 			this.wvp = new Matrix4();
 			
 			this.ambient = new Light(0.1f);
-			this.directional = new DirectionalLight(0.5f, Color.WHITE, new Vector3(0.5f, -1, 4));
-			this.point = new PointLight(1f, Color.GREEN, new Vector3(14f, 2f, 1f), 13f, new Attenuation(1, 0.35f, 0.44f));
-			this.spot = new SpotLight(1f, Color.RED, new Vector3(0, 0.5f, 0f), 13f, new Attenuation(1, 0.35f, 0.44f), new Vector3(0, -1, 1), 1f);
+			this.directional = new DirectionalLight(0.1f, Color.WHITE, new Vector3(0.5f, -1, 4));
+			this.point = new PointLight(1f, Color.GREEN, new Vector3(4f, 0.5f, 1f), 7f, new Attenuation(1, 0.7f, 1.8f));
+			this.spot = new SpotLight(1f, Color.RED, new Vector3(0, 0.5f, 0f), 7f, new Attenuation(1, 0.7f, 1.8f), 
+					new Vector3(0, -1, 0.8f), 20f, 5f);
 			
 			this.initQuad();
 
@@ -80,7 +81,7 @@ public class DeferredRenderingSample {
 			this.deferredShader.addFragmentShader("/deferred.frag");
 			this.deferredShader.compile();
 
-			this.camera = new Camera(new Vector3(0, 8f, 25f), new Vector3(0, -8f, -25f), Vector3.UP, 
+			this.camera = new Camera(new Vector3(0, 2f, 6f), new Vector3(0, -2f, -6f), Vector3.UP, 
 					(float)Math.toRadians(60f), (float)WIDTH/(float)HEIGHT, 1, 1000);		
 			
 			this.spritebatch = new Spritebatch(1024, WIDTH, HEIGHT);
@@ -172,7 +173,8 @@ public class DeferredRenderingSample {
 			this.deferredShader.setUniform("uSpots[0].point.attenuation.linear", this.spot.getAttenuation().getLinear());
 			this.deferredShader.setUniform("uSpots[0].point.attenuation.quadratic", this.spot.getAttenuation().getQuadratic());
 			this.deferredShader.setUniform("uSpots[0].direction", this.spot.getDirection());
-			this.deferredShader.setUniform("uSpots[0].angle", this.spot.getAngle());
+			this.deferredShader.setUniform("uSpots[0].cutOff", this.spot.getCutOff());
+			this.deferredShader.setUniform("uSpots[0].outerCutOff", this.spot.getOuterCutOff());
 			this.deferredShader.setUniform("colors", 0);
 			this.deferredShader.setUniform("normals", 1);
 			this.deferredShader.setUniform("depth", 2);

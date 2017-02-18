@@ -31,7 +31,8 @@ struct PointLight {
 struct SpotLight {
 	PointLight point;
 	vec3 direction;
-	float angle;
+	float cutOff;
+	float outerCutOff;
 };
 
 in vec2 passCoords;
@@ -98,12 +99,16 @@ vec4 computePointLight(PointLight light, vec4 position, vec3 normal) {
 
 vec4 computeSpotLight(SpotLight light, vec4 position, vec3 normal) {
 	vec3 lightDirection = normalize(position.xyz - light.point.position);
-	float angle = dot(-light.direction, -lightDirection);
-	float maxAngle = cos(radians(light.angle));
-	if(angle <= maxAngle) {
+
+	float theta = dot(-light.direction, -lightDirection);
+	if(theta <= light.outerCutOff) {
 		return vec4(0, 0, 0, 1);
 	}
-	return computePointLight(light.point, position, normal);
+
+	float epsilon = light.cutOff - light.outerCutOff;
+	float intensity = clamp((theta - light.outerCutOff)/epsilon, 0, 1);
+
+	return computePointLight(light.point, position, normal)*intensity;
 }
 
 void main() {
@@ -120,7 +125,7 @@ void main() {
 		vec4 directional = computeDirectional(normal, position);
 		vec4 point = computePointLight(uPoints[0], position, normal);
 		vec4 spot = computeSpotLight(uSpots[0], position, normal);
-		
+
 		finalColor = (ambient + directional + point + spot)*color;
 	} 
 }
