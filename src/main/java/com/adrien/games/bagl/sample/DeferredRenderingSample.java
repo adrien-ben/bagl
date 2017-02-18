@@ -28,17 +28,14 @@ public class DeferredRenderingSample {
 	private static final class TestGame implements Game {
 		
 		private static final String TITLE = "Deferred Rendering";
-		private static final int WIDTH = 512;
+		private static final int WIDTH = 1024;
 		private static final int HEIGHT = WIDTH * 9 / 16;
 		
 		private FrameBuffer gbuffer;
 		
 		private Mesh mesh;
 		private Matrix4 world;
-		private Matrix4 world2;
-		private Matrix4 world3;
 		private Matrix4 wvp;
-		private float rotation;
 		
 		private Light ambient;
 		private PointLight point;
@@ -57,14 +54,12 @@ public class DeferredRenderingSample {
 
 			this.gbuffer = new FrameBuffer(WIDTH, HEIGHT, 2);
 			
-			this.mesh = MeshFactory.createBox(1, 1, 1);
+			this.mesh = MeshFactory.createPlane(2, 2);
 			this.world = new Matrix4();
-			this.world2 = Matrix4.createTranslation(new Vector3(-1, 0, -2));
-			this.world3 = Matrix4.createTranslation(new Vector3(1, 0, -3));
 			this.wvp = new Matrix4();
 			
 			this.ambient = new Light(0.1f);
-			this.point = new PointLight(0.2f, Color.RED, new Vector3(2f, 2, -0.5f), 3f);
+			this.point = new PointLight(0.5f, Color.RED, new Vector3(0f, 0.1f, 0f), 1);
 			
 			this.initQuad();
 
@@ -105,8 +100,6 @@ public class DeferredRenderingSample {
 		
 		@Override
 		public void update(Time time) {
-			this.rotation += 1/(2*Math.PI)*2*time.getElapsedTime();
-			this.world.setRotation(Vector3.UP, this.rotation);
 		}
 
 		@Override
@@ -134,16 +127,6 @@ public class DeferredRenderingSample {
 			this.gbuffer.bind();
 			FrameBuffer.clear();
 			
-			glDrawElements(GL_TRIANGLES, this.mesh.getIndices().getSize(), GL_UNSIGNED_INT, 0);
-			
-			Matrix4.mul(this.camera.getViewProj(), this.world2, this.wvp);
-			this.gbufferShader.setUniform("uMatrices.world", this.world2);
-			this.gbufferShader.setUniform("uMatrices.wvp", this.wvp);
-			glDrawElements(GL_TRIANGLES, this.mesh.getIndices().getSize(), GL_UNSIGNED_INT, 0);
-			
-			Matrix4.mul(this.camera.getViewProj(), this.world3, this.wvp);
-			this.gbufferShader.setUniform("uMatrices.world", this.world3);
-			this.gbufferShader.setUniform("uMatrices.wvp", this.wvp);
 			glDrawElements(GL_TRIANGLES, this.mesh.getIndices().getSize(), GL_UNSIGNED_INT, 0);
 			
 			FrameBuffer.unbind();

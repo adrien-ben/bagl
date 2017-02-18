@@ -38,11 +38,11 @@ vec4 computeAmbient(Light light) {
 vec4 computePointLight(PointLight light, vec4 position, vec3 normal) {
 	vec3 toLight = light.position - position.xyz;
 	float distance = length(toLight);
-	float dot = dot(toLight, normal);
-	if(distance > light.radius || dot < 0) {
+	float diffuse = dot(normal, normalize(toLight));
+	if(distance > light.radius || diffuse < 0) {
 		return vec4(0, 0, 0, 1);
 	}
-	return vec4(light.base.color.xyz*dot*light.base.intensity, 1);
+	return vec4(light.base.color.xyz*diffuse*light.base.intensity, 1);
 }
 
 void main() {

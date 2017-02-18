@@ -11,7 +11,6 @@ import com.adrien.games.bagl.rendering.VertexBuffer;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.vertex.Vertex;
 import com.adrien.games.bagl.rendering.vertex.VertexPositionNormalTexture;
-import com.adrien.games.bagl.rendering.vertex.VertexPositionTexture;
 
 public final class MeshFactory {
 
@@ -52,15 +51,15 @@ public final class MeshFactory {
 		float yOffset = 0.5f / texture.getHeight();
 		
 		Vertex[] vertices = new Vertex[4];
-		vertices[0] = new VertexPositionTexture(new Vector3(-width/2,  0, depth/2), new Vector2(xOffset, yOffset));
-		vertices[1] = new VertexPositionTexture(new Vector3(width/2,  0, depth/2), new Vector2(8 - xOffset, yOffset));
-		vertices[2] = new VertexPositionTexture(new Vector3(-width/2,  0, -depth/2), new Vector2(xOffset, 8 - yOffset));
-		vertices[3] = new VertexPositionTexture(new Vector3(width/2,  0, -depth/2), new Vector2(8 - xOffset, 8 - yOffset));
+		vertices[0] = new VertexPositionNormalTexture(new Vector3(-width/2,  0, depth/2), Vector3.UP, new Vector2(xOffset, yOffset));
+		vertices[1] = new VertexPositionNormalTexture(new Vector3(width/2,  0, depth/2), Vector3.UP, new Vector2(8 - xOffset, yOffset));
+		vertices[2] = new VertexPositionNormalTexture(new Vector3(-width/2,  0, -depth/2), Vector3.UP, new Vector2(xOffset, 8 - yOffset));
+		vertices[3] = new VertexPositionNormalTexture(new Vector3(width/2,  0, -depth/2), Vector3.UP, new Vector2(8 - xOffset, 8 - yOffset));
 		
 		int[] indices = new int[]{0, 1, 2, 2, 1, 3};
 		
 		IndexBuffer indexBuffer = new IndexBuffer(indices);
-		VertexBuffer vertexBuffer = new VertexBuffer(VertexPositionTexture.DESCRIPTION, vertices);
+		VertexBuffer vertexBuffer = new VertexBuffer(VertexPositionNormalTexture.DESCRIPTION, vertices);
 		
 		Material material = new Material(texture, 12, 1);
 		return new Mesh(vertexBuffer, indexBuffer, material);
