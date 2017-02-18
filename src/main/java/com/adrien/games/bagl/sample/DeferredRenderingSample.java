@@ -19,6 +19,7 @@ import com.adrien.games.bagl.rendering.VertexBuffer;
 import com.adrien.games.bagl.rendering.light.DirectionalLight;
 import com.adrien.games.bagl.rendering.light.Light;
 import com.adrien.games.bagl.rendering.light.PointLight;
+import com.adrien.games.bagl.rendering.light.SpotLight;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.vertex.Vertex;
 import com.adrien.games.bagl.rendering.vertex.VertexPositionTexture;
@@ -41,6 +42,7 @@ public class DeferredRenderingSample {
 		private Light ambient;
 		private DirectionalLight directional;
 		private PointLight point;
+		private SpotLight spot;
 		
 		private VertexBuffer vertexBuffer;
 		private IndexBuffer indexBuffer;
@@ -56,13 +58,14 @@ public class DeferredRenderingSample {
 
 			this.gbuffer = new FrameBuffer(WIDTH, HEIGHT, 2);
 			
-			this.mesh = MeshFactory.createPlane(5, 5);
+			this.mesh = MeshFactory.createRoom(5, 3, 5);
 			this.world = new Matrix4();
 			this.wvp = new Matrix4();
 			
 			this.ambient = new Light(0.1f);
-			this.directional = new DirectionalLight(0.5f, Color.WHITE, new Vector3(0, -1, 3));
+			this.directional = new DirectionalLight(0.5f, Color.WHITE, new Vector3(0.5f, -1, 3));
 			this.point = new PointLight(0.8f, Color.GREEN, new Vector3(1f, 0.1f, 0f), 1f);
+			this.spot = new SpotLight(1.0f, Color.YELLOW, new Vector3(0, 0.05f, 1.5f), 2, new Vector3(0, -1, 1), 5f);
 			
 			this.initQuad();
 
@@ -157,6 +160,12 @@ public class DeferredRenderingSample {
 			this.deferredShader.setUniform("uPoints[0].base.color", this.point.getColor());
 			this.deferredShader.setUniform("uPoints[0].position", this.point.getPosition());
 			this.deferredShader.setUniform("uPoints[0].radius", this.point.getRadius());
+			this.deferredShader.setUniform("uSpots[0].point.base.intensity", this.spot.getIntensity());
+			this.deferredShader.setUniform("uSpots[0].point.base.color", this.spot.getColor());
+			this.deferredShader.setUniform("uSpots[0].point.position", this.spot.getPosition());
+			this.deferredShader.setUniform("uSpots[0].point.radius", this.spot.getRadius());
+			this.deferredShader.setUniform("uSpots[0].direction", this.spot.getDirection());
+			this.deferredShader.setUniform("uSpots[0].angle", this.spot.getAngle());
 			this.deferredShader.setUniform("colors", 0);
 			this.deferredShader.setUniform("normals", 1);
 			this.deferredShader.setUniform("depth", 2);

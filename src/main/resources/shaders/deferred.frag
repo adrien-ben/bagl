@@ -21,6 +21,12 @@ struct PointLight {
 	float radius;
 };
 
+struct SpotLight {
+	PointLight point;
+	vec3 direction;
+	float angle;
+};
+
 in vec2 passCoords;
 
 out vec4 finalColor;
@@ -29,6 +35,7 @@ uniform Camera uCamera;
 uniform Light uAmbient;
 uniform DirectionalLight uDirectional;
 uniform PointLight uPoints[1];
+uniform SpotLight uSpots[1];
 
 uniform sampler2D colors;
 uniform sampler2D normals;
@@ -72,8 +79,17 @@ vec4 computePointLight(PointLight light, vec4 position, vec3 normal) {
 	}
 	lightDirection = normalize(lightDirection);
 	float attenuation = (1-distance/light.radius);
-	return computeDiffuse(light.base, normal, lightDirection)*attenuation
-			+ computeSpecular(light.base, position, normal, lightDirection)*attenuation;
+	return (computeDiffuse(light.base, normal, lightDirection) + computeSpecular(light.base, position, normal, lightDirection))*attenuation;
+}
+
+vec4 computeSpotLight(SpotLight light, vec4 position, vec3 normal) {
+	vec3 lightDirection = normalize(position.xyz - light.point.position);
+	float angle = dot(-light.direction, -lightDirection);
+	float maxAngle = cos(radians(light.angle));
+	if(angle <= maxAngle) {
+		return vec4(0, 0, 0, 1);
+	}
+	return computePointLight(light.point, position, normal);
 }
 
 void main() {
@@ -89,7 +105,8 @@ void main() {
 		vec4 ambient = computeAmbient(uAmbient);
 		vec4 directional = computeDirectional(normal, position);
 		vec4 point = computePointLight(uPoints[0], position, normal);
+		vec4 spot = computeSpotLight(uSpots[0], position, normal);
 		
-		finalColor = (ambient + directional + point)*color;
+		finalColor = (ambient + directional + point + spot)*color;
 	} 
 }
