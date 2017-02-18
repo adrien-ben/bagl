@@ -10,6 +10,11 @@ struct Light {
 	vec4 color;
 };
 
+struct DirectionalLight {
+	Light base;
+	vec3 direction;
+};
+
 struct PointLight {
 	Light base;
 	vec3 position;
@@ -22,6 +27,7 @@ out vec4 finalColor;
 
 uniform Camera uCamera;
 uniform Light uAmbient;
+uniform DirectionalLight uDirectional;
 uniform PointLight uPoints[1];
 
 uniform sampler2D colors;
@@ -53,6 +59,11 @@ vec4 computeSpecular(Light light, vec4 position, vec3 unitNormal, vec3 unitLight
 	return vec4(light.color.xyz*specular*light.intensity*specularIntensity, 1);
 }
 
+vec4 computeDirectional(vec3 normal, vec4 position) {
+	vec3 lightDirection = normalize(uDirectional.direction);
+	return computeDiffuse(uDirectional.base, normal, lightDirection) + computeSpecular(uDirectional.base, position, normal, lightDirection);
+}
+
 vec4 computePointLight(PointLight light, vec4 position, vec3 normal) {
 	vec3 lightDirection = position.xyz - light.position;
 	float distance = length(lightDirection);
@@ -76,8 +87,9 @@ void main() {
 		vec4 position = positionFromDepth(depthValue); 
 		
 		vec4 ambient = computeAmbient(uAmbient);
+		vec4 directional = computeDirectional(normal, position);
 		vec4 point = computePointLight(uPoints[0], position, normal);
 		
-		finalColor = (ambient + point)*color;
+		finalColor = (ambient + directional + point)*color;
 	} 
 }

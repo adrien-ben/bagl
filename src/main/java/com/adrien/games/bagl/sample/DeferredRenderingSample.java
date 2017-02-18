@@ -16,6 +16,7 @@ import com.adrien.games.bagl.rendering.Mesh;
 import com.adrien.games.bagl.rendering.Shader;
 import com.adrien.games.bagl.rendering.Spritebatch;
 import com.adrien.games.bagl.rendering.VertexBuffer;
+import com.adrien.games.bagl.rendering.light.DirectionalLight;
 import com.adrien.games.bagl.rendering.light.Light;
 import com.adrien.games.bagl.rendering.light.PointLight;
 import com.adrien.games.bagl.rendering.texture.Texture;
@@ -38,6 +39,7 @@ public class DeferredRenderingSample {
 		private Matrix4 wvp;
 		
 		private Light ambient;
+		private DirectionalLight directional;
 		private PointLight point;
 		
 		private VertexBuffer vertexBuffer;
@@ -59,7 +61,8 @@ public class DeferredRenderingSample {
 			this.wvp = new Matrix4();
 			
 			this.ambient = new Light(0.1f);
-			this.point = new PointLight(1f, Color.WHITE, new Vector3(0f, 0.1f, 0f), 1f);
+			this.directional = new DirectionalLight(0.5f, Color.WHITE, new Vector3(0, -1, 3));
+			this.point = new PointLight(0.8f, Color.GREEN, new Vector3(1f, 0.1f, 0f), 1f);
 			
 			this.initQuad();
 
@@ -147,6 +150,9 @@ public class DeferredRenderingSample {
 			this.deferredShader.setUniform("uCamera.position", this.camera.getPosition());
 			this.deferredShader.setUniform("uAmbient.intensity", this.ambient.getIntensity());
 			this.deferredShader.setUniform("uAmbient.color", this.ambient.getColor());
+			this.deferredShader.setUniform("uDirectional.base.intensity", this.directional.getIntensity());
+			this.deferredShader.setUniform("uDirectional.base.color", this.directional.getColor());
+			this.deferredShader.setUniform("uDirectional.direction", this.directional.getDirection());
 			this.deferredShader.setUniform("uPoints[0].base.intensity", this.point.getIntensity());
 			this.deferredShader.setUniform("uPoints[0].base.color", this.point.getColor());
 			this.deferredShader.setUniform("uPoints[0].position", this.point.getPosition());
