@@ -57,8 +57,8 @@ vec4 positionFromDepth(float depth) {
 	return vec4(position.xyz, 1);
 }
 
-float computeAttenuation(float distance, float constant, float linear, float quadratic) {
-	return 1/(constant + linear*distance + quadratic*distance*distance);
+float computeAttenuation(float distance, Attenuation attenuation) {
+	return 1/(attenuation.constant + attenuation.linear*distance + attenuation.quadratic*distance*distance);
 }
 
 vec4 computeAmbient(Light light) {
@@ -91,7 +91,7 @@ vec4 computePointLight(PointLight light, vec4 position, vec3 normal) {
 	}
 	lightDirection = normalize(lightDirection);
 
-	float attenuation = computeAttenuation(distance, light.attenuation.constant, light.attenuation.linear, light.attenuation.quadratic);
+	float attenuation = computeAttenuation(distance, light.attenuation);
 
 	return computeDiffuse(light.base, normal, lightDirection)*attenuation
 			+ computeSpecular(light.base, position, normal, lightDirection)*attenuation;
@@ -107,7 +107,6 @@ vec4 computeSpotLight(SpotLight light, vec4 position, vec3 normal) {
 
 	float epsilon = light.cutOff - light.outerCutOff;
 	float intensity = clamp((theta - light.outerCutOff)/epsilon, 0, 1);
-
 	return computePointLight(light.point, position, normal)*intensity;
 }
 
