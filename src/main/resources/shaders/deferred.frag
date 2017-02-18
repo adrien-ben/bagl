@@ -1,5 +1,10 @@
 #version 330
 
+struct Camera {
+	mat4 vp;
+	vec3 position;
+};
+
 struct Light {
 	float intensity;
 	vec4 color;
@@ -15,7 +20,7 @@ in vec2 passCoords;
 
 out vec4 finalColor;
 
-uniform mat4 viewProj;
+uniform Camera uCamera;
 uniform Light uAmbient;
 uniform PointLight uPoints[1];
 
@@ -26,7 +31,7 @@ uniform sampler2D depth;
 vec4 positionFromDepth(float depth) {
 	depth = depth*2 - 1;
 	vec4 screenSpace = vec4(passCoords*2 - 1, depth, 1); 
-	vec4 position = inverse(viewProj)*screenSpace;
+	vec4 position = inverse(uCamera.vp)*screenSpace;
 	position.xyz /= position.w;
 	return vec4(position.xyz, 1);
 }
@@ -35,14 +40,29 @@ vec4 computeAmbient(Light light) {
 	return vec4(light.color.xyz*light.intensity, 1);
 }
 
+vec4 computeDiffuse(Light light, vec3 unitNormal, vec3 unitLightDirection) {
+	float diffuse = max(dot(unitNormal, -unitLightDirection), 0);
+	return vec4(light.color.xyz*diffuse*light.intensity, 1);
+}
+
+vec4 computeSpecular(Light light, vec4 position, vec3 unitNormal, vec3 unitLightDirection) {
+	vec3 viewDir = normalize(uCamera.position - position.xyz);
+	vec3 refectDir = reflect(unitLightDirection, unitNormal);
+	float specular = pow(max(dot(viewDir, refectDir), 0), 64);
+	float specularIntensity = 0.5;
+	return vec4(light.color.xyz*specular*light.intensity*specularIntensity, 1);
+}
+
 vec4 computePointLight(PointLight light, vec4 position, vec3 normal) {
-	vec3 toLight = light.position - position.xyz;
-	float distance = length(toLight);
-	float diffuse = dot(normal, normalize(toLight));
-	if(distance > light.radius || diffuse < 0) {
+	vec3 lightDirection = position.xyz - light.position;
+	float distance = length(lightDirection);
+	if(distance > light.radius) {
 		return vec4(0, 0, 0, 1);
 	}
-	return vec4(light.base.color.xyz*diffuse*light.base.intensity, 1);
+	lightDirection = normalize(lightDirection);
+	float attenuation = (1-distance/light.radius);
+	return computeDiffuse(light.base, normal, lightDirection)*attenuation
+			+ computeSpecular(light.base, position, normal, lightDirection)*attenuation;
 }
 
 void main() {
@@ -55,9 +75,9 @@ void main() {
 		float depthValue = texture2D(depth, passCoords).r;
 		vec4 position = positionFromDepth(depthValue); 
 		
-		vec4 ambient = color*computeAmbient(uAmbient);
-		vec4 point = color*computePointLight(uPoints[0], position, normal);
+		vec4 ambient = computeAmbient(uAmbient);
+		vec4 point = computePointLight(uPoints[0], position, normal);
 		
-		finalColor = ambient + point;
+		finalColor = (ambient + point)*color;
 	} 
 }

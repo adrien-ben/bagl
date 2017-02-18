@@ -54,12 +54,12 @@ public class DeferredRenderingSample {
 
 			this.gbuffer = new FrameBuffer(WIDTH, HEIGHT, 2);
 			
-			this.mesh = MeshFactory.createPlane(2, 2);
+			this.mesh = MeshFactory.createPlane(5, 5);
 			this.world = new Matrix4();
 			this.wvp = new Matrix4();
 			
 			this.ambient = new Light(0.1f);
-			this.point = new PointLight(0.5f, Color.RED, new Vector3(0f, 0.1f, 0f), 1);
+			this.point = new PointLight(1f, Color.WHITE, new Vector3(0f, 0.1f, 0f), 1f);
 			
 			this.initQuad();
 
@@ -73,7 +73,7 @@ public class DeferredRenderingSample {
 			this.deferredShader.addFragmentShader("/deferred.frag");
 			this.deferredShader.compile();
 
-			this.camera = new Camera(new Vector3(0, 1, 2), new Vector3(0, -1, -2), Vector3.UP, 
+			this.camera = new Camera(new Vector3(0, 0.8f, 3), new Vector3(0, -0.8f, -3), Vector3.UP, 
 					(float)Math.toRadians(60f), (float)WIDTH/(float)HEIGHT, 1, 1000);		
 			
 			this.spritebatch = new Spritebatch(1024, WIDTH, HEIGHT);
@@ -143,7 +143,8 @@ public class DeferredRenderingSample {
 			this.vertexBuffer.bind();
 			this.indexBuffer.bind();
 			this.deferredShader.bind();
-			this.deferredShader.setUniform("viewProj", this.camera.getViewProj());
+			this.deferredShader.setUniform("uCamera.vp", this.camera.getViewProj());
+			this.deferredShader.setUniform("uCamera.position", this.camera.getPosition());
 			this.deferredShader.setUniform("uAmbient.intensity", this.ambient.getIntensity());
 			this.deferredShader.setUniform("uAmbient.color", this.ambient.getColor());
 			this.deferredShader.setUniform("uPoints[0].base.intensity", this.point.getIntensity());
