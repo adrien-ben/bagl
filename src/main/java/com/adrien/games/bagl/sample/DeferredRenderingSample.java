@@ -16,6 +16,7 @@ import com.adrien.games.bagl.rendering.Mesh;
 import com.adrien.games.bagl.rendering.Shader;
 import com.adrien.games.bagl.rendering.Spritebatch;
 import com.adrien.games.bagl.rendering.VertexBuffer;
+import com.adrien.games.bagl.rendering.light.Attenuation;
 import com.adrien.games.bagl.rendering.light.DirectionalLight;
 import com.adrien.games.bagl.rendering.light.Light;
 import com.adrien.games.bagl.rendering.light.PointLight;
@@ -58,14 +59,14 @@ public class DeferredRenderingSample {
 
 			this.gbuffer = new FrameBuffer(WIDTH, HEIGHT, 2);
 			
-			this.mesh = MeshFactory.createRoom(5, 3, 5);
+			this.mesh = MeshFactory.createPlane(100, 100);
 			this.world = new Matrix4();
 			this.wvp = new Matrix4();
 			
 			this.ambient = new Light(0.1f);
-			this.directional = new DirectionalLight(0.5f, Color.WHITE, new Vector3(0.5f, -1, 3));
-			this.point = new PointLight(0.8f, Color.GREEN, new Vector3(1f, 0.1f, 0f), 1f);
-			this.spot = new SpotLight(1.0f, Color.YELLOW, new Vector3(0, 0.05f, 1.5f), 2, new Vector3(0, -1, 1), 5f);
+			this.directional = new DirectionalLight(0.5f, Color.WHITE, new Vector3(0.5f, -1, 4));
+			this.point = new PointLight(1f, Color.GREEN, new Vector3(14f, 2f, 1f), 13f, new Attenuation(1, 0.35f, 0.44f));
+			this.spot = new SpotLight(1f, Color.RED, new Vector3(0, 0.5f, 0f), 13f, new Attenuation(1, 0.35f, 0.44f), new Vector3(0, -1, 1), 1f);
 			
 			this.initQuad();
 
@@ -79,7 +80,7 @@ public class DeferredRenderingSample {
 			this.deferredShader.addFragmentShader("/deferred.frag");
 			this.deferredShader.compile();
 
-			this.camera = new Camera(new Vector3(0, 0.8f, 3), new Vector3(0, -0.8f, -3), Vector3.UP, 
+			this.camera = new Camera(new Vector3(0, 8f, 25f), new Vector3(0, -8f, -25f), Vector3.UP, 
 					(float)Math.toRadians(60f), (float)WIDTH/(float)HEIGHT, 1, 1000);		
 			
 			this.spritebatch = new Spritebatch(1024, WIDTH, HEIGHT);
@@ -160,10 +161,16 @@ public class DeferredRenderingSample {
 			this.deferredShader.setUniform("uPoints[0].base.color", this.point.getColor());
 			this.deferredShader.setUniform("uPoints[0].position", this.point.getPosition());
 			this.deferredShader.setUniform("uPoints[0].radius", this.point.getRadius());
+			this.deferredShader.setUniform("uPoints[0].attenuation.constant", this.point.getAttenuation().getConstant());
+			this.deferredShader.setUniform("uPoints[0].attenuation.linear", this.point.getAttenuation().getLinear());
+			this.deferredShader.setUniform("uPoints[0].attenuation.quadratic", this.point.getAttenuation().getQuadratic());
 			this.deferredShader.setUniform("uSpots[0].point.base.intensity", this.spot.getIntensity());
 			this.deferredShader.setUniform("uSpots[0].point.base.color", this.spot.getColor());
 			this.deferredShader.setUniform("uSpots[0].point.position", this.spot.getPosition());
 			this.deferredShader.setUniform("uSpots[0].point.radius", this.spot.getRadius());
+			this.deferredShader.setUniform("uSpots[0].point.attenuation.constant", this.spot.getAttenuation().getConstant());
+			this.deferredShader.setUniform("uSpots[0].point.attenuation.linear", this.spot.getAttenuation().getLinear());
+			this.deferredShader.setUniform("uSpots[0].point.attenuation.quadratic", this.spot.getAttenuation().getQuadratic());
 			this.deferredShader.setUniform("uSpots[0].direction", this.spot.getDirection());
 			this.deferredShader.setUniform("uSpots[0].angle", this.spot.getAngle());
 			this.deferredShader.setUniform("colors", 0);

@@ -5,6 +5,12 @@ struct Camera {
 	vec3 position;
 };
 
+struct Attenuation {
+	float constant;
+	float linear;
+	float quadratic;
+};
+
 struct Light {
 	float intensity;
 	vec4 color;
@@ -19,6 +25,7 @@ struct PointLight {
 	Light base;
 	vec3 position;
 	float radius;
+	Attenuation attenuation;
 };
 
 struct SpotLight {
@@ -49,6 +56,10 @@ vec4 positionFromDepth(float depth) {
 	return vec4(position.xyz, 1);
 }
 
+float computeAttenuation(float distance, float constant, float linear, float quadratic) {
+	return 1/(constant + linear*distance + quadratic*distance*distance);
+}
+
 vec4 computeAmbient(Light light) {
 	return vec4(light.color.xyz*light.intensity, 1);
 }
@@ -61,8 +72,8 @@ vec4 computeDiffuse(Light light, vec3 unitNormal, vec3 unitLightDirection) {
 vec4 computeSpecular(Light light, vec4 position, vec3 unitNormal, vec3 unitLightDirection) {
 	vec3 viewDir = normalize(uCamera.position - position.xyz);
 	vec3 refectDir = reflect(unitLightDirection, unitNormal);
-	float specular = pow(max(dot(viewDir, refectDir), 0), 64);
-	float specularIntensity = 0.5;
+	float specular = pow(max(dot(viewDir, refectDir), 0), 32);
+	float specularIntensity = 1;
 	return vec4(light.color.xyz*specular*light.intensity*specularIntensity, 1);
 }
 
@@ -78,8 +89,11 @@ vec4 computePointLight(PointLight light, vec4 position, vec3 normal) {
 		return vec4(0, 0, 0, 1);
 	}
 	lightDirection = normalize(lightDirection);
-	float attenuation = (1-distance/light.radius);
-	return (computeDiffuse(light.base, normal, lightDirection) + computeSpecular(light.base, position, normal, lightDirection))*attenuation;
+
+	float attenuation = computeAttenuation(distance, light.attenuation.constant, light.attenuation.linear, light.attenuation.quadratic);
+
+	return computeDiffuse(light.base, normal, lightDirection)*attenuation
+			+ computeSpecular(light.base, position, normal, lightDirection)*attenuation;
 }
 
 vec4 computeSpotLight(SpotLight light, vec4 position, vec3 normal) {
