@@ -35,7 +35,6 @@ struct SpotLight {
 	float outerCutOff;
 };
 
-
 in vec2 passCoords;
 
 out vec4 finalColor;
@@ -75,40 +74,8 @@ vec4 computeSpecular(Light light, vec4 position, vec3 unitNormal, vec3 unitLight
 	vec3 viewDir = normalize(uCamera.position - position.xyz);
 	vec3 refectDir = reflect(unitLightDirection, unitNormal);
 	float specular = pow(max(dot(viewDir, refectDir), 0), 32);
-	float specularIntensity = 1;
+	float specularIntensity = 0.5;
 	return vec4(light.color.xyz*specular*light.intensity*specularIntensity, 1);
-}
-
-vec4 computeDirectional(vec3 normal, vec4 position) {
-	vec3 lightDirection = normalize(uDirectional.direction);
-	return computeDiffuse(uDirectional.base, normal, lightDirection) + computeSpecular(uDirectional.base, position, normal, lightDirection);
-}
-
-vec4 computePointLight(PointLight light, vec4 position, vec3 normal) {
-	vec3 lightDirection = position.xyz - light.position;
-	float distance = length(lightDirection);
-	if(distance > light.radius) {
-		return vec4(0, 0, 0, 1);
-	}
-	lightDirection = normalize(lightDirection);
-
-	float attenuation = computeAttenuation(distance, light.attenuation);
-
-	return computeDiffuse(light.base, normal, lightDirection)*attenuation
-			+ computeSpecular(light.base, position, normal, lightDirection)*attenuation;
-}
-
-vec4 computeSpotLight(SpotLight light, vec4 position, vec3 normal) {
-	vec3 lightDirection = normalize(position.xyz - light.point.position);
-
-	float theta = dot(-light.direction, -lightDirection);
-	if(theta <= light.outerCutOff) {
-		return vec4(0, 0, 0, 1);
-	}
-
-	float epsilon = light.cutOff - light.outerCutOff;
-	float intensity = clamp((theta - light.outerCutOff)/epsilon, 0, 1);
-	return computePointLight(light.point, position, normal)*intensity;
 }
 
 void main() {
@@ -120,20 +87,45 @@ void main() {
 		vec4 color = texture2D(colors, passCoords);
 		float depthValue = texture2D(depth, passCoords).r;
 		vec4 position = positionFromDepth(depthValue); 
+				
+		vec4 ambient = vec4(uAmbient.color.xyz*uAmbient.intensity, 1);
+		vec4 diffuse = vec4(0, 0, 0, 1);
+		vec4 specular = vec4(0, 0, 0, 1);
 		
-		vec4 ambient = computeAmbient(uAmbient);
-		vec4 directional = computeDirectional(normal, position);
+		//directional light
+		vec3 lightDirection = normalize(uDirectional.direction);
+		diffuse += computeDiffuse(uDirectional.base, normal, lightDirection);
+		specular += computeSpecular(uDirectional.base, position, normal, lightDirection);
 
-		vec4 point = vec4(0, 0, 0, 1);
+		//point lights
 		for(int i = 0; i < 4; i++) {
-			point += computePointLight(uPoints[i], position, normal);
+			PointLight light = uPoints[i];
+			lightDirection = position.xyz - light.position;
+			float distance = length(lightDirection);
+			if(distance <= light.radius) {
+				lightDirection = normalize(lightDirection);
+				float attenuation = computeAttenuation(distance, light.attenuation);
+				diffuse += computeDiffuse(light.base, normal, lightDirection)*attenuation;
+				specular += computeSpecular(light.base, position, normal, lightDirection)*attenuation;
+			}
 		}
 
-		vec4 spot = vec4(0, 0, 0, 1);
+		//spot lights
 		for(int i = 0; i < 3; i++) {
-			spot += computeSpotLight(uSpots[i], position, normal);
+			SpotLight light = uSpots[i];
+			lightDirection = position.xyz - light.point.position;
+			float distance = length(lightDirection);
+			lightDirection = normalize(lightDirection);
+			float theta = dot(-light.direction, -lightDirection);
+			if(theta > light.outerCutOff && distance <= light.point.radius) {
+				float epsilon = light.cutOff - light.outerCutOff;
+				float intensity = clamp((theta - light.outerCutOff)/epsilon, 0, 1);
+				float attenuation = computeAttenuation(distance, light.point.attenuation);
+				diffuse += computeDiffuse(light.point.base, normal, lightDirection)*attenuation*intensity;
+				specular += computeSpecular(light.point.base, position, normal, lightDirection)*attenuation*intensity;
+			}
 		}
 
-		finalColor = (ambient + directional + point + spot)*color;
+		finalColor = (ambient + diffuse)*color + specular;
 	} 
 }
