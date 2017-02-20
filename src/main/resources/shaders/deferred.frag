@@ -41,7 +41,7 @@ out vec4 finalColor;
 
 uniform Camera uCamera;
 uniform Light uAmbient;
-uniform DirectionalLight uDirectional;
+uniform DirectionalLight uDirectionals[2];
 uniform PointLight uPoints[4];
 uniform SpotLight uSpots[3];
 
@@ -83,20 +83,27 @@ void main() {
 	if(normal.x == 0 && normal.y == 0 && normal.z == 0) {
 		finalColor = vec4(0, 0, 0, 1);
 	} else {
+		//retrive data from gbuffer
 		vec3 normal = texture2D(normals, passCoords).xyz*2 - 1;
 		vec4 color = texture2D(colors, passCoords);
 		float depthValue = texture2D(depth, passCoords).r;
 		vec4 position = positionFromDepth(depthValue); 
-				
+		
+		//compute lights
 		vec4 ambient = vec4(uAmbient.color.xyz*uAmbient.intensity, 1);
 		vec4 diffuse = vec4(0, 0, 0, 1);
 		vec4 specular = vec4(0, 0, 0, 1);
+	
+		vec3 lightDirection;
+			
+		//directional lights
+		for(int i = 0; i < 2; i++) {
+			DirectionalLight light = uDirectionals[i];
+			lightDirection = normalize(light.direction);
+			diffuse += computeDiffuse(light.base, normal, lightDirection);
+			specular += computeSpecular(light.base, position, normal, lightDirection);
+		}
 		
-		//directional light
-		vec3 lightDirection = normalize(uDirectional.direction);
-		diffuse += computeDiffuse(uDirectional.base, normal, lightDirection);
-		specular += computeSpecular(uDirectional.base, position, normal, lightDirection);
-
 		//point lights
 		for(int i = 0; i < 4; i++) {
 			PointLight light = uPoints[i];

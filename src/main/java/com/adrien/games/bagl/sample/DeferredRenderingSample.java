@@ -34,7 +34,7 @@ public class DeferredRenderingSample {
 	private static final class TestGame implements Game {
 		
 		private static final String TITLE = "Deferred Rendering";
-		private static final int WIDTH = 1024;
+		private static final int WIDTH = 512;
 		private static final int HEIGHT = WIDTH * 9 / 16;
 		
 		private FrameBuffer gbuffer;
@@ -48,6 +48,7 @@ public class DeferredRenderingSample {
 		
 		private Light ambient;
 		private DirectionalLight directional;
+		private DirectionalLight directional1;
 		private PointLight point;
 		private PointLight point2;
 		private PointLight point3;
@@ -66,7 +67,7 @@ public class DeferredRenderingSample {
 		private Spritebatch spritebatch;
 		
 		private boolean isKeyPressed = false;
-		private boolean displayGbuffer = true;
+		private boolean displayGbuffer = false;
 		
 		@Override
 		public void init() {
@@ -82,6 +83,7 @@ public class DeferredRenderingSample {
 			
 			this.ambient = new Light(0.1f);
 			this.directional = new DirectionalLight(0.2f, Color.WHITE, new Vector3(0.5f, -2, 4));
+			this.directional1 = new DirectionalLight(0.2f, Color.TURQUOISE, new Vector3(0.5f, -3, -4));
 			this.point = new PointLight(1f, Color.GREEN, new Vector3(4f, 0.5f, 2f), 7f, new Attenuation(1, 0.7f, 1.8f));
 			this.point2 = new PointLight(1f, Color.YELLOW, new Vector3(-4f, 0.2f, 2f), 7f, new Attenuation(1, 0.7f, 1.8f));
 			this.point3 = new PointLight(1f, Color.BLUE, new Vector3(0f, 0.5f, 3f), 7f, new Attenuation(1, 0.7f, 1.8f));
@@ -133,7 +135,6 @@ public class DeferredRenderingSample {
 		@Override
 		public void update(Time time) {
 			Matrix4.mul(this.cubeWorld, Matrix4.createRotation(Vector3.UP, (float)Math.toRadians(10*time.getElapsedTime())), this.cubeWorld);
-			
 			if(Input.isKeyPressed(GLFW.GLFW_KEY_SPACE) && !this.isKeyPressed) {
 				this.displayGbuffer = !this.displayGbuffer;
 				this.isKeyPressed = true;
@@ -199,9 +200,8 @@ public class DeferredRenderingSample {
 			this.deferredShader.setUniform("uCamera.position", this.camera.getPosition());
 			this.deferredShader.setUniform("uAmbient.intensity", this.ambient.getIntensity());
 			this.deferredShader.setUniform("uAmbient.color", this.ambient.getColor());
-			this.deferredShader.setUniform("uDirectional.base.intensity", this.directional.getIntensity());
-			this.deferredShader.setUniform("uDirectional.base.color", this.directional.getColor());
-			this.deferredShader.setUniform("uDirectional.direction", this.directional.getDirection());
+			this.setDirectionalLight(this.deferredShader, 0, this.directional);
+			this.setDirectionalLight(this.deferredShader, 1, this.directional1);
 			this.setPointLight(this.deferredShader, 0, this.point);
 			this.setPointLight(this.deferredShader, 1, this.point2);
 			this.setPointLight(this.deferredShader, 2, this.point3);
@@ -221,6 +221,12 @@ public class DeferredRenderingSample {
 			Texture.unbind(0);
 			Texture.unbind(1);
 			Texture.unbind(2);
+		}
+		
+		private void setDirectionalLight(Shader shader, int index, DirectionalLight light) {
+			this.deferredShader.setUniform("uDirectionals[" + index + "].base.intensity", light.getIntensity());
+			this.deferredShader.setUniform("uDirectionals[" + index + "].base.color", light.getColor());
+			this.deferredShader.setUniform("uDirectionals[" + index + "].direction", light.getDirection());
 		}
 		
 		private void setPointLight(Shader shader, int index, PointLight light) {
