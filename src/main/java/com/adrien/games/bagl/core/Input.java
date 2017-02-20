@@ -4,7 +4,7 @@ import static org.lwjgl.glfw.GLFW.*;
 
 public final class Input {
 	
-	private static final int KEY_COUNT = 350;	
+	private static final int KEY_COUNT = 350;
 	private static final boolean[] KEY_STATES = new boolean[KEY_COUNT];
 	
 	static {

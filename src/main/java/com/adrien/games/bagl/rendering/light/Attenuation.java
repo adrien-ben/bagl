@@ -2,6 +2,9 @@ package com.adrien.games.bagl.rendering.light;
 
 public class Attenuation {
 
+	public static final Attenuation CLOSE = new Attenuation(1f, 0.7f, 1.8f);
+	public static final Attenuation VERY_FAR = new Attenuation(1f, 0.0014f, 0.000007f);
+	
 	private float constant;
 	private float linear;
 	private float quadratic;
