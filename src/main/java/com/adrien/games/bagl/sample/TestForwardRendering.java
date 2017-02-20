@@ -13,6 +13,11 @@ import com.adrien.games.bagl.rendering.IndexBuffer;
 import com.adrien.games.bagl.rendering.Mesh;
 import com.adrien.games.bagl.rendering.Shader;
 import com.adrien.games.bagl.rendering.VertexBuffer;
+import com.adrien.games.bagl.rendering.light.Attenuation;
+import com.adrien.games.bagl.rendering.light.DirectionalLight;
+import com.adrien.games.bagl.rendering.light.Light;
+import com.adrien.games.bagl.rendering.light.PointLight;
+import com.adrien.games.bagl.rendering.light.SpotLight;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.utils.MeshFactory;
 
@@ -37,31 +42,10 @@ public final class TestForwardRendering {
 		private Shader pointShader;
 		private Shader spotShader;
 		
-		//ambient light
-		private float ambientIntensity;
-		
-		//directional light 1
-		private Vector3 directionalColor;
-		private Vector3 directionalDirection;
-		private float directionnalIntensity;
-		
-		//point light 1
-		private Vector3 pointColor;
-		private Vector3 pointPosition;
-		private Vector3 pointAttenuation;
-		private float pointIntensity;
-		private float pointRange;
-		
-		//spot light 1
-		private Vector3 spotColor;
-		private Vector3 spotPosition;
-		private Vector3 spotDirection;
-		private Vector3 spotAttenuation;
-		private float spotIntensity;
-		private float spotCutOff;
-		
-		//things
-		int dir = 1;		
+		private Light ambient;
+		private DirectionalLight directional;
+		private PointLight point;
+		private SpotLight spot;
 		
 		@Override
 		public void init() {
@@ -112,36 +96,17 @@ public final class TestForwardRendering {
 		}
 		
 		private void initLights() {
-			//ambient light
-			this.ambientIntensity = 0.1f;
-			
-			//directional light 1
-			this.directionalColor = new Vector3(0.0f, 1.0f, 0.2f);
-			this.directionalDirection = new Vector3(0.0f, -1.0f, 1.0f);
-			this.directionnalIntensity = 0.1f;
-			
-			//point light 1
-			this.pointColor = new Vector3(0.0f, 1.0f, 1.0f);
-			this.pointPosition = new Vector3(0.0f, 1.5f, -8.0f);
-			this.pointAttenuation = new Vector3(0.0f,  0.0f, 1.5f);
-			this.pointIntensity = 0.8f;
-			this.pointRange = 10.0f;
-			
-			//spot light 1
-			this.spotColor = new Vector3(1.0f, 1.0f, 0.7f);
-			this.spotPosition = new Vector3(4.0f, 0.5f, 3.0f);
-			this.spotDirection = new Vector3(-3.0f, -1.0f, 5.0f);
-			this.spotAttenuation = new Vector3(0.0f, 0.0f, 0.3f);
-			this.spotIntensity = 0.6f;
-			this.spotCutOff = (float)Math.cos(Math.toRadians(20.0f));			
+			this.ambient = new Light(0.1f);
+			this.directional = new DirectionalLight(0.1f, new Color(0f, 1f, 0.2f), new Vector3(0.0f, -1.0f, 1.0f));
+			this.point = new PointLight(0.8f, new Color(0.0f, 1.0f, 1.0f), new Vector3(0.0f, 1.5f, -8.0f), 10f, 
+					new Attenuation(0.0f,  0.0f, 1.5f));
+			this.spot = new SpotLight(0.6f, new Color(1.0f, 1.0f, 0.7f), new Vector3(4.0f, 0.5f, 3.0f), 10f,
+					new Attenuation(0.0f, 0.0f, 0.3f), new Vector3(-3.0f, -1.0f, 5.0f), 20f, 0f);		
 		}
 
 		@Override
 		public void update(Time time) {
-			if(this.pointPosition.getX() > 9.0f || this.pointPosition.getX() < -9.0f) {
-				this.dir *= -1;
-			}
-			this.pointPosition.setX(this.pointPosition.getX() + this.dir*time.getElapsedTime()*2.0f);
+			this.point.getPosition().setX((float)Math.sin(time.getTotalTime())*9);
 		}
 
 		@Override
@@ -155,8 +120,8 @@ public final class TestForwardRendering {
 			this.ambientShader.bind();
 			this.ambientShader.setUniform("uMatrices.model", this.transform);
 			this.ambientShader.setUniform("uMatrices.mvp", this.camera.getViewProj());
-			this.ambientShader.setUniform("uBaseLight.color", Color.WHITE);
-			this.ambientShader.setUniform("uBaseLight.intensity", this.ambientIntensity);
+			this.ambientShader.setUniform("uBaseLight.color", this.ambient.getColor());
+			this.ambientShader.setUniform("uBaseLight.intensity", this.ambient.getIntensity());
 			
 			GL11.glDrawElements(GL11.GL_TRIANGLES, this.mesh.getIndices().getSize(), GL11.GL_UNSIGNED_INT, 0);
 
@@ -168,9 +133,9 @@ public final class TestForwardRendering {
 			this.directionalShader.setUniform("uMatrices.world", this.transform);
 			this.directionalShader.setUniform("uMatrices.wvp", this.camera.getViewProj());
 			this.directionalShader.setUniform("uEyePosition", this.camera.getPosition());
-			this.directionalShader.setUniform("uLight.base.color", this.directionalColor);
-			this.directionalShader.setUniform("uLight.direction", this.directionalDirection);
-			this.directionalShader.setUniform("uLight.base.intensity", this.directionnalIntensity);
+			this.directionalShader.setUniform("uLight.base.color", this.directional.getColor());
+			this.directionalShader.setUniform("uLight.direction", this.directional.getDirection());
+			this.directionalShader.setUniform("uLight.base.intensity", this.directional.getIntensity());
 			this.directionalShader.setUniform("uMaterial.specularIntensity", this.mesh.getMaterial().getSpecularIntensity());
 			this.directionalShader.setUniform("uMaterial.specularExponent", this.mesh.getMaterial().getSpecularExponent());
 			
@@ -181,11 +146,14 @@ public final class TestForwardRendering {
 			this.pointShader.setUniform("uMatrices.world", this.transform);
 			this.pointShader.setUniform("uMatrices.wvp", this.camera.getViewProj());
 			this.pointShader.setUniform("uEyePosition", this.camera.getPosition());
-			this.pointShader.setUniform("uLight.base.color", this.pointColor);
-			this.pointShader.setUniform("uLight.position", this.pointPosition);
-			this.pointShader.setUniform("uLight.base.intensity", this.pointIntensity);
-			this.pointShader.setUniform("uLight.attenuation", this.pointAttenuation);
-			this.pointShader.setUniform("uLight.range", this.pointRange);
+			this.pointShader.setUniform("uLight.base.color", this.point.getColor());
+			this.pointShader.setUniform("uLight.position", this.point.getPosition());
+			this.pointShader.setUniform("uLight.base.intensity", this.point.getIntensity());
+			this.pointShader.setUniform("uLight.attenuation", new Vector3(
+					this.point.getAttenuation().getConstant(), 
+					this.point.getAttenuation().getLinear(), 
+					this.point.getAttenuation().getQuadratic()));
+			this.pointShader.setUniform("uLight.range", this.point.getRadius());
 			this.pointShader.setUniform("uMaterial.specularIntensity", this.mesh.getMaterial().getSpecularIntensity());
 			this.pointShader.setUniform("uMaterial.specularExponent", this.mesh.getMaterial().getSpecularExponent());
 			
@@ -196,13 +164,16 @@ public final class TestForwardRendering {
 			this.spotShader.setUniform("uMatrices.world", this.transform);
 			this.spotShader.setUniform("uMatrices.wvp", this.camera.getViewProj());
 			this.spotShader.setUniform("uEyePosition", this.camera.getPosition());
-			this.spotShader.setUniform("uLight.point.base.color", this.spotColor);
-			this.spotShader.setUniform("uLight.point.base.intensity", this.spotIntensity);
-			this.spotShader.setUniform("uLight.point.position", this.spotPosition);
-			this.spotShader.setUniform("uLight.point.attenuation", this.spotAttenuation);
-			this.spotShader.setUniform("uLight.point.range", 10.f);
-			this.spotShader.setUniform("uLight.direction", this.spotDirection);
-			this.spotShader.setUniform("uLight.cutOff", this.spotCutOff);
+			this.spotShader.setUniform("uLight.point.base.color", this.spot.getColor());
+			this.spotShader.setUniform("uLight.point.base.intensity", this.spot.getIntensity());
+			this.spotShader.setUniform("uLight.point.position", this.spot.getPosition());
+			this.spotShader.setUniform("uLight.point.attenuation", new Vector3(
+					this.spot.getAttenuation().getConstant(), 
+					this.spot.getAttenuation().getLinear(), 
+					this.spot.getAttenuation().getQuadratic()));
+			this.spotShader.setUniform("uLight.point.range", this.spot.getRadius());
+			this.spotShader.setUniform("uLight.direction", this.spot.getDirection());
+			this.spotShader.setUniform("uLight.cutOff", this.spot.getCutOff());
 			this.spotShader.setUniform("uMaterial.specularIntensity", this.mesh.getMaterial().getSpecularIntensity());
 			this.spotShader.setUniform("uMaterial.specularExponent", this.mesh.getMaterial().getSpecularExponent());
 			

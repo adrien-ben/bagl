@@ -8,7 +8,7 @@ out vec4 color;
 
 struct BaseLight
 {
-	vec3 color;
+	vec4 color;
 	float intensity;
 };
 
@@ -43,7 +43,7 @@ vec3 computeLight(BaseLight base, vec3 lightDirection, vec3 eyeToPosition, vec3 
 	if(diffuseFactor <= 0)
 		return result;
 		
-	result = base.color*base.intensity*diffuseFactor;
+	result = base.color.xyz*base.intensity*diffuseFactor;
 	
 	vec3 reflectedLightDirection = normalize(reflect(lightDirection, normal));
 	eyeToPosition = normalize(eyeToPosition);
@@ -53,7 +53,7 @@ vec3 computeLight(BaseLight base, vec3 lightDirection, vec3 eyeToPosition, vec3 
 		return result;
 		
 	specularFactor = pow(specularFactor, material.specularExponent)*material.specularIntensity;
-	result += base.color*specularFactor;
+	result += base.color.xyz*specularFactor;
 	
 	return result;
 }
