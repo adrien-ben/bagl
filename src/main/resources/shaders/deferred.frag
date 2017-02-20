@@ -35,15 +35,19 @@ struct SpotLight {
 	float outerCutOff;
 };
 
+const int MAX_DIR_LIGHTS = 2;
+const int MAX_POINT_LIGHTS = 4;
+const int MAX_SPOT_LIGHTS = 3;
+
 in vec2 passCoords;
 
 out vec4 finalColor;
 
 uniform Camera uCamera;
 uniform Light uAmbient;
-uniform DirectionalLight uDirectionals[2];
-uniform PointLight uPoints[4];
-uniform SpotLight uSpots[3];
+uniform DirectionalLight uDirectionals[MAX_DIR_LIGHTS];
+uniform PointLight uPoints[MAX_POINT_LIGHTS];
+uniform SpotLight uSpots[MAX_SPOT_LIGHTS];
 
 uniform sampler2D colors;
 uniform sampler2D normals;
@@ -97,7 +101,7 @@ void main() {
 		vec3 lightDirection;
 			
 		//directional lights
-		for(int i = 0; i < 2; i++) {
+		for(int i = 0; i < MAX_DIR_LIGHTS; i++) {
 			DirectionalLight light = uDirectionals[i];
 			lightDirection = normalize(light.direction);
 			diffuse += computeDiffuse(light.base, normal, lightDirection);
@@ -105,7 +109,7 @@ void main() {
 		}
 		
 		//point lights
-		for(int i = 0; i < 4; i++) {
+		for(int i = 0; i < MAX_POINT_LIGHTS; i++) {
 			PointLight light = uPoints[i];
 			lightDirection = position.xyz - light.position;
 			float distance = length(lightDirection);
@@ -118,7 +122,7 @@ void main() {
 		}
 
 		//spot lights
-		for(int i = 0; i < 3; i++) {
+		for(int i = 0; i < MAX_SPOT_LIGHTS; i++) {
 			SpotLight light = uSpots[i];
 			lightDirection = position.xyz - light.point.position;
 			float distance = length(lightDirection);

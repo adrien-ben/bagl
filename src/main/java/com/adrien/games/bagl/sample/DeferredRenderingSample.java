@@ -2,6 +2,9 @@ package com.adrien.games.bagl.sample;
 
 import static org.lwjgl.opengl.GL11.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.lwjgl.glfw.GLFW;
 
 import com.adrien.games.bagl.core.Camera;
@@ -47,15 +50,9 @@ public class DeferredRenderingSample {
 		private Matrix4 wvp;
 		
 		private Light ambient;
-		private DirectionalLight directional;
-		private DirectionalLight directional1;
-		private PointLight point;
-		private PointLight point2;
-		private PointLight point3;
-		private PointLight point4;
-		private SpotLight spot;
-		private SpotLight spot1;
-		private SpotLight spot2;
+		private List<DirectionalLight> directionals = new ArrayList<>();
+		private List<PointLight> points = new ArrayList<>();
+		private List<SpotLight> spots = new ArrayList<>();
 		
 		private VertexBuffer vertexBuffer;
 		private IndexBuffer indexBuffer;
@@ -82,18 +79,18 @@ public class DeferredRenderingSample {
 			this.wvp = new Matrix4();
 			
 			this.ambient = new Light(0.1f);
-			this.directional = new DirectionalLight(0.2f, Color.WHITE, new Vector3(0.5f, -2, 4));
-			this.directional1 = new DirectionalLight(0.2f, Color.TURQUOISE, new Vector3(0.5f, -3, -4));
-			this.point = new PointLight(1f, Color.GREEN, new Vector3(4f, 0.5f, 2f), 7f, new Attenuation(1, 0.7f, 1.8f));
-			this.point2 = new PointLight(1f, Color.YELLOW, new Vector3(-4f, 0.2f, 2f), 7f, new Attenuation(1, 0.7f, 1.8f));
-			this.point3 = new PointLight(1f, Color.BLUE, new Vector3(0f, 0.5f, 3f), 7f, new Attenuation(1, 0.7f, 1.8f));
-			this.point4 = new PointLight(1f, Color.PURPLE, new Vector3(0f, 2.5f, 1f), 7f, new Attenuation(1, 0.7f, 1.8f));
-			this.spot = new SpotLight(1f, Color.RED, new Vector3(-1f, 0.5f, -3f), 7f, new Attenuation(1, 0.7f, 1.8f), 
-					new Vector3(0f, -1f, 0.8f), 20f, 5f);
-			this.spot1 = new SpotLight(1f, Color.WHITE, new Vector3(4f, 0.5f, -3f), 7f, new Attenuation(1, 0.7f, 1.8f), 
-					new Vector3(-1f, -1f, 1.2f), 10f, 2f);
-			this.spot2 = new SpotLight(1f, Color.ORANGE, new Vector3(-0.5f, 0.5f, 1f), 7f, new Attenuation(1, 0.7f, 1.8f), 
-					new Vector3(2f, 0.7f, -1f), 10f, 5f);
+			this.directionals.add(new DirectionalLight(0.2f, Color.WHITE, new Vector3(0.5f, -2, 4)));
+			this.directionals.add(new DirectionalLight(0.2f, Color.TURQUOISE, new Vector3(0.5f, -3, -4)));
+			this.points.add(new PointLight(1f, Color.GREEN, new Vector3(4f, 0.5f, 2f), 7f, new Attenuation(1, 0.7f, 1.8f)));
+			this.points.add(new PointLight(1f, Color.YELLOW, new Vector3(-4f, 0.2f, 2f), 7f, new Attenuation(1, 0.7f, 1.8f)));
+			this.points.add(new PointLight(1f, Color.BLUE, new Vector3(0f, 0.5f, 3f), 7f, new Attenuation(1, 0.7f, 1.8f)));
+			this.points.add(new PointLight(1f, Color.PURPLE, new Vector3(0f, 2.5f, 1f), 7f, new Attenuation(1, 0.7f, 1.8f)));
+			this.spots.add(new SpotLight(1f, Color.RED, new Vector3(-1f, 0.5f, -3f), 7f, new Attenuation(1, 0.7f, 1.8f), 
+					new Vector3(0f, -1f, 0.8f), 20f, 5f));
+			this.spots.add(new SpotLight(1f, Color.WHITE, new Vector3(4f, 0.5f, -3f), 7f, new Attenuation(1, 0.7f, 1.8f), 
+					new Vector3(-1f, -1f, 1.2f), 10f, 2f));
+			this.spots.add(new SpotLight(1f, Color.ORANGE, new Vector3(-0.5f, 0.5f, 1f), 7f, new Attenuation(1, 0.7f, 1.8f), 
+					new Vector3(2f, 0.7f, -1f), 10f, 5f));
 			
 			this.initQuad();
 
@@ -200,15 +197,15 @@ public class DeferredRenderingSample {
 			this.deferredShader.setUniform("uCamera.position", this.camera.getPosition());
 			this.deferredShader.setUniform("uAmbient.intensity", this.ambient.getIntensity());
 			this.deferredShader.setUniform("uAmbient.color", this.ambient.getColor());
-			this.setDirectionalLight(this.deferredShader, 0, this.directional);
-			this.setDirectionalLight(this.deferredShader, 1, this.directional1);
-			this.setPointLight(this.deferredShader, 0, this.point);
-			this.setPointLight(this.deferredShader, 1, this.point2);
-			this.setPointLight(this.deferredShader, 2, this.point3);
-			this.setPointLight(this.deferredShader, 3, this.point4);
-			this.setSpotLight(this.deferredShader, 0, this.spot);
-			this.setSpotLight(this.deferredShader, 1, this.spot1);
-			this.setSpotLight(this.deferredShader, 2, this.spot2);
+			for(int i = 0; i < this.directionals.size(); i++) {				
+				this.setDirectionalLight(this.deferredShader, i, this.directionals.get(i));
+			}
+			for(int i = 0; i < this.points.size(); i++) {
+				this.setPointLight(this.deferredShader, i, this.points.get(i));
+			}
+			for(int i = 0; i < this.spots.size(); i++) {
+				this.setSpotLight(this.deferredShader, i, this.spots.get(i));
+			}
 			this.deferredShader.setUniform("colors", 0);
 			this.deferredShader.setUniform("normals", 1);
 			this.deferredShader.setUniform("depth", 2);

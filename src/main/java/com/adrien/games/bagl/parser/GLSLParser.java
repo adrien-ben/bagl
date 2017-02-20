@@ -2,20 +2,25 @@ package com.adrien.games.bagl.parser;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.StringTokenizer;import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class GLSLParser {
 
-	private static final Pattern ARRAY_PATTERN = Pattern.compile("^.+\\[\\d+\\]$");
-	private static final Pattern ARRAY_SIZE_PATTERN = Pattern.compile("^.+\\[(\\d+)?\\]$");
-	private static final Pattern ARRAY_NAME_PATTERN = Pattern.compile("^(.+)?\\[\\d+\\]$");
+	private static final Pattern ARRAY_PATTERN = Pattern.compile("^.+\\[.+\\]$");
+	private static final Pattern ARRAY_SIZE_PATTERN = Pattern.compile("^.+\\[(.+)?\\]$");
+	private static final Pattern ARRAY_NAME_PATTERN = Pattern.compile("^(.+)?\\[.+\\]$");
+	private static final String INTEGER_TYPE = "int";
 	
 	private String version;
 	private HashMap<String, GLSLStructure> structures;
 	private ArrayList<GLSLAttribute> inAttributes;
 	private ArrayList<GLSLAttribute> outAttributes;
 	private ArrayList<GLSLAttribute> uniformAttributes;
+	private Map<String, GLSLConstant> constants;
+	
 	private ArrayList<String> uniforms;
 
 	public GLSLParser() {
@@ -23,6 +28,7 @@ public class GLSLParser {
 		this.inAttributes = new ArrayList<GLSLAttribute>();
 		this.outAttributes = new ArrayList<GLSLAttribute>();
 		this.uniformAttributes = new ArrayList<GLSLAttribute>();
+		this.constants = new HashMap<>();
 		this.uniforms = new ArrayList<String>();
 	}
 
@@ -35,7 +41,7 @@ public class GLSLParser {
 	}
 
 	private Boolean constructSourceSkeleton(String glslSource) {
-		StringTokenizer tokenizer = new StringTokenizer(glslSource, " \r\n\t;{");
+		StringTokenizer tokenizer = new StringTokenizer(glslSource, " \r\n\t=;{");
 		while(tokenizer.hasMoreTokens()) {
 			String token = tokenizer.nextToken();
 			if(token.equals("#version")) {
@@ -49,6 +55,9 @@ public class GLSLParser {
 			} else if(token.equals("struct")) {
 				GLSLStructure structure = parseStructure(tokenizer);
 				structures.put(structure.getName(), structure);
+			} else if("const".equals(token)) {
+				GLSLConstant constant = this.parseConstant(tokenizer);
+				constants.put(constant.getName(), constant);
 			}
 		}
 		return true;
@@ -75,6 +84,13 @@ public class GLSLParser {
 		return new GLSLStructure(name, attributes);
 	}
 
+	private GLSLConstant parseConstant(StringTokenizer tokenizer) {
+		String type = tokenizer.nextToken();
+		String name = tokenizer.nextToken();
+		String value = tokenizer.nextToken();
+		return new GLSLConstant(type, name, Integer.parseInt(value));
+	}
+	
 	private void generateUniforms() {
 		for(GLSLAttribute uniform : uniformAttributes) {
 			GLSLStructure struct = structures.get(uniform.getType());
@@ -124,7 +140,21 @@ public class GLSLParser {
 	private int getArraySize(String uniformName) {
 		Matcher matcher = ARRAY_SIZE_PATTERN.matcher(uniformName);
 		matcher.matches();
-		return Integer.parseInt(matcher.group(1));
+		String size = matcher.group(1);
+		if(size.matches("\\d+")) {
+			return Integer.parseInt(matcher.group(1));
+		} else {
+			return getIntegerConstantValue(size);
+		}
+	}
+	
+	private int getIntegerConstantValue(String name) {
+		GLSLConstant constant = constants.get(name);
+		if(Objects.isNull(constant) || !INTEGER_TYPE.equals(constant.getType())) {
+			throw new RuntimeException("The constant '" + name + "' is not defined or is not an integer");
+		} else {
+			return constant.getValue();
+		}
 	}
 	
 	private String getArrayName(String uniformName) {
