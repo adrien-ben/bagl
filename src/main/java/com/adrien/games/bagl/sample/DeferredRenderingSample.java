@@ -39,7 +39,7 @@ public class DeferredRenderingSample {
 	private static final class TestGame implements Game {
 		
 		private static final String TITLE = "Deferred Rendering";
-		private static final int WIDTH = 512;
+		private static final int WIDTH = 1024;
 		private static final int HEIGHT = WIDTH * 9 / 16;
 		
 		private FrameBuffer gbuffer;
@@ -71,34 +71,20 @@ public class DeferredRenderingSample {
 		
 		@Override
 		public void init() {
-
-			this.gbuffer = new FrameBuffer(WIDTH, HEIGHT, 3);
 			
-			this.material = MaterialFactory.createDiffuseColor(Color.BLACK, 2f, 32f);
+			this.material = MaterialFactory.createDiffuseColor(Color.CYAN, 1f, 32f);
 			this.plane = MeshFactory.createPlane(10, 10);
 			this.world = new Matrix4();
 			this.cube = MeshFactory.createBox(1, 1, 1);
-			this.cubeWorld = Matrix4.createTranslation(new Vector3(0, 0.5f, 0));
-			
+			this.cubeWorld = Matrix4.createTranslation(new Vector3(0, 0.5f, 0));			
 			this.wvp = new Matrix4();
 			
-			this.ambient = new Light(0.1f);
-			this.directionals.add(new DirectionalLight(0.2f, Color.WHITE, new Vector3(0.5f, -2, 4)));
-			this.directionals.add(new DirectionalLight(0.2f, Color.TURQUOISE, new Vector3(0.5f, -3, -4)));
-			this.points.add(new PointLight(1f, Color.GREEN, new Vector3(4f, 0.5f, 2f), 7f, Attenuation.CLOSE));
-			this.points.add(new PointLight(1f, Color.YELLOW, new Vector3(-4f, 0.2f, 2f), 7f, Attenuation.CLOSE));
-			this.points.add(new PointLight(1f, Color.BLUE, new Vector3(0f, 0.5f, 3f), 7f, Attenuation.CLOSE));
-			this.points.add(new PointLight(1f, Color.PURPLE, new Vector3(0f, 2.5f, 1f), 7f, Attenuation.CLOSE));
-			this.points.add(new PointLight(2f, Color.TURQUOISE, new Vector3(-1f, 0.1f, 1f), 7f, Attenuation.CLOSE));
-			this.spots.add(new SpotLight(10f, Color.RED, new Vector3(-1f, 0.5f, -3f), 7f, Attenuation.CLOSE, 
-					new Vector3(0f, -1f, 0.8f), 20f, 5f));
-			this.spots.add(new SpotLight(2f, Color.WHITE, new Vector3(2f, 2f, 2f), 7f, Attenuation.CLOSE, 
-					new Vector3(0f, -1f, -0f), 10f, 5f));
-			this.spots.add(new SpotLight(1f, Color.ORANGE, new Vector3(-0.5f, 0.5f, 0.5f), 7f, Attenuation.CLOSE, 
-					new Vector3(2f, 0.7f, -1f), 20f, 5f));
+			this.setUpLights();
 			
 			this.initQuad();
 
+			this.gbuffer = new FrameBuffer(WIDTH, HEIGHT, 3);
+			
 			this.gbufferShader = new Shader();
 			this.gbufferShader.addVertexShader("/gbuffer.vert");
 			this.gbufferShader.addFragmentShader("/gbuffer.frag");
@@ -116,6 +102,23 @@ public class DeferredRenderingSample {
 			
 			glEnable(GL_DEPTH_TEST);
 			glEnable(GL_CULL_FACE);
+		}
+		
+		private void setUpLights() {
+			this.ambient = new Light(0.1f);
+			this.directionals.add(new DirectionalLight(0.2f, Color.WHITE, new Vector3(0.5f, -2, 4)));
+			this.directionals.add(new DirectionalLight(0.2f, Color.TURQUOISE, new Vector3(0.5f, -3, -4)));
+			this.points.add(new PointLight(1f, Color.GREEN, new Vector3(4f, 0.5f, 2f), 7f, Attenuation.CLOSE));
+			this.points.add(new PointLight(1f, Color.YELLOW, new Vector3(-4f, 0.2f, 2f), 7f, Attenuation.CLOSE));
+			this.points.add(new PointLight(1f, Color.BLUE, new Vector3(0f, 0.5f, 3f), 7f, Attenuation.CLOSE));
+			this.points.add(new PointLight(1f, Color.PURPLE, new Vector3(0f, 2.5f, 1f), 7f, Attenuation.CLOSE));
+			this.points.add(new PointLight(2f, Color.TURQUOISE, new Vector3(-1f, 0.1f, 1f), 7f, Attenuation.CLOSE));
+			this.spots.add(new SpotLight(10f, Color.RED, new Vector3(-1f, 0.5f, -3f), 7f, Attenuation.CLOSE, 
+					new Vector3(0f, -1f, 0.8f), 20f, 5f));
+			this.spots.add(new SpotLight(2f, Color.WHITE, new Vector3(2f, 2f, 2f), 7f, Attenuation.CLOSE, 
+					new Vector3(0f, -1f, -0f), 10f, 5f));
+			this.spots.add(new SpotLight(1f, Color.ORANGE, new Vector3(-0.5f, 0.5f, 0.5f), 7f, Attenuation.CLOSE, 
+					new Vector3(2f, 0.7f, -1f), 20f, 5f));
 		}
 		
 		private void initQuad() {

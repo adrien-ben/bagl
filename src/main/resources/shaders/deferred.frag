@@ -92,7 +92,7 @@ void main() {
 		finalColor = vec4(0, 0, 0, 1);
 	} else {
 		//retrive data from gbuffer
-		normal = normal*2 - 1;
+		normal = normalize(normal*2 - 1);
 		vec4 color = texture2D(uGBuffer.colors, passCoords);
 		float depthValue = texture2D(uGBuffer.depth, passCoords).r;
 		vec4 position = positionFromDepth(depthValue);
