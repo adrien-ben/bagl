@@ -3,6 +3,7 @@ package com.adrien.games.bagl.sample;
 import org.lwjgl.opengl.GL11;
 
 import com.adrien.games.bagl.core.Camera;
+import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.core.Engine;
 import com.adrien.games.bagl.core.Game;
 import com.adrien.games.bagl.core.Matrix4;
@@ -12,6 +13,7 @@ import com.adrien.games.bagl.rendering.IndexBuffer;
 import com.adrien.games.bagl.rendering.Mesh;
 import com.adrien.games.bagl.rendering.Shader;
 import com.adrien.games.bagl.rendering.VertexBuffer;
+import com.adrien.games.bagl.rendering.light.DirectionalLight;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.utils.MeshFactory;
 
@@ -26,13 +28,9 @@ public final class TestLightDir {
 		private Mesh mesh;
 		private Matrix4 model;
 		private Shader shader;
-		private Camera camera;
+		private Camera camera;		
 		
-		private float lightIntensity;
-		private Vector3 lightColor;
-		private Vector3 lightDir;
-		private float specExponent;
-		private float specIntensity;
+		private DirectionalLight directional;
 		
 		@Override
 		public void init() {
@@ -47,11 +45,7 @@ public final class TestLightDir {
 			this.camera = new Camera(new Vector3(0, 2, 10), new Vector3(0, -2, -10), Vector3.UP, 
 					(float)Math.toRadians(70f), (float)WIDTH/(float)HEIGHT, 0.1f, 1000f);
 			
-			this.lightIntensity = 1.f;
-			this.lightColor = new Vector3(1.f, 1.f, 1.f);
-			this.lightDir = new Vector3(0f, -1f, -3f);
-			this.specExponent = 32f;
-			this.specIntensity = 2f;
+			this.directional = new DirectionalLight(1.0f, Color.WHITE, new Vector3(0f, -1f, -3f));
 		}
 
 		@Override
@@ -64,13 +58,13 @@ public final class TestLightDir {
 			this.shader.setUniform("uMatrices.world", this.model);
 			this.shader.setUniform("uMatrices.wvp", this.camera.getViewProj());
 			this.shader.setUniform("uEyePosition", this.camera.getPosition());
-			this.shader.setUniform("uLight.base.intensity", this.lightIntensity);
-			this.shader.setUniform("uLight.base.color", this.lightColor);
-			this.shader.setUniform("uLight.direction", this.lightDir);
-			this.shader.setUniform("uMaterial.specularExponent", this.specExponent);
-			this.shader.setUniform("uMaterial.specularIntensity", this.specIntensity);
+			this.shader.setUniform("uLight.base.intensity", this.directional.getIntensity());
+			this.shader.setUniform("uLight.base.color", this.directional.getColor());
+			this.shader.setUniform("uLight.direction", this.directional.getDirection());
+			this.shader.setUniform("uMaterial.specularExponent", this.mesh.getMaterial().getSpecularExponent());
+			this.shader.setUniform("uMaterial.specularIntensity", this.mesh.getMaterial().getSpecularIntensity());
 			
-			this.mesh.getMaterial().getDiffuseTexture().bind();
+			this.mesh.getMaterial().getDiffuseMap().bind();
 			this.mesh.getVertices().bind();
 			this.mesh.getIndices().bind();
 			

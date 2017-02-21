@@ -67,7 +67,7 @@ public class ObjModelSample {
 			this.shader.setUniform("uBaseLight.intensity", this.lightIntensity);
 			this.shader.setUniform("uBaseLight.color", Color.WHITE);
 			
-			this.mesh.getMaterial().getDiffuseTexture().bind();
+			this.mesh.getMaterial().getDiffuseMap().bind();
 			this.mesh.getVertices().bind();
 			this.mesh.getIndices().bind();
 			

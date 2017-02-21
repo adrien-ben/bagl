@@ -18,6 +18,7 @@ import com.adrien.games.bagl.core.Vector2;
 import com.adrien.games.bagl.core.Vector3;
 import com.adrien.games.bagl.rendering.FrameBuffer;
 import com.adrien.games.bagl.rendering.IndexBuffer;
+import com.adrien.games.bagl.rendering.Material;
 import com.adrien.games.bagl.rendering.Mesh;
 import com.adrien.games.bagl.rendering.Shader;
 import com.adrien.games.bagl.rendering.Spritebatch;
@@ -37,11 +38,12 @@ public class DeferredRenderingSample {
 	private static final class TestGame implements Game {
 		
 		private static final String TITLE = "Deferred Rendering";
-		private static final int WIDTH = 1024;
+		private static final int WIDTH = 512;
 		private static final int HEIGHT = WIDTH * 9 / 16;
 		
 		private FrameBuffer gbuffer;
 		
+		private Material material;
 		private Mesh plane;
 		private Matrix4 world;
 		private Mesh cube;
@@ -71,6 +73,7 @@ public class DeferredRenderingSample {
 
 			this.gbuffer = new FrameBuffer(WIDTH, HEIGHT, 2);
 			
+			this.material = new Material();
 			this.plane = MeshFactory.createPlane(10, 10);
 			this.world = new Matrix4();
 			this.cube = MeshFactory.createBox(1, 1, 1);
@@ -159,11 +162,11 @@ public class DeferredRenderingSample {
 		private void renderGbuffer() {
 			
 			Matrix4.mul(this.camera.getViewProj(), this.world, this.wvp);
-			
-			this.plane.getMaterial().getDiffuseTexture().bind();
+
 			this.plane.getVertices().bind();
 			this.plane.getIndices().bind();
 			this.gbufferShader.bind();
+			this.setMaterial(this.gbufferShader, this.plane.getMaterial());
 			this.gbufferShader.setUniform("uMatrices.world", this.world);
 			this.gbufferShader.setUniform("uMatrices.wvp", this.wvp);
 			this.gbuffer.bind();
@@ -172,9 +175,9 @@ public class DeferredRenderingSample {
 			glDrawElements(GL_TRIANGLES, this.plane.getIndices().getSize(), GL_UNSIGNED_INT, 0);
 			
 			Matrix4.mul(this.camera.getViewProj(), this.cubeWorld, this.wvp);
-			this.cube.getMaterial().getDiffuseTexture().bind();
 			this.cube.getVertices().bind();
 			this.cube.getIndices().bind();
+			this.setMaterial(this.gbufferShader, this.material);
 			this.gbufferShader.setUniform("uMatrices.world", this.cubeWorld);
 			this.gbufferShader.setUniform("uMatrices.wvp", this.wvp);
 			
@@ -221,33 +224,41 @@ public class DeferredRenderingSample {
 			Texture.unbind(2);
 		}
 		
+		private void setMaterial(Shader shader, Material material) {
+			if(material.hasDiffuseMap()) {
+				material.getDiffuseMap().bind();
+			}
+			shader.setUniform("uMaterial.diffuseColor", material.getDiffuseColor());
+			shader.setUniform("uMaterial.hasDiffuseMap", material.hasDiffuseMap());
+		}
+		
 		private void setDirectionalLight(Shader shader, int index, DirectionalLight light) {
-			this.deferredShader.setUniform("uDirectionals[" + index + "].base.intensity", light.getIntensity());
-			this.deferredShader.setUniform("uDirectionals[" + index + "].base.color", light.getColor());
-			this.deferredShader.setUniform("uDirectionals[" + index + "].direction", light.getDirection());
+			shader.setUniform("uDirectionals[" + index + "].base.intensity", light.getIntensity());
+			shader.setUniform("uDirectionals[" + index + "].base.color", light.getColor());
+			shader.setUniform("uDirectionals[" + index + "].direction", light.getDirection());
 		}
 		
 		private void setPointLight(Shader shader, int index, PointLight light) {
-			this.deferredShader.setUniform("uPoints[" + index + "].base.intensity", light.getIntensity());
-			this.deferredShader.setUniform("uPoints[" + index + "].base.color", light.getColor());
-			this.deferredShader.setUniform("uPoints[" + index + "].position", light.getPosition());
-			this.deferredShader.setUniform("uPoints[" + index + "].radius", light.getRadius());
-			this.deferredShader.setUniform("uPoints[" + index + "].attenuation.constant", light.getAttenuation().getConstant());
-			this.deferredShader.setUniform("uPoints[" + index + "].attenuation.linear", light.getAttenuation().getLinear());
-			this.deferredShader.setUniform("uPoints[" + index + "].attenuation.quadratic", light.getAttenuation().getQuadratic());
+			shader.setUniform("uPoints[" + index + "].base.intensity", light.getIntensity());
+			shader.setUniform("uPoints[" + index + "].base.color", light.getColor());
+			shader.setUniform("uPoints[" + index + "].position", light.getPosition());
+			shader.setUniform("uPoints[" + index + "].radius", light.getRadius());
+			shader.setUniform("uPoints[" + index + "].attenuation.constant", light.getAttenuation().getConstant());
+			shader.setUniform("uPoints[" + index + "].attenuation.linear", light.getAttenuation().getLinear());
+			shader.setUniform("uPoints[" + index + "].attenuation.quadratic", light.getAttenuation().getQuadratic());
 		}
 		
 		private void setSpotLight(Shader shader, int index, SpotLight light) {
-			this.deferredShader.setUniform("uSpots[" + index + "].point.base.intensity", light.getIntensity());
-			this.deferredShader.setUniform("uSpots[" + index + "].point.base.color", light.getColor());
-			this.deferredShader.setUniform("uSpots[" + index + "].point.position", light.getPosition());
-			this.deferredShader.setUniform("uSpots[" + index + "].point.radius", light.getRadius());
-			this.deferredShader.setUniform("uSpots[" + index + "].point.attenuation.constant", light.getAttenuation().getConstant());
-			this.deferredShader.setUniform("uSpots[" + index + "].point.attenuation.linear", light.getAttenuation().getLinear());
-			this.deferredShader.setUniform("uSpots[" + index + "].point.attenuation.quadratic", light.getAttenuation().getQuadratic());
-			this.deferredShader.setUniform("uSpots[" + index + "].direction", light.getDirection());
-			this.deferredShader.setUniform("uSpots[" + index + "].cutOff", light.getCutOff());
-			this.deferredShader.setUniform("uSpots[" + index + "].outerCutOff", light.getOuterCutOff());
+			shader.setUniform("uSpots[" + index + "].point.base.intensity", light.getIntensity());
+			shader.setUniform("uSpots[" + index + "].point.base.color", light.getColor());
+			shader.setUniform("uSpots[" + index + "].point.position", light.getPosition());
+			shader.setUniform("uSpots[" + index + "].point.radius", light.getRadius());
+			shader.setUniform("uSpots[" + index + "].point.attenuation.constant", light.getAttenuation().getConstant());
+			shader.setUniform("uSpots[" + index + "].point.attenuation.linear", light.getAttenuation().getLinear());
+			shader.setUniform("uSpots[" + index + "].point.attenuation.quadratic", light.getAttenuation().getQuadratic());
+			shader.setUniform("uSpots[" + index + "].direction", light.getDirection());
+			shader.setUniform("uSpots[" + index + "].cutOff", light.getCutOff());
+			shader.setUniform("uSpots[" + index + "].outerCutOff", light.getOuterCutOff());
 		}
 		
 		@Override

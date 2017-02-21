@@ -3,6 +3,7 @@ package com.adrien.games.bagl.sample;
 import org.lwjgl.opengl.GL11;
 
 import com.adrien.games.bagl.core.Camera;
+import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.core.Engine;
 import com.adrien.games.bagl.core.Game;
 import com.adrien.games.bagl.core.Matrix4;
@@ -12,6 +13,8 @@ import com.adrien.games.bagl.rendering.IndexBuffer;
 import com.adrien.games.bagl.rendering.Mesh;
 import com.adrien.games.bagl.rendering.Shader;
 import com.adrien.games.bagl.rendering.VertexBuffer;
+import com.adrien.games.bagl.rendering.light.Attenuation;
+import com.adrien.games.bagl.rendering.light.SpotLight;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.utils.MeshFactory;
 
@@ -28,15 +31,7 @@ public final class TestLightSpot {
 		private Shader shader;
 		private Camera camera;
 		
-		private Vector3 lightAtten;
-		private float lightIntensity;
-		private Vector3 lightColor;
-		private Vector3 lightPosition;
-		private Vector3 lightDirection;
-		private float lightCutOff;
-		
-		private float specExponent;
-		private float specIntensity;
+		private SpotLight spot;
 		
 		@Override
 		public void init() {
@@ -53,15 +48,8 @@ public final class TestLightSpot {
 			
 			this.model = new Matrix4();
 			
-			this.lightAtten = new Vector3(0f, 0f, 0.05f);
-			this.lightIntensity = 0.8f;
-			this.lightColor = new Vector3(1.f, 1.f, 0.85f);
-			this.lightPosition = new Vector3(0f, 2f, -4f);
-			this.lightDirection = new Vector3(0, -1, 2);
-			this.lightCutOff = (float)Math.cos(Math.toRadians(25));
-			
-			this.specExponent = 8.f;
-			this.specIntensity = 0.6f;
+			this.spot = new SpotLight(0.8f, new Color(1.f, 1.f, 0.85f), new Vector3(0.0f, 2.0f, -4.0f), 10.0f, 
+					new Attenuation(0f, 0f, 0.05f), new Vector3(0, -1, 2), 25.0f, 0.0f);
 			
 			GL11.glEnable(GL11.GL_CULL_FACE);
 		}
@@ -75,18 +63,19 @@ public final class TestLightSpot {
 			this.shader.bind();
 			this.shader.setUniform("uMatrices.world", this.model);
 			this.shader.setUniform("uMatrices.wvp", this.camera.getViewProj());
-			this.shader.setUniform("uLight.point.attenuation", this.lightAtten);
-			this.shader.setUniform("uLight.point.base.intensity", this.lightIntensity);
-			this.shader.setUniform("uLight.point.base.color", this.lightColor);
-			this.shader.setUniform("uLight.point.position", this.lightPosition);
-			this.shader.setUniform("uLight.point.range", 10.f);
-			this.shader.setUniform("uLight.direction", this.lightDirection);
-			this.shader.setUniform("uLight.cutOff", this.lightCutOff);
-			this.shader.setUniform("uMaterial.specularExponent", this.specExponent);
-			this.shader.setUniform("uMaterial.specularIntensity", this.specIntensity);
+			this.shader.setUniform("uLight.point.attenuation", new Vector3(this.spot.getAttenuation().getConstant(), 
+					this.spot.getAttenuation().getLinear(), this.spot.getAttenuation().getQuadratic()));
+			this.shader.setUniform("uLight.point.base.intensity", this.spot.getIntensity());
+			this.shader.setUniform("uLight.point.base.color", this.spot.getColor());
+			this.shader.setUniform("uLight.point.position", this.spot.getPosition());
+			this.shader.setUniform("uLight.point.range", this.spot.getRadius());
+			this.shader.setUniform("uLight.direction", this.spot.getDirection());
+			this.shader.setUniform("uLight.cutOff", this.spot.getCutOff());
+			this.shader.setUniform("uMaterial.specularExponent", this.mesh.getMaterial().getSpecularExponent());
+			this.shader.setUniform("uMaterial.specularIntensity", this.mesh.getMaterial().getSpecularIntensity());
 			this.shader.setUniform("uEyePosition", this.camera.getPosition());
 			
-			this.mesh.getMaterial().getDiffuseTexture().bind();
+			this.mesh.getMaterial().getDiffuseMap().bind();
 			this.mesh.getVertices().bind();
 			this.mesh.getIndices().bind();
 			

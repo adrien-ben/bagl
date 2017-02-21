@@ -41,7 +41,7 @@ public final class MeshFactory {
 		IndexBuffer indexBuffer = new IndexBuffer(indices);
 		VertexBuffer vertexBuffer = new VertexBuffer(VertexPositionNormalTexture.DESCRIPTION, vertices);
 		
-		Material material = new Material(texture, 12, 1);
+		Material material = MaterialFactory.createDiffuseMap(texture, 1.0f, 12.0f);
 		return new Mesh(vertexBuffer, indexBuffer, material);
 	}
 	
@@ -52,16 +52,16 @@ public final class MeshFactory {
 		
 		Vertex[] vertices = new Vertex[4];
 		vertices[0] = new VertexPositionNormalTexture(new Vector3(-width/2,  0, depth/2), Vector3.UP, new Vector2(xOffset, yOffset));
-		vertices[1] = new VertexPositionNormalTexture(new Vector3(width/2,  0, depth/2), Vector3.UP, new Vector2(8 - xOffset, yOffset));
-		vertices[2] = new VertexPositionNormalTexture(new Vector3(-width/2,  0, -depth/2), Vector3.UP, new Vector2(xOffset, 8 - yOffset));
-		vertices[3] = new VertexPositionNormalTexture(new Vector3(width/2,  0, -depth/2), Vector3.UP, new Vector2(8 - xOffset, 8 - yOffset));
+		vertices[1] = new VertexPositionNormalTexture(new Vector3(width/2,  0, depth/2), Vector3.UP, new Vector2(width - xOffset, yOffset));
+		vertices[2] = new VertexPositionNormalTexture(new Vector3(-width/2,  0, -depth/2), Vector3.UP, new Vector2(xOffset, depth - yOffset));
+		vertices[3] = new VertexPositionNormalTexture(new Vector3(width/2,  0, -depth/2), Vector3.UP, new Vector2(width - xOffset, depth - yOffset));
 		
 		int[] indices = new int[]{0, 1, 2, 2, 1, 3};
 		
 		IndexBuffer indexBuffer = new IndexBuffer(indices);
 		VertexBuffer vertexBuffer = new VertexBuffer(VertexPositionNormalTexture.DESCRIPTION, vertices);
 		
-		Material material = new Material(texture, 12, 1);
+		Material material = MaterialFactory.createDiffuseMap(texture, 1.0f, 12.0f);
 		return new Mesh(vertexBuffer, indexBuffer, material);
 	}
 	
@@ -118,7 +118,7 @@ public final class MeshFactory {
 		IndexBuffer indexBuffer = new IndexBuffer(indices);
 		VertexBuffer vertexBuffer = new VertexBuffer(VertexPositionNormalTexture.DESCRIPTION, vertices);
 		
-		Material material = new Material(texture, 12, 1);
+		Material material = MaterialFactory.createDiffuseMap(texture, 1.0f, 12.0f);
 		return new Mesh(vertexBuffer, indexBuffer, material);
 	}
 	

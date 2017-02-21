@@ -191,6 +191,16 @@ public class Shader {
 	}
 
 	/**
+	 * Sets the value of a boolean uniform.
+	 * @param name The name of the uniform.
+	 * @param bool The value of the uniform.
+	 * @author Adrien.
+	 */
+	public void setUniform(String name, boolean bool) {
+		this.setUniform(name, bool ? 1 :0);
+	}
+	
+	/**
 	 * Gets the location of a uniform parameter.
 	 * @param name the name of the uniform parameter.
 	 * @return The location of it.

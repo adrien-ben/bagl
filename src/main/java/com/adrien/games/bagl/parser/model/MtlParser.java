@@ -75,7 +75,7 @@ public class MtlParser {
 	}
 	
 	private void parseNewMaterial(String name) {
-		currentMaterial = new Material(null, 0, 2);
+		currentMaterial = new Material();
 		materials.put(name, currentMaterial);
 	}
 	
@@ -83,7 +83,7 @@ public class MtlParser {
 		this.checkCurrentMaterial();
 		String folderPath = Paths.get(this.currentFile).getParent().toString();
 		String texturePath = folderPath + "/" + fileName;
-		this.currentMaterial.setDiffuse(new Texture(texturePath));
+		this.currentMaterial.setDiffuseMap(new Texture(texturePath));
 	}
 	
 	private void parseSpecularExponent(String value) {

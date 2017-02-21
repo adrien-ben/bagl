@@ -9,6 +9,7 @@ public class Color {
 	public static final Color BLUE = new Color(0, 0, 1);
 	public static final Color YELLOW = new Color(1, 1, 0);
 	public static final Color PURPLE = new Color(1, 0, 1);
+	public static final Color CYAN = new Color(0, 1, 1);
 	public static final Color ORANGE = new Color(1, 165f/255, 0);
 	public static final Color TURQUOISE = new Color(64f/255, 224f/255, 208f/255);
 	

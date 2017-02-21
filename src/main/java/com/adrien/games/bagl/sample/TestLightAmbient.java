@@ -3,7 +3,6 @@ package com.adrien.games.bagl.sample;
 import org.lwjgl.opengl.GL11;
 
 import com.adrien.games.bagl.core.Camera;
-import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.core.Engine;
 import com.adrien.games.bagl.core.Game;
 import com.adrien.games.bagl.core.Matrix4;
@@ -13,6 +12,7 @@ import com.adrien.games.bagl.rendering.IndexBuffer;
 import com.adrien.games.bagl.rendering.Mesh;
 import com.adrien.games.bagl.rendering.Shader;
 import com.adrien.games.bagl.rendering.VertexBuffer;
+import com.adrien.games.bagl.rendering.light.Light;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.utils.MeshFactory;
 
@@ -29,7 +29,7 @@ public final class TestLightAmbient {
 		private Shader shader;
 		private Camera camera;
 		
-		private float lightIntensity;
+		private Light ambient;
 		
 		@Override
 		public void init() {
@@ -45,7 +45,7 @@ public final class TestLightAmbient {
 			
 			this.model = new Matrix4();
 			
-			this.lightIntensity = .3f;
+			this.ambient = new Light(0.3f);
 			
 			GL11.glEnable(GL11.GL_CULL_FACE);
 			GL11.glEnable(GL11.GL_DEPTH_TEST);
@@ -60,10 +60,10 @@ public final class TestLightAmbient {
 			this.shader.bind();
 			this.shader.setUniform("uMatrices.model", this.model);
 			this.shader.setUniform("uMatrices.mvp", this.camera.getViewProj());
-			this.shader.setUniform("uBaseLight.intensity", this.lightIntensity);
-			this.shader.setUniform("uBaseLight.color", Color.WHITE);
+			this.shader.setUniform("uBaseLight.intensity", this.ambient.getIntensity());
+			this.shader.setUniform("uBaseLight.color", this.ambient.getColor());
 			
-			this.mesh.getMaterial().getDiffuseTexture().bind();
+			this.mesh.getMaterial().getDiffuseMap().bind();
 			this.mesh.getVertices().bind();
 			this.mesh.getIndices().bind();
 			

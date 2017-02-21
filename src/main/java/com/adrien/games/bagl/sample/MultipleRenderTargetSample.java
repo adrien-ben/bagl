@@ -69,7 +69,7 @@ public class MultipleRenderTargetSample {
 		@Override
 		public void render() {
 
-			this.mesh.getMaterial().getDiffuseTexture().bind();
+			this.mesh.getMaterial().getDiffuseMap().bind();
 			this.mesh.getVertices().bind();
 			this.mesh.getIndices().bind();
 
