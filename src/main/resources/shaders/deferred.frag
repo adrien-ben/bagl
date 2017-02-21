@@ -89,6 +89,7 @@ vec4 computeSpecular(Light light, float shininess, float glossiness, vec4 positi
 void main() {
 	vec3 normal = texture2D(uGBuffer.normals, passCoords).xyz;
 	if(normal.x == 0 && normal.y == 0 && normal.z == 0) {
+		gl_FragDepth = 1.0;
 		finalColor = vec4(0, 0, 0, 1);
 	} else {
 		//retrive data from gbuffer
@@ -142,6 +143,7 @@ void main() {
 			}
 		}
 
+		gl_FragDepth = depthValue;
 		finalColor = (ambient + diffuse)*color + specular;
 	} 
 }

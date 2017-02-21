@@ -30,6 +30,7 @@ import com.adrien.games.bagl.rendering.light.PointLight;
 import com.adrien.games.bagl.rendering.light.SpotLight;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.vertex.Vertex;
+import com.adrien.games.bagl.rendering.vertex.VertexPositionColor;
 import com.adrien.games.bagl.rendering.vertex.VertexPositionTexture;
 import com.adrien.games.bagl.utils.MaterialFactory;
 import com.adrien.games.bagl.utils.MeshFactory;
@@ -39,7 +40,7 @@ public class DeferredRenderingSample {
 	private static final class TestGame implements Game {
 		
 		private static final String TITLE = "Deferred Rendering";
-		private static final int WIDTH = 1024;
+		private static final int WIDTH = 512;
 		private static final int HEIGHT = WIDTH * 9 / 16;
 		
 		private FrameBuffer gbuffer;
@@ -62,6 +63,7 @@ public class DeferredRenderingSample {
 		
 		private Shader gbufferShader;
 		private Shader deferredShader;
+		private Shader debugShader;
 		private Camera camera;
 		
 		private Spritebatch spritebatch;
@@ -69,10 +71,12 @@ public class DeferredRenderingSample {
 		private boolean isKeyPressed = false;
 		private boolean displayGbuffer = false;
 		
+		private VertexBuffer lightPositions;
+		
 		@Override
 		public void init() {
 			
-			this.material = MaterialFactory.createDiffuseColor(Color.CYAN, 1f, 32f);
+			this.material = MaterialFactory.createDiffuseColor(Color.BLACK, 0.8f, 32f);
 			this.plane = MeshFactory.createPlane(10, 10);
 			this.world = new Matrix4();
 			this.cube = MeshFactory.createBox(1, 1, 1);
@@ -94,16 +98,37 @@ public class DeferredRenderingSample {
 			this.deferredShader.addVertexShader("/deferred.vert");
 			this.deferredShader.addFragmentShader("/deferred.frag");
 			this.deferredShader.compile();
+			
+			this.debugShader = new Shader();
+			this.debugShader.addVertexShader("/debug.vert");
+			this.debugShader.addFragmentShader("/debug.frag");
+			this.debugShader.compile();
 
 			this.camera = new Camera(new Vector3(0f, 2f, 6f), new Vector3(0f, -2f, -6f), Vector3.UP, 
 					(float)Math.toRadians(60f), (float)WIDTH/(float)HEIGHT, 1, 1000);		
 			
 			this.spritebatch = new Spritebatch(1024, WIDTH, HEIGHT);
 			
+			this.initLightsPosition();
+			
 			glEnable(GL_DEPTH_TEST);
 			glEnable(GL_CULL_FACE);
+			glPointSize(5);
 		}
 		
+		private void initLightsPosition() {
+			Vertex[] vertices = new Vertex[this.points.size() + this.spots.size()];
+			for(int i = 0; i < this.points.size(); i++) {
+				PointLight light = this.points.get(i);
+				vertices[i] = new VertexPositionColor(light.getPosition(), light.getColor());
+			}
+			for(int i = 0; i < this.spots.size(); i++) {
+				SpotLight light = this.spots.get(i);
+				vertices[i + this.points.size()] = new VertexPositionColor(light.getPosition(), light.getColor());
+			}
+			this.lightPositions = new VertexBuffer(VertexPositionColor.DESCRIPTION, vertices);
+		}
+
 		private void setUpLights() {
 			this.ambient = new Light(0.1f);
 			this.directionals.add(new DirectionalLight(0.2f, Color.WHITE, new Vector3(0.5f, -2, 4)));
@@ -111,16 +136,16 @@ public class DeferredRenderingSample {
 			this.points.add(new PointLight(1f, Color.GREEN, new Vector3(4f, 0.5f, 2f), 7f, Attenuation.CLOSE));
 			this.points.add(new PointLight(1f, Color.YELLOW, new Vector3(-4f, 0.2f, 2f), 7f, Attenuation.CLOSE));
 			this.points.add(new PointLight(1f, Color.BLUE, new Vector3(0f, 0.5f, 3f), 7f, Attenuation.CLOSE));
-			this.points.add(new PointLight(1f, Color.PURPLE, new Vector3(0f, 2.5f, 1f), 7f, Attenuation.CLOSE));
+			this.points.add(new PointLight(1f, Color.PURPLE, new Vector3(0f, 3f, 0f), 7f, Attenuation.CLOSE));
 			this.points.add(new PointLight(2f, Color.TURQUOISE, new Vector3(-1f, 0.1f, 1f), 7f, Attenuation.CLOSE));
-			this.spots.add(new SpotLight(10f, Color.RED, new Vector3(-1f, 0.5f, -3f), 7f, Attenuation.CLOSE, 
+			this.spots.add(new SpotLight(10f, Color.RED, new Vector3(-2f, 0.5f, -3f), 7f, Attenuation.CLOSE, 
 					new Vector3(0f, -1f, 0.8f), 20f, 5f));
 			this.spots.add(new SpotLight(2f, Color.WHITE, new Vector3(2f, 2f, 2f), 7f, Attenuation.CLOSE, 
 					new Vector3(0f, -1f, -0f), 10f, 5f));
 			this.spots.add(new SpotLight(1f, Color.ORANGE, new Vector3(-0.5f, 0.5f, 0.5f), 7f, Attenuation.CLOSE, 
 					new Vector3(2f, 0.7f, -1f), 20f, 5f));
 		}
-		
+
 		private void initQuad() {
 			float uOffset = 1/WIDTH;
 			float vOffset = 1/HEIGHT;
@@ -153,6 +178,7 @@ public class DeferredRenderingSample {
 		public void render() {
 			this.generateGbuffer();			
 			this.renderDeferred();
+			this.renderLightsPositions();
 			
 			if(this.displayGbuffer) {
 				this.spritebatch.start();
@@ -196,6 +222,7 @@ public class DeferredRenderingSample {
 		}
 		
 		private void renderDeferred() {
+			
 			this.gbuffer.getColorTexture(0).bind(0);
 			this.gbuffer.getColorTexture(1).bind(1);
 			this.gbuffer.getColorTexture(2).bind(3);
@@ -230,6 +257,16 @@ public class DeferredRenderingSample {
 			Texture.unbind(1);
 			Texture.unbind(2);
 			Texture.unbind(3);
+
+		}
+		
+		public void renderLightsPositions() {
+			this.lightPositions.bind();
+			this.debugShader.bind();
+			this.debugShader.setUniform("viewProj", this.camera.getViewProj());
+			glDrawArrays(GL_POINTS, 0, this.points.size() + this.spots.size());
+			Shader.unbind();
+			VertexBuffer.unbind();
 		}
 		
 		private void setMaterial(Shader shader, Material material) {
