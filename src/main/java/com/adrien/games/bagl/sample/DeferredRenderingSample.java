@@ -76,7 +76,7 @@ public class DeferredRenderingSample {
 		@Override
 		public void init() {
 			
-			this.material = MaterialFactory.createDiffuseColor(Color.BLACK, 0.8f, 32f);
+			this.material = MaterialFactory.createDiffuseColor(Color.GREEN, 0.8f, 32f);
 			this.plane = MeshFactory.createPlane(10, 10);
 			this.world = new Matrix4();
 			this.cube = MeshFactory.createBox(1, 1, 1);
@@ -113,7 +113,7 @@ public class DeferredRenderingSample {
 			
 			glEnable(GL_DEPTH_TEST);
 			glEnable(GL_CULL_FACE);
-			glPointSize(5);
+			glPointSize(6);
 		}
 		
 		private void initLightsPosition() {
@@ -219,6 +219,7 @@ public class DeferredRenderingSample {
 			IndexBuffer.unbind();
 			VertexBuffer.unbind();
 			Texture.unbind();
+			Texture.unbind(1);
 		}
 		
 		private void renderDeferred() {
@@ -271,11 +272,17 @@ public class DeferredRenderingSample {
 		
 		private void setMaterial(Shader shader, Material material) {
 			if(material.hasDiffuseMap()) {
-				material.getDiffuseMap().bind();
+				shader.setUniform("uMaterial.diffuseMap", 0);
+				material.getDiffuseMap().bind(0);
+			}
+			if(material.hasSpecularMap()) {
+				shader.setUniform("uMaterial.specularMap", 1);
+				material.getSpecularMap().bind(1);
 			}
 			shader.setUniform("uMaterial.diffuseColor", material.getDiffuseColor());
 			shader.setUniform("uMaterial.hasDiffuseMap", material.hasDiffuseMap());
 			shader.setUniform("uMaterial.specularIntensity", material.getSpecularIntensity());
+			shader.setUniform("uMaterial.hasSpecularMap", material.hasSpecularMap());
 		}
 		
 		private void setDirectionalLight(Shader shader, int index, DirectionalLight light) {

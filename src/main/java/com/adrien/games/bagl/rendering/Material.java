@@ -11,9 +11,14 @@ public class Material {
 	private Texture diffuseMap = null;
 	private float specularExponent = 0.0f;
 	private float specularIntensity = 0.0f;
+	private Texture specularMap = null;
 	
 	public boolean hasDiffuseMap() {
 		return Objects.nonNull(this.diffuseMap);
+	}
+	
+	public boolean hasSpecularMap() {
+		return Objects.nonNull(this.specularMap);
 	}
 	
 	public void destroy() {
@@ -52,6 +57,14 @@ public class Material {
 
 	public void setSpecularIntensity(float specularIntensity) {
 		this.specularIntensity = specularIntensity;
+	}
+
+	public Texture getSpecularMap() {
+		return specularMap;
+	}
+
+	public void setSpecularMap(Texture specularMap) {
+		this.specularMap = specularMap;
 	}
 	
 }

@@ -25,6 +25,13 @@ public final class MaterialFactory {
 		return material;
 	}
 	
+	public static Material createDiffuseMap(Texture diffuseMap, Texture specularMap) {
+		Material material = new Material();
+		material.setDiffuseMap(diffuseMap);
+		material.setSpecularMap(specularMap);
+		return material;
+	}
+	
 	public static Material createDiffuseColor(Color diffuseColor, float specularIntensity, float specularExponent) {
 		Material material = new Material();
 		material.setDiffuseColor(diffuseColor);

@@ -5,6 +5,8 @@ struct Material {
 	bool hasDiffuseMap;
 	sampler2D diffuseMap;
 	float specularIntensity;
+	bool hasSpecularMap;
+	sampler2D specularMap;
 };
 
 in vec2 passCoords;
@@ -23,5 +25,9 @@ void main() {
 		colors = uMaterial.diffuseColor;
 	}
 	normals = vec4(normalize(passNormal)*0.5 + 0.5, 1);
-	shininess = vec4(uMaterial.specularIntensity, uMaterial.specularIntensity, uMaterial.specularIntensity, 1);
+	if(uMaterial.hasSpecularMap) {
+		shininess = texture2D(uMaterial.specularMap, passCoords);
+	} else {	
+		shininess = vec4(uMaterial.specularIntensity, uMaterial.specularIntensity, uMaterial.specularIntensity, 1);
+	}
 }
