@@ -31,6 +31,7 @@ import com.adrien.games.bagl.rendering.light.SpotLight;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.vertex.Vertex;
 import com.adrien.games.bagl.rendering.vertex.VertexPositionTexture;
+import com.adrien.games.bagl.utils.MaterialFactory;
 import com.adrien.games.bagl.utils.MeshFactory;
 
 public class DeferredRenderingSample {
@@ -71,9 +72,9 @@ public class DeferredRenderingSample {
 		@Override
 		public void init() {
 
-			this.gbuffer = new FrameBuffer(WIDTH, HEIGHT, 2);
+			this.gbuffer = new FrameBuffer(WIDTH, HEIGHT, 3);
 			
-			this.material = new Material();
+			this.material = MaterialFactory.createDiffuseColor(Color.BLACK, 2f, 32f);
 			this.plane = MeshFactory.createPlane(10, 10);
 			this.world = new Matrix4();
 			this.cube = MeshFactory.createBox(1, 1, 1);
@@ -147,7 +148,7 @@ public class DeferredRenderingSample {
 
 		@Override
 		public void render() {
-			this.renderGbuffer();			
+			this.generateGbuffer();			
 			this.renderDeferred();
 			
 			if(this.displayGbuffer) {
@@ -155,11 +156,12 @@ public class DeferredRenderingSample {
 				this.spritebatch.draw(this.gbuffer.getColorTexture(0), Vector2.ZERO, WIDTH/3, HEIGHT/3);
 				this.spritebatch.draw(this.gbuffer.getColorTexture(1), new Vector2(0, HEIGHT/3), WIDTH/3, HEIGHT/3);
 				this.spritebatch.draw(this.gbuffer.getDepthTexture(), new Vector2(0, 2*HEIGHT/3), WIDTH/3, HEIGHT/3);
+				this.spritebatch.draw(this.gbuffer.getColorTexture(2), new Vector2(WIDTH/3, 2*HEIGHT/3), WIDTH/3, HEIGHT/3);
 				this.spritebatch.end();
 			}
 		}
 
-		private void renderGbuffer() {
+		private void generateGbuffer() {
 			
 			Matrix4.mul(this.camera.getViewProj(), this.world, this.wvp);
 
@@ -193,6 +195,7 @@ public class DeferredRenderingSample {
 		private void renderDeferred() {
 			this.gbuffer.getColorTexture(0).bind(0);
 			this.gbuffer.getColorTexture(1).bind(1);
+			this.gbuffer.getColorTexture(2).bind(3);
 			this.gbuffer.getDepthTexture().bind(2);
 			this.vertexBuffer.bind();
 			this.indexBuffer.bind();
@@ -210,9 +213,10 @@ public class DeferredRenderingSample {
 			for(int i = 0; i < this.spots.size(); i++) {
 				this.setSpotLight(this.deferredShader, i, this.spots.get(i));
 			}
-			this.deferredShader.setUniform("colors", 0);
-			this.deferredShader.setUniform("normals", 1);
-			this.deferredShader.setUniform("depth", 2);
+			this.deferredShader.setUniform("uGBuffer.colors", 0);
+			this.deferredShader.setUniform("uGBuffer.normals", 1);
+			this.deferredShader.setUniform("uGBuffer.depth", 2);
+			this.deferredShader.setUniform("uGBuffer.shininess", 3);
 			
 			glDrawElements(GL_TRIANGLES, this.indexBuffer.getSize(), GL_UNSIGNED_INT, 0);
 			
@@ -222,6 +226,7 @@ public class DeferredRenderingSample {
 			Texture.unbind(0);
 			Texture.unbind(1);
 			Texture.unbind(2);
+			Texture.unbind(3);
 		}
 		
 		private void setMaterial(Shader shader, Material material) {
@@ -230,6 +235,7 @@ public class DeferredRenderingSample {
 			}
 			shader.setUniform("uMaterial.diffuseColor", material.getDiffuseColor());
 			shader.setUniform("uMaterial.hasDiffuseMap", material.hasDiffuseMap());
+			shader.setUniform("uMaterial.specularIntensity", material.getSpecularIntensity());
 		}
 		
 		private void setDirectionalLight(Shader shader, int index, DirectionalLight light) {
