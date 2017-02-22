@@ -44,7 +44,7 @@ struct SpotLight {
 const int MAX_DIR_LIGHTS = 2;
 const int MAX_POINT_LIGHTS = 5;
 const int MAX_SPOT_LIGHTS = 3;
-const float DEFAULT_GLOSSINESS = 32;
+const int MAX_GLOSSINESS = 256;
 
 in vec2 passCoords;
 
@@ -86,7 +86,8 @@ vec4 computeSpecular(Light light, float shininess, float glossiness, vec4 positi
 }
 
 void main() {
-	vec3 normal = texture2D(uGBuffer.normals, passCoords).xyz;
+	vec4 normalGloss = texture2D(uGBuffer.normals, passCoords);
+	vec3 normal = normalGloss.xyz;
 	if(normal.x == 0 && normal.y == 0 && normal.z == 0) {
 		gl_FragDepth = 1.0;
 		finalColor = vec4(0, 0, 0, 1);
@@ -98,6 +99,7 @@ void main() {
 		float depthValue = texture2D(uGBuffer.depth, passCoords).r;
 		vec4 position = positionFromDepth(depthValue);
 		float shininess = colorShininess.a;
+		float glossiness = normalGloss.a*MAX_GLOSSINESS;
 		
 		//compute lights
 		vec4 ambient = vec4(uAmbient.color.xyz*uAmbient.intensity, 1);
@@ -111,7 +113,7 @@ void main() {
 			DirectionalLight light = uDirectionals[i];
 			lightDirection = normalize(light.direction);
 			diffuse += computeDiffuse(light.base, normal, lightDirection);
-			specular += computeSpecular(light.base, shininess, DEFAULT_GLOSSINESS, position, normal, lightDirection);
+			specular += computeSpecular(light.base, shininess, glossiness, position, normal, lightDirection);
 		}
 		
 		//point lights
@@ -123,7 +125,7 @@ void main() {
 				lightDirection = normalize(lightDirection);
 				float attenuation = computeAttenuation(distance, light.attenuation);
 				diffuse += computeDiffuse(light.base, normal, lightDirection)*attenuation;
-				specular += computeSpecular(light.base, shininess, DEFAULT_GLOSSINESS, position, normal, lightDirection)*attenuation;
+				specular += computeSpecular(light.base, shininess, glossiness, position, normal, lightDirection)*attenuation;
 			}
 		}
 
@@ -139,7 +141,7 @@ void main() {
 				float intensity = clamp((theta - light.outerCutOff)/epsilon, 0, 1);
 				float attenuation = computeAttenuation(distance, light.point.attenuation);
 				diffuse += computeDiffuse(light.point.base, normal, lightDirection)*attenuation*intensity;
-				specular += computeSpecular(light.point.base, shininess, DEFAULT_GLOSSINESS, position, normal, lightDirection)*attenuation*intensity;
+				specular += computeSpecular(light.point.base, shininess, glossiness, position, normal, lightDirection)*attenuation*intensity;
 			}
 		}
 

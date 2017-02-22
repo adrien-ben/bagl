@@ -4,10 +4,13 @@ struct Material {
 	vec4 diffuseColor;
 	bool hasDiffuseMap;
 	sampler2D diffuseMap;
-	float specularIntensity;
+	float shininess;
 	bool hasSpecularMap;
 	sampler2D specularMap;
+	float glossiness;
 };
+
+const int MAX_GLOSSINESS = 256;
 
 in vec2 passCoords;
 in vec3 passNormal;
@@ -23,10 +26,11 @@ void main() {
 	} else {
 		colors.rgb = uMaterial.diffuseColor.rgb;
 	}
-	normals = vec4(normalize(passNormal)*0.5 + 0.5, 1);
+	normals.rgb = normalize(passNormal)*0.5 + 0.5;
 	if(uMaterial.hasSpecularMap) {
 		colors.a = texture2D(uMaterial.specularMap, passCoords).r;
 	} else {	
-		colors.a = uMaterial.specularIntensity;
+		colors.a = uMaterial.shininess;
 	}
+	normals.a = uMaterial.glossiness/MAX_GLOSSINESS;
 }
