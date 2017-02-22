@@ -9,9 +9,20 @@ struct BaseLight {
 	float intensity;
 };
 
+struct Material {
+	vec4 diffuseColor;
+	bool hasDiffuseMap;
+	sampler2D diffuseMap;
+	float shininess;
+	bool hasSpecularMap;
+	sampler2D specularMap;
+	float glossiness;
+};
+
 uniform BaseLight uBaseLight;
-uniform sampler2D uTexture;
+uniform Material uMaterial;
 
 void main() {
-	color = texture2D(uTexture, passCoords)*vec4(uBaseLight.color.xyz, 1.0)*uBaseLight.intensity;
+	vec4 fragColor = uMaterial.hasDiffuseMap ? texture2D(uMaterial.diffuseMap, passCoords) : uMaterial.diffuseColor;
+	color = fragColor*uBaseLight.color*uBaseLight.intensity;
 }

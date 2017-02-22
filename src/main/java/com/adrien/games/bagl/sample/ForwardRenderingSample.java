@@ -6,7 +6,6 @@ import static org.lwjgl.opengl.GL11.glPointSize;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import org.lwjgl.opengl.GL11;
 
@@ -37,7 +36,7 @@ public final class ForwardRenderingSample {
 	private static final class TestGame implements Game	{
 		
 		private static final String TITLE = "Forward Rendering";
-		private static final int WIDTH = 512;
+		private static final int WIDTH = 1024;
 		private static final int HEIGHT = WIDTH * 9 / 16;
 		
 		//meshes
@@ -166,8 +165,8 @@ public final class ForwardRenderingSample {
 			this.ambientShader.setUniform("uBaseLight.color", this.ambient.getColor());
 			this.ambientShader.setUniform("uBaseLight.intensity", this.ambient.getIntensity());
 			
-			this.drawMesh(this.plane, null, this.world, this.ambientShader, this.camera);
-			this.drawMesh(this.cube, null, this.cubeWorld, this.ambientShader, this.camera);
+			this.drawMesh(this.plane, this.world, this.ambientShader, this.camera);
+			this.drawMesh(this.cube, this.cubeWorld, this.ambientShader, this.camera);
 
 			GL11.glEnable(GL11.GL_BLEND);
 			GL11.glDepthFunc(GL11.GL_EQUAL);
@@ -181,8 +180,8 @@ public final class ForwardRenderingSample {
 				this.directionalShader.setUniform("uLight.direction", directional.getDirection());
 				this.directionalShader.setUniform("uLight.base.intensity", directional.getIntensity());
 				
-				this.drawMesh(this.plane, this.plane.getMaterial(), this.world, this.directionalShader, this.camera);
-				this.drawMesh(this.cube, this.cube.getMaterial(), this.cubeWorld, this.directionalShader, this.camera);
+				this.drawMesh(this.plane, this.world, this.directionalShader, this.camera);
+				this.drawMesh(this.cube, this.cubeWorld, this.directionalShader, this.camera);
 			}
 			
 			//render with point
@@ -201,8 +200,8 @@ public final class ForwardRenderingSample {
 						point.getAttenuation().getQuadratic()));
 				this.pointShader.setUniform("uLight.range", point.getRadius());
 				
-				this.drawMesh(this.plane, this.plane.getMaterial(), this.world, this.pointShader, this.camera);
-				this.drawMesh(this.cube, this.cube.getMaterial(), this.cubeWorld, this.pointShader, this.camera);
+				this.drawMesh(this.plane, this.world, this.pointShader, this.camera);
+				this.drawMesh(this.cube, this.cubeWorld, this.pointShader, this.camera);
 			}
 			
 			//render with spot
@@ -224,8 +223,8 @@ public final class ForwardRenderingSample {
 				this.spotShader.setUniform("uLight.cutOff", spot.getCutOff());
 				this.spotShader.setUniform("uLight.outerCutOff", spot.getOuterCutOff());
 				
-				this.drawMesh(this.plane, this.plane.getMaterial(), this.world, this.spotShader, this.camera);
-				this.drawMesh(this.cube, this.cube.getMaterial(), this.cubeWorld, this.spotShader, this.camera);
+				this.drawMesh(this.plane, this.world, this.spotShader, this.camera);
+				this.drawMesh(this.cube, this.cubeWorld, this.spotShader, this.camera);
 			}
 			
 			GL11.glDisable(GL11.GL_BLEND);
@@ -239,14 +238,12 @@ public final class ForwardRenderingSample {
 			this.renderLightsPositions();
 		}
 		
-		private void drawMesh(Mesh mesh, Material material, Matrix4 world, Shader shader, Camera camera) {
+		private void drawMesh(Mesh mesh, Matrix4 world, Shader shader, Camera camera) {
 			Matrix4.mul(camera.getViewProj(), world, this.wvp);
 			
 			mesh.getVertices().bind();
 			mesh.getIndices().bind();
-			if(Objects.nonNull(material)) {
-				this.setMaterial(shader, material);
-			}
+			this.setMaterial(shader, mesh.getMaterial());
 			shader.setUniform("uMatrices.world", world);
 			shader.setUniform("uMatrices.wvp", this.wvp);
 			GL11.glDrawElements(GL11.GL_TRIANGLES, mesh.getIndices().getSize(), GL11.GL_UNSIGNED_INT, 0);
