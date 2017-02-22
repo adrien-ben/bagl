@@ -32,7 +32,6 @@ import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.vertex.Vertex;
 import com.adrien.games.bagl.rendering.vertex.VertexPositionColor;
 import com.adrien.games.bagl.rendering.vertex.VertexPositionTexture;
-import com.adrien.games.bagl.utils.MaterialFactory;
 import com.adrien.games.bagl.utils.MeshFactory;
 
 public class DeferredRenderingSample {
@@ -45,7 +44,6 @@ public class DeferredRenderingSample {
 		
 		private FrameBuffer gbuffer;
 		
-		private Material material;
 		private Mesh plane;
 		private Matrix4 world;
 		private Mesh cube;
@@ -76,7 +74,6 @@ public class DeferredRenderingSample {
 		@Override
 		public void init() {
 			
-			this.material = MaterialFactory.createDiffuseColor(Color.GREEN, 0.8f, 32f);
 			this.plane = MeshFactory.createPlane(10, 10);
 			this.world = new Matrix4();
 			this.cube = MeshFactory.createBox(1, 1, 1);
@@ -209,7 +206,7 @@ public class DeferredRenderingSample {
 			Matrix4.mul(this.camera.getViewProj(), this.cubeWorld, this.wvp);
 			this.cube.getVertices().bind();
 			this.cube.getIndices().bind();
-			this.setMaterial(this.gbufferShader, this.material);
+			this.setMaterial(this.gbufferShader, this.cube.getMaterial());
 			this.gbufferShader.setUniform("uMatrices.world", this.cubeWorld);
 			this.gbufferShader.setUniform("uMatrices.wvp", this.wvp);
 			

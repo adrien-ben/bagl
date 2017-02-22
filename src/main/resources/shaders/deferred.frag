@@ -81,8 +81,8 @@ vec4 computeDiffuse(Light light, vec3 unitNormal, vec3 unitLightDirection) {
 
 vec4 computeSpecular(Light light, float shininess, float glossiness, vec4 position, vec3 unitNormal, vec3 unitLightDirection) {
 	vec3 viewDir = normalize(uCamera.position - position.xyz);
-	vec3 refectDir = reflect(unitLightDirection, unitNormal);
-	float specular = pow(max(dot(viewDir, refectDir), 0), glossiness);
+	vec3 halfway = normalize(viewDir - unitLightDirection);
+	float specular = pow(max(dot(halfway, unitNormal), 0), glossiness);
 	return vec4(light.color.xyz*specular*light.intensity*shininess, 1);
 }
 
