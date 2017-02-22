@@ -14,20 +14,19 @@ in vec3 passNormal;
 
 layout (location = 0) out vec4 colors;
 layout (location = 1) out vec4 normals;
-layout (location = 2) out vec4 shininess;
 
 uniform Material uMaterial;
 
 void main() {
 	if(uMaterial.hasDiffuseMap) {	
-		colors = texture2D(uMaterial.diffuseMap, passCoords);
+		colors.rgb = texture2D(uMaterial.diffuseMap, passCoords).rgb;
 	} else {
-		colors = uMaterial.diffuseColor;
+		colors.rgb = uMaterial.diffuseColor.rgb;
 	}
 	normals = vec4(normalize(passNormal)*0.5 + 0.5, 1);
 	if(uMaterial.hasSpecularMap) {
-		shininess = texture2D(uMaterial.specularMap, passCoords);
+		colors.a = texture2D(uMaterial.specularMap, passCoords).r;
 	} else {	
-		shininess = vec4(uMaterial.specularIntensity, uMaterial.specularIntensity, uMaterial.specularIntensity, 1);
+		colors.a = uMaterial.specularIntensity;
 	}
 }

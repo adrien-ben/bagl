@@ -4,7 +4,6 @@ struct GBuffer {
 	sampler2D colors;
 	sampler2D normals;
 	sampler2D depth;
-	sampler2D shininess;
 };
 
 struct Camera {
@@ -94,10 +93,11 @@ void main() {
 	} else {
 		//retrive data from gbuffer
 		normal = normalize(normal*2 - 1);
-		vec4 color = texture2D(uGBuffer.colors, passCoords);
+		vec4 colorShininess = texture2D(uGBuffer.colors, passCoords);
+		vec4 color = vec4(colorShininess.rgb, 1);
 		float depthValue = texture2D(uGBuffer.depth, passCoords).r;
 		vec4 position = positionFromDepth(depthValue);
-		float shininess = texture2D(uGBuffer.shininess, passCoords).r;
+		float shininess = colorShininess.a;
 		
 		//compute lights
 		vec4 ambient = vec4(uAmbient.color.xyz*uAmbient.intensity, 1);
