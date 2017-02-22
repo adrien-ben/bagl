@@ -32,7 +32,7 @@ import com.adrien.games.bagl.rendering.vertex.Vertex;
 import com.adrien.games.bagl.rendering.vertex.VertexPositionColor;
 import com.adrien.games.bagl.utils.MeshFactory;
 
-public final class TestForwardRendering {
+public final class ForwardRenderingSample {
 	
 	private static final class TestGame implements Game	{
 		
