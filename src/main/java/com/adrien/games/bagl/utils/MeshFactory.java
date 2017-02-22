@@ -41,7 +41,7 @@ public final class MeshFactory {
 		IndexBuffer indexBuffer = new IndexBuffer(indices);
 		VertexBuffer vertexBuffer = new VertexBuffer(VertexPositionNormalTexture.DESCRIPTION, vertices);
 		
-		Material material = MaterialFactory.createDiffuseMap(texture, 1.0f, 12.0f);
+		Material material = MaterialFactory.createDiffuseMap(texture, 1.0f, 32.0f);
 		return new Mesh(vertexBuffer, indexBuffer, material);
 	}
 	
@@ -61,7 +61,7 @@ public final class MeshFactory {
 		IndexBuffer indexBuffer = new IndexBuffer(indices);
 		VertexBuffer vertexBuffer = new VertexBuffer(VertexPositionNormalTexture.DESCRIPTION, vertices);
 		
-		Material material = MaterialFactory.createDiffuseMap(texture, 1.0f, 12.0f);
+		Material material = MaterialFactory.createDiffuseMap(texture, 1.0f, 32.0f);
 		return new Mesh(vertexBuffer, indexBuffer, material);
 	}
 	
@@ -118,7 +118,7 @@ public final class MeshFactory {
 		IndexBuffer indexBuffer = new IndexBuffer(indices);
 		VertexBuffer vertexBuffer = new VertexBuffer(VertexPositionNormalTexture.DESCRIPTION, vertices);
 		
-		Material material = MaterialFactory.createDiffuseMap(texture, 1.0f, 12.0f);
+		Material material = MaterialFactory.createDiffuseMap(texture, 1.0f, 32.0f);
 		return new Mesh(vertexBuffer, indexBuffer, material);
 	}
 	

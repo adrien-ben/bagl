@@ -6,29 +6,26 @@ in vec2 passCoords;
 
 out vec4 color;
 
-struct BaseLight
-{
+struct BaseLight {
 	vec4 color;
 	float intensity;
 };
 
-struct PointLight
-{
+struct PointLight {
 	BaseLight base;
 	vec3 position;
 	vec3 attenuation;
 	float range;
 };
 
-struct SpotLight
-{
+struct SpotLight {
 	PointLight point;
 	vec3 direction;
 	float cutOff;
+	float outerCutOff;
 };
 
-struct Material
-{
+struct Material {
 	float specularExponent;
 	float specularIntensity;
 };
@@ -38,74 +35,39 @@ uniform SpotLight uLight;
 uniform sampler2D uTexture;
 uniform Material uMaterial;
 
-vec3 computeLight(BaseLight base, vec3 lightDirection, vec3 eyeToPosition, vec3 normal, Material material)
-{
-	vec3 result = vec3(0.0);
-
-	lightDirection = normalize(lightDirection);
-	normal = normalize(normal);
-	
-	float diffuseFactor = dot(normal, -lightDirection);
-	
-	if(diffuseFactor <= 0)
-		return result;
-		
-	result = base.color.xyz*base.intensity*diffuseFactor;
-	
-	vec3 reflectedLightDirection = normalize(reflect(lightDirection, normal));
-	eyeToPosition = normalize(eyeToPosition);
-	float specularFactor = dot(reflectedLightDirection, -eyeToPosition);
-	
-	if(specularFactor <= 0)
-		return result;
-		
-	specularFactor = pow(specularFactor, material.specularExponent)*material.specularIntensity;
-	result += base.color.xyz*specularFactor;
-	
-	return result;
+float computeAttenuation(float distance, vec3 attenuation) {
+	return 1/(attenuation.x + attenuation.y*distance + attenuation.z*distance*distance);
 }
 
-vec3 computePoint(PointLight point, vec3 eyePosition, vec3 fragmentPosition, vec3 normal, Material material)
-{
-	vec3 result = vec3(0.0);
-	
-	vec3 lightDirection = fragmentPosition - point.position;
-	float lightDistance = length(lightDirection);
-	
-	if(lightDistance > point.range)
-		return result;
-		
-	result = computeLight(point.base, lightDirection, fragmentPosition - eyePosition, normal, material);
-	
-	float attenuation = point.attenuation.x + 
-						lightDistance*point.attenuation.y + 
-						lightDistance*lightDistance*point.attenuation.z + 
-						0.00001;
-					
-	result /= attenuation;
-	
-	return result;
+vec4 computeDiffuse(BaseLight light, vec3 unitNormal, vec3 unitLightDirection) {
+	float diffuse = max(dot(unitNormal, -unitLightDirection), 0);
+	return vec4(light.color.xyz*diffuse*light.intensity, 1);
 }
 
-vec3 computeSpot(SpotLight spot, vec3 eyePosition, vec3 fragmentPosition, vec3 normal, Material material)
-{
-	vec3 result = vec3(0.0);
-	
-	vec3 lightDirection = normalize(fragmentPosition - spot.point.position);
-	float spotFactor = dot(-lightDirection, -normalize(spot.direction));
-	
-	if(spotFactor < spot.cutOff)
-		return result;
-	
-	result = computePoint(spot.point, eyePosition, fragmentPosition, normal, material);
-	result *= (1.0 - ((1.0 - spotFactor) / (1.0 - spot.cutOff)));
-	
-	return result;
+vec4 computeSpecular(BaseLight light, float shininess, float glossiness, vec4 position, vec3 unitNormal, vec3 unitLightDirection) {
+	vec3 viewDir = normalize(uEyePosition - position.xyz);
+	vec3 halfway = normalize(viewDir - unitLightDirection);
+	float specular = pow(max(dot(halfway, unitNormal), 0), glossiness);
+	return vec4(light.color.xyz*specular*light.intensity*shininess, 1);
 }
 
 void main()
 {
-	vec3 lightColor = computeSpot(uLight, uEyePosition, passPosition.xyz, passNormal, uMaterial);
+	vec4 diffuse = vec4(0, 0, 0, 1);
+	vec4 specular = vec4(0, 0, 0, 1);
+
+	vec3 lightDirection = passPosition.xyz - uLight.point.position;
+	float distance = length(lightDirection);
+	lightDirection = normalize(lightDirection);
+	float theta = dot(-uLight.direction, -lightDirection);
+	if(theta > uLight.outerCutOff && distance <= uLight.point.range) {
+		vec3 normal = normalize(passNormal);
+		float epsilon = uLight.cutOff - uLight.outerCutOff;
+		float intensity = clamp((theta - uLight.outerCutOff)/epsilon, 0, 1);
+		float attenuation = computeAttenuation(distance, uLight.point.attenuation);
+		diffuse += computeDiffuse(uLight.point.base, normal, lightDirection)*attenuation*intensity;
+		specular += computeSpecular(uLight.point.base, uMaterial.specularIntensity, uMaterial.specularExponent, passPosition, normal, lightDirection)*attenuation*intensity;
+	}
 	
-	color = texture2D(uTexture, passCoords)*vec4(lightColor, 1.0);
+	color = texture2D(uTexture, passCoords)*diffuse + specular;
 }

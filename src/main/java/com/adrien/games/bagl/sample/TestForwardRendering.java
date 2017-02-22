@@ -186,46 +186,47 @@ public final class TestForwardRendering {
 			}
 			
 			//render with point
-//			this.pointShader.bind();
-//			this.pointShader.setUniform("uMatrices.world", this.world);
-//			this.pointShader.setUniform("uMatrices.wvp", this.camera.getViewProj());
-//			this.pointShader.setUniform("uEyePosition", this.camera.getPosition());
-//			
-//			for(PointLight point : this.points) {
-//				this.pointShader.setUniform("uLight.base.color", point.getColor());
-//				this.pointShader.setUniform("uLight.position", point.getPosition());
-//				this.pointShader.setUniform("uLight.base.intensity", point.getIntensity());
-//				this.pointShader.setUniform("uLight.attenuation", new Vector3(
-//						point.getAttenuation().getConstant(), 
-//						point.getAttenuation().getLinear(), 
-//						point.getAttenuation().getQuadratic()));
-//				this.pointShader.setUniform("uLight.range", point.getRadius());
-//				
-//				this.drawMesh(this.plane, this.plane.getMaterial(), this.world, this.pointShader, this.camera);
-//				this.drawMesh(this.cube, this.cube.getMaterial(), this.cubeWorld, this.pointShader, this.camera);
-//			}
+			this.pointShader.bind();
+			this.pointShader.setUniform("uMatrices.world", this.world);
+			this.pointShader.setUniform("uMatrices.wvp", this.camera.getViewProj());
+			this.pointShader.setUniform("uEyePosition", this.camera.getPosition());
+			
+			for(PointLight point : this.points) {
+				this.pointShader.setUniform("uLight.base.color", point.getColor());
+				this.pointShader.setUniform("uLight.position", point.getPosition());
+				this.pointShader.setUniform("uLight.base.intensity", point.getIntensity());
+				this.pointShader.setUniform("uLight.attenuation", new Vector3(
+						point.getAttenuation().getConstant(), 
+						point.getAttenuation().getLinear(), 
+						point.getAttenuation().getQuadratic()));
+				this.pointShader.setUniform("uLight.range", point.getRadius());
+				
+				this.drawMesh(this.plane, this.plane.getMaterial(), this.world, this.pointShader, this.camera);
+				this.drawMesh(this.cube, this.cube.getMaterial(), this.cubeWorld, this.pointShader, this.camera);
+			}
 			
 			//render with spot
-//			this.spotShader.bind();
-//			this.spotShader.setUniform("uMatrices.world", this.world);
-//			this.spotShader.setUniform("uMatrices.wvp", this.camera.getViewProj());
-//			this.spotShader.setUniform("uEyePosition", this.camera.getPosition());
-//			
-//			for(SpotLight spot : this.spots) {
-//				this.spotShader.setUniform("uLight.point.base.color", spot.getColor());
-//				this.spotShader.setUniform("uLight.point.base.intensity", spot.getIntensity());
-//				this.spotShader.setUniform("uLight.point.position", spot.getPosition());
-//				this.spotShader.setUniform("uLight.point.attenuation", new Vector3(
-//						spot.getAttenuation().getConstant(), 
-//						spot.getAttenuation().getLinear(), 
-//						spot.getAttenuation().getQuadratic()));
-//				this.spotShader.setUniform("uLight.point.range", spot.getRadius());
-//				this.spotShader.setUniform("uLight.direction", spot.getDirection());
-//				this.spotShader.setUniform("uLight.cutOff", spot.getCutOff());
-//				
-//				this.drawMesh(this.plane, this.plane.getMaterial(), this.world, this.spotShader, this.camera);
-//				this.drawMesh(this.cube, this.cube.getMaterial(), this.cubeWorld, this.spotShader, this.camera);
-//			}
+			this.spotShader.bind();
+			this.spotShader.setUniform("uMatrices.world", this.world);
+			this.spotShader.setUniform("uMatrices.wvp", this.camera.getViewProj());
+			this.spotShader.setUniform("uEyePosition", this.camera.getPosition());
+			
+			for(SpotLight spot : this.spots) {
+				this.spotShader.setUniform("uLight.point.base.color", spot.getColor());
+				this.spotShader.setUniform("uLight.point.base.intensity", spot.getIntensity());
+				this.spotShader.setUniform("uLight.point.position", spot.getPosition());
+				this.spotShader.setUniform("uLight.point.attenuation", new Vector3(
+						spot.getAttenuation().getConstant(), 
+						spot.getAttenuation().getLinear(), 
+						spot.getAttenuation().getQuadratic()));
+				this.spotShader.setUniform("uLight.point.range", spot.getRadius());
+				this.spotShader.setUniform("uLight.direction", spot.getDirection());
+				this.spotShader.setUniform("uLight.cutOff", spot.getCutOff());
+				this.spotShader.setUniform("uLight.outerCutOff", spot.getOuterCutOff());
+				
+				this.drawMesh(this.plane, this.plane.getMaterial(), this.world, this.spotShader, this.camera);
+				this.drawMesh(this.cube, this.cube.getMaterial(), this.cubeWorld, this.spotShader, this.camera);
+			}
 			
 			GL11.glDisable(GL11.GL_BLEND);
 			GL11.glDepthFunc(GL11.GL_LESS);

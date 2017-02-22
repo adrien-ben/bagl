@@ -6,20 +6,17 @@ in vec2 passCoords;
 
 out vec4 color;
 
-struct BaseLight
-{
+struct BaseLight {
 	vec4 color;
 	float intensity;
 };
 
-struct DirectionalLight
-{
+struct DirectionalLight {
 	BaseLight base;
 	vec3 direction;
 };
 
-struct Material
-{
+struct Material {
 	float specularExponent;
 	float specularIntensity;
 };
@@ -29,37 +26,26 @@ uniform DirectionalLight uLight;
 uniform sampler2D uTexture;
 uniform Material uMaterial;
 
-vec3 computeLight(BaseLight base, vec3 lightDirection, vec3 eyeToPosition, vec3 normal, Material material)
-{
-	vec3 result = vec3(0.0);
-
-	lightDirection = normalize(lightDirection);
-	normal = normalize(normal);
-	
-	float diffuseFactor = dot(normal, -lightDirection);
-	
-	if(diffuseFactor <= 0)
-		return result;
-		
-	result = base.color.xyz*base.intensity*diffuseFactor;
-	
-	vec3 reflectedLightDirection = normalize(reflect(lightDirection, normal));
-	eyeToPosition = normalize(eyeToPosition);
-	float specularFactor = dot(reflectedLightDirection, -eyeToPosition);
-	
-	if(specularFactor <= 0)
-		return result;
-		
-	specularFactor = pow(specularFactor, material.specularExponent)*material.specularIntensity;
-	result += base.color.xyz*specularFactor;
-	
-	return result;
+vec4 computeDiffuse(BaseLight light, vec3 unitNormal, vec3 unitLightDirection) {
+	float diffuse = max(dot(unitNormal, -unitLightDirection), 0);
+	return vec4(light.color.xyz*diffuse*light.intensity, 1);
 }
 
-void main()
-{	
-	vec3 lightColor = computeLight(uLight.base, uLight.direction, passPosition.xyz - uEyePosition, passNormal, uMaterial);
+vec4 computeSpecular(BaseLight light, float shininess, float glossiness, vec4 position, vec3 unitNormal, vec3 unitLightDirection) {
+	vec3 viewDir = normalize(uEyePosition - position.xyz);
+	vec3 halfway = normalize(viewDir - unitLightDirection);
+	float specular = pow(max(dot(halfway, unitNormal), 0), glossiness);
+	return vec4(light.color.xyz*specular*light.intensity*shininess, 1);
+}
+
+void main() {
+	vec3 normal = normalize(passNormal);
+
+	//directional lights
+	vec3 lightDirection = normalize(uLight.direction);
+	vec4 diffuse = computeDiffuse(uLight.base, normal, lightDirection);
+	vec4 specular = computeSpecular(uLight.base, uMaterial.specularIntensity, uMaterial.specularExponent, passPosition, normal, lightDirection);
 	
 	//final color
-	color = texture2D(uTexture, passCoords)*vec4(lightColor, 1.0);
+	color = texture2D(uTexture, passCoords)*diffuse + specular;
 }
