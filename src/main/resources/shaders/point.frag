@@ -19,14 +19,18 @@ struct PointLight {
 };
 
 struct Material {
-	float specularExponent;
-	float specularIntensity;
+	vec4 diffuseColor;
+	bool hasDiffuseMap;
+	sampler2D diffuseMap;
+	float shininess;
+	bool hasSpecularMap;
+	sampler2D specularMap;
+	float glossiness;
 };
 
 uniform vec3 uEyePosition;
 uniform PointLight uLight;
 uniform Material uMaterial;
-uniform sampler2D uTexture;
 
 float computeAttenuation(float distance, vec3 attenuation) {
 	return 1/(attenuation.x + attenuation.y*distance + attenuation.z*distance*distance);
@@ -47,6 +51,7 @@ vec4 computeSpecular(BaseLight light, float shininess, float glossiness, vec4 po
 void main() {
 	vec4 diffuse = vec4(0, 0, 0, 1);
 	vec4 specular = vec4(0, 0, 0, 1);
+	vec4 fragColor = uMaterial.hasDiffuseMap ? texture2D(uMaterial.diffuseMap, passCoords) : uMaterial.diffuseColor;
 
 	vec3 lightDirection = passPosition.xyz - uLight.position;
 	float distance = length(lightDirection);
@@ -55,8 +60,8 @@ void main() {
 		lightDirection = normalize(lightDirection);
 		float attenuation = computeAttenuation(distance, uLight.attenuation);
 		diffuse += computeDiffuse(uLight.base, normal, lightDirection)*attenuation;
-		specular += computeSpecular(uLight.base, uMaterial.specularIntensity, uMaterial.specularExponent, passPosition, normal, lightDirection)*attenuation;
+		specular += computeSpecular(uLight.base, uMaterial.shininess, uMaterial.glossiness, passPosition, normal, lightDirection)*attenuation;
 	}
 
-	color = texture2D(uTexture, passCoords)*diffuse + specular;
+	color = fragColor*diffuse + specular;
 }

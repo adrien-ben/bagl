@@ -2,6 +2,7 @@ package com.adrien.games.bagl.utils;
 
 import java.io.File;
 
+import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.core.Vector2;
 import com.adrien.games.bagl.core.Vector3;
 import com.adrien.games.bagl.rendering.IndexBuffer;
@@ -41,7 +42,7 @@ public final class MeshFactory {
 		IndexBuffer indexBuffer = new IndexBuffer(indices);
 		VertexBuffer vertexBuffer = new VertexBuffer(VertexPositionNormalTexture.DESCRIPTION, vertices);
 		
-		Material material = MaterialFactory.createDiffuseMap(texture, 1.0f, 32.0f);
+		Material material = MaterialFactory.createDiffuseMap(texture, 0.1f, 32.0f);
 		return new Mesh(vertexBuffer, indexBuffer, material);
 	}
 	
@@ -61,7 +62,7 @@ public final class MeshFactory {
 		IndexBuffer indexBuffer = new IndexBuffer(indices);
 		VertexBuffer vertexBuffer = new VertexBuffer(VertexPositionNormalTexture.DESCRIPTION, vertices);
 		
-		Material material = MaterialFactory.createDiffuseMap(texture, 1.0f, 32.0f);
+		Material material = MaterialFactory.createDiffuseMap(texture, 1.f, 128.0f);
 		return new Mesh(vertexBuffer, indexBuffer, material);
 	}
 	
@@ -118,7 +119,8 @@ public final class MeshFactory {
 		IndexBuffer indexBuffer = new IndexBuffer(indices);
 		VertexBuffer vertexBuffer = new VertexBuffer(VertexPositionNormalTexture.DESCRIPTION, vertices);
 		
-		Material material = MaterialFactory.createDiffuseMap(texture, 1.0f, 32.0f);
+		//Material material = MaterialFactory.createDiffuseMap(texture, 1.0f, 32.0f);
+		Material material = MaterialFactory.createDiffuseColor(Color.BLUE, 1.0f, 64.0f);
 		return new Mesh(vertexBuffer, indexBuffer, material);
 	}
 	

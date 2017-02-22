@@ -17,13 +17,17 @@ struct DirectionalLight {
 };
 
 struct Material {
-	float specularExponent;
-	float specularIntensity;
+	vec4 diffuseColor;
+	bool hasDiffuseMap;
+	sampler2D diffuseMap;
+	float shininess;
+	bool hasSpecularMap;
+	sampler2D specularMap;
+	float glossiness;
 };
 
 uniform vec3 uEyePosition;
 uniform DirectionalLight uLight;
-uniform sampler2D uTexture;
 uniform Material uMaterial;
 
 vec4 computeDiffuse(BaseLight light, vec3 unitNormal, vec3 unitLightDirection) {
@@ -40,12 +44,13 @@ vec4 computeSpecular(BaseLight light, float shininess, float glossiness, vec4 po
 
 void main() {
 	vec3 normal = normalize(passNormal);
+	vec4 fragColor = uMaterial.hasDiffuseMap ? texture2D(uMaterial.diffuseMap, passCoords) : uMaterial.diffuseColor;
 
 	//directional lights
 	vec3 lightDirection = normalize(uLight.direction);
 	vec4 diffuse = computeDiffuse(uLight.base, normal, lightDirection);
-	vec4 specular = computeSpecular(uLight.base, uMaterial.specularIntensity, uMaterial.specularExponent, passPosition, normal, lightDirection);
+	vec4 specular = computeSpecular(uLight.base, uMaterial.shininess, uMaterial.glossiness, passPosition, normal, lightDirection);
 	
 	//final color
-	color = texture2D(uTexture, passCoords)*diffuse + specular;
+	color = fragColor*diffuse + specular;
 }

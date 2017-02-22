@@ -21,16 +21,9 @@ layout (location = 1) out vec4 normals;
 uniform Material uMaterial;
 
 void main() {
-	if(uMaterial.hasDiffuseMap) {	
-		colors.rgb = texture2D(uMaterial.diffuseMap, passCoords).rgb;
-	} else {
-		colors.rgb = uMaterial.diffuseColor.rgb;
-	}
+
+	colors.rgb = uMaterial.hasDiffuseMap ? texture2D(uMaterial.diffuseMap, passCoords).rgb : uMaterial.diffuseColor.rgb;
 	normals.rgb = normalize(passNormal)*0.5 + 0.5;
-	if(uMaterial.hasSpecularMap) {
-		colors.a = texture2D(uMaterial.specularMap, passCoords).r;
-	} else {	
-		colors.a = uMaterial.shininess;
-	}
+	colors.a = uMaterial.hasSpecularMap ? texture2D(uMaterial.specularMap, passCoords).r : uMaterial.shininess;
 	normals.a = uMaterial.glossiness/MAX_GLOSSINESS;
 }

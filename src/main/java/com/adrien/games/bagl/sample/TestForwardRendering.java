@@ -242,16 +242,30 @@ public final class TestForwardRendering {
 		private void drawMesh(Mesh mesh, Material material, Matrix4 world, Shader shader, Camera camera) {
 			Matrix4.mul(camera.getViewProj(), world, this.wvp);
 			
-			mesh.getMaterial().getDiffuseMap().bind();
 			mesh.getVertices().bind();
 			mesh.getIndices().bind();
 			if(Objects.nonNull(material)) {
-				shader.setUniform("uMaterial.specularIntensity", material.getSpecularIntensity());
-				shader.setUniform("uMaterial.specularExponent", material.getSpecularExponent());
+				this.setMaterial(shader, material);
 			}
 			shader.setUniform("uMatrices.world", world);
 			shader.setUniform("uMatrices.wvp", this.wvp);
 			GL11.glDrawElements(GL11.GL_TRIANGLES, mesh.getIndices().getSize(), GL11.GL_UNSIGNED_INT, 0);
+		}
+		
+		private void setMaterial(Shader shader, Material material) {
+			if(material.hasDiffuseMap()) {
+				shader.setUniform("uMaterial.diffuseMap", 0);
+				material.getDiffuseMap().bind(0);
+			}
+			if(material.hasSpecularMap()) {
+				shader.setUniform("uMaterial.specularMap", 1);
+				material.getSpecularMap().bind(1);
+			}
+			shader.setUniform("uMaterial.diffuseColor", material.getDiffuseColor());
+			shader.setUniform("uMaterial.hasDiffuseMap", material.hasDiffuseMap());
+			shader.setUniform("uMaterial.shininess", material.getSpecularIntensity());
+			shader.setUniform("uMaterial.hasSpecularMap", material.hasSpecularMap());
+			shader.setUniform("uMaterial.glossiness", material.getSpecularExponent());
 		}
 		
 		public void renderLightsPositions() {

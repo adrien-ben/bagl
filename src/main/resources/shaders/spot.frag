@@ -26,13 +26,17 @@ struct SpotLight {
 };
 
 struct Material {
-	float specularExponent;
-	float specularIntensity;
+	vec4 diffuseColor;
+	bool hasDiffuseMap;
+	sampler2D diffuseMap;
+	float shininess;
+	bool hasSpecularMap;
+	sampler2D specularMap;
+	float glossiness;
 };
 
 uniform vec3 uEyePosition;
 uniform SpotLight uLight;
-uniform sampler2D uTexture;
 uniform Material uMaterial;
 
 float computeAttenuation(float distance, vec3 attenuation) {
@@ -55,6 +59,7 @@ void main()
 {
 	vec4 diffuse = vec4(0, 0, 0, 1);
 	vec4 specular = vec4(0, 0, 0, 1);
+	vec4 fragColor = uMaterial.hasDiffuseMap ? texture2D(uMaterial.diffuseMap, passCoords) : uMaterial.diffuseColor;
 
 	vec3 lightDirection = passPosition.xyz - uLight.point.position;
 	float distance = length(lightDirection);
@@ -66,8 +71,8 @@ void main()
 		float intensity = clamp((theta - uLight.outerCutOff)/epsilon, 0, 1);
 		float attenuation = computeAttenuation(distance, uLight.point.attenuation);
 		diffuse += computeDiffuse(uLight.point.base, normal, lightDirection)*attenuation*intensity;
-		specular += computeSpecular(uLight.point.base, uMaterial.specularIntensity, uMaterial.specularExponent, passPosition, normal, lightDirection)*attenuation*intensity;
+		specular += computeSpecular(uLight.point.base, uMaterial.shininess, uMaterial.glossiness, passPosition, normal, lightDirection)*attenuation*intensity;
 	}
 	
-	color = texture2D(uTexture, passCoords)*diffuse + specular;
+	color = fragColor*diffuse + specular;
 }
