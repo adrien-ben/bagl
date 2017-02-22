@@ -8,8 +8,8 @@ out vec2 passCoords;
 
 struct Matrices
 {
-	mat4 model;
-	mat4 mvp;
+	mat4 world;
+	mat4 wvp;
 };
 
 uniform Matrices uMatrices;
@@ -17,6 +17,5 @@ uniform Matrices uMatrices;
 void main()
 {
 	passCoords = vCoords;
-
-	gl_Position = uMatrices.mvp*vPosition;
+	gl_Position = uMatrices.wvp*vPosition;
 }

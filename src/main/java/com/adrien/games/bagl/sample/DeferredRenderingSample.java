@@ -82,13 +82,25 @@ public class DeferredRenderingSample {
 			this.cube = MeshFactory.createBox(1, 1, 1);
 			this.cubeWorld = Matrix4.createTranslation(new Vector3(0, 0.5f, 0));			
 			this.wvp = new Matrix4();
-			
+
+			this.initShaders();
 			this.setUpLights();
-			
 			this.initQuad();
+			this.initLightsPosition();
 
 			this.gbuffer = new FrameBuffer(WIDTH, HEIGHT, 3);
+
+			this.camera = new Camera(new Vector3(0f, 2f, 6f), new Vector3(0f, -2f, -6f), Vector3.UP, 
+					(float)Math.toRadians(60f), (float)WIDTH/(float)HEIGHT, 1, 1000);		
 			
+			this.spritebatch = new Spritebatch(1024, WIDTH, HEIGHT);
+			
+			glEnable(GL_DEPTH_TEST);
+			glEnable(GL_CULL_FACE);
+			glPointSize(6);
+		}
+		
+		private void initShaders() {
 			this.gbufferShader = new Shader();
 			this.gbufferShader.addVertexShader("/gbuffer.vert");
 			this.gbufferShader.addFragmentShader("/gbuffer.frag");
@@ -103,17 +115,6 @@ public class DeferredRenderingSample {
 			this.debugShader.addVertexShader("/debug.vert");
 			this.debugShader.addFragmentShader("/debug.frag");
 			this.debugShader.compile();
-
-			this.camera = new Camera(new Vector3(0f, 2f, 6f), new Vector3(0f, -2f, -6f), Vector3.UP, 
-					(float)Math.toRadians(60f), (float)WIDTH/(float)HEIGHT, 1, 1000);		
-			
-			this.spritebatch = new Spritebatch(1024, WIDTH, HEIGHT);
-			
-			this.initLightsPosition();
-			
-			glEnable(GL_DEPTH_TEST);
-			glEnable(GL_CULL_FACE);
-			glPointSize(6);
 		}
 		
 		private void initLightsPosition() {
@@ -322,6 +323,7 @@ public class DeferredRenderingSample {
 			this.gbuffer.destroy();
 			this.indexBuffer.destroy();
 			this.vertexBuffer.destroy();
+			this.lightPositions.destroy();
 		}
 
 	}
