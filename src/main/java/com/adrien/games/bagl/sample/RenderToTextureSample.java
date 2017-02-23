@@ -17,6 +17,7 @@ import com.adrien.games.bagl.core.Vector2;
 import com.adrien.games.bagl.core.Vector3;
 import com.adrien.games.bagl.rendering.FrameBuffer;
 import com.adrien.games.bagl.rendering.IndexBuffer;
+import com.adrien.games.bagl.rendering.Material;
 import com.adrien.games.bagl.rendering.Mesh;
 import com.adrien.games.bagl.rendering.Shader;
 import com.adrien.games.bagl.rendering.Spritebatch;
@@ -81,7 +82,6 @@ public class RenderToTextureSample {
 		@Override
 		public void render() {
 
-			this.mesh.getMaterial().getDiffuseMap().bind();
 			this.mesh.getVertices().bind();
 			this.mesh.getIndices().bind();
 
@@ -103,6 +103,7 @@ public class RenderToTextureSample {
 			this.shader.setUniform("uMatrices.wvp", this.wvp);
 			this.shader.setUniform("uBaseLight.color", Color.WHITE);
 			this.shader.setUniform("uBaseLight.intensity", 1.f);
+			this.setMaterial(this.shader, this.mesh.getMaterial());
 			this.frameBuffer.bind();
 			
 			FrameBuffer.clear(BLUEISH);
@@ -110,6 +111,22 @@ public class RenderToTextureSample {
 			
 			FrameBuffer.unbind();
 			Shader.unbind();
+		}
+		
+		private void setMaterial(Shader shader, Material material) {
+			if(material.hasDiffuseMap()) {
+				shader.setUniform("uMaterial.diffuseMap", 0);
+				material.getDiffuseMap().bind(0);
+			}
+			if(material.hasSpecularMap()) {
+				shader.setUniform("uMaterial.specularMap", 1);
+				material.getSpecularMap().bind(1);
+			}
+			shader.setUniform("uMaterial.diffuseColor", material.getDiffuseColor());
+			shader.setUniform("uMaterial.hasDiffuseMap", material.hasDiffuseMap());
+			shader.setUniform("uMaterial.shininess", material.getSpecularIntensity());
+			shader.setUniform("uMaterial.hasSpecularMap", material.hasSpecularMap());
+			shader.setUniform("uMaterial.glossiness", material.getSpecularExponent());
 		}
 		
 		@Override
