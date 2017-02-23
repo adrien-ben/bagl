@@ -97,6 +97,7 @@ public class ObjParser implements ModelParser {
 		this.positions.clear();
 		this.coords.clear();
 		this.normals.clear();
+		this.faces.clear();
 		this.materialLib.clear();
 		this.usedMaterial = null;
 	}
