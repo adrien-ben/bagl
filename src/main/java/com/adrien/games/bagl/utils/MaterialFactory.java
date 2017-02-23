@@ -25,10 +25,11 @@ public final class MaterialFactory {
 		return material;
 	}
 	
-	public static Material createDiffuseMap(Texture diffuseMap, Texture specularMap) {
+	public static Material createDiffuseMap(Texture diffuseMap, Texture specularMap, float specularExponent) {
 		Material material = new Material();
 		material.setDiffuseMap(diffuseMap);
 		material.setSpecularMap(specularMap);
+		material.setSpecularExponent(specularExponent);
 		return material;
 	}
 	

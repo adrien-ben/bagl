@@ -45,11 +45,12 @@ vec4 computeSpecular(BaseLight light, float shininess, float glossiness, vec4 po
 void main() {
 	vec3 normal = normalize(passNormal);
 	vec4 fragColor = uMaterial.hasDiffuseMap ? texture2D(uMaterial.diffuseMap, passCoords) : uMaterial.diffuseColor;
-
+	float shininess = uMaterial.hasSpecularMap ? texture2D(uMaterial.specularMap, passCoords).r : uMaterial.shininess;
+	
 	//directional lights
 	vec3 lightDirection = normalize(uLight.direction);
 	vec4 diffuse = computeDiffuse(uLight.base, normal, lightDirection);
-	vec4 specular = computeSpecular(uLight.base, uMaterial.shininess, uMaterial.glossiness, passPosition, normal, lightDirection);
+	vec4 specular = computeSpecular(uLight.base, shininess, uMaterial.glossiness, passPosition, normal, lightDirection);
 	
 	//final color
 	color = fragColor*diffuse + specular;

@@ -60,7 +60,8 @@ void main()
 	vec4 diffuse = vec4(0, 0, 0, 1);
 	vec4 specular = vec4(0, 0, 0, 1);
 	vec4 fragColor = uMaterial.hasDiffuseMap ? texture2D(uMaterial.diffuseMap, passCoords) : uMaterial.diffuseColor;
-
+	float shininess = uMaterial.hasSpecularMap ? texture2D(uMaterial.specularMap, passCoords).r : uMaterial.shininess;
+	
 	vec3 lightDirection = passPosition.xyz - uLight.point.position;
 	float distance = length(lightDirection);
 	lightDirection = normalize(lightDirection);
@@ -71,7 +72,7 @@ void main()
 		float intensity = clamp((theta - uLight.outerCutOff)/epsilon, 0, 1);
 		float attenuation = computeAttenuation(distance, uLight.point.attenuation);
 		diffuse += computeDiffuse(uLight.point.base, normal, lightDirection)*attenuation*intensity;
-		specular += computeSpecular(uLight.point.base, uMaterial.shininess, uMaterial.glossiness, passPosition, normal, lightDirection)*attenuation*intensity;
+		specular += computeSpecular(uLight.point.base, shininess, uMaterial.glossiness, passPosition, normal, lightDirection)*attenuation*intensity;
 	}
 	
 	color = fragColor*diffuse + specular;
