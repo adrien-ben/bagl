@@ -42,7 +42,7 @@ struct SpotLight {
 };
 
 const int MAX_DIR_LIGHTS = 2;
-const int MAX_POINT_LIGHTS = 5;
+const int MAX_POINT_LIGHTS = 6;
 const int MAX_SPOT_LIGHTS = 3;
 const int MAX_GLOSSINESS = 256;
 
