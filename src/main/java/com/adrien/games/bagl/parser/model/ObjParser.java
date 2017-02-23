@@ -46,7 +46,7 @@ public class ObjParser implements ModelParser {
 	private final List<Vector3> positions = new ArrayList<>();
 	private final List<Vector2> coords = new ArrayList<>();
 	private final List<Vector3> normals = new ArrayList<>();
-	private final List<Vertex> vertices = new ArrayList<>();
+	private final List<Face> faces = new ArrayList<>();
 	private final MtlParser mtlParser = new MtlParser();
 	private final Map<String, Material> materialLib = new HashMap<>();
 	private Material usedMaterial;
@@ -74,13 +74,18 @@ public class ObjParser implements ModelParser {
 	}
 	
 	private Mesh build() {
-		int vertexCount = this.vertices.size();
+		int vertexCount = this.faces.size();
 		Vertex[] vertexArray = new VertexPositionNormalTexture[vertexCount];
 		int[] indexArray = new int[vertexCount];
 		for(int i = 0; i < vertexCount; i++) {
-			vertexArray[i] = this.vertices.get(i);
+			Face face = this.faces.get(i);
+			Vector3 position = this.positions.get(face.getPositionIndex());
+			Vector3 normal = this.normals.get(face.getNormalIndex());
+			Vector2 coord = this.coords.get(face.getCoordsIndex());
+			vertexArray[i] = new VertexPositionNormalTexture(position, normal, coord);
 			indexArray[i] = i;
 		}
+
 		VertexBuffer vertexBuffer = new VertexBuffer(VertexPositionNormalTexture.DESCRIPTION, vertexArray);
 		IndexBuffer indexBuffer = new IndexBuffer(indexArray);
 		return new Mesh(vertexBuffer, indexBuffer, this.usedMaterial);
@@ -92,7 +97,6 @@ public class ObjParser implements ModelParser {
 		this.positions.clear();
 		this.coords.clear();
 		this.normals.clear();
-		this.vertices.clear();
 		this.materialLib.clear();
 		this.usedMaterial = null;
 	}
@@ -172,18 +176,11 @@ public class ObjParser implements ModelParser {
 			int positionIndex = Integer.parseInt(tokens[0]) - 1;
 			int textCoordIndex = Integer.parseInt(tokens[1]) - 1;
 			int normalIndex = Integer.parseInt(tokens[2]) - 1;
-			this.reconstructVertex(positionIndex, textCoordIndex, normalIndex);
+			this.faces.add(new Face(positionIndex, normalIndex, textCoordIndex));
 		} else {
 			this.handleParseError("A face vertex does not reference a position, coords and/or a normal at line " + 
 					this.currentLine + ". Only triangle faces are supported.");
 		}
-	}
-	
-	private void reconstructVertex(int positionIndex, int textCoordIndex, int normalIndex) {
-		this.vertices.add(new VertexPositionNormalTexture(
-				this.positions.get(positionIndex),
-				this.normals.get(normalIndex),
-				this.coords.get(textCoordIndex)));
 	}
 	
 	private void parseMtlLib(String[] tokens) {
