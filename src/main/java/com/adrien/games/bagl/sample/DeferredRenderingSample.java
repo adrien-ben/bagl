@@ -39,7 +39,7 @@ public class DeferredRenderingSample {
 	private static final class TestGame implements Game {
 		
 		private static final String TITLE = "Deferred Rendering";
-		private static final int WIDTH = 512;
+		private static final int WIDTH = 1024;
 		private static final int HEIGHT = WIDTH * 9 / 16;
 		
 		private FrameBuffer gbuffer;
@@ -95,7 +95,7 @@ public class DeferredRenderingSample {
 		private void initMeshes() {
 			this.plane = MeshFactory.createPlane(10, 10);
 			this.world = new Matrix4();
-			this.cube = MeshFactory.createBox(1, 1, 1);
+			this.cube = MeshFactory.fromResourceFile("/cube.obj");
 			this.cubeWorld = Matrix4.createTranslation(new Vector3(0, 0.5f, 0));	
 		}
 		

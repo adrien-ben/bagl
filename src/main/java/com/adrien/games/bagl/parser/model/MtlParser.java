@@ -12,12 +12,19 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.rendering.Material;
 import com.adrien.games.bagl.rendering.texture.Texture;
 
 /**
  * Super basic Wavefronts's mtl files parser.
- * <p> Only supports diffuse texture and specular exponent.
+ * <p> Only supports :
+ * <ul>
+ * <li>diffuse color (Kd R G B)
+ * <li>diffuse map (map_Kd RELATIV_FILEPATH)
+ * <li>specular color (Ks RGB)
+ * <li>specular map (map_Ks RELATIV_FILEPATH)
+ * <li>specular exponent (Ns VALUE)
  * @author Adrien
  *
  */
@@ -28,8 +35,11 @@ public class MtlParser {
 	private static final String SPACE_SEP = " ";
 	private static final String COMMENT_LINE_FLAG = "#";
 	private static final String NEW_MTL_FLAG = "newmtl";
+	private static final String DIFFUSE_COLOR_FLAG = "Kd";
+	private static final String SPECULAR_COLOR_FLAG = "Ks";
 	private static final String SPECULAR_EXPONENT_FLAG = "Ns";
 	private static final String DIFFUSE_MAP_FLAG = "map_Kd";
+	private static final String SPECULAR_MAP_FLAG = "map_Ks";
 	
 	private String currentFile;
 	private Map<String, Material> materials = new HashMap<>();
@@ -70,6 +80,12 @@ public class MtlParser {
 				this.parseDiffuseMap(tokens[1]);
 			} else if(SPECULAR_EXPONENT_FLAG.equals(first) && tokens.length > 1) {
 				this.parseSpecularExponent(tokens[1]);
+			} else if(SPECULAR_COLOR_FLAG.equals(first) && tokens.length > 3) {
+				this.parseSpecularColor(tokens);
+			} else if(DIFFUSE_COLOR_FLAG.equals(first) && tokens.length > 3) {
+				this.parseDiffuseColor(tokens);
+			} else if(SPECULAR_MAP_FLAG.equals(first) && tokens.length > 1) {
+				this.parseSpecularMap(tokens[1]);
 			}
 		}
 	}
@@ -87,8 +103,30 @@ public class MtlParser {
 	}
 	
 	private void parseSpecularExponent(String value) {
+		this.checkCurrentMaterial();
 		this.currentMaterial.setSpecularExponent(Float.parseFloat(value));
 	}
+	
+	private void parseSpecularColor(String[] tokens) {
+		this.checkCurrentMaterial();
+		this.currentMaterial.setSpecularIntensity(Float.parseFloat(tokens[1]));
+	}
+	
+	private void parseDiffuseColor(String[] tokens) {
+		this.checkCurrentMaterial();
+		float r = Float.parseFloat(tokens[1]);
+		float g = Float.parseFloat(tokens[2]);
+		float b = Float.parseFloat(tokens[3]);
+		this.currentMaterial.setDiffuseColor(new Color(r,g ,b));
+	}
+	
+	private void parseSpecularMap(String fileName) {
+		this.checkCurrentMaterial();
+		String folderPath = Paths.get(this.currentFile).getParent().toString();
+		String texturePath = folderPath + "/" + fileName;
+		this.currentMaterial.setSpecularMap(new Texture(texturePath));
+	}
+	
 	
 	private void checkCurrentMaterial() {
 		if(Objects.isNull(this.currentMaterial)) {

@@ -5,6 +5,8 @@ import java.io.File;
 import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.core.Vector2;
 import com.adrien.games.bagl.core.Vector3;
+import com.adrien.games.bagl.parser.model.ModelParser;
+import com.adrien.games.bagl.parser.model.ObjParser;
 import com.adrien.games.bagl.rendering.IndexBuffer;
 import com.adrien.games.bagl.rendering.Material;
 import com.adrien.games.bagl.rendering.Mesh;
@@ -15,6 +17,8 @@ import com.adrien.games.bagl.rendering.vertex.VertexPositionNormalTexture;
 
 public final class MeshFactory {
 
+	private static ModelParser parser = new ObjParser();
+	
 	private MeshFactory() {
 	}
 	
@@ -62,7 +66,7 @@ public final class MeshFactory {
 		IndexBuffer indexBuffer = new IndexBuffer(indices);
 		VertexBuffer vertexBuffer = new VertexBuffer(VertexPositionNormalTexture.DESCRIPTION, vertices);
 		
-		Material material = MaterialFactory.createDiffuseMap(texture, texture, 32f);
+		Material material = MaterialFactory.createDiffuseMap(texture, 0.4f, 2f);
 		return new Mesh(vertexBuffer, indexBuffer, material);
 	}
 	
@@ -121,6 +125,10 @@ public final class MeshFactory {
 		
 		Material material = MaterialFactory.createDiffuseColor(Color.BLACK, 1.0f, 256.0f);
 		return new Mesh(vertexBuffer, indexBuffer, material);
+	}
+	
+	public static Mesh fromResourceFile(String resourceName) {
+		return parser.parse(new File(MeshFactory.class.getResource(resourceName).getFile()).getAbsolutePath());
 	}
 	
 }

@@ -14,6 +14,7 @@ import com.adrien.games.bagl.core.Vector3;
 import com.adrien.games.bagl.parser.model.ModelParser;
 import com.adrien.games.bagl.parser.model.ObjParser;
 import com.adrien.games.bagl.rendering.IndexBuffer;
+import com.adrien.games.bagl.rendering.Material;
 import com.adrien.games.bagl.rendering.Mesh;
 import com.adrien.games.bagl.rendering.Shader;
 import com.adrien.games.bagl.rendering.VertexBuffer;
@@ -40,11 +41,11 @@ public class ObjModelSample {
 			this.mesh = parser.parse(new File(TestGame.class.getResource("/cube.obj").getFile()).getAbsolutePath());
 			
 			this.shader = new Shader();
-			this.shader.addVertexShader("/ambient.vert");
+			this.shader.addVertexShader("/model.vert");
 			this.shader.addFragmentShader("/ambient.frag");
 			this.shader.compile();
 			
-			this.camera = new Camera(new Vector3(-2, 1, -2), new Vector3(2, -1, 2), Vector3.UP, 
+			this.camera = new Camera(new Vector3(-2, 2, -2), new Vector3(2, -2, 2), Vector3.UP, 
 					(float)Math.toRadians(70f), (float)WIDTH/(float)HEIGHT, 0.1f, 1000f);
 			
 			this.model = new Matrix4();
@@ -62,12 +63,12 @@ public class ObjModelSample {
 		@Override
 		public void render() {
 			this.shader.bind();
-			this.shader.setUniform("uMatrices.model", this.model);
-			this.shader.setUniform("uMatrices.mvp", this.camera.getViewProj());
+			this.shader.setUniform("uMatrices.world", this.model);
+			this.shader.setUniform("uMatrices.wvp", this.camera.getViewProj());
 			this.shader.setUniform("uBaseLight.intensity", this.lightIntensity);
 			this.shader.setUniform("uBaseLight.color", Color.WHITE);
+			this.setMaterial(this.shader, this.mesh.getMaterial());
 			
-			this.mesh.getMaterial().getDiffuseMap().bind();
 			this.mesh.getVertices().bind();
 			this.mesh.getIndices().bind();
 			
@@ -77,6 +78,22 @@ public class ObjModelSample {
 			VertexBuffer.unbind();
 			Texture.unbind();
 			Shader.unbind();
+		}
+		
+		private void setMaterial(Shader shader, Material material) {
+			if(material.hasDiffuseMap()) {
+				shader.setUniform("uMaterial.diffuseMap", 0);
+				material.getDiffuseMap().bind(0);
+			}
+			if(material.hasSpecularMap()) {
+				shader.setUniform("uMaterial.specularMap", 1);
+				material.getSpecularMap().bind(1);
+			}
+			shader.setUniform("uMaterial.diffuseColor", material.getDiffuseColor());
+			shader.setUniform("uMaterial.hasDiffuseMap", material.hasDiffuseMap());
+			shader.setUniform("uMaterial.shininess", material.getSpecularIntensity());
+			shader.setUniform("uMaterial.hasSpecularMap", material.hasSpecularMap());
+			shader.setUniform("uMaterial.glossiness", material.getSpecularExponent());
 		}
 
 		@Override
