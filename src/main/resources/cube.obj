@@ -1,7 +1,7 @@
 # cube model
 
 mtllib [cube.mtl]
-usemtl [cube_mtl_1]
+usemtl [container]
 
 v -0.5 -0.5 0.5
 v 0.5 -0.5 0.5

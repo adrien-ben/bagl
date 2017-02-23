@@ -3,10 +3,15 @@ newmtl cube_mtl_1
 Ks 1 1 1
 Ns 32.0
 map_Kd default.png
-map_Ks default.png
 
 newmtl shinny_red
 
 Kd 1 0 0
 Ks 1 1 1
 Ns 64.0
+
+newmtl container
+
+map_Kd container_kd.png
+map_Ks container_ks.png
+Ns 32
