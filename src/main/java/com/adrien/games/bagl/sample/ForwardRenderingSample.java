@@ -17,7 +17,6 @@ import com.adrien.games.bagl.core.Matrix4;
 import com.adrien.games.bagl.core.Time;
 import com.adrien.games.bagl.core.Vector3;
 import com.adrien.games.bagl.rendering.IndexBuffer;
-import com.adrien.games.bagl.rendering.Material;
 import com.adrien.games.bagl.rendering.Mesh;
 import com.adrien.games.bagl.rendering.Shader;
 import com.adrien.games.bagl.rendering.VertexBuffer;
@@ -244,31 +243,10 @@ public final class ForwardRenderingSample {
 			
 			mesh.getVertices().bind();
 			mesh.getIndices().bind();
-			this.setMaterial(shader, mesh.getMaterial());
+			mesh.getMaterial().applyTo(shader);
 			shader.setUniform("uMatrices.world", world);
 			shader.setUniform("uMatrices.wvp", this.wvp);
 			GL11.glDrawElements(GL11.GL_TRIANGLES, mesh.getIndices().getSize(), GL11.GL_UNSIGNED_INT, 0);
-		}
-		
-		private void setMaterial(Shader shader, Material material) {
-			if(material.hasDiffuseMap()) {
-				shader.setUniform("uMaterial.diffuseMap", 0);
-				material.getDiffuseMap().bind(0);
-			}
-			if(material.hasSpecularMap()) {
-				shader.setUniform("uMaterial.specularMap", 1);
-				material.getSpecularMap().bind(1);
-			}
-			if(material.hasBumpMap()) {
-				shader.setUniform("uMaterial.bumpMap", 2);
-				material.getBumpMap().bind(2);
-			}
-			shader.setUniform("uMaterial.diffuseColor", material.getDiffuseColor());
-			shader.setUniform("uMaterial.hasDiffuseMap", material.hasDiffuseMap());
-			shader.setUniform("uMaterial.shininess", material.getSpecularIntensity());
-			shader.setUniform("uMaterial.hasSpecularMap", material.hasSpecularMap());
-			shader.setUniform("uMaterial.glossiness", material.getSpecularExponent());
-			shader.setUniform("uMaterial.hasBumpMap", material.hasBumpMap());
 		}
 		
 		public void renderLightsPositions() {

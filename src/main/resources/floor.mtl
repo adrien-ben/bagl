@@ -1,8 +1,8 @@
 # floor mtl
 
 newmtl default
-Ns 4
-Ks 0.2 0.2 0.2
+Ns 64
+Ks 1 1 1
 map_Kd brickwall.jpg
 map_bump brickwall_normal.jpg
  

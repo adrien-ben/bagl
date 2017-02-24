@@ -18,7 +18,6 @@ import com.adrien.games.bagl.core.Vector2;
 import com.adrien.games.bagl.core.Vector3;
 import com.adrien.games.bagl.rendering.FrameBuffer;
 import com.adrien.games.bagl.rendering.IndexBuffer;
-import com.adrien.games.bagl.rendering.Material;
 import com.adrien.games.bagl.rendering.Mesh;
 import com.adrien.games.bagl.rendering.Shader;
 import com.adrien.games.bagl.rendering.Spritebatch;
@@ -199,7 +198,7 @@ public class DeferredRenderingSample {
 			this.plane.getVertices().bind();
 			this.plane.getIndices().bind();
 			this.gbufferShader.bind();
-			this.setMaterial(this.gbufferShader, this.plane.getMaterial());
+			this.plane.getMaterial().applyTo(this.gbufferShader);
 			this.gbufferShader.setUniform("uMatrices.world", this.world);
 			this.gbufferShader.setUniform("uMatrices.wvp", this.wvp);
 			this.gbuffer.bind();
@@ -210,7 +209,7 @@ public class DeferredRenderingSample {
 			Matrix4.mul(this.camera.getViewProj(), this.cubeWorld, this.wvp);
 			this.cube.getVertices().bind();
 			this.cube.getIndices().bind();
-			this.setMaterial(this.gbufferShader, this.cube.getMaterial());
+			this.cube.getMaterial().applyTo(this.gbufferShader);
 			this.gbufferShader.setUniform("uMatrices.world", this.cubeWorld);
 			this.gbufferShader.setUniform("uMatrices.wvp", this.wvp);
 			
@@ -267,27 +266,6 @@ public class DeferredRenderingSample {
 			glDrawArrays(GL_POINTS, 0, this.points.size() + this.spots.size());
 			Shader.unbind();
 			VertexBuffer.unbind();
-		}
-		
-		private void setMaterial(Shader shader, Material material) {
-			if(material.hasDiffuseMap()) {
-				shader.setUniform("uMaterial.diffuseMap", 0);
-				material.getDiffuseMap().bind(0);
-			}
-			if(material.hasSpecularMap()) {
-				shader.setUniform("uMaterial.specularMap", 1);
-				material.getSpecularMap().bind(1);
-			}
-			if(material.hasBumpMap()) {
-				shader.setUniform("uMaterial.bumpMap", 2);
-				material.getBumpMap().bind(2);
-			}
-			shader.setUniform("uMaterial.diffuseColor", material.getDiffuseColor());
-			shader.setUniform("uMaterial.hasDiffuseMap", material.hasDiffuseMap());
-			shader.setUniform("uMaterial.shininess", material.getSpecularIntensity());
-			shader.setUniform("uMaterial.hasSpecularMap", material.hasSpecularMap());
-			shader.setUniform("uMaterial.glossiness", material.getSpecularExponent());
-			shader.setUniform("uMaterial.hasBumpMap", material.hasBumpMap());
 		}
 		
 		private void setDirectionalLight(Shader shader, int index, DirectionalLight light) {
