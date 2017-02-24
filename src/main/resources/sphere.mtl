@@ -2,7 +2,7 @@
 # Material Count: 1
 
 newmtl None
-Ns 512
+Ns 256
 Kd 0.6 0.6 0.6
 Ks 1 1 1
 

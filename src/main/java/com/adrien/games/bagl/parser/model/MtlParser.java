@@ -40,6 +40,7 @@ public class MtlParser {
 	private static final String SPECULAR_EXPONENT_FLAG = "Ns";
 	private static final String DIFFUSE_MAP_FLAG = "map_Kd";
 	private static final String SPECULAR_MAP_FLAG = "map_Ks";
+	private static final String BUMP_MAP_FLAG = "bump|map_bump";
 	
 	private String currentFile;
 	private Map<String, Material> materials = new HashMap<>();
@@ -86,6 +87,8 @@ public class MtlParser {
 				this.parseDiffuseColor(tokens);
 			} else if(SPECULAR_MAP_FLAG.equals(first) && tokens.length > 1) {
 				this.parseSpecularMap(tokens[1]);
+			} else if(first.matches(BUMP_MAP_FLAG) && tokens.length > 1) {
+				this.parseBumpMap(tokens[1]);
 			}
 		}
 	}
@@ -127,6 +130,12 @@ public class MtlParser {
 		this.currentMaterial.setSpecularMap(new Texture(texturePath));
 	}
 	
+	private void parseBumpMap(String fileName) {
+		this.checkCurrentMaterial();
+		String folderPath = Paths.get(this.currentFile).getParent().toString();
+		String texturePath = folderPath + "/" + fileName;
+		this.currentMaterial.setBumpMap(new Texture(texturePath));
+	}
 	
 	private void checkCurrentMaterial() {
 		if(Objects.isNull(this.currentMaterial)) {

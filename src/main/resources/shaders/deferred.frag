@@ -6,6 +6,10 @@ struct GBuffer {
 	sampler2D depth;
 };
 
+struct Camera {
+	mat4 vp;
+	vec3 position;
+};
 
 struct Attenuation {
 	float constant;

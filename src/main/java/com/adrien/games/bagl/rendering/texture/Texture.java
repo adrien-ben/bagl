@@ -69,7 +69,7 @@ public final class Texture {
 		STBImage.stbi_set_flip_vertically_on_load(0);
 		ByteBuffer image = STBImage.stbi_load(path, width, height, comp, 0);
 		if(image == null) {
-			throw new RuntimeException("Failed to load a face from the cubemap : '" + path + "'.");
+			throw new RuntimeException("Failed to load texture : '" + path + "'.");
 		}
 		
 		this.width = width.get();

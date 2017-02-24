@@ -17,6 +17,8 @@ struct Material {
 	bool hasSpecularMap;
 	sampler2D specularMap;
 	float glossiness;
+	bool hasBumpMap;
+	sampler2D bumpMap;
 };
 
 uniform BaseLight uBaseLight;

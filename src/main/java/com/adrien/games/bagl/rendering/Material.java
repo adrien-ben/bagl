@@ -12,6 +12,7 @@ public class Material {
 	private float specularExponent = 0.0f;
 	private float specularIntensity = 0.0f;
 	private Texture specularMap = null;
+	private Texture bumpMap = null;
 	
 	public boolean hasDiffuseMap() {
 		return Objects.nonNull(this.diffuseMap);
@@ -19,6 +20,10 @@ public class Material {
 	
 	public boolean hasSpecularMap() {
 		return Objects.nonNull(this.specularMap);
+	}
+	
+	public boolean hasBumpMap() {
+		return Objects.nonNull(this.bumpMap);
 	}
 	
 	public void destroy() {
@@ -65,6 +70,14 @@ public class Material {
 
 	public void setSpecularMap(Texture specularMap) {
 		this.specularMap = specularMap;
+	}
+
+	public Texture getBumpMap() {
+		return bumpMap;
+	}
+
+	public void setBumpMap(Texture bumpMap) {
+		this.bumpMap = bumpMap;
 	}
 	
 }

@@ -259,11 +259,16 @@ public final class ForwardRenderingSample {
 				shader.setUniform("uMaterial.specularMap", 1);
 				material.getSpecularMap().bind(1);
 			}
+			if(material.hasBumpMap()) {
+				shader.setUniform("uMaterial.bumpMap", 2);
+				material.getBumpMap().bind(2);
+			}
 			shader.setUniform("uMaterial.diffuseColor", material.getDiffuseColor());
 			shader.setUniform("uMaterial.hasDiffuseMap", material.hasDiffuseMap());
 			shader.setUniform("uMaterial.shininess", material.getSpecularIntensity());
 			shader.setUniform("uMaterial.hasSpecularMap", material.hasSpecularMap());
 			shader.setUniform("uMaterial.glossiness", material.getSpecularExponent());
+			shader.setUniform("uMaterial.hasBumpMap", material.hasBumpMap());
 		}
 		
 		public void renderLightsPositions() {
