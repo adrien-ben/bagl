@@ -1,11 +1,22 @@
 package com.adrien.games.bagl.rendering;
 
-import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
+import static org.lwjgl.opengl.GL11.glClear;
+import static org.lwjgl.opengl.GL11.glClearColor;
 import static org.lwjgl.opengl.GL20.glDrawBuffers;
-import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.opengl.GL30.GL_COLOR_ATTACHMENT0;
+import static org.lwjgl.opengl.GL30.GL_DEPTH_ATTACHMENT;
+import static org.lwjgl.opengl.GL30.GL_FRAMEBUFFER;
+import static org.lwjgl.opengl.GL30.glBindFramebuffer;
+import static org.lwjgl.opengl.GL30.glDeleteFramebuffers;
+import static org.lwjgl.opengl.GL30.glFramebufferTexture2D;
+import static org.lwjgl.opengl.GL30.glGenFramebuffers;
 
 import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.rendering.texture.Texture;
+import com.adrien.games.bagl.rendering.texture.Texture.Format;
 
 /**
  * This class creates an OpenGL {@link FrameBuffer} object. (version >= 3.0).
@@ -44,7 +55,7 @@ public class FrameBuffer {
 		this.width = width;
 		this.height = height;
 		this.colorOutputs = this.createColorOutputs(colorOutputs, this.width, this.height);
-		this.depthTexture = new Texture(this.width, this.height, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT);
+		this.depthTexture = new Texture(this.width, this.height, Format.DEPTH_32F);
 		this.handle = this.createBuffer(this.colorOutputs, this.depthTexture);
 	}
 	
