@@ -6,10 +6,6 @@ struct GBuffer {
 	sampler2D depth;
 };
 
-struct Camera {
-	mat4 vp;
-	vec3 position;
-};
 
 struct Attenuation {
 	float constant;
@@ -99,7 +95,7 @@ void main() {
 		float depthValue = texture2D(uGBuffer.depth, passCoords).r;
 		vec4 position = positionFromDepth(depthValue);
 		float shininess = colorShininess.a;
-		float glossiness = normalGloss.a*MAX_GLOSSINESS + 0.001;
+		float glossiness = max(normalGloss.a*MAX_GLOSSINESS, 0.000000001);
 		
 		//compute lights
 		vec4 ambient = vec4(uAmbient.color.xyz*uAmbient.intensity, 1);
