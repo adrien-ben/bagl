@@ -146,6 +146,18 @@ public final class Vector3 {
 		result.setZ(z * factor);
 	}
 	
+	public void average(Vector3 other) {
+		x = (x + other.x)/2;
+		y = (y + other.y)/2;
+		z = (z + other.z)/2;
+	}
+	
+	public void average(Vector3 other, Vector3 result) {
+		result.setX((x + other.x)/2);
+		result.setY((y + other.y)/2);
+		result.setZ((z + other.z)/2);
+	}
+	
 	public static Vector3 cross(Vector3 left, Vector3 right) {
 		float _x = left.getY()*right.getZ() - left.getZ()*right.getY();
 		float _y = left.getZ()*right.getX() - left.getX()*right.getZ();

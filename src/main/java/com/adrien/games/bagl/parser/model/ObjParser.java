@@ -20,8 +20,8 @@ import com.adrien.games.bagl.rendering.IndexBuffer;
 import com.adrien.games.bagl.rendering.Material;
 import com.adrien.games.bagl.rendering.Mesh;
 import com.adrien.games.bagl.rendering.VertexBuffer;
+import com.adrien.games.bagl.rendering.vertex.MeshVertex;
 import com.adrien.games.bagl.rendering.vertex.Vertex;
-import com.adrien.games.bagl.rendering.vertex.VertexPositionNormalTexture;
 
 /**
  * This class parses Wavefront's .obj model files and create a {@link Mesh} from it.
@@ -46,6 +46,7 @@ public class ObjParser implements ModelParser {
 	private final List<Vector3> positions = new ArrayList<>();
 	private final List<Vector2> coords = new ArrayList<>();
 	private final List<Vector3> normals = new ArrayList<>();
+	private final List<Vector3> tangents = new ArrayList<>();
 	private final List<Face> faces = new ArrayList<>();
 	private final List<Integer> faceIndices = new ArrayList<>();
 	private final Map<Face, Integer> faceToIndexMap = new HashMap<>();
@@ -71,19 +72,76 @@ public class ObjParser implements ModelParser {
 		} catch (IOException e) {
 			log.error("Failed to parse file '{}'.", filePath, e);
 			throw new RuntimeException("Failed to parse model file", e);
-		}	
+		}
+		this.computeTangents();
 		return this.build();
+	}
+	
+	private void computeTangents() {
+		
+		Vector3[] tangents = new Vector3[this.faces.size()];
+		
+		for(int i = 0; i < this.faceIndices.size(); i+=3) {
+			
+			int index0 = this.faceIndices.get(i);
+			int index1 = this.faceIndices.get(i + 1);
+			int index2 = this.faceIndices.get(i + 2);
+			
+			Face face0 = this.faces.get(index0);
+			Face face1 = this.faces.get(index1);
+			Face face2 = this.faces.get(index2);
+			
+			Vector3 pos0 = this.positions.get(face0.getPositionIndex());
+			Vector3 pos1 = this.positions.get(face1.getPositionIndex());
+			Vector3 pos2 = this.positions.get(face2.getPositionIndex());
+			Vector3 edge1 = Vector3.sub(pos1, pos0);
+			Vector3 edge2 = Vector3.sub(pos2, pos0);
+			
+			Vector2 coords0 = this.coords.get(face0.getCoordsIndex());
+			Vector2 coords1 = this.coords.get(face1.getCoordsIndex());
+			Vector2 coords2 = this.coords.get(face2.getCoordsIndex());
+			Vector2 deltaUVx = Vector2.sub(coords1, coords0);
+			Vector2 deltaUVy = Vector2.sub(coords2, coords0);
+			
+			float f = 1/(deltaUVx.getX()*deltaUVy.getY() - deltaUVy.getX()*deltaUVx.getY());
+			
+			float x = f*(deltaUVy.getY()*edge1.getX() - deltaUVx.getY()*edge2.getX());
+			float y = f*(deltaUVy.getY()*edge1.getY() - deltaUVx.getY()*edge2.getY());
+			float z = f*(deltaUVy.getY()*edge1.getZ() - deltaUVx.getY()*edge2.getZ());
+			Vector3 tangent = new Vector3(x, y, z);
+			tangent.normalise();
+			
+			this.setTangentForFace(tangents, index0, tangent);
+			this.setTangentForFace(tangents, index1, tangent);
+			this.setTangentForFace(tangents, index2, tangent);
+		}
+		
+		for(Vector3 tangent : tangents) {
+			this.tangents.add(tangent);
+		}
+		
+	}
+	
+	private void setTangentForFace(Vector3[] tangents, int index, Vector3 tangent) {
+		Vector3 currentTangent = tangents[index];
+		if(Objects.isNull(currentTangent)) {
+			currentTangent = new Vector3(tangent);
+			tangents[index] = currentTangent;
+		} else {
+			currentTangent.average(tangent);
+		}
 	}
 	
 	private Mesh build() {
 		int vertexCount = this.faces.size();
-		Vertex[] vertexArray = new VertexPositionNormalTexture[vertexCount];
+		Vertex[] vertexArray = new MeshVertex[vertexCount];
 		for(int i = 0; i < vertexCount; i++) {
 			Face face = this.faces.get(i);
 			Vector3 position = this.positions.get(face.getPositionIndex());
 			Vector3 normal = this.normals.get(face.getNormalIndex());
 			Vector2 coord = this.coords.get(face.getCoordsIndex());
-			vertexArray[i] = new VertexPositionNormalTexture(position, normal, coord);
+			Vector3 tangent = this.tangents.get(i);
+			vertexArray[i] = new MeshVertex(position, normal, coord, tangent);
 		}
 
 		int indexCount = this.faceIndices.size();
@@ -92,7 +150,7 @@ public class ObjParser implements ModelParser {
 			indexArray[i] = this.faceIndices.get(i);
 		}
 		
-		VertexBuffer vertexBuffer = new VertexBuffer(VertexPositionNormalTexture.DESCRIPTION, vertexArray);
+		VertexBuffer vertexBuffer = new VertexBuffer(MeshVertex.DESCRIPTION, vertexArray);
 		IndexBuffer indexBuffer = new IndexBuffer(indexArray);
 		return new Mesh(vertexBuffer, indexBuffer, this.usedMaterial);
 	}
@@ -103,6 +161,7 @@ public class ObjParser implements ModelParser {
 		this.positions.clear();
 		this.coords.clear();
 		this.normals.clear();
+		this.tangents.clear();
 		this.faces.clear();
 		this.faceIndices.clear();
 		this.faceToIndexMap.clear();
