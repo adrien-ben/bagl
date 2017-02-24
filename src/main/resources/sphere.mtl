@@ -1,0 +1,9 @@
+# Blender MTL File: 'None'
+# Material Count: 1
+
+newmtl None
+Ns 32
+Kd 0.8 0.8 0.8
+Ks 0.8 0.8 0.8
+map_Kd container_kd.png
+map_Ks container_ks.png
