@@ -93,7 +93,7 @@ public class DeferredRenderingSample {
 		}
 		
 		private void initMeshes() {
-			this.plane = MeshFactory.createPlane(10, 10);
+			this.plane = MeshFactory.fromResourceFile("/floor.obj");
 			this.world = new Matrix4();
 			this.cube = MeshFactory.fromResourceFile("/sphere.obj");
 			this.cubeWorld = Matrix4.createTranslation(new Vector3(0, 0.5f, 0));	
