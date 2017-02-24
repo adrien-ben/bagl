@@ -1,0 +1,5 @@
+newmtl container
+
+map_Kd container_kd.png
+map_Ks container_ks.png
+Ns 32

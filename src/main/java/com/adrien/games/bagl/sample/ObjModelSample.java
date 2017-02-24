@@ -37,7 +37,7 @@ public class ObjModelSample {
 		
 		@Override
 		public void init() {
-			this.mesh = parser.parse(new File(TestGame.class.getResource("/cube.obj").getFile()).getAbsolutePath());
+			this.mesh = parser.parse(new File(TestGame.class.getResource("/models/cube/cube.obj").getFile()).getAbsolutePath());
 			
 			this.shader = new Shader();
 			this.shader.addVertexShader("/model.vert");

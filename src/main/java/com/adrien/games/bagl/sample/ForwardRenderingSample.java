@@ -77,9 +77,9 @@ public final class ForwardRenderingSample {
 		}
 		
 		private void initMeshes()	{
-			this.plane = MeshFactory.fromResourceFile("/floor.obj");
+			this.plane = MeshFactory.fromResourceFile("/models/floor/floor.obj");
 			this.world = new Matrix4();
-			this.cube = MeshFactory.fromResourceFile("/sphere.obj");
+			this.cube = MeshFactory.fromResourceFile("/models/sphere/sphere.obj");
 			this.cubeWorld = Matrix4.createTranslation(new Vector3(0, 0.5f, 0));
 		}
 		
