@@ -25,15 +25,15 @@ public class Material {
 	public void applyTo(Shader shader) {
 		if(this.hasDiffuseMap()) {
 			shader.setUniform("uMaterial.diffuseMap", DIFFUSE_MAP_CHANNEL);
-			this.diffuseMap.bind(0);
+			this.diffuseMap.bind(DIFFUSE_MAP_CHANNEL);
 		}
 		if(this.hasSpecularMap()) {
 			shader.setUniform("uMaterial.specularMap", SPECULAR_MAP_CHANNEL);
-			this.specularMap.bind(1);
+			this.specularMap.bind(SPECULAR_MAP_CHANNEL);
 		}
 		if(this.hasBumpMap()) {
 			shader.setUniform("uMaterial.bumpMap", NORMAL_MAP_CHANNEL);
-			this.bumpMap.bind(2);
+			this.bumpMap.bind(NORMAL_MAP_CHANNEL);
 		}
 		shader.setUniform("uMaterial.diffuseColor", this.diffuseColor);
 		shader.setUniform("uMaterial.hasDiffuseMap", this.hasDiffuseMap());
