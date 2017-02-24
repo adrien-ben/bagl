@@ -2,8 +2,11 @@
 # Material Count: 1
 
 newmtl None
+Ns 512
+Kd 0.6 0.6 0.6
+Ks 1 1 1
+
+newmtl container
 Ns 32
-Kd 0.8 0.8 0.8
-Ks 0.8 0.8 0.8
 map_Kd container_kd.png
 map_Ks container_ks.png

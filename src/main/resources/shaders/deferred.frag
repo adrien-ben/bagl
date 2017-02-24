@@ -44,7 +44,7 @@ struct SpotLight {
 const int MAX_DIR_LIGHTS = 2;
 const int MAX_POINT_LIGHTS = 6;
 const int MAX_SPOT_LIGHTS = 3;
-const int MAX_GLOSSINESS = 256;
+const float MAX_GLOSSINESS = 512;
 
 in vec2 passCoords;
 
@@ -99,7 +99,7 @@ void main() {
 		float depthValue = texture2D(uGBuffer.depth, passCoords).r;
 		vec4 position = positionFromDepth(depthValue);
 		float shininess = colorShininess.a;
-		float glossiness = normalGloss.a*MAX_GLOSSINESS;
+		float glossiness = normalGloss.a*MAX_GLOSSINESS + 0.001;
 		
 		//compute lights
 		vec4 ambient = vec4(uAmbient.color.xyz*uAmbient.intensity, 1);

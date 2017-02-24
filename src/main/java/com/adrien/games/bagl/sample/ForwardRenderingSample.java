@@ -36,7 +36,7 @@ public final class ForwardRenderingSample {
 	private static final class TestGame implements Game	{
 		
 		private static final String TITLE = "Forward Rendering";
-		private static final int WIDTH = 1024;
+		private static final int WIDTH = 512;
 		private static final int HEIGHT = WIDTH * 9 / 16;
 		
 		//meshes
@@ -80,7 +80,7 @@ public final class ForwardRenderingSample {
 		private void initMeshes()	{
 			this.plane = MeshFactory.createPlane(10, 10);
 			this.world = new Matrix4();			
-			this.cube = MeshFactory.fromResourceFile("/cube.obj");
+			this.cube = MeshFactory.fromResourceFile("/sphere.obj");
 			this.cubeWorld = Matrix4.createTranslation(new Vector3(0, 0.5f, 0));
 		}
 		

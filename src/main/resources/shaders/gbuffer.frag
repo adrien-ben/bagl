@@ -10,7 +10,7 @@ struct Material {
 	float glossiness;
 };
 
-const int MAX_GLOSSINESS = 256;
+const float MAX_GLOSSINESS = 512;
 
 in vec2 passCoords;
 in vec3 passNormal;
@@ -21,9 +21,8 @@ layout (location = 1) out vec4 normals;
 uniform Material uMaterial;
 
 void main() {
-
 	colors.rgb = uMaterial.hasDiffuseMap ? texture2D(uMaterial.diffuseMap, passCoords).rgb : uMaterial.diffuseColor.rgb;
-	normals.rgb = normalize(passNormal)*0.5 + 0.5;
 	colors.a = uMaterial.hasSpecularMap ? texture2D(uMaterial.specularMap, passCoords).r : uMaterial.shininess;
+	normals.rgb = normalize(passNormal)*0.5 + 0.5;
 	normals.a = uMaterial.glossiness/MAX_GLOSSINESS;
 }
