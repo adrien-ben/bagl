@@ -16,12 +16,24 @@ public final class Texture {
 	private int width;
 	private int height;
 	
+	/**
+	 * Creates a new texture.
+	 * 
+	 * @param width The width of the texture.
+	 * @param height The height of the texture.
+	 * @param parameters The parameters of the texture.
+	 */
 	public Texture(int width, int height, TextureParameters parameters) {
 		this.width = width;
 		this.height = height;
-		this.handle = this.generateGlTexture(this.width, this.height, parameters, (ByteBuffer)null);
+		this.handle = this.generateGlTexture(this.width, this.height, parameters, ByteBuffer.class.cast(null));
 	}
 	
+	/**
+	 * Creates a texture from an image file.
+	 * @param file The path to the image file to load.
+	 * @param parameters The parameters of the texture. (!format will be overridden by the image format). 
+	 */
 	public Texture(String file, TextureParameters parameters) {
 		Image image = ImageUtils.loadImage(file);
 		this.width = image.getWidth();
@@ -60,23 +72,40 @@ public final class Texture {
 		}
 	}
 	
+	/**
+	 * Release resources.
+	 */
 	public void destroy() {
 		glDeleteTextures(handle);
 	}
 	
+	/**
+	 * Bind the textures to the default texture unit (0).
+	 */
 	public void bind() {
 		this.bind(0);
 	}
 	
+	/**
+	 * Binds the texture to the given texture unit.
+	 * @param unit The texture unit to bind the texture to.
+	 */
 	public void bind(int unit) {
 		glActiveTexture(GL_TEXTURE0 + unit);
 		glBindTexture(GL_TEXTURE_2D, handle);
 	}
 	
+	/**
+	 * Unbinds the texture bound to the default texture unit (0).
+	 */
 	public static void unbind() {
 		Texture.unbind(0);
 	}
 	
+	/**
+	 * Unbinds the texture bound to the given texture unit.
+	 * @param unit The texture unit to unbind the texture from.
+	 */
 	public static void unbind(int unit) {
 		glActiveTexture(GL_TEXTURE0 + unit);
 		glBindTexture(GL_TEXTURE_2D, 0);
