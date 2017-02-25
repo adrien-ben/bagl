@@ -3,6 +3,7 @@
 in vec4 passPosition;
 in vec3 passNormal;
 in vec2 passCoords;
+in mat3 passTBN;
 
 out vec4 color;
 
@@ -45,7 +46,13 @@ vec4 computeSpecular(BaseLight light, float shininess, float glossiness, vec4 po
 }
 
 void main() {
-	vec3 normal = normalize(passNormal);
+	vec3 normal;
+	if(uMaterial.hasBumpMap) {
+		normal = normalize(texture2D(uMaterial.bumpMap, passCoords).rgb*2 - 1);
+		normal = normalize(passTBN*normal);
+	} else {
+		normal = normalize(passNormal);
+	}
 	vec4 fragColor = uMaterial.hasDiffuseMap ? texture2D(uMaterial.diffuseMap, passCoords) : uMaterial.diffuseColor;
 	float shininess = uMaterial.hasSpecularMap ? texture2D(uMaterial.specularMap, passCoords).r : uMaterial.shininess;
 	

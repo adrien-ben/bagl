@@ -3,6 +3,7 @@
 in vec4 passPosition;
 in vec3 passNormal;
 in vec2 passCoords;
+in mat3 passTBN;
 
 out vec4 color;
 
@@ -69,7 +70,13 @@ void main()
 	lightDirection = normalize(lightDirection);
 	float theta = dot(-uLight.direction, -lightDirection);
 	if(theta > uLight.outerCutOff && distance <= uLight.point.range) {
-		vec3 normal = normalize(passNormal);
+		vec3 normal;
+		if(uMaterial.hasBumpMap) {
+			normal = normalize(texture2D(uMaterial.bumpMap, passCoords).rgb*2 - 1);
+			normal = normalize(passTBN*normal);
+		} else {
+			normal = normalize(passNormal);
+		}
 		float epsilon = uLight.cutOff - uLight.outerCutOff;
 		float intensity = clamp((theta - uLight.outerCutOff)/epsilon, 0, 1);
 		float attenuation = computeAttenuation(distance, uLight.point.attenuation);

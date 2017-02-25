@@ -3,6 +3,7 @@
 in vec4 passPosition;
 in vec3 passNormal;
 in vec2 passCoords;
+in mat3 passTBN;
 
 out vec4 color;
 
@@ -59,7 +60,13 @@ void main() {
 	vec3 lightDirection = passPosition.xyz - uLight.position;
 	float distance = length(lightDirection);
 	if(distance <= uLight.range) {
-		vec3 normal = normalize(passNormal);
+		vec3 normal;
+		if(uMaterial.hasBumpMap) {
+			normal = normalize(texture2D(uMaterial.bumpMap, passCoords).rgb*2 - 1);
+			normal = normalize(passTBN*normal);
+		} else {
+			normal = normalize(passNormal);
+		}
 		lightDirection = normalize(lightDirection);
 		float attenuation = computeAttenuation(distance, uLight.attenuation);
 		diffuse += computeDiffuse(uLight.base, normal, lightDirection)*attenuation;
