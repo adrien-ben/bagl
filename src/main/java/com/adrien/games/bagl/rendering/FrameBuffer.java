@@ -16,6 +16,7 @@ import static org.lwjgl.opengl.GL30.glGenFramebuffers;
 
 import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.rendering.texture.Texture;
+import com.adrien.games.bagl.rendering.texture.TextureParameters;
 import com.adrien.games.bagl.rendering.texture.Format;
 
 /**
@@ -55,7 +56,7 @@ public class FrameBuffer {
 		this.width = width;
 		this.height = height;
 		this.colorOutputs = this.createColorOutputs(colorOutputs, this.width, this.height);
-		this.depthTexture = new Texture(this.width, this.height, Format.DEPTH_32F);
+		this.depthTexture = new Texture(this.width, this.height, new TextureParameters().format(Format.DEPTH_32F));
 		this.handle = this.createBuffer(this.colorOutputs, this.depthTexture);
 	}
 	
@@ -69,7 +70,7 @@ public class FrameBuffer {
 	private Texture[] createColorOutputs(int colorOutputs, int width, int height) {
 		Texture[] textures = new Texture[colorOutputs];
 		for(int i = 0; i < colorOutputs; i++) {
-			textures[i] = new Texture(width, height);
+			textures[i] = new Texture(width, height, new TextureParameters().format(Format.RGBA8));
 		}
 		return textures;
 	}

@@ -12,6 +12,7 @@ import com.adrien.games.bagl.core.Time;
 import com.adrien.games.bagl.core.Vector2;
 import com.adrien.games.bagl.rendering.Spritebatch;
 import com.adrien.games.bagl.rendering.texture.Texture;
+import com.adrien.games.bagl.rendering.texture.TextureParameters;
 
 public class SpritebatchSample {
 
@@ -33,7 +34,8 @@ public class SpritebatchSample {
 		public void init() {
 			this.spritebatch = new Spritebatch(512, WIDTH, HEIGHT);
 			
-			this.texture = new Texture(new File(TestGame.class.getResource("/default.png").getFile()).getAbsolutePath());
+			this.texture = new Texture(new File(TestGame.class.getResource("/default.png").getFile()).getAbsolutePath(),
+					new TextureParameters());
 			
 			Random r = new Random();
 			for(int i = 0; i < SPRITE_COUNT; i++) {

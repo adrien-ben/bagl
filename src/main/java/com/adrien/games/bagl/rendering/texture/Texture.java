@@ -6,63 +6,43 @@ import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.opengl.EXTTextureFilterAnisotropic.*;
 
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 
-import org.lwjgl.BufferUtils;
-import org.lwjgl.stb.STBImage;
+import com.adrien.games.bagl.utils.Image;
+import com.adrien.games.bagl.utils.ImageUtils;
 
 public final class Texture {
-	
+		
 	private int handle;
 	private int width;
 	private int height;
 	
-	public Texture(int width, int height) {
-		this(width, height, Format.RGBA8);
-	}
-	
-	public Texture(int width, int height, Format format) {
+	public Texture(int width, int height, TextureParameters parameters) {
 		this.width = width;
 		this.height = height;
-		this.handle = glGenTextures();
-		glBindTexture(GL_TEXTURE_2D, this.handle);
-		glTexImage2D(GL_TEXTURE_2D, 0, format.getGlInternalFormat(), this.width, this.height, 0, 
-				format.getGlFormat(), GL_UNSIGNED_BYTE, new float[width*height]);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glBindTexture(GL_TEXTURE_2D, 0);
+		this.handle = this.generateGlTexture(this.width, this.height, parameters, (ByteBuffer)null);
 	}
 	
-	public Texture(String file) {
-		handle = loadTexture(file);
+	public Texture(String file, TextureParameters parameters) {
+		Image image = ImageUtils.loadImage(file);
+		this.width = image.getWidth();
+		this.height = image.getHeight();
+		parameters.format(this.getFormat(image.getChannelCount()));
+		this.handle = this.generateGlTexture(this.width, this.height, parameters, image.getData());
 	}
 	
-	private int loadTexture(String path) {		
-		IntBuffer width = BufferUtils.createIntBuffer(1);
-        IntBuffer height = BufferUtils.createIntBuffer(1);
-        IntBuffer comp = BufferUtils.createIntBuffer(1);
-		STBImage.stbi_set_flip_vertically_on_load(0);
-		ByteBuffer image = STBImage.stbi_load(path, width, height, comp, 0);
-		if(image == null) {
-			throw new RuntimeException("Failed to load texture : '" + path + "'.");
-		}
-		
-		this.width = width.get();
-		this.height = height.get();
-		Format format = this.getFormat(comp.get());
-		
+	private int generateGlTexture(int width, int height, TextureParameters parameters, ByteBuffer image) {
 		int handle = glGenTextures();
 		glBindTexture(GL_TEXTURE_2D, handle);
-		glTexImage2D(GL_TEXTURE_2D, 0, format.getGlInternalFormat(), this.width, this.height, 0, 
-				format.getGlFormat(), GL_UNSIGNED_BYTE, image);
-		glGenerateMipmap(GL_TEXTURE_2D);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, glGetFloat(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT));
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexImage2D(GL_TEXTURE_2D, 0, parameters.getFormat().getGlInternalFormat(), this.width, this.height, 0, 
+				parameters.getFormat().getGlFormat(), GL_UNSIGNED_BYTE, image);
+		if(parameters.getMipmaps()) {			
+			glGenerateMipmap(GL_TEXTURE_2D);
+		}
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, parameters.getMagFilter().getGlFilter());
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, parameters.getMinFilter().getGlFilter());
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, parameters.getAnisotropic());
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, parameters.getsWrap().getGlWrap());
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, parameters.gettWrap().getGlWrap());
 		glBindTexture(GL_TEXTURE_2D, 0);
 		
 		return handle;

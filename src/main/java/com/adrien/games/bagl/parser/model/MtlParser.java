@@ -14,7 +14,9 @@ import org.apache.logging.log4j.Logger;
 
 import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.rendering.Material;
+import com.adrien.games.bagl.rendering.texture.Filter;
 import com.adrien.games.bagl.rendering.texture.Texture;
+import com.adrien.games.bagl.rendering.texture.TextureParameters;
 
 /**
  * Super basic Wavefronts's mtl files parser.
@@ -100,9 +102,7 @@ public class MtlParser {
 	
 	private void parseDiffuseMap(String fileName) {
 		this.checkCurrentMaterial();
-		String folderPath = Paths.get(this.currentFile).getParent().toString();
-		String texturePath = folderPath + "/" + fileName;
-		this.currentMaterial.setDiffuseMap(new Texture(texturePath));
+		this.currentMaterial.setDiffuseMap(this.loadTexture(fileName));
 	}
 	
 	private void parseSpecularExponent(String value) {
@@ -125,16 +125,19 @@ public class MtlParser {
 	
 	private void parseSpecularMap(String fileName) {
 		this.checkCurrentMaterial();
-		String folderPath = Paths.get(this.currentFile).getParent().toString();
-		String texturePath = folderPath + "/" + fileName;
-		this.currentMaterial.setSpecularMap(new Texture(texturePath));
+		this.currentMaterial.setSpecularMap(this.loadTexture(fileName));
 	}
 	
 	private void parseBumpMap(String fileName) {
 		this.checkCurrentMaterial();
+		this.currentMaterial.setBumpMap(this.loadTexture(fileName));
+	}
+	
+	private Texture loadTexture(String name) {
 		String folderPath = Paths.get(this.currentFile).getParent().toString();
-		String texturePath = folderPath + "/" + fileName;
-		this.currentMaterial.setBumpMap(new Texture(texturePath));
+		String texturePath = folderPath + "/" + name;
+		TextureParameters parameters = new TextureParameters().mipmaps(true).minFilter(Filter.MIPMAP_LINEAR_LINEAR).anisotropic(16);
+		return new Texture(texturePath, parameters);
 	}
 	
 	private void checkCurrentMaterial() {
