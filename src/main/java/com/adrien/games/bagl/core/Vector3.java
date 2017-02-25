@@ -180,10 +180,10 @@ public final class Vector3 {
 	 * Transform the current vector by the Matrix4 matrix.
 	 * @param matrix The transformation matrix.
 	 */
-	public void transform(Matrix4 matrix) {
-		float _x = matrix.getM11()*getX() + matrix.getM12()*getY() + matrix.getM13()*getZ() + matrix.getM14();
-		float _y = matrix.getM21()*getX() + matrix.getM22()*getY() + matrix.getM23()*getZ() + matrix.getM24();
-		float _z = matrix.getM31()*getX() + matrix.getM32()*getY() + matrix.getM33()*getZ() + matrix.getM34();
+	public void transform(Matrix4 matrix, float w) {
+		float _x = matrix.getM11()*getX() + matrix.getM12()*getY() + matrix.getM13()*getZ() + w*matrix.getM14();
+		float _y = matrix.getM21()*getX() + matrix.getM22()*getY() + matrix.getM23()*getZ() + w*matrix.getM24();
+		float _z = matrix.getM31()*getX() + matrix.getM32()*getY() + matrix.getM33()*getZ() + w*matrix.getM34();
 		setXYZ(_x, _y, _z);
 	}
 	
@@ -193,10 +193,10 @@ public final class Vector3 {
 	 * @param vector The vector to be tranformed.
 	 * @return
 	 */
-	public static Vector3 transform(Matrix4 matrix, Vector3 vector) {
-		float _x = matrix.getM11()*vector.getX() + matrix.getM12()*vector.getY() + matrix.getM13()*vector.getZ() + matrix.getM14();
-		float _y = matrix.getM21()*vector.getX() + matrix.getM22()*vector.getY() + matrix.getM23()*vector.getZ() + matrix.getM24();
-		float _z = matrix.getM31()*vector.getX() + matrix.getM32()*vector.getY() + matrix.getM33()*vector.getZ() + matrix.getM34();
+	public static Vector3 transform(Matrix4 matrix, Vector3 vector, float w) {
+		float _x = matrix.getM11()*vector.getX() + matrix.getM12()*vector.getY() + matrix.getM13()*vector.getZ() + w*matrix.getM14();
+		float _y = matrix.getM21()*vector.getX() + matrix.getM22()*vector.getY() + matrix.getM23()*vector.getZ() + w*matrix.getM24();
+		float _z = matrix.getM31()*vector.getX() + matrix.getM32()*vector.getY() + matrix.getM33()*vector.getZ() + w*matrix.getM34();
 		return new Vector3(_x, _y, _z);
 	}
 	
@@ -206,10 +206,10 @@ public final class Vector3 {
 	 * @param vector The vector to be tranformed.
 	 * @return
 	 */
-	public static void transform(Matrix4 matrix, Vector3 vector, Vector3 result) {
-		float _x = matrix.getM11()*vector.getX() + matrix.getM12()*vector.getY() + matrix.getM13()*vector.getZ() + matrix.getM14();
-		float _y = matrix.getM21()*vector.getX() + matrix.getM22()*vector.getY() + matrix.getM23()*vector.getZ() + matrix.getM24();
-		float _z = matrix.getM31()*vector.getX() + matrix.getM32()*vector.getY() + matrix.getM33()*vector.getZ() + matrix.getM34();
+	public static void transform(Matrix4 matrix, Vector3 vector, float w, Vector3 result) {
+		float _x = matrix.getM11()*vector.getX() + matrix.getM12()*vector.getY() + matrix.getM13()*vector.getZ() + w*matrix.getM14();
+		float _y = matrix.getM21()*vector.getX() + matrix.getM22()*vector.getY() + matrix.getM23()*vector.getZ() + w*matrix.getM24();
+		float _z = matrix.getM31()*vector.getX() + matrix.getM32()*vector.getY() + matrix.getM33()*vector.getZ() + w*matrix.getM34();
 		result.setXYZ(_x, _y, _z);
 	}
 	

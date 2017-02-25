@@ -24,16 +24,16 @@ public class Transform {
 	
 	public void transform(Transform transform) {
 		Matrix4 transformMatrix = transform.getTransformMatrix();
-		Vector3.transform(transformMatrix, position, position);
+		Vector3.transform(transformMatrix, position, 1, position);
 		Quaternion.mul(transform.getRotation(), rotation, rotation);
-		Vector3.transform(transformMatrix, scale, scale);
+		Vector3.transform(transformMatrix, scale, 0, scale);
 	}
 	
 	public static void transform(Transform toTransform, Transform transform, Transform result) {
 		Matrix4 transformMatrix = transform.getTransformMatrix();
-		Vector3.transform(transformMatrix, toTransform.getPosition(), result.getPosition());
+		Vector3.transform(transformMatrix, toTransform.getPosition(), 1, result.getPosition());
 		Quaternion.mul(transform.getRotation(), toTransform.getRotation(), result.getRotation());
-		Vector3.transform(transformMatrix, toTransform.getScale(), result.getScale());
+		Vector3.transform(transformMatrix, toTransform.getScale(), 0, result.getScale());
 	}
 
 	public Matrix4 getTransformMatrix() {
