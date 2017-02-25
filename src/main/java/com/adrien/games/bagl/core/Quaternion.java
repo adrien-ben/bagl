@@ -63,6 +63,11 @@ public class Quaternion {
 		return (float)Math.sqrt(a*a + i*i + j*j + k*k);
 	}
 	
+	@Override
+	public String toString() {
+		return "a:" + this.a + " i:" + this.i + " j:" + this.j + " k:" + this.k;
+	}
+	
 	public float getA() {
 		return a;
 	}
