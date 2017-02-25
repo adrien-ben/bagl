@@ -51,8 +51,7 @@ public final class Texture {
 		
 		this.width = width.get();
 		this.height = height.get();
-		int channelCount = comp.get();
-		Format format = (channelCount == 4) ? Format.RGBA8 : Format.RGB8; 
+		Format format = this.getFormat(comp.get());
 		
 		int handle = glGenTextures();
 		glBindTexture(GL_TEXTURE_2D, handle);
@@ -67,6 +66,18 @@ public final class Texture {
 		glBindTexture(GL_TEXTURE_2D, 0);
 		
 		return handle;
+	}
+	
+	private Format getFormat(int channelCount) {
+		if(channelCount == 4) {
+			return Format.RGBA8;
+		} else if(channelCount == 3) {
+			return Format.RGB8;
+		} else if(channelCount == 1) {
+			return Format.RED8;
+		} else {
+			throw new RuntimeException("Only textures with 1, 3 or 4 color channel or supported.");
+		}
 	}
 	
 	public void destroy() {

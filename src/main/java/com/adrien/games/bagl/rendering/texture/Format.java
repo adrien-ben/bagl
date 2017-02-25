@@ -1,16 +1,13 @@
 package com.adrien.games.bagl.rendering.texture;
 
-import static org.lwjgl.opengl.GL11.GL_DEPTH_COMPONENT;
-import static org.lwjgl.opengl.GL11.GL_RGB;
-import static org.lwjgl.opengl.GL11.GL_RGB8;
-import static org.lwjgl.opengl.GL11.GL_RGBA;
-import static org.lwjgl.opengl.GL11.GL_RGBA8;
-import static org.lwjgl.opengl.GL30.GL_DEPTH_COMPONENT32F;
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL30.*;
 
 public enum Format {
 
 	RGBA8(GL_RGBA8, GL_RGBA),
 	RGB8(GL_RGB8, GL_RGB),
+	RED8(GL_R8, GL_RED),
 	DEPTH_32F(GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT);
 	
 	private final int glInternalFormat;
