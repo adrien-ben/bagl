@@ -16,7 +16,7 @@ import static org.lwjgl.opengl.GL30.glGenFramebuffers;
 
 import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.rendering.texture.Texture;
-import com.adrien.games.bagl.rendering.texture.Texture.Format;
+import com.adrien.games.bagl.rendering.texture.Format;
 
 /**
  * This class creates an OpenGL {@link FrameBuffer} object. (version >= 3.0).
