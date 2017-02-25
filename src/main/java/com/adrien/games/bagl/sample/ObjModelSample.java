@@ -24,7 +24,7 @@ public class ObjModelSample {
 	private static final class TestGame implements Game {
 				
 		private static final String TITLE = "ObjModel";
-		private static final int WIDTH = 512;
+		private static final int WIDTH = 1920;
 		private static final int HEIGHT = WIDTH * 9 / 16;
 		
 		private ModelParser parser = new ObjParser();

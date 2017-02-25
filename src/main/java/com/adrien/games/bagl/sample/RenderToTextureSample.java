@@ -29,7 +29,7 @@ public class RenderToTextureSample {
 	private static final class TestGame implements Game {
 		
 		private static final String TITLE = "RTT";
-		private static final int WIDTH = 512;
+		private static final int WIDTH = 1920;
 		private static final int HEIGHT = WIDTH * 9 / 16;
 		private static final int PADDING_H = (int)(HEIGHT*0.2);
 		private static final int PADDING_V = (int)(WIDTH*0.2);

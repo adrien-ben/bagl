@@ -18,9 +18,9 @@ public class SpritebatchSample {
 	private static final class TestGame implements Game {
 		
 		private static final String TITLE = "Spritebatch";
-		private static final int WIDTH = 512;
+		private static final int WIDTH = 1920;
 		private static final int HEIGHT = WIDTH * 9 / 16;
-		private static final int SPRITE_COUNT = 1000;
+		private static final int SPRITE_COUNT = 10000;
 
 		private Texture texture;
 		private Spritebatch spritebatch;

@@ -35,7 +35,7 @@ public final class ForwardRenderingSample {
 	private static final class TestGame implements Game	{
 		
 		private static final String TITLE = "Forward Rendering";
-		private static final int WIDTH = 512;
+		private static final int WIDTH = 1920;
 		private static final int HEIGHT = WIDTH * 9 / 16;
 		
 		//meshes
@@ -92,7 +92,7 @@ public final class ForwardRenderingSample {
 		private void initShaders() {
 			//ambient light shader
 			this.ambientShader = new Shader();
-			this.ambientShader.addVertexShader("/ambient.vert");
+			this.ambientShader.addVertexShader("/model.vert");
 			this.ambientShader.addFragmentShader("/ambient.frag");
 			this.ambientShader.compile();
 			
