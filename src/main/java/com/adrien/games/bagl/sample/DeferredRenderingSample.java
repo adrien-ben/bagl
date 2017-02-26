@@ -27,7 +27,6 @@ import com.adrien.games.bagl.rendering.light.DirectionalLight;
 import com.adrien.games.bagl.rendering.light.Light;
 import com.adrien.games.bagl.rendering.light.PointLight;
 import com.adrien.games.bagl.rendering.light.SpotLight;
-import com.adrien.games.bagl.rendering.light.TubeLight;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.vertex.Vertex;
 import com.adrien.games.bagl.rendering.vertex.VertexPositionColor;
@@ -55,7 +54,6 @@ public class DeferredRenderingSample {
 		private List<DirectionalLight> directionals = new ArrayList<>();
 		private List<PointLight> points = new ArrayList<>();
 		private List<SpotLight> spots = new ArrayList<>();
-		private List<TubeLight> tubes = new ArrayList<>();
 		
 		private VertexBuffer vertexBuffer;
 		private IndexBuffer indexBuffer;
@@ -146,7 +144,6 @@ public class DeferredRenderingSample {
 					new Vector3(0f, -1f, -0f), 10f, 5f));
 			this.spots.add(new SpotLight(1f, Color.ORANGE, new Vector3(-0.5f, 0.5f, 0.5f), 7f, Attenuation.CLOSE, 
 					new Vector3(2f, 0.7f, -1f), 20f, 5f));
-			this.tubes.add(new TubeLight(1f, Color.BRIGHT_PINK, new Vector3(1, 0.1f, 0), 7f, Attenuation.CLOSE, new Vector3(1, 0f, 0f), 2));
 		}
 
 		private void initQuad() {
@@ -247,9 +244,6 @@ public class DeferredRenderingSample {
 			for(int i = 0; i < this.spots.size(); i++) {
 				this.setSpotLight(this.deferredShader, i, this.spots.get(i));
 			}
-			for(int i = 0; i < this.tubes.size(); i++) {
-				this.setTubeLight(this.deferredShader, i, this.tubes.get(i));
-			}
 			this.deferredShader.setUniform("uGBuffer.colors", 0);
 			this.deferredShader.setUniform("uGBuffer.normals", 1);
 			this.deferredShader.setUniform("uGBuffer.depth", 2);
@@ -301,18 +295,6 @@ public class DeferredRenderingSample {
 			shader.setUniform("uSpots[" + index + "].direction", light.getDirection());
 			shader.setUniform("uSpots[" + index + "].cutOff", light.getCutOff());
 			shader.setUniform("uSpots[" + index + "].outerCutOff", light.getOuterCutOff());
-		}
-		
-		private void setTubeLight(Shader shader, int index, TubeLight light) {
-			shader.setUniform("uTubes[" + index + "].point.base.intensity", light.getIntensity());
-			shader.setUniform("uTubes[" + index + "].point.base.color", light.getColor());
-			shader.setUniform("uTubes[" + index + "].point.position", light.getPosition());
-			shader.setUniform("uTubes[" + index + "].point.radius", light.getRadius());
-			shader.setUniform("uTubes[" + index + "].point.attenuation.constant", light.getAttenuation().getConstant());
-			shader.setUniform("uTubes[" + index + "].point.attenuation.linear", light.getAttenuation().getLinear());
-			shader.setUniform("uTubes[" + index + "].point.attenuation.quadratic", light.getAttenuation().getQuadratic());
-			shader.setUniform("uTubes[" + index + "].direction", light.getDirection());
-			shader.setUniform("uTubes[" + index + "].length", light.getLength());
 		}
 		
 		@Override
