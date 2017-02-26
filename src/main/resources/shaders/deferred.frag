@@ -41,9 +41,16 @@ struct SpotLight {
 	float outerCutOff;
 };
 
+struct TubeLight {
+	PointLight point;
+	vec3 direction;
+	float length;
+};
+
 const int MAX_DIR_LIGHTS = 2;
 const int MAX_POINT_LIGHTS = 6;
 const int MAX_SPOT_LIGHTS = 3;
+const int MAX_TUBE_LIGHTS = 1;
 const float MAX_GLOSSINESS = 512;
 
 in vec2 passCoords;
@@ -56,6 +63,18 @@ uniform Light uAmbient;
 uniform DirectionalLight uDirectionals[MAX_DIR_LIGHTS];
 uniform PointLight uPoints[MAX_POINT_LIGHTS];
 uniform SpotLight uSpots[MAX_SPOT_LIGHTS];
+uniform TubeLight uTubes[MAX_TUBE_LIGHTS];
+
+vec3 getTubeClosestPosition(TubeLight light, vec3 position) {
+	vec3 tubeStart = light.point.position;
+	vec3 tubeDir = normalize(light.direction);
+	vec3 tubeEnd = light.point.position + light.length*tubeDir;
+	vec3 tubeToPos = position.xyz - tubeStart;
+
+	vec3 closest = tubeStart + (dot(tubeToPos, tubeDir)*tubeDir);
+
+	return clamp(closest, tubeStart, tubeEnd);
+}
 
 vec4 positionFromDepth(float depth) {
 	depth = depth*2 - 1;
@@ -142,6 +161,20 @@ void main() {
 				float attenuation = computeAttenuation(distance, light.point.attenuation);
 				diffuse += computeDiffuse(light.point.base, normal, lightDirection)*attenuation*intensity;
 				specular += computeSpecular(light.point.base, shininess, glossiness, position, normal, lightDirection)*attenuation*intensity;
+			}
+		}
+
+		//tube lights
+		for(int i = 0; i < MAX_POINT_LIGHTS; i++) {
+			TubeLight light = uTubes[i];
+			vec3 lightPosition = getTubeClosestPosition(light, position.xyz);
+			lightDirection = position.xyz - lightPosition;
+			float distance = length(lightDirection);
+			if(distance <= light.point.radius) {
+				lightDirection = normalize(lightDirection);
+				float attenuation = computeAttenuation(distance, light.point.attenuation);
+				diffuse += computeDiffuse(light.point.base, normal, lightDirection)*attenuation;
+				//specular += computeSpecular(light.point.base, shininess, glossiness, position, normal, lightDirection)*attenuation;
 			}
 		}
 
