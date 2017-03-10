@@ -2,8 +2,8 @@ package com.adrien.games.bagl.utils;
 
 import java.io.File;
 
-import com.adrien.games.bagl.core.Vector2;
-import com.adrien.games.bagl.core.Vector3;
+import com.adrien.games.bagl.core.math.Vector2;
+import com.adrien.games.bagl.core.math.Vector3;
 import com.adrien.games.bagl.parser.model.ModelParser;
 import com.adrien.games.bagl.parser.model.ObjParser;
 import com.adrien.games.bagl.rendering.IndexBuffer;

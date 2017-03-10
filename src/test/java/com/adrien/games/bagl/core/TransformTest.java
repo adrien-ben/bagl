@@ -3,6 +3,8 @@ package com.adrien.games.bagl.core;
 import org.hamcrest.MatcherAssert;import org.hamcrest.core.IsEqual;
 import org.junit.Test;
 
+import com.adrien.games.bagl.core.math.Vector3;
+
 public class TransformTest {
 
 	@Test

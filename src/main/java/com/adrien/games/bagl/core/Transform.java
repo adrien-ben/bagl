@@ -1,5 +1,9 @@
 package com.adrien.games.bagl.core;
 
+import com.adrien.games.bagl.core.math.Matrix4;
+import com.adrien.games.bagl.core.math.Quaternion;
+import com.adrien.games.bagl.core.math.Vector3;
+
 public class Transform {
 	
 	private Vector3 position;

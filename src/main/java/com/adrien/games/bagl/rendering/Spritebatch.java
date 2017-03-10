@@ -4,8 +4,8 @@ import org.lwjgl.opengl.GL11;
 
 import com.adrien.games.bagl.core.Camera2D;
 import com.adrien.games.bagl.core.Color;
-import com.adrien.games.bagl.core.Vector2;
-import com.adrien.games.bagl.core.Vector3;
+import com.adrien.games.bagl.core.math.Vector2;
+import com.adrien.games.bagl.core.math.Vector3;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.vertex.VertexPositionColorTexture;
 import com.adrien.games.bagl.rendering.vertex.VertexPositionTexture;

@@ -13,8 +13,8 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 
 import com.adrien.games.bagl.core.Color;
-import com.adrien.games.bagl.core.Matrix4;
-import com.adrien.games.bagl.core.Vector3;
+import com.adrien.games.bagl.core.math.Matrix4;
+import com.adrien.games.bagl.core.math.Vector3;
 import com.adrien.games.bagl.parser.GLSLParser;
 
 /**

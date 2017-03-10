@@ -1,6 +1,6 @@
 package com.adrien.games.bagl.rendering;
 
-import com.adrien.games.bagl.core.Vector3;
+import com.adrien.games.bagl.core.math.Vector3;
 import com.adrien.games.bagl.rendering.texture.Cubemap;
 import com.adrien.games.bagl.rendering.vertex.Vertex;
 import com.adrien.games.bagl.rendering.vertex.VertexPosition;

@@ -1,4 +1,4 @@
-package com.adrien.games.bagl.core;
+package com.adrien.games.bagl.core.math;
 
 public final class Vector2 {
 	

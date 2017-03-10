@@ -1,7 +1,7 @@
 package com.adrien.games.bagl.rendering.light;
 
 import com.adrien.games.bagl.core.Color;
-import com.adrien.games.bagl.core.Vector3;
+import com.adrien.games.bagl.core.math.Vector3;
 
 public class DirectionalLight extends Light {
 

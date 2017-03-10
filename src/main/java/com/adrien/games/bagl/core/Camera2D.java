@@ -1,5 +1,8 @@
 package com.adrien.games.bagl.core;
 
+import com.adrien.games.bagl.core.math.Matrix4;
+import com.adrien.games.bagl.core.math.Vector2;
+
 /**
  * Two-dimensional camera. Can be use for 2D rendering like sprite or UI.
  * @author Adrien
