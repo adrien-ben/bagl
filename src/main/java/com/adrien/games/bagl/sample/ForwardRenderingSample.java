@@ -11,6 +11,7 @@ import org.lwjgl.opengl.GL11;
 
 import com.adrien.games.bagl.core.Camera;
 import com.adrien.games.bagl.core.Color;
+import com.adrien.games.bagl.core.Configuration;
 import com.adrien.games.bagl.core.Engine;
 import com.adrien.games.bagl.core.Game;
 import com.adrien.games.bagl.core.Time;
@@ -35,8 +36,9 @@ public final class ForwardRenderingSample {
 	private static final class TestGame implements Game	{
 		
 		private static final String TITLE = "Forward Rendering";
-		private static final int WIDTH = 1920;
-		private static final int HEIGHT = WIDTH * 9 / 16;
+		
+		private int width;
+		private int height;
 		
 		//meshes
 		private Mesh plane;
@@ -64,6 +66,8 @@ public final class ForwardRenderingSample {
 		
 		@Override
 		public void init() {
+			this.width = Configuration.getInstance().getXResolution();
+			this.height = Configuration.getInstance().getYResolution();
 			this.initMeshes();
 			this.initCamTrasform();
 			this.initShaders();
@@ -85,7 +89,7 @@ public final class ForwardRenderingSample {
 		
 		private void initCamTrasform() {			
 			this.camera = new Camera(new Vector3(0f, 2f, 6f), new Vector3(0f, -2f, -6f), Vector3.UP, 
-					(float)Math.toRadians(60f), (float)WIDTH/(float)HEIGHT, 1, 1000);
+					(float)Math.toRadians(60f), (float)this.width/(float)this.height, 1, 1000);
 			this.wvp = new Matrix4();
 		}
 		
@@ -271,6 +275,6 @@ public final class ForwardRenderingSample {
 	}
 	
 	public static void main(String [] args) {
-		new Engine(new TestGame(), TestGame.TITLE, TestGame.WIDTH, TestGame.HEIGHT).start();
+		new Engine(new TestGame(), TestGame.TITLE).start();
 	}
 }

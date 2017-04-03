@@ -9,6 +9,7 @@ import org.lwjgl.glfw.GLFW;
 
 import com.adrien.games.bagl.core.Camera;
 import com.adrien.games.bagl.core.Color;
+import com.adrien.games.bagl.core.Configuration;
 import com.adrien.games.bagl.core.Engine;
 import com.adrien.games.bagl.core.Game;
 import com.adrien.games.bagl.core.Input;
@@ -38,8 +39,9 @@ public class DeferredRenderingSample {
 	private static final class TestGame implements Game {
 		
 		private static final String TITLE = "Deferred Rendering";
-		private static final int WIDTH = 1920;
-		private static final int HEIGHT = WIDTH * 9 / 16;
+		
+		private int width;
+		private int height;
 		
 		private FrameBuffer gbuffer;
 		
@@ -72,6 +74,8 @@ public class DeferredRenderingSample {
 		
 		@Override
 		public void init() {
+			this.width = Configuration.getInstance().getXResolution();
+			this.height = Configuration.getInstance().getYResolution();
 			this.wvp = new Matrix4();
 			this.initMeshes();
 			this.initShaders();
@@ -79,12 +83,12 @@ public class DeferredRenderingSample {
 			this.initQuad();
 			this.initLightsPosition();
 
-			this.gbuffer = new FrameBuffer(WIDTH, HEIGHT, 2);
+			this.gbuffer = new FrameBuffer(this.width, this.height, 2);
 
 			this.camera = new Camera(new Vector3(0f, 2f, 6f), new Vector3(0f, -2f, -6f), Vector3.UP, 
-					(float)Math.toRadians(60f), (float)WIDTH/(float)HEIGHT, 1, 1000);		
+					(float)Math.toRadians(60f), (float)this.width/(float)this.height, 1, 1000);		
 			
-			this.spritebatch = new Spritebatch(1024, WIDTH, HEIGHT);
+			this.spritebatch = new Spritebatch(1024, this.width, this.height);
 			
 			glEnable(GL_DEPTH_TEST);
 			glEnable(GL_CULL_FACE);
@@ -147,8 +151,8 @@ public class DeferredRenderingSample {
 		}
 
 		private void initQuad() {
-			float uOffset = 1/WIDTH;
-			float vOffset = 1/HEIGHT;
+			float uOffset = 1/this.width;
+			float vOffset = 1/this.height;
 			
 			Vertex[] vertices = new Vertex[4];
 			vertices[0] = new VertexPositionTexture(new Vector3(-1, -1, 0), new Vector2(uOffset, vOffset));
@@ -183,9 +187,9 @@ public class DeferredRenderingSample {
 			
 			if(this.displayGbuffer) {
 				this.spritebatch.start();
-				this.spritebatch.draw(this.gbuffer.getColorTexture(0), Vector2.ZERO, WIDTH/3, HEIGHT/3);
-				this.spritebatch.draw(this.gbuffer.getColorTexture(1), new Vector2(0, HEIGHT/3), WIDTH/3, HEIGHT/3);
-				this.spritebatch.draw(this.gbuffer.getDepthTexture(), new Vector2(0, 2*HEIGHT/3), WIDTH/3, HEIGHT/3);
+				this.spritebatch.draw(this.gbuffer.getColorTexture(0), Vector2.ZERO, this.width/3, this.height/3);
+				this.spritebatch.draw(this.gbuffer.getColorTexture(1), new Vector2(0, this.height/3), this.width/3, this.height/3);
+				this.spritebatch.draw(this.gbuffer.getDepthTexture(), new Vector2(0, 2*this.height/3), this.width/3, this.height/3);
 				this.spritebatch.end();
 			}
 			
@@ -311,7 +315,7 @@ public class DeferredRenderingSample {
 	}
 
 	public static void main(String [] args) {
-		new Engine(new TestGame(), TestGame.TITLE, TestGame.WIDTH, TestGame.HEIGHT).start();
+		new Engine(new TestGame(), TestGame.TITLE).start();
 	}
 	
 }

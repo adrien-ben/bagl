@@ -6,6 +6,7 @@ import org.lwjgl.opengl.GL11;
 
 import com.adrien.games.bagl.core.Camera;
 import com.adrien.games.bagl.core.Color;
+import com.adrien.games.bagl.core.Configuration;
 import com.adrien.games.bagl.core.Engine;
 import com.adrien.games.bagl.core.Game;
 import com.adrien.games.bagl.core.Time;
@@ -24,8 +25,9 @@ public class ObjModelSample {
 	private static final class TestGame implements Game {
 				
 		private static final String TITLE = "ObjModel";
-		private static final int WIDTH = 1920;
-		private static final int HEIGHT = WIDTH * 9 / 16;
+		
+		private int width;
+		private int height;
 		
 		private ModelParser parser = new ObjParser();
 		private Mesh mesh;
@@ -37,6 +39,9 @@ public class ObjModelSample {
 		
 		@Override
 		public void init() {
+			this.width = Configuration.getInstance().getXResolution();
+			this.height = Configuration.getInstance().getYResolution();
+			
 			this.mesh = parser.parse(new File(TestGame.class.getResource("/models/cube/cube.obj").getFile()).getAbsolutePath());
 			
 			this.shader = new Shader();
@@ -45,7 +50,7 @@ public class ObjModelSample {
 			this.shader.compile();
 			
 			this.camera = new Camera(new Vector3(-2, 2, -2), new Vector3(2, -2, 2), Vector3.UP, 
-					(float)Math.toRadians(70f), (float)WIDTH/(float)HEIGHT, 0.1f, 1000f);
+					(float)Math.toRadians(70f), (float)this.width/(float)this.height, 0.1f, 1000f);
 			
 			this.model = new Matrix4();
 			
@@ -88,7 +93,7 @@ public class ObjModelSample {
 	}
 	
 	public static void main(String [] args) {
-		new Engine(new TestGame(), TestGame.TITLE, TestGame.WIDTH, TestGame.HEIGHT).start();
+		new Engine(new TestGame(), TestGame.TITLE).start();
 	}
 	
 }

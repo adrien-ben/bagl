@@ -6,6 +6,7 @@ import java.util.Random;
 import org.lwjgl.opengl.GL11;
 
 import com.adrien.games.bagl.core.Color;
+import com.adrien.games.bagl.core.Configuration;
 import com.adrien.games.bagl.core.Engine;
 import com.adrien.games.bagl.core.Game;
 import com.adrien.games.bagl.core.Time;
@@ -19,10 +20,11 @@ public class SpritebatchSample {
 	private static final class TestGame implements Game {
 		
 		private static final String TITLE = "Spritebatch";
-		private static final int WIDTH = 1920;
-		private static final int HEIGHT = WIDTH * 9 / 16;
 		private static final int SPRITE_COUNT = 10000;
 
+		private int width;
+		private int height;
+		
 		private Texture texture;
 		private Spritebatch spritebatch;
 		
@@ -32,14 +34,17 @@ public class SpritebatchSample {
 				
 		@Override
 		public void init() {
-			this.spritebatch = new Spritebatch(512, WIDTH, HEIGHT);
+			this.width = Configuration.getInstance().getXResolution();
+			this.height = Configuration.getInstance().getYResolution();
+			
+			this.spritebatch = new Spritebatch(512, this.width, this.height);
 			
 			this.texture = new Texture(new File(TestGame.class.getResource("/default.png").getFile()).getAbsolutePath(),
 					new TextureParameters());
 			
 			Random r = new Random();
 			for(int i = 0; i < SPRITE_COUNT; i++) {
-				positions[i] = new Vector2(r.nextFloat() * WIDTH, r.nextFloat() * HEIGHT);
+				positions[i] = new Vector2(r.nextFloat() * this.width, r.nextFloat() * this.height);
 				sizes[i] = r.nextInt(32) + 32;
 				rotations[i] = r.nextFloat() * 360;
 			}
@@ -71,7 +76,7 @@ public class SpritebatchSample {
 	}
 	
 	public static void main(String [] args) {
-		new Engine(new TestGame(), TestGame.TITLE, TestGame.WIDTH, TestGame.HEIGHT).start();
+		new Engine(new TestGame(), TestGame.TITLE).start();
 	}
 	
 }

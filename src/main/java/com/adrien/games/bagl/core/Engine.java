@@ -8,18 +8,22 @@ public final class Engine {
 	
 	private static final Logger log = LogManager.getLogger(Engine.class);
 	
+	private Configuration configuration;
 	private Game game;
 	private Window window;
 	private Time time;
 	private boolean isRunning;
 
-	public Engine(Game game, String title, int width, int height) {
+	public Engine(Game game, String title) {
 		log.info("Initializing engine");
 		if (game == null) {
 			throw new IllegalArgumentException("The argument game cannot be null.");
 		}
+		this.configuration = Configuration.getInstance();
 		this.game = game;
-		this.window = new Window(title, width, height);
+		this.window = new Window(title, 
+				this.configuration.getXResolution(), 
+				this.configuration.getYResolution());
 		this.time = new Time();
 		this.isRunning = false;		
 		this.game.init();

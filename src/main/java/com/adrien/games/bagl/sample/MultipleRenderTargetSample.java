@@ -3,6 +3,7 @@ package com.adrien.games.bagl.sample;
 import static org.lwjgl.opengl.GL11.*;
 
 import com.adrien.games.bagl.core.Camera;
+import com.adrien.games.bagl.core.Configuration;
 import com.adrien.games.bagl.core.Engine;
 import com.adrien.games.bagl.core.Game;
 import com.adrien.games.bagl.core.Time;
@@ -23,8 +24,9 @@ public class MultipleRenderTargetSample {
 	private static final class TestGame implements Game {
 				
 		private static final String TITLE = "MRT";
-		private static final int WIDTH = 1920;
-		private static final int HEIGHT = WIDTH * 9 / 16;
+		
+		private int width;
+		private int height;
 		
 		private FrameBuffer mrt;
 		
@@ -40,7 +42,10 @@ public class MultipleRenderTargetSample {
 		@Override
 		public void init() {
 
-			this.mrt = new FrameBuffer(WIDTH, HEIGHT, 3);
+			this.width = Configuration.getInstance().getXResolution();
+			this.height = Configuration.getInstance().getYResolution();
+			
+			this.mrt = new FrameBuffer(this.width, this.height, 3);
 			
 			this.mesh = MeshFactory.createBox(5, 5, 5);
 			
@@ -53,9 +58,9 @@ public class MultipleRenderTargetSample {
 			this.shader.compile();
 
 			this.camera = new Camera(new Vector3(0, 3, 8), new Vector3(0, -3, -8), Vector3.UP, 
-					(float)Math.toRadians(70f), (float)WIDTH/(float)HEIGHT, 1, 1000);		
+					(float)Math.toRadians(70f), (float)this.width/(float)this.height, 1, 1000);		
 			
-			this.spritebatch = new Spritebatch(1024, WIDTH, HEIGHT);
+			this.spritebatch = new Spritebatch(1024, this.width, this.height);
 			
 			glEnable(GL_DEPTH_TEST);
 			glEnable(GL_CULL_FACE);
@@ -88,8 +93,8 @@ public class MultipleRenderTargetSample {
 		
 			this.spritebatch.start();
 			this.spritebatch.draw(this.mrt.getColorTexture(0), Vector2.ZERO);
-			this.spritebatch.draw(this.mrt.getColorTexture(1), new Vector2(0, 2*HEIGHT/3), WIDTH/3, HEIGHT/3);
-			this.spritebatch.draw(this.mrt.getColorTexture(2), Vector2.ZERO, WIDTH/3, HEIGHT/3);
+			this.spritebatch.draw(this.mrt.getColorTexture(1), new Vector2(0, 2*this.height/3), this.width/3, this.height/3);
+			this.spritebatch.draw(this.mrt.getColorTexture(2), Vector2.ZERO, this.width/3, this.height/3);
 			this.spritebatch.end();
 		}
 
@@ -103,7 +108,7 @@ public class MultipleRenderTargetSample {
 	}
 
 	public static void main(String [] args) {
-		new Engine(new TestGame(), TestGame.TITLE, TestGame.WIDTH, TestGame.HEIGHT).start();
+		new Engine(new TestGame(), TestGame.TITLE).start();
 	}
 	
 }

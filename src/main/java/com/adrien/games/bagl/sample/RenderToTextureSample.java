@@ -9,6 +9,7 @@ import static org.lwjgl.opengl.GL11.glEnable;
 
 import com.adrien.games.bagl.core.Camera;
 import com.adrien.games.bagl.core.Color;
+import com.adrien.games.bagl.core.Configuration;
 import com.adrien.games.bagl.core.Engine;
 import com.adrien.games.bagl.core.Game;
 import com.adrien.games.bagl.core.Time;
@@ -29,13 +30,13 @@ public class RenderToTextureSample {
 	private static final class TestGame implements Game {
 		
 		private static final String TITLE = "RTT";
-		private static final int WIDTH = 1920;
-		private static final int HEIGHT = WIDTH * 9 / 16;
-		private static final int PADDING_H = (int)(HEIGHT*0.2);
-		private static final int PADDING_V = (int)(WIDTH*0.2);
-		
 		private final static Color BLUEISH = new Color(100f/255, 149f/255, 237f/255);
 
+		private int width;
+		private int height;
+		private int paddingH;
+		private int paddingV;
+		
 		private Mesh mesh;
 		private Matrix4 world;
 		private Matrix4 wvp;
@@ -49,7 +50,12 @@ public class RenderToTextureSample {
 		
 		@Override
 		public void init() {
-			this.frameBuffer = new FrameBuffer(WIDTH, HEIGHT);
+			this.width = Configuration.getInstance().getXResolution();
+			this.height = Configuration.getInstance().getYResolution();
+			this.paddingH = (int)(this.height*0.2);
+			this.paddingV = (int)(this.width*0.2);
+			
+			this.frameBuffer = new FrameBuffer(this.width, this.height);
 
 			this.mesh = MeshFactory.createBox(5, 5, 5);
 			
@@ -63,9 +69,9 @@ public class RenderToTextureSample {
 			this.shader.compile();
 
 			this.camera = new Camera(new Vector3(0, 3, 8), new Vector3(0, -3, -8), Vector3.UP, 
-					(float)Math.toRadians(70f), (float)WIDTH/(float)HEIGHT, 1, 1000);		
+					(float)Math.toRadians(70f), (float)this.width/(float)this.height, 1, 1000);		
 			
-			this.spritebatch = new Spritebatch(1024, WIDTH, HEIGHT);
+			this.spritebatch = new Spritebatch(1024, this.width, this.height);
 			
 			glEnable(GL_DEPTH_TEST);
 			glEnable(GL_CULL_FACE);
@@ -91,8 +97,8 @@ public class RenderToTextureSample {
 			Texture.unbind();
 			
 			this.spritebatch.start();
-			this.spritebatch.draw(this.frameBuffer.getColorTexture(), new Vector2(PADDING_V, PADDING_H), WIDTH - 2*PADDING_V, 
-					HEIGHT - 2*PADDING_H);
+			this.spritebatch.draw(this.frameBuffer.getColorTexture(), new Vector2(this.paddingV, this.paddingH), 
+					this.width - 2*this.paddingV, this.height - 2*this.paddingH);
 			this.spritebatch.end();
 		}
 
@@ -122,7 +128,7 @@ public class RenderToTextureSample {
 	}
 
 	public static void main(String [] args) {
-		new Engine(new TestGame(), TestGame.TITLE, TestGame.WIDTH, TestGame.HEIGHT).start();
+		new Engine(new TestGame(), TestGame.TITLE).start();
 	}
 
 }

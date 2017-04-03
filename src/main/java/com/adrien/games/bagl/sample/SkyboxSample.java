@@ -5,6 +5,7 @@ import static org.lwjgl.opengl.GL11.*;
 import java.io.File;
 
 import com.adrien.games.bagl.core.Camera;
+import com.adrien.games.bagl.core.Configuration;
 import com.adrien.games.bagl.core.Engine;
 import com.adrien.games.bagl.core.Game;
 import com.adrien.games.bagl.core.Time;
@@ -21,8 +22,9 @@ public class SkyboxSample {
 	private static final class TestGame implements Game {
 		
 		private static final String TITLE = "Skybox";
-		private static final int WIDTH = 1920;
-		private static final int HEIGHT = WIDTH * 9 / 16;
+		
+		private int width;
+		private int height;
 		
 		private Skybox skybox;
 		private Shader shader;
@@ -32,6 +34,8 @@ public class SkyboxSample {
 		
 		@Override
 		public void init() {
+			this.width = Configuration.getInstance().getXResolution();
+			this.height = Configuration.getInstance().getYResolution();
 			
 			this.shader = new Shader();
 			this.shader.addVertexShader("skybox.vert");
@@ -39,7 +43,7 @@ public class SkyboxSample {
 			this.shader.compile();
 			
 			this.camera = new Camera(new Vector3(1000, 0, 0), Vector3.FORWARD, Vector3.UP, (float)Math.toRadians(60), 
-					(float)WIDTH/HEIGHT, 1, 100);
+					(float)this.width/this.height, 1, 100);
 			
 			this.skybox = new Skybox(this.getResourcePath("/skybox/left.png"),
 					this.getResourcePath("/skybox/right.png"),
@@ -91,7 +95,7 @@ public class SkyboxSample {
 	}
 
 	public static void main(String [] args) {
-		new Engine(new TestGame(), TestGame.TITLE, TestGame.WIDTH, TestGame.HEIGHT).start();
+		new Engine(new TestGame(), TestGame.TITLE).start();
 	}
 	
 }
