@@ -2,6 +2,7 @@ package com.adrien.games.bagl.utils;
 
 import java.io.File;
 
+import com.adrien.games.bagl.core.Configuration;
 import com.adrien.games.bagl.core.math.Vector2;
 import com.adrien.games.bagl.core.math.Vector3;
 import com.adrien.games.bagl.parser.model.ModelParser;
@@ -19,12 +20,14 @@ import com.adrien.games.bagl.rendering.vertex.VertexPositionNormalTexture;
 public final class MeshFactory {
 
 	private static ModelParser parser = new ObjParser();
+	private static Configuration configuration = Configuration.getInstance();
 	
 	private MeshFactory() {
 	}
 	
 	public static Mesh createRoom(float width , float height, float depth) {
-		TextureParameters parameters = new TextureParameters().mipmaps(true).minFilter(Filter.MIPMAP_LINEAR_LINEAR).anisotropic(16);
+		TextureParameters parameters = new TextureParameters().mipmaps(true).minFilter(Filter.MIPMAP_LINEAR_LINEAR)
+				.anisotropic(configuration.getAnisotropicLevel());
 		Texture texture = new Texture(new File(MeshFactory.class.getResource("/default.png").getFile()).getAbsolutePath(), parameters);
 		float xOffset = 0.5f / texture.getWidth();
 		float yOffset = 0.5f / texture.getHeight();
@@ -53,7 +56,8 @@ public final class MeshFactory {
 	}
 	
 	public static Mesh createPlane(float width, float depth) {
-		TextureParameters parameters = new TextureParameters().mipmaps(true).minFilter(Filter.MIPMAP_LINEAR_LINEAR).anisotropic(16);
+		TextureParameters parameters = new TextureParameters().mipmaps(true).minFilter(Filter.MIPMAP_LINEAR_LINEAR)
+				.anisotropic(configuration.getAnisotropicLevel());
 		Texture texture = new Texture(new File(MeshFactory.class.getResource("/default.png").getFile()).getAbsolutePath(), parameters);
 		float xOffset = 0.5f / texture.getWidth();
 		float yOffset = 0.5f / texture.getHeight();
@@ -74,7 +78,8 @@ public final class MeshFactory {
 	}
 	
 	public static Mesh createBox(float width, float height, float depth) {
-		TextureParameters parameters = new TextureParameters().mipmaps(true).minFilter(Filter.MIPMAP_LINEAR_LINEAR).anisotropic(16);
+		TextureParameters parameters = new TextureParameters().mipmaps(true).minFilter(Filter.MIPMAP_LINEAR_LINEAR)
+				.anisotropic(configuration.getAnisotropicLevel());
 		Texture texture = new Texture(new File(MeshFactory.class.getResource("/default.png").getFile()).getAbsolutePath(), parameters);
 		float xOffset = 0.5f / texture.getWidth();
 		float yOffset = 0.5f / texture.getHeight();

@@ -13,6 +13,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.adrien.games.bagl.core.Color;
+import com.adrien.games.bagl.core.Configuration;
 import com.adrien.games.bagl.rendering.Material;
 import com.adrien.games.bagl.rendering.texture.Filter;
 import com.adrien.games.bagl.rendering.texture.Texture;
@@ -136,7 +137,8 @@ public class MtlParser {
 	private Texture loadTexture(String name) {
 		String folderPath = Paths.get(this.currentFile).getParent().toString();
 		String texturePath = folderPath + "/" + name;
-		TextureParameters parameters = new TextureParameters().mipmaps(true).minFilter(Filter.MIPMAP_LINEAR_LINEAR).anisotropic(16);
+		TextureParameters parameters = new TextureParameters().mipmaps(true).minFilter(Filter.MIPMAP_LINEAR_LINEAR)
+				.anisotropic(Configuration.getInstance().getAnisotropicLevel());
 		return new Texture(texturePath, parameters);
 	}
 	

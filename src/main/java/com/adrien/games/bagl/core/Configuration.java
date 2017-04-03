@@ -24,10 +24,12 @@ public class Configuration {
 	private static final String CONFIGURATION_FILE_PATH = "/config.properties";
 	private static final String X_RESOLUTION_KEY = "resolution.x";
 	private static final String Y_RESOLUTION_KEY = "resolution.y";
+	private static final String ANISOTROPIC_KEY = "anisotropic";
 	
 	private final Properties properties;
 	private final int xResolution;
 	private final int yResolution;
+	private final int anisotropicLevel;
 	
 	private static Configuration instance; 
 	
@@ -36,6 +38,7 @@ public class Configuration {
 		this.loadFile();
 		this.xResolution = this.readRequiredInt(X_RESOLUTION_KEY);
 		this.yResolution = this.readRequiredInt(Y_RESOLUTION_KEY);
+		this.anisotropicLevel = this.readRequiredInt(ANISOTROPIC_KEY);
 	}
 	
 	private void loadFile() {
@@ -82,6 +85,10 @@ public class Configuration {
 	
 	public int getYResolution() {
 		return this.yResolution;
+	}
+
+	public int getAnisotropicLevel() {
+		return anisotropicLevel;
 	}
 	
 }
