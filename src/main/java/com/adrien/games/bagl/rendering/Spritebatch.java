@@ -7,6 +7,7 @@ import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.core.math.Vector2;
 import com.adrien.games.bagl.core.math.Vector3;
 import com.adrien.games.bagl.rendering.texture.Texture;
+import com.adrien.games.bagl.rendering.texture.TextureRegion;
 import com.adrien.games.bagl.rendering.vertex.VertexPositionColorTexture;
 import com.adrien.games.bagl.rendering.vertex.VertexPositionTexture;
 
@@ -172,6 +173,18 @@ public class Spritebatch {
 	}
 	
 	/**
+	 * Renders a texture region at a given position. 
+	 * @param region The region to draw.
+	 * @param position The position where to draw the sprite.
+	 * @param width The width of the sprite to render.
+	 * @param height The height of the sprite to render.
+	 */
+	public void draw(TextureRegion region, Vector2 position, float width, float height) {
+		this.draw(region.getTexture(), position, width, height, region.getLeft(), region.getBottom(), 
+				region.getRight(), region.getTop(), 0f, Color.WHITE);
+	}
+	
+	/**
 	 * Renders a sprite at a given position, with a given size, a given rotation and a color.
 	 * @param texture The texture to render.
 	 * @param position The position where to render the sprite.
@@ -181,7 +194,7 @@ public class Spritebatch {
 	 * @param color The tint of the sprite.
 	 */
 	public void draw(Texture texture, Vector2 position, float width, float height, 
-			float texRegionLeft, float texRegionBotton, float texRegionRight, 
+			float texRegionLeft, float texRegionBottom, float texRegionRight, 
 			float texRegionTop, float rotation, Color color) {
 		this.checkStarted();
 		if(this.drawnSprites >= this.size || (this.currentTexture != null && texture != this.currentTexture)) {
@@ -201,9 +214,9 @@ public class Spritebatch {
 		
 		int offset = this.drawnSprites*VERTICES_PER_SPRITE;
 		
-		this.computeVertex(offset, x, y, texRegionLeft + halfPixelWidth, texRegionBotton + halfPixelHeight, 
+		this.computeVertex(offset, x, y, texRegionLeft + halfPixelWidth, texRegionBottom + halfPixelHeight, 
 				rotation, xCenter, yCenter, color);
-		this.computeVertex(offset + 1, x + width, y, texRegionRight - halfPixelWidth, texRegionBotton + halfPixelHeight, 
+		this.computeVertex(offset + 1, x + width, y, texRegionRight - halfPixelWidth, texRegionBottom + halfPixelHeight, 
 				rotation, xCenter, yCenter, color);
 		this.computeVertex(offset + 2, x, y + height, texRegionLeft + halfPixelWidth, texRegionTop - halfPixelHeight, 
 				rotation, xCenter, yCenter, color);
