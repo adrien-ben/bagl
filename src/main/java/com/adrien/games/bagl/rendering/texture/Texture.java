@@ -15,10 +15,9 @@ public final class Texture {
 	private int handle;
 	private int width;
 	private int height;
-	
+
 	/**
 	 * Creates a new texture.
-	 * 
 	 * @param width The width of the texture.
 	 * @param height The height of the texture.
 	 * @param parameters The parameters of the texture.
@@ -40,6 +39,21 @@ public final class Texture {
 		this.height = image.getHeight();
 		parameters.format(this.getFormat(image.getChannelCount()));
 		this.handle = this.generateGlTexture(this.width, this.height, parameters, image.getData());
+	}
+	
+	/**
+	 * Creates a texture from a pixel buffer. You have to take extra care of
+	 * parameters consistency. If texture format is not consistent with the
+	 * content of pixel buffer and dimensions of the texture, errors will arise.
+	 * @param width The width of the texture.
+	 * @param height The height of the texture.
+	 * @param pixels The pixel data.
+	 * @param parameters The texture parameter.
+	 */
+	public Texture(int width, int height, ByteBuffer pixels, TextureParameters parameters) {
+		this.width = width;
+		this.height = height;
+		this.handle = this.generateGlTexture(this.width, this.height, parameters, pixels);
 	}
 	
 	private int generateGlTexture(int width, int height, TextureParameters parameters, ByteBuffer image) {
