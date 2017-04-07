@@ -1,5 +1,7 @@
 package com.adrien.games.bagl.sample;
 
+import static org.lwjgl.opengl.GL11.*;
+
 import java.io.File;
 import java.util.Random;
 
@@ -12,8 +14,10 @@ import com.adrien.games.bagl.core.Game;
 import com.adrien.games.bagl.core.Time;
 import com.adrien.games.bagl.core.math.Vector2;
 import com.adrien.games.bagl.rendering.Spritebatch;
+import com.adrien.games.bagl.rendering.text.Font;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.texture.TextureParameters;
+import com.adrien.games.bagl.utils.FileUtils;
 
 public class SpritebatchSample {
 
@@ -26,6 +30,7 @@ public class SpritebatchSample {
 		private int height;
 		
 		private Texture texture;
+		private Font font;
 		private Spritebatch spritebatch;
 		
 		private Vector2[] positions = new Vector2[SPRITE_COUNT];
@@ -42,6 +47,8 @@ public class SpritebatchSample {
 			this.texture = new Texture(new File(TestGame.class.getResource("/default.png").getFile()).getAbsolutePath(),
 					new TextureParameters());
 			
+			this.font = new Font(FileUtils.getResourceAbsolutePath("/fonts/default.ttf"), 40);
+			
 			Random r = new Random();
 			for(int i = 0; i < SPRITE_COUNT; i++) {
 				positions[i] = new Vector2(r.nextFloat() * this.width, r.nextFloat() * this.height);
@@ -49,8 +56,10 @@ public class SpritebatchSample {
 				rotations[i] = r.nextFloat() * 360;
 			}
 			
-			GL11.glEnable(GL11.GL_CULL_FACE);
-			GL11.glClearColor(100f/255, 149f/255, 237f/255, 1);
+			glEnable(GL11.GL_CULL_FACE);
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			glClearColor(100f/255, 149f/255, 237f/255, 1);
 		}
 
 		@Override
@@ -66,11 +75,14 @@ public class SpritebatchSample {
 			for(int i = 0; i < SPRITE_COUNT; i++) {
 				this.spritebatch.draw(this.texture, positions[i], sizes[i], sizes[i], rotations[i], Color.WHITE);
 			}
+			this.spritebatch.drawText("Hello World ! :)", font, new Vector2(this.width/2, 20), Color.RED);
 			this.spritebatch.end();
 		}
 
 		@Override
 		public void destroy() {
+			this.texture.destroy();
+			this.font.destroy();
 		}
 
 	}
