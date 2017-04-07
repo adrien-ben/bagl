@@ -8,7 +8,7 @@ import com.adrien.games.bagl.core.Camera2D;
 import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.core.math.Vector2;
 import com.adrien.games.bagl.core.math.Vector3;
-import com.adrien.games.bagl.rendering.text.Char;
+import com.adrien.games.bagl.rendering.text.Glyph;
 import com.adrien.games.bagl.rendering.text.Font;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.texture.TextureRegion;
@@ -268,23 +268,23 @@ public class Spritebatch {
 		float xadvance = 0;
 		for(int i = 0; i < text.length(); i++) {
 			char c = text.charAt(i);
-			Char fChar = font.getChar(c);
-			if(Objects.nonNull(fChar)) {
-				TextureRegion region = fChar.getRegion();
-				float xpos = xadvance + fChar.getXOffset() + position.getX();
-				float ypos = -(fChar.getHeight() + fChar.getYOffset()) + position.getY();
+			Glyph glyph = font.getGlyph(c);
+			if(Objects.nonNull(glyph)) {
+				TextureRegion region = glyph.getRegion();
+				float xpos = xadvance + glyph.getXOffset() + position.getX();
+				float ypos = -(glyph.getHeight() + glyph.getYOffset()) + position.getY();
 				
 				int offset = this.drawnSprites*VERTICES_PER_SPRITE;
 				this.computeVertex(offset, xpos, ypos, region.getLeft(), region.getBottom(), 
 						0f, 0, 0, color);
-				this.computeVertex(offset + 1, xpos + fChar.getWidth(), ypos, region.getRight(), 
+				this.computeVertex(offset + 1, xpos + glyph.getWidth(), ypos, region.getRight(), 
 						region.getBottom(), 0f, 0, 0, color);
-				this.computeVertex(offset + 2, xpos, ypos + fChar.getHeight(), region.getLeft(), 
+				this.computeVertex(offset + 2, xpos, ypos + glyph.getHeight(), region.getLeft(), 
 						region.getTop(), 0f, 0, 0, color);
-				this.computeVertex(offset + 3, xpos + fChar.getWidth(), ypos + fChar.getHeight(), 
+				this.computeVertex(offset + 3, xpos + glyph.getWidth(), ypos + glyph.getHeight(), 
 						region.getRight(), region.getTop(), 0f, 0, 0, color);
 				
-				xadvance += fChar.getXAdvance();
+				xadvance += glyph.getXAdvance();
 				
 				this.drawnSprites++;
 			}

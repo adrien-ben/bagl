@@ -2,7 +2,7 @@ package com.adrien.games.bagl.rendering.text;
 
 import com.adrien.games.bagl.rendering.texture.TextureRegion;
 
-public class Char {
+public class Glyph {
 
 	private final TextureRegion region;
 	private final int width;
@@ -12,7 +12,7 @@ public class Char {
 	private final float xAdvance;
 	private final char value;
 	
-	public Char(TextureRegion region, int width, int height, int xOffset, int yOffset, float xAdvance, char value) {
+	public Glyph(TextureRegion region, int width, int height, int xOffset, int yOffset, float xAdvance, char value) {
 		this.region = region;
 		this.width = width;
 		this.height = height;

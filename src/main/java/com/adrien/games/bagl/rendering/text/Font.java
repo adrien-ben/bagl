@@ -28,7 +28,7 @@ public class Font {
 	
 	private final int size;
 	private Texture bitmap;
-	private Char[] chars = new Char[CHAR_COUNT];
+	private Glyph[] glyphs = new Glyph[CHAR_COUNT];
 	private int ascent;
 	private int descent;
 	private int lineGap;
@@ -73,18 +73,18 @@ public class Font {
 		for(int i = 0; i < CHAR_COUNT; i++) {
 			int codePoint = i + FIRST_CHAR;
 			STBTruetype.stbtt_GetCodepointHMetrics(infos, codePoint, width, leftBearing);
-			chars[i] = createChar(cdata.get(i), (char)codePoint);
+			glyphs[i] = createGlyph(cdata.get(i), (char)codePoint);
 		}
 	}
 	
-	private Char createChar(STBTTBakedChar charBuffer, char c) {
+	private Glyph createGlyph(STBTTBakedChar charBuffer, char c) {
 		float left = charBuffer.x0();
 		float bottom = charBuffer.y0();
 		float right = charBuffer.x1();
 		float top = charBuffer.y1();
 		TextureRegion region = new TextureRegion(this.bitmap, left/BMP_WIDTH, top/BMP_HEIGHT, 
 				right/BMP_WIDTH, bottom/BMP_HEIGHT);
-		return new Char(region, (int)(right - left), (int)(top - bottom), (int)charBuffer.xoff(), 
+		return new Glyph(region, (int)(right - left), (int)(top - bottom), (int)charBuffer.xoff(), 
 				(int)charBuffer.yoff(), charBuffer.xadvance(), c);
 	}
 	
@@ -94,18 +94,18 @@ public class Font {
 	 * @return The length of the text in pixels.
 	 */
 	public float getTextWidth(String text) {
-		return (float)text.chars().boxed().map(i -> (char)i.intValue()).map(this::getChar).filter(Objects::nonNull)
+		return (float)text.chars().boxed().map(i -> (char)i.intValue()).map(this::getGlyph).filter(Objects::nonNull)
 			.mapToDouble(c -> c.getXAdvance() + c.getXOffset()).sum();
 	}
 	
 	/**
 	 * Gets the glyph information for a given character.
 	 * @param c The char to look for.
-	 * @return The glyph information as a {@link Char} or null if no glyph is found.
+	 * @return The glyph information as a {@link Glyph} or null if no glyph is found.
 	 */
-	public Char getChar(char c) {
+	public Glyph getGlyph(char c) {
 		int index = (int)c - FIRST_CHAR;
-		return (index < 0 || index >= CHAR_COUNT) ?  null : this.chars[index];
+		return (index < 0 || index >= CHAR_COUNT) ?  null : this.glyphs[index];
 	}
 	
 	public void destroy() {
