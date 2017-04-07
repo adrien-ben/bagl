@@ -271,7 +271,7 @@ public class Spritebatch {
 			Char fChar = font.getChar(c);
 			if(Objects.nonNull(fChar)) {
 				TextureRegion region = fChar.getRegion();
-				float xpos = xadvance + fChar.getXOffset();
+				float xpos = xadvance + fChar.getXOffset() + position.getX();
 				float ypos = -(fChar.getHeight() + fChar.getYOffset()) + position.getY();
 				
 				int offset = this.drawnSprites*VERTICES_PER_SPRITE;
