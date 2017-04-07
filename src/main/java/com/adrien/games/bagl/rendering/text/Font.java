@@ -1,6 +1,7 @@
 package com.adrien.games.bagl.rendering.text;
 
 import java.nio.ByteBuffer;
+import java.util.Objects;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.stb.STBTTBakedChar;
@@ -13,6 +14,11 @@ import com.adrien.games.bagl.rendering.texture.TextureParameters;
 import com.adrien.games.bagl.rendering.texture.TextureRegion;
 import com.adrien.games.bagl.utils.FileUtils;
 
+/**
+ * Text font used to render text.
+ * @author Adrien
+ *
+ */
 public class Font {
 
 	private static final int BMP_WIDTH = 512;
@@ -82,6 +88,21 @@ public class Font {
 				(int)charBuffer.yoff(), charBuffer.xadvance(), c);
 	}
 	
+	/**
+	 * Computes the length a text rendered with this font.
+	 * @param text The text to compute.
+	 * @return The length of the text in pixels.
+	 */
+	public float getTextWidth(String text) {
+		return (float)text.chars().boxed().map(i -> (char)i.intValue()).map(this::getChar).filter(Objects::nonNull)
+			.mapToDouble(c -> c.getXAdvance() + c.getXOffset()).sum();
+	}
+	
+	/**
+	 * Gets the glyph information for a given character.
+	 * @param c The char to look for.
+	 * @return The glyph information as a {@link Char} or null if no glyph is found.
+	 */
 	public Char getChar(char c) {
 		int index = (int)c - FIRST_CHAR;
 		return (index < 0 || index >= CHAR_COUNT) ?  null : this.chars[index];
