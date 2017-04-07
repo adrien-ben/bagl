@@ -1,11 +1,15 @@
 package com.adrien.games.bagl.rendering;
 
+import java.util.Objects;
+
 import org.lwjgl.opengl.GL11;
 
 import com.adrien.games.bagl.core.Camera2D;
 import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.core.math.Vector2;
 import com.adrien.games.bagl.core.math.Vector3;
+import com.adrien.games.bagl.rendering.text.Char;
+import com.adrien.games.bagl.rendering.text.Font;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.texture.TextureRegion;
 import com.adrien.games.bagl.rendering.vertex.VertexPositionColorTexture;
@@ -27,11 +31,15 @@ public class Spritebatch {
 	private static final int MAX_SIZE = 1024;
 	private static final int VERTICES_PER_SPRITE = 4;
 	private static final int INDICES_PER_SPRITE = 6;
-	private static final String VERTEX_SHADER = "/sprite.vert";
-	private static final String FRAGMENT_SHADER = "/sprite.frag";
+	private static final String SPRITE_VERTEX_SHADER = "/sprite.vert";
+	private static final String SPRITE_FRAGMENT_SHADER = "/sprite.frag";
+	private static final String TEXT_VERTEX_SHADER = "/text.vert";
+	private static final String TEXT_FRAGMENT_SHADER = "/text.frag";
 	
 	private final Camera2D camera;
-	private final Shader shader;
+	private final Shader spriteShader;
+	private final Shader textShader;
+	private Shader currentShader;
 	private final int size;
 	private final VertexBuffer vertexBuffer;
 	private final IndexBuffer indexBuffer;
@@ -49,16 +57,22 @@ public class Spritebatch {
 	 */
 	public Spritebatch(int size, int width, int height) {
 		this.camera = new Camera2D(new Vector2(width/2, height/2), width, height);
-		this.shader = new Shader();
-		this.shader.addVertexShader(VERTEX_SHADER);
-		this.shader.addFragmentShader(FRAGMENT_SHADER);
-		this.shader.compile();
+		this.spriteShader = this.createShader(SPRITE_VERTEX_SHADER, SPRITE_FRAGMENT_SHADER);
+		this.textShader = this.createShader(TEXT_VERTEX_SHADER, TEXT_FRAGMENT_SHADER);
 		this.size = size < MAX_SIZE ? size : MAX_SIZE;
 		this.vertexBuffer = new VertexBuffer(VertexPositionColorTexture.DESCRIPTION, this.size*VERTICES_PER_SPRITE);
 		this.vertices = this.initVertices(this.size);
 		this.indexBuffer = this.initIndexBuffer(this.size);
 		this.drawnSprites = 0;
 		this.started = false;
+	}
+	
+	private Shader createShader(String vert, String frag) {
+		Shader shader = new Shader();
+		shader.addVertexShader(vert);
+		shader.addFragmentShader(frag);
+		shader.compile();
+		return shader;
 	}
 	
 	/**
@@ -125,6 +139,12 @@ public class Spritebatch {
 		this.checkStarted();
 		this.renderBatch();
 		this.started = false;
+	}
+	
+	private boolean shouldRender(Texture texture, Shader shader) {
+		return this.drawnSprites >= this.size 
+				|| (this.currentTexture != null && texture != this.currentTexture)
+				|| (shader != this.currentShader);
 	}
 	
 	/**
@@ -197,10 +217,12 @@ public class Spritebatch {
 			float texRegionLeft, float texRegionBottom, float texRegionRight, 
 			float texRegionTop, float rotation, Color color) {
 		this.checkStarted();
-		if(this.drawnSprites >= this.size || (this.currentTexture != null && texture != this.currentTexture)) {
+		
+		if(shouldRender(texture, this.spriteShader)) {
 			renderBatch();
 		}
 		
+		this.currentShader = this.spriteShader;
 		this.currentTexture = texture;
 		
 		float halfPixelWidth = 0.5f/texture.getWidth();
@@ -224,6 +246,49 @@ public class Spritebatch {
 				rotation, xCenter, yCenter, color);
 		
 		this.drawnSprites++;
+	}
+	
+	/**
+	 * Renders text with a given font at a given position with a given color.
+	 * @param text The text to render.
+	 * @param font The font to use to render the text.
+	 * @param position The position at which to render the text.
+	 * @param color The color of the text.
+	 */
+	public void drawText(String text, Font font, Vector2 position, Color color) {
+		this.checkStarted();
+		
+		if(shouldRender(font.getBitmap(), this.textShader)) {
+			renderBatch();
+		}
+		
+		this.currentShader = this.textShader;
+		this.currentTexture = font.getBitmap();
+		
+		float xadvance = 0;
+		for(int i = 0; i < text.length(); i++) {
+			char c = text.charAt(i);
+			Char fChar = font.getChar(c);
+			if(Objects.nonNull(fChar)) {
+				TextureRegion region = fChar.getRegion();
+				float xpos = xadvance + fChar.getXOffset();
+				float ypos = -(fChar.getHeight() + fChar.getYOffset()) + position.getY();
+				
+				int offset = this.drawnSprites*VERTICES_PER_SPRITE;
+				this.computeVertex(offset, xpos, ypos, region.getLeft(), region.getBottom(), 
+						0f, 0, 0, color);
+				this.computeVertex(offset + 1, xpos + fChar.getWidth(), ypos, region.getRight(), 
+						region.getBottom(), 0f, 0, 0, color);
+				this.computeVertex(offset + 2, xpos, ypos + fChar.getHeight(), region.getLeft(), 
+						region.getTop(), 0f, 0, 0, color);
+				this.computeVertex(offset + 3, xpos + fChar.getWidth(), ypos + fChar.getHeight(), 
+						region.getRight(), region.getTop(), 0f, 0, 0, color);
+				
+				xadvance += fChar.getXAdvance();
+				
+				this.drawnSprites++;
+			}
+		}
 	}
 	
 	/**
@@ -274,8 +339,8 @@ public class Spritebatch {
 	 */
 	private void renderBatch() {
 		if(this.drawnSprites > 0) {
-			this.shader.bind();
-			this.shader.setUniform("uCamera", this.camera.getOrthographic());
+			this.currentShader.bind();
+			this.currentShader.setUniform("uCamera", this.camera.getOrthographic());
 			this.currentTexture.bind();
 			
 			this.vertexBuffer.setData(this.vertices, this.drawnSprites*VERTICES_PER_SPRITE);
