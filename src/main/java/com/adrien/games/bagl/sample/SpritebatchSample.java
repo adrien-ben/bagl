@@ -1,11 +1,15 @@
 package com.adrien.games.bagl.sample;
 
-import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.GL_BLEND;
+import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
+import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA;
+import static org.lwjgl.opengl.GL11.GL_SRC_ALPHA;
+import static org.lwjgl.opengl.GL11.glBlendFunc;
+import static org.lwjgl.opengl.GL11.glClearColor;
+import static org.lwjgl.opengl.GL11.glEnable;
 
 import java.io.File;
 import java.util.Random;
-
-import org.lwjgl.opengl.GL11;
 
 import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.core.Configuration;
@@ -25,6 +29,7 @@ public class SpritebatchSample {
 		
 		private static final String TITLE = "Spritebatch";
 		private static final int SPRITE_COUNT = 10000;
+		private static final String HELLO_WORLD = "Hello World ! :)";
 
 		private int width;
 		private int height;
@@ -33,6 +38,7 @@ public class SpritebatchSample {
 		private Font font;
 		private Spritebatch spritebatch;
 		
+		private float xTextPos;
 		private Vector2[] positions = new Vector2[SPRITE_COUNT];
 		private int[] sizes = new int[SPRITE_COUNT];
 		private float[] rotations = new float[SPRITE_COUNT];
@@ -48,15 +54,16 @@ public class SpritebatchSample {
 					new TextureParameters());
 			
 			this.font = new Font(FileUtils.getResourceAbsolutePath("/fonts/default.ttf"), 40);
+			this.xTextPos = this.width/2 - this.font.getTextWidth(HELLO_WORLD)/2;
 			
 			Random r = new Random();
 			for(int i = 0; i < SPRITE_COUNT; i++) {
-				positions[i] = new Vector2(r.nextFloat() * this.width, r.nextFloat() * this.height);
-				sizes[i] = r.nextInt(32) + 32;
-				rotations[i] = r.nextFloat() * 360;
+				this.positions[i] = new Vector2(r.nextFloat() * this.width, r.nextFloat() * this.height);
+				this.sizes[i] = r.nextInt(32) + 32;
+				this.rotations[i] = r.nextFloat() * 360;
 			}
 			
-			glEnable(GL11.GL_CULL_FACE);
+			glEnable(GL_CULL_FACE);
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			glClearColor(100f/255, 149f/255, 237f/255, 1);
@@ -65,7 +72,7 @@ public class SpritebatchSample {
 		@Override
 		public void update(Time time) {
 			for(int i = 0; i < SPRITE_COUNT; i++) {
-				rotations[i] += time.getElapsedTime()*50;
+				this.rotations[i] += time.getElapsedTime()*50;
 			}
 		}
 
@@ -73,9 +80,9 @@ public class SpritebatchSample {
 		public void render() {
 			this.spritebatch.start();
 			for(int i = 0; i < SPRITE_COUNT; i++) {
-				this.spritebatch.draw(this.texture, positions[i], sizes[i], sizes[i], rotations[i], Color.WHITE);
+				this.spritebatch.draw(this.texture, this.positions[i], this.sizes[i], this.sizes[i], this.rotations[i], Color.WHITE);
 			}
-			this.spritebatch.drawText("Hello World ! :)", font, new Vector2(this.width/2, 20), Color.RED);
+			this.spritebatch.drawText(HELLO_WORLD, font, new Vector2(this.xTextPos, this.height - 50), Color.RED);
 			this.spritebatch.end();
 		}
 
