@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.Objects;
 
 import org.lwjgl.BufferUtils;
+import org.lwjgl.stb.STBTTAlignedQuad;
 import org.lwjgl.stb.STBTTBakedChar;
 import org.lwjgl.stb.STBTTFontinfo;
 import org.lwjgl.stb.STBTruetype;
@@ -68,24 +69,18 @@ public class Font {
 	}
 	
 	private void getCharInfos(STBTTFontinfo infos, STBTTBakedChar.Buffer cdata) {			
-		int[] width = new int[1];
-		int[] leftBearing = new int[1];
+		float[] xpos = {0};
+		float[] ypos = {0};
+		STBTTAlignedQuad q = STBTTAlignedQuad.malloc();
 		for(int i = 0; i < CHAR_COUNT; i++) {
 			int codePoint = i + FIRST_CHAR;
-			STBTruetype.stbtt_GetCodepointHMetrics(infos, codePoint, width, leftBearing);
-			glyphs[i] = createGlyph(cdata.get(i), (char)codePoint);
+			STBTTBakedChar charBuffer = cdata.get(i);
+			STBTruetype.stbtt_GetBakedQuad(cdata, BMP_WIDTH, BMP_HEIGHT, i, xpos, ypos, q, true);			
+			TextureRegion region = new TextureRegion(this.bitmap, q.s0(), q.t1(), q.s1(), q.t0());
+			glyphs[i] = new Glyph(region, q.x1() - q.x0(), q.y1() - q.y0(), charBuffer.xoff(), 
+					charBuffer.yoff(), charBuffer.xadvance(), (char)codePoint);
 		}
-	}
-	
-	private Glyph createGlyph(STBTTBakedChar charBuffer, char c) {
-		float left = charBuffer.x0();
-		float bottom = charBuffer.y0();
-		float right = charBuffer.x1();
-		float top = charBuffer.y1();
-		TextureRegion region = new TextureRegion(this.bitmap, left/BMP_WIDTH, top/BMP_HEIGHT, 
-				right/BMP_WIDTH, bottom/BMP_HEIGHT);
-		return new Glyph(region, (int)(right - left), (int)(top - bottom), (int)charBuffer.xoff(), 
-				(int)charBuffer.yoff(), charBuffer.xadvance(), c);
+		q.free();
 	}
 	
 	/**

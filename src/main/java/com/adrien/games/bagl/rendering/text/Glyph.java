@@ -5,14 +5,14 @@ import com.adrien.games.bagl.rendering.texture.TextureRegion;
 public class Glyph {
 
 	private final TextureRegion region;
-	private final int width;
-	private final int height;
-	private final int xOffset;
-	private final int yOffset;
+	private final float width;
+	private final float height;
+	private final float xOffset;
+	private final float yOffset;
 	private final float xAdvance;
 	private final char value;
 	
-	public Glyph(TextureRegion region, int width, int height, int xOffset, int yOffset, float xAdvance, char value) {
+	public Glyph(TextureRegion region, float width, float height, float xOffset, float yOffset, float xAdvance, char value) {
 		this.region = region;
 		this.width = width;
 		this.height = height;
@@ -31,11 +31,11 @@ public class Glyph {
 		return region;
 	}
 	
-	public int getWidth() {
+	public float getWidth() {
 		return width;
 	}
 	
-	public int getHeight() {
+	public float getHeight() {
 		return height;
 	}
 	
@@ -43,11 +43,11 @@ public class Glyph {
 		return value;
 	}
 
-	public int getXOffset() {
+	public float getXOffset() {
 		return xOffset;
 	}
 
-	public int getYOffset() {
+	public float getYOffset() {
 		return yOffset;
 	}
 
