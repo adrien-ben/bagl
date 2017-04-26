@@ -27,6 +27,26 @@ public class Quaternion {
 		this.j = vector.getY();
 		this.k = vector.getZ();
 	}
+	
+		/**
+	 * Creates a quaternion from a Euler angle. 
+	 * @param roll Rotation around the x-axis
+	 * @param pitch Rotation around the y-axis
+	 * @param yaw Rotation around the z-axis
+	 */
+	public Quaternion(float roll, float pitch, float yaw) {
+		float cosroll = (float)Math.cos(roll/2);
+		float sinroll = (float)Math.sin(roll/2);
+		float cospitch = (float)Math.cos(pitch/2);
+		float sinpitch = (float)Math.sin(pitch/2);
+		float cosyaw = (float)Math.cos(yaw/2);
+		float sinyaw = (float)Math.sin(yaw/2);
+		
+		this.a = cosyaw*cosroll*cospitch + sinyaw*sinroll*sinpitch;
+		this.i = cosyaw*sinroll*cospitch - sinyaw*cosroll*sinpitch;
+		this.j = cosyaw*cosroll*sinpitch + sinyaw*sinroll*cospitch;
+		this.k = sinyaw*cosroll*cospitch - cosyaw*sinroll*sinpitch;
+	}
 
 	public void mul(Quaternion q) {
 		float _a = a*q.getA() - i*q.getI() - j*q.getJ() - k*q.getK();
