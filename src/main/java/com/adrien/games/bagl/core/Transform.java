@@ -4,55 +4,66 @@ import com.adrien.games.bagl.core.math.Matrix4;
 import com.adrien.games.bagl.core.math.Quaternion;
 import com.adrien.games.bagl.core.math.Vector3;
 
+/**
+ * A transform represents a translation, rotation and scaling in space.
+ *
+ */
 public class Transform {
 	
-	private Vector3 position;
+	private Vector3 translation;
 	private Quaternion rotation;
 	private Vector3 scale;
+	private Matrix4 transform;
+	private boolean isDirty;
 	
-	private Matrix4 translationM;
-	private Matrix4 rotationM;
-	private Matrix4 scaleM;
-	private Matrix4 transformM;
+	private Matrix4 transBuff;
+	private Matrix4 rotBuff;
+	private Matrix4 scaleBuff;
 	
 	public Transform() {
-		position = new Vector3();
-		rotation = new Quaternion();
-		scale = new Vector3(1, 1, 1);
+		this.translation = new Vector3();
+		this.rotation = new Quaternion(1, 0, 0, 0);
+		this.scale = new Vector3(1, 1, 1);
+		this.transform = Matrix4.createIdentity();
+		this.isDirty = false;
 		
-		translationM = Matrix4.createIdentity();
-		rotationM = Matrix4.createIdentity();
-		scaleM = Matrix4.createIdentity();
-		transformM = Matrix4.createIdentity();
+		this.transBuff = Matrix4.createZero();
+		this.rotBuff = Matrix4.createZero();
+		this.scaleBuff = Matrix4.createZero();
 	}
 	
-	public void transform(Transform transform) {
-		Matrix4 transformMatrix = transform.getTransformMatrix();
-		Vector3.transform(transformMatrix, position, 1, position);
-		Quaternion.mul(transform.getRotation(), rotation, rotation);
-		Vector3.transform(transformMatrix, scale, 0, scale);
+	public void transform(Transform transform) {		
+		final Matrix4 tm = transform.getTransformMatrix();
+		this.translation.transform(tm, 1);
+		this.scale.transform(tm, 0);
+		this.rotation.mul(transform.getRotation());
+		this.isDirty = true;
 	}
 	
 	public static void transform(Transform toTransform, Transform transform, Transform result) {
-		Matrix4 transformMatrix = transform.getTransformMatrix();
-		Vector3.transform(transformMatrix, toTransform.getPosition(), 1, result.getPosition());
-		Quaternion.mul(transform.getRotation(), toTransform.getRotation(), result.getRotation());
-		Vector3.transform(transformMatrix, toTransform.getScale(), 0, result.getScale());
-	}
-
-	public Matrix4 getTransformMatrix() {
-		translationM.setTranslation(position);
-		rotationM.setRotation(rotation);
-		scaleM.setScale(scale);
-		
-		Matrix4.mul(translationM, rotationM, transformM);
-		Matrix4.mul(transformM, scaleM, transformM);
-
-		return transformM;
+		final Matrix4 tm = transform.getTransformMatrix();
+		Vector3.transform(tm, toTransform.translation, 1, result.translation);
+		Vector3.mul(toTransform.scale, transform.scale, result.scale);
+		Quaternion.mul(toTransform.rotation, transform.rotation, result.rotation);
+		result.isDirty = true;
 	}
 	
-	public Vector3 getPosition() {
-		return position;
+	public Matrix4 getTransformMatrix() {
+		if(this.isDirty) {
+			this.transBuff.setTranslation(this.translation);
+			this.rotBuff.setRotation(this.rotation);
+			this.scaleBuff.setScale(this.scale);
+			
+			Matrix4.mul(this.transBuff, this.rotBuff, this.transform);
+			Matrix4.mul(this.transform, this.scaleBuff, this.transform);
+			
+			this.isDirty = false;
+		}
+		return this.transform;
+	}
+	
+	public Vector3 getTranslation() {
+		return translation;
 	}
 
 	public Quaternion getRotation() {
@@ -63,16 +74,19 @@ public class Transform {
 		return scale;
 	}
 
-	public void setPosition(Vector3 position) {
-		this.position = position;
+	public void setTranslation(Vector3 translation) {
+		this.translation = translation;
+		this.isDirty = true;
 	}
 
 	public void setRotation(Quaternion rotation) {
 		this.rotation = rotation;
+		this.isDirty = true;
 	}
 
 	public void setScale(Vector3 scale) {
 		this.scale = scale;
+		this.isDirty = true;
 	}
 	
 }
