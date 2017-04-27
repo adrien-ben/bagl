@@ -134,6 +134,38 @@ public final class Vector3 {
 		result.setXYZ(_x, _y, _z);
 	}
 	
+	/**
+	 * Multiplies this vector by another one.
+	 * @param other The vector to multiply to this one.
+	 * @return This for chaining.
+	 */
+	public Vector3 mul(Vector3 other) {
+		this.x *= other.x;
+		this.y *= other.y;
+		this.z *= other.z;
+		return this;
+	}
+	
+	/**
+	 * Multiplies two vector.
+	 * @param left The left vector.
+	 * @param right The right vector.
+	 * @return A new vector which is the product of two vectors.
+	 */
+	public Vector3 mul(Vector3 left, Vector3 right) {
+		return new Vector3(left.x*right.x, left.y*right.y, left.z*right.z);
+	}
+	
+	/**
+	 * Multiplies two vector and store the result in another one.
+	 * @param left The left vector. Will not be changed.
+	 * @param right The right vector. Will not be changed.
+	 * @param result The vector where to store the result.
+	 */
+	public void mul(Vector3 left, Vector3 right, Vector3 result) {
+		result.setXYZ(left.x*right.x, left.y*right.y, left.z*right.z);
+	}
+	
 	public void scale(float factor) {
 		x *= factor;
 		y *= factor;
