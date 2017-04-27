@@ -152,7 +152,7 @@ public final class Vector3 {
 	 * @param right The right vector.
 	 * @return A new vector which is the product of two vectors.
 	 */
-	public Vector3 mul(Vector3 left, Vector3 right) {
+	public static Vector3 mul(Vector3 left, Vector3 right) {
 		return new Vector3(left.x*right.x, left.y*right.y, left.z*right.z);
 	}
 	
@@ -162,7 +162,7 @@ public final class Vector3 {
 	 * @param right The right vector. Will not be changed.
 	 * @param result The vector where to store the result.
 	 */
-	public void mul(Vector3 left, Vector3 right, Vector3 result) {
+	public static void mul(Vector3 left, Vector3 right, Vector3 result) {
 		result.setXYZ(left.x*right.x, left.y*right.y, left.z*right.z);
 	}
 	
