@@ -245,6 +245,31 @@ public final class Vector3 {
 		result.setXYZ(_x, _y, _z);
 	}
 	
+	/**
+	 * Sets the components of this vector.
+	 * @param x The x component.
+	 * @param y The y component.
+	 * @param z The z component.
+	 */
+	public void setXYZ(float x, float y, float z) {
+		this.x = x;
+		this.y = y;
+		this.z = z;
+	}
+	
+	/**
+	 * Sets the components of this vector by copying
+	 * those of another vector.
+	 * @param other The vector to copy.
+	 * @return This for chaining.
+	 */
+	public Vector3 set(Vector3 other) {
+		this.x = other.x;
+		this.y = other.y;
+		this.z = other.z;
+		return this;
+	}
+	
 	@Override
 	public String toString() {
 		return "x:" + this.x + " y:" + this.y + " z:" + this.z;
@@ -271,12 +296,6 @@ public final class Vector3 {
 	}
 
 	public void setZ(float z) {
-		this.z = z;
-	}
-	
-	public void setXYZ(float x, float y, float z) {
-		this.x = x;
-		this.y = y;
 		this.z = z;
 	}
 	
