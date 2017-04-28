@@ -57,17 +57,17 @@ public class ObjModelSample {
 			this.camera = new Camera(new Vector3(0, 2, 5), new Vector3(0, -2, -5), Vector3.UP, 
 					(float)Math.toRadians(70f), (float)this.width/(float)this.height, 1f, 1000f);
 			
-			this.meshLocalTransform = new Transform();
-			this.meshLocalTransform.setTranslation(new Vector3(2, 0, 0));
-			this.meshLocalTransform.setRotation(Quaternion.fromAngleAndVector((float)Math.toRadians(45f), Vector3.UP));
-			this.meshLocalTransform.setScale(new Vector3(2, 2, 2));
+			this.meshLocalTransform = new Transform()
+					.setTranslation(new Vector3(2, 0, 0))
+					.setRotation(Quaternion.fromAngleAndVector((float)Math.toRadians(45f), Vector3.UP))
+					.setScale(new Vector3(2, 2, 2));
 			
 			this.meshTransform = new Transform();
 			
-			this.worldTransform = new Transform();
-			this.worldTransform.setTranslation(new Vector3(0, 1, 0));
-			this.worldTransform.setRotation(Quaternion.fromAngleAndVector((float)Math.toRadians(90f), Vector3.UP));
-			this.worldTransform.setScale(new Vector3(0.5f, 0.5f, 0.5f));
+			this.worldTransform = new Transform()
+					.setTranslation(new Vector3(0, 1, 0))
+					.setRotation(Quaternion.fromAngleAndVector((float)Math.toRadians(90f), Vector3.UP))
+					.setScale(new Vector3(0.5f, 0.5f, 0.5f));
 			
 			this.wvpBuff = Matrix4.createZero();
 			
