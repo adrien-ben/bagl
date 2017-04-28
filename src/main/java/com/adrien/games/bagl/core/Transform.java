@@ -75,6 +75,19 @@ public class Transform {
 	}
 	
 	/**
+	 * Copies the values of another transform.
+	 * @param other The transform to copy.
+	 * @return This form chaining.
+	 */
+	public Transform set(Transform other) {
+		this.translation.set(other.translation);
+		this.rotation.set(other.rotation);
+		this.scale.set(other.scale);
+		this.isDirty = true;
+		return this;
+	}
+	
+	/**
 	 * Returns the matrix of the transform.
 	 * <p>This matrix contains the combination of translation,
 	 * rotation and scaling. The matrix is computed here if 
