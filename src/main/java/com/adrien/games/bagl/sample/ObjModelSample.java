@@ -10,7 +10,9 @@ import com.adrien.games.bagl.core.Configuration;
 import com.adrien.games.bagl.core.Engine;
 import com.adrien.games.bagl.core.Game;
 import com.adrien.games.bagl.core.Time;
+import com.adrien.games.bagl.core.Transform;
 import com.adrien.games.bagl.core.math.Matrix4;
+import com.adrien.games.bagl.core.math.Quaternion;
 import com.adrien.games.bagl.core.math.Vector3;
 import com.adrien.games.bagl.parser.model.ModelParser;
 import com.adrien.games.bagl.parser.model.ObjParser;
@@ -31,7 +33,10 @@ public class ObjModelSample {
 		
 		private ModelParser parser = new ObjParser();
 		private Mesh mesh;
-		private Matrix4 model;
+		private Transform meshLocalTransform;
+		private Transform meshTransform;
+		private Transform worldTransform;
+		private Matrix4 wvpBuff;
 		private Shader shader;
 		private Camera camera;
 		
@@ -49,26 +54,40 @@ public class ObjModelSample {
 			this.shader.addFragmentShader("/ambient.frag");
 			this.shader.compile();
 			
-			this.camera = new Camera(new Vector3(-2, 2, -2), new Vector3(2, -2, 2), Vector3.UP, 
-					(float)Math.toRadians(70f), (float)this.width/(float)this.height, 0.1f, 1000f);
+			this.camera = new Camera(new Vector3(0, 2, 5), new Vector3(0, -2, -5), Vector3.UP, 
+					(float)Math.toRadians(70f), (float)this.width/(float)this.height, 1f, 1000f);
 			
-			this.model = new Matrix4();
+			this.meshLocalTransform = new Transform();
+			this.meshLocalTransform.setTranslation(new Vector3(2, 0, 0));
+			this.meshLocalTransform.setRotation(Quaternion.fromAngleAndVector((float)Math.toRadians(45f), Vector3.UP));
+			this.meshLocalTransform.setScale(new Vector3(2, 2, 2));
 			
-			this.lightIntensity = .8f;
+			this.meshTransform = new Transform();
+			
+			this.worldTransform = new Transform();
+			this.worldTransform.setTranslation(new Vector3(0, 1, 0));
+			this.worldTransform.setRotation(Quaternion.fromAngleAndVector((float)Math.toRadians(90f), Vector3.UP));
+			this.worldTransform.setScale(new Vector3(0.5f, 0.5f, 0.5f));
+			
+			this.wvpBuff = Matrix4.createZero();
+			
+			this.lightIntensity = 1f;
 			
 			GL11.glEnable(GL11.GL_CULL_FACE);
 			GL11.glEnable(GL11.GL_DEPTH_TEST);
 		}
 
 		@Override
-		public void update(Time time) {
+		public void update(Time time) {		
+			Transform.transform(this.meshLocalTransform, this.worldTransform, this.meshTransform);
+			Matrix4.mul(this.camera.getViewProj(), this.meshTransform.getTransformMatrix(), this.wvpBuff);
 		}
 
 		@Override
 		public void render() {
 			this.shader.bind();
-			this.shader.setUniform("uMatrices.world", this.model);
-			this.shader.setUniform("uMatrices.wvp", this.camera.getViewProj());
+			this.shader.setUniform("uMatrices.world", this.meshTransform.getTransformMatrix());
+			this.shader.setUniform("uMatrices.wvp", this.wvpBuff);
 			this.shader.setUniform("uBaseLight.intensity", this.lightIntensity);
 			this.shader.setUniform("uBaseLight.color", Color.WHITE);
 			this.mesh.getMaterial().applyTo(this.shader);
