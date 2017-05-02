@@ -222,6 +222,7 @@ public class DeferredRenderingSample {
 			this.gbufferShader.bind();
 			this.gbuffer.bind();
 			FrameBuffer.clear();
+			this.scene.apply(this::renderSceneNode);
 			this.renderSceneNode(this.scene);
 			FrameBuffer.unbind();
 			Shader.unbind();
@@ -246,8 +247,6 @@ public class DeferredRenderingSample {
 			Texture.unbind();
 			Texture.unbind(1);
 			Texture.unbind(2);
-			
-			node.getChildren().stream().forEach(this::renderSceneNode);
 		}
 		
 		private void renderDeferred() {
