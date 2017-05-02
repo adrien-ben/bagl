@@ -4,9 +4,12 @@ import org.hamcrest.MatcherAssert;
 import org.hamcrest.collection.IsEmptyCollection;
 import org.hamcrest.core.Is;
 import org.hamcrest.core.IsCollectionContaining;
+import org.hamcrest.core.IsEqual;
 import org.hamcrest.core.IsNull;
 import org.hamcrest.core.IsSame;
 import org.junit.Test;
+
+import com.adrien.games.bagl.core.math.Vector3;
 
 /**
  * Test class form {@link SceneNode}.
@@ -83,5 +86,29 @@ public class SceneNodeTest {
 		parent.addChild(child);
 		
 		MatcherAssert.assertThat(child.isRoot(), Is.is(false));
+	}
+	
+	@Test
+	public void itShouldApplyConsumer() {
+		final SceneNode<Integer> parent = new SceneNode<Integer>(0);
+				
+		parent.apply(node -> {
+			node.getLocalTransform().setScale(new Vector3(2, 2, 2));
+		});
+		
+		MatcherAssert.assertThat(parent.getLocalTransform().getScale(), IsEqual.equalTo(new Vector3(2f, 2f, 2f)));
+	}
+	
+	@Test
+	public void itShouldApplyToChildren() {
+		final SceneNode<Integer> parent = new SceneNode<Integer>(0);
+		final SceneNode<Integer> child = new SceneNode<Integer>(0);
+		
+		parent.addChild(child);
+		parent.apply(node -> {
+			node.getLocalTransform().setScale(new Vector3(3, 3, 3));
+		});
+		
+		MatcherAssert.assertThat(child.getLocalTransform().getScale(), IsEqual.equalTo(new Vector3(3f, 3f, 3f)));
 	}
 }
