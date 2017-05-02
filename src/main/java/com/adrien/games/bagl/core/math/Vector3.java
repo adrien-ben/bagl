@@ -271,6 +271,33 @@ public final class Vector3 {
 	}
 	
 	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + Float.floatToIntBits(x);
+		result = prime * result + Float.floatToIntBits(y);
+		result = prime * result + Float.floatToIntBits(z);
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null || !(obj instanceof Vector3)) {
+			return false;
+		}
+		Vector3 other = (Vector3) obj;
+		if (Float.floatToIntBits(x) != Float.floatToIntBits(other.x) 
+				|| Float.floatToIntBits(y) != Float.floatToIntBits(other.y) 
+				|| Float.floatToIntBits(z) != Float.floatToIntBits(other.z)) {
+			return false;
+		}
+		return true;
+	}
+
+	@Override
 	public String toString() {
 		return "x:" + this.x + " y:" + this.y + " z:" + this.z;
 	}
