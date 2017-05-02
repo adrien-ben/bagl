@@ -7,6 +7,16 @@ import com.adrien.games.bagl.rendering.texture.Texture;
 
 public class Material {
 	
+	private static final String DIFFUSE_COLOR_SHADER_UNIFORM = "uMaterial.diffuseColor";
+	private static final String DIFFUSE_MAP_SHADER_UNIFORM = "uMaterial.diffuseMap";
+	private static final String DIFFUSE_MAP_FLAG_SHADER_UNIFORM = "uMaterial.hasDiffuseMap";	
+	private static final String SPECULAR_MAP_SHADER_UNIFORM = "uMaterial.specularMap";
+	private static final String SPECULAR_MAP_FLAG_SHADER_UNIFORM = "uMaterial.hasSpecularMap";
+	private static final String NORMAL_MAP_SHADER_UNIFORM = "uMaterial.bumpMap";
+	private static final String NORMAL_MAP_FLAG_SHADER_UNIFORM = "uMaterial.hasBumpMap";
+	private static final String SHININESS_SHADER_UNIFORM = "uMaterial.shininess";
+	private static final String GLOSSINESS_SHADER_UNIFORM = "uMaterial.glossiness";
+	
 	private static final int DIFFUSE_MAP_CHANNEL = 0;
 	private static final int SPECULAR_MAP_CHANNEL = 1;
 	private static final int NORMAL_MAP_CHANNEL = 2;
@@ -24,23 +34,29 @@ public class Material {
 	 */
 	public void applyTo(Shader shader) {
 		if(this.hasDiffuseMap()) {
-			shader.setUniform("uMaterial.diffuseMap", DIFFUSE_MAP_CHANNEL);
+			shader.setUniform(DIFFUSE_MAP_SHADER_UNIFORM, DIFFUSE_MAP_CHANNEL);
 			this.diffuseMap.bind(DIFFUSE_MAP_CHANNEL);
 		}
 		if(this.hasSpecularMap()) {
-			shader.setUniform("uMaterial.specularMap", SPECULAR_MAP_CHANNEL);
+			shader.setUniform(SPECULAR_MAP_SHADER_UNIFORM, SPECULAR_MAP_CHANNEL);
 			this.specularMap.bind(SPECULAR_MAP_CHANNEL);
 		}
 		if(this.hasBumpMap()) {
-			shader.setUniform("uMaterial.bumpMap", NORMAL_MAP_CHANNEL);
+			shader.setUniform(NORMAL_MAP_SHADER_UNIFORM, NORMAL_MAP_CHANNEL);
 			this.bumpMap.bind(NORMAL_MAP_CHANNEL);
 		}
-		shader.setUniform("uMaterial.diffuseColor", this.diffuseColor);
-		shader.setUniform("uMaterial.hasDiffuseMap", this.hasDiffuseMap());
-		shader.setUniform("uMaterial.shininess", this.specularIntensity);
-		shader.setUniform("uMaterial.hasSpecularMap", this.hasSpecularMap());
-		shader.setUniform("uMaterial.glossiness", this.specularExponent);
-		shader.setUniform("uMaterial.hasBumpMap", this.hasBumpMap());
+		shader.setUniform(DIFFUSE_COLOR_SHADER_UNIFORM, this.diffuseColor);
+		shader.setUniform(DIFFUSE_MAP_FLAG_SHADER_UNIFORM, this.hasDiffuseMap());
+		shader.setUniform(SHININESS_SHADER_UNIFORM, this.specularIntensity);
+		shader.setUniform(SPECULAR_MAP_FLAG_SHADER_UNIFORM, this.hasSpecularMap());
+		shader.setUniform(GLOSSINESS_SHADER_UNIFORM, this.specularExponent);
+		shader.setUniform(NORMAL_MAP_FLAG_SHADER_UNIFORM, this.hasBumpMap());
+	}
+	
+	public void destroy() {
+		if(Objects.nonNull(diffuseMap)) {			
+			this.diffuseMap.destroy();
+		}
 	}
 	
 	public boolean hasDiffuseMap() {
@@ -53,12 +69,6 @@ public class Material {
 	
 	public boolean hasBumpMap() {
 		return Objects.nonNull(this.bumpMap);
-	}
-	
-	public void destroy() {
-		if(Objects.nonNull(diffuseMap)) {			
-			this.diffuseMap.destroy();
-		}
 	}
 
 	public Color getDiffuseColor() {
