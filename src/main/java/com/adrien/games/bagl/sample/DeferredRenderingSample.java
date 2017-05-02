@@ -1,9 +1,18 @@
 package com.adrien.games.bagl.sample;
 
-import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
+import static org.lwjgl.opengl.GL11.GL_DEPTH_TEST;
+import static org.lwjgl.opengl.GL11.GL_POINTS;
+import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
+import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
+import static org.lwjgl.opengl.GL11.glDrawArrays;
+import static org.lwjgl.opengl.GL11.glDrawElements;
+import static org.lwjgl.opengl.GL11.glEnable;
+import static org.lwjgl.opengl.GL11.glPointSize;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.lwjgl.glfw.GLFW;
 
@@ -15,6 +24,7 @@ import com.adrien.games.bagl.core.Game;
 import com.adrien.games.bagl.core.Input;
 import com.adrien.games.bagl.core.Time;
 import com.adrien.games.bagl.core.math.Matrix4;
+import com.adrien.games.bagl.core.math.Quaternion;
 import com.adrien.games.bagl.core.math.Vector2;
 import com.adrien.games.bagl.core.math.Vector3;
 import com.adrien.games.bagl.rendering.FrameBuffer;
@@ -28,6 +38,7 @@ import com.adrien.games.bagl.rendering.light.DirectionalLight;
 import com.adrien.games.bagl.rendering.light.Light;
 import com.adrien.games.bagl.rendering.light.PointLight;
 import com.adrien.games.bagl.rendering.light.SpotLight;
+import com.adrien.games.bagl.rendering.scene.SceneNode;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.vertex.Vertex;
 import com.adrien.games.bagl.rendering.vertex.VertexPositionColor;
@@ -45,10 +56,9 @@ public class DeferredRenderingSample {
 		
 		private FrameBuffer gbuffer;
 		
-		private Mesh plane;
-		private Matrix4 world;
-		private Mesh cube;
-		private Matrix4 cubeWorld;
+		private Mesh floor;
+		private Mesh sphere;
+		private SceneNode<Mesh> scene;
 		
 		private Matrix4 wvp;
 		
@@ -77,7 +87,9 @@ public class DeferredRenderingSample {
 			this.width = Configuration.getInstance().getXResolution();
 			this.height = Configuration.getInstance().getYResolution();
 			this.wvp = new Matrix4();
-			this.initMeshes();
+			
+			this.loadMeshes();
+			this.initSceneGraph();
 			this.initShaders();
 			this.setUpLights();
 			this.initQuad();
@@ -95,11 +107,16 @@ public class DeferredRenderingSample {
 			glPointSize(6);
 		}
 		
-		private void initMeshes() {
-			this.plane = MeshFactory.fromResourceFile("/models/floor/floor.obj");
-			this.world = new Matrix4();
-			this.cube = MeshFactory.fromResourceFile("/models/sphere/sphere.obj");
-			this.cubeWorld = Matrix4.createTranslation(new Vector3(0, 0.5f, 0));	
+		private void loadMeshes() {
+			this.floor = MeshFactory.fromResourceFile("/models/floor/floor.obj");
+			this.sphere = MeshFactory.fromResourceFile("/models/sphere/sphere.obj");
+		}
+		
+		private void initSceneGraph() {
+			this.scene = new SceneNode<Mesh>(this.floor);			
+			final SceneNode<Mesh> sphereNode = new SceneNode<Mesh>(this.sphere);
+			sphereNode.getLocalTransform().setTranslation(new Vector3(0, 0.5f, 0));
+			this.scene.addChild(sphereNode);		
 		}
 		
 		private void initShaders() {
@@ -168,7 +185,13 @@ public class DeferredRenderingSample {
 		
 		@Override
 		public void update(Time time) {
-			Matrix4.mul(this.cubeWorld, Matrix4.createRotation(Vector3.UP, (float)Math.toRadians(10*time.getElapsedTime())), this.cubeWorld);
+			//rotating the first child if any
+			final Optional<SceneNode<Mesh>> node = this.scene.getChildren().stream().findFirst();
+			if(node.isPresent()) {
+				node.get().getLocalTransform().getRotation().mul(Quaternion.fromAngleAndVector(
+						(float)Math.toRadians(10*time.getElapsedTime()), Vector3.UP));	
+			}
+			
 			if(Input.isKeyPressed(GLFW.GLFW_KEY_SPACE) && !this.isKeyPressed) {
 				this.displayGbuffer = !this.displayGbuffer;
 				this.isKeyPressed = true;
@@ -181,7 +204,7 @@ public class DeferredRenderingSample {
 		@Override
 		public void render() {
 			
-			this.generateGbuffer();			
+			this.renderScene();
 			this.renderDeferred();
 			this.renderLightsPositions();
 			
@@ -194,37 +217,37 @@ public class DeferredRenderingSample {
 			}
 			
 		}
-
-		private void generateGbuffer() {
-			
-			Matrix4.mul(this.camera.getViewProj(), this.world, this.wvp);
-
-			this.plane.getVertices().bind();
-			this.plane.getIndices().bind();
+		
+		private void renderScene() {
 			this.gbufferShader.bind();
-			this.plane.getMaterial().applyTo(this.gbufferShader);
-			this.gbufferShader.setUniform("uMatrices.world", this.world);
-			this.gbufferShader.setUniform("uMatrices.wvp", this.wvp);
 			this.gbuffer.bind();
 			FrameBuffer.clear();
-			
-			glDrawElements(GL_TRIANGLES, this.plane.getIndices().getSize(), GL_UNSIGNED_INT, 0);
-			
-			Matrix4.mul(this.camera.getViewProj(), this.cubeWorld, this.wvp);
-			this.cube.getVertices().bind();
-			this.cube.getIndices().bind();
-			this.cube.getMaterial().applyTo(this.gbufferShader);
-			this.gbufferShader.setUniform("uMatrices.world", this.cubeWorld);
-			this.gbufferShader.setUniform("uMatrices.wvp", this.wvp);
-			
-			glDrawElements(GL_TRIANGLES, this.cube.getIndices().getSize(), GL_UNSIGNED_INT, 0);
-			
+			this.renderSceneNode(this.scene);
 			FrameBuffer.unbind();
 			Shader.unbind();
+		}
+		
+		private void renderSceneNode(SceneNode<Mesh> node) {
+			final Matrix4 world = node.getTransform().getTransformMatrix();
+			final Mesh mesh = node.get();
+			
+			Matrix4.mul(this.camera.getViewProj(), world, this.wvp);
+			
+			mesh.getVertices().bind();
+			mesh.getIndices().bind();
+			mesh.getMaterial().applyTo(this.gbufferShader);
+			this.gbufferShader.setUniform("uMatrices.world", world);
+			this.gbufferShader.setUniform("uMatrices.wvp", this.wvp);
+			
+			glDrawElements(GL_TRIANGLES, mesh.getIndices().getSize(), GL_UNSIGNED_INT, 0);
+			
 			IndexBuffer.unbind();
 			VertexBuffer.unbind();
 			Texture.unbind();
 			Texture.unbind(1);
+			Texture.unbind(2);
+			
+			node.getChildren().stream().forEach(this::renderSceneNode);
 		}
 		
 		private void renderDeferred() {
@@ -303,9 +326,10 @@ public class DeferredRenderingSample {
 		
 		@Override
 		public void destroy() {
+			this.floor.destroy();
+			this.sphere.destroy();
 			this.gbufferShader.destroy();
 			this.deferredShader.destroy();
-			this.plane.destroy();
 			this.gbuffer.destroy();
 			this.indexBuffer.destroy();
 			this.vertexBuffer.destroy();
