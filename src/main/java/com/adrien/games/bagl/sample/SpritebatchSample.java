@@ -53,7 +53,7 @@ public class SpritebatchSample {
 			this.texture = new Texture(new File(TestGame.class.getResource("/default.png").getFile()).getAbsolutePath(),
 					new TextureParameters());
 			
-			this.font = new Font(FileUtils.getResourceAbsolutePath("/fonts/default.ttf"), 40);
+			this.font = new Font(FileUtils.getResourceAbsolutePath("/fonts/arial.ttf"), 40);
 			this.xTextPos = this.width/2 - this.font.getTextWidth(HELLO_WORLD)/2;
 			
 			Random r = new Random();
