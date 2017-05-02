@@ -3,6 +3,7 @@ package com.adrien.games.bagl.rendering.scene;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 import com.adrien.games.bagl.core.Transform;
 
@@ -63,6 +64,16 @@ public class SceneNode<T> {
 	public void removeChild(SceneNode<T> child) {
 		this.children.remove(child);
 		child.parent = null;
+	}
+	
+	/**
+	 * Applies a consumer on every node of the tree, starting 
+	 * with this node.
+	 * @param consumer The consumer to apply.
+	 */
+	public void apply(Consumer<SceneNode<T>> consumer) {
+		consumer.accept(this);
+		this.children.stream().forEach(consumer);
 	}
 	
 	/**
