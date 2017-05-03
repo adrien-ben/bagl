@@ -111,4 +111,11 @@ public class SceneNodeTest {
 		
 		MatcherAssert.assertThat(child.getLocalTransform().getScale(), IsEqual.equalTo(new Vector3(3f, 3f, 3f)));
 	}
+	
+	@Test
+	public void itShouldBeEmpty() {
+		final SceneNode<Integer> parent = new SceneNode<Integer>();
+		
+		MatcherAssert.assertThat(parent.isEmpty(), Is.is(true));
+	}
 }

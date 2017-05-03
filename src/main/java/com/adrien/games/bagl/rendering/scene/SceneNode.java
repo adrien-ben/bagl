@@ -35,6 +35,10 @@ public class SceneNode<T> {
 	 */
 	private final List<SceneNode<T>> children;
 	
+	public SceneNode() {
+		this(null);
+	}
+	
 	public SceneNode(T t) {
 		this.localTransform = new Transform();
 		this.transform = new Transform();
@@ -83,6 +87,15 @@ public class SceneNode<T> {
 	 */
 	public boolean isRoot() {
 		return Objects.isNull(parent);
+	}
+	
+	/**
+	 * <p>Checks whether this node is empty.
+	 * <p>An empty node is a node whose data is null.
+	 * @return <code>true</code> if empty, <code>false</code> otherwise.
+	 */
+	public boolean isEmpty() {
+		return Objects.isNull(this.t);
 	}
 	
 	/**
