@@ -229,6 +229,10 @@ public class DeferredRenderingSample {
 		}
 		
 		private void renderSceneNode(SceneNode<Mesh> node) {
+			if(node.isEmpty()) {
+				return;
+			}
+			
 			final Matrix4 world = node.getTransform().getTransformMatrix();
 			final Mesh mesh = node.get();
 			
