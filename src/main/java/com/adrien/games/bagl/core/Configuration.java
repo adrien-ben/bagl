@@ -15,6 +15,7 @@ import org.apache.logging.log4j.Logger;
  * <ul>
  * <li>resolution.x (integer): resolution of the window alongside the x-axis.
  * <li>resolution.y (integer): resolution of the window alongside the y-axis.
+ * <li>anisotropic (integer): level of anisotropic filtering.
  *
  */
 public class Configuration {
