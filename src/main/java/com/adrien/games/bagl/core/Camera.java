@@ -1,9 +1,16 @@
 package com.adrien.games.bagl.core;
 
 import com.adrien.games.bagl.core.math.Matrix4;
+import com.adrien.games.bagl.core.math.Quaternion;
 import com.adrien.games.bagl.core.math.Vector3;
 
+/**
+ * 3D camera class.
+ *
+ */
 public class Camera {
+	
+	private static final Matrix4 buffer = Matrix4.createZero();
 	
 	private Vector3 position;
 	private Vector3 direction;
@@ -17,6 +24,7 @@ public class Camera {
 	private Matrix4 projection;
 	private Matrix4 view;
 	private Matrix4 viewProj;
+	private Matrix4 viewProjAtOrigin;
 	
 	private boolean dirtyProj;
 	private boolean dirtyView;
@@ -31,12 +39,71 @@ public class Camera {
 		this.zNear = zNear;
 		this.zFar = zFar;
 		
-		this.projection = Matrix4.createPerspective(fov, aspectRatio, zNear, zFar);
+		this.projection = Matrix4.createPerspective(this.fov, aspectRatio, zNear, zFar);
 		this.view = Matrix4.createLookAt(position, Vector3.add(position, direction), up);
-		this.viewProj = Matrix4.mul(projection, view);
+		this.viewProj = Matrix4.mul(this.projection, this.view);
+		this.viewProjAtOrigin = Matrix4.createZero();
 		
 		this.dirtyProj = false;
 		this.dirtyView = false;
+	}
+
+	/**
+	 * Rotates the camera.
+	 * @param rotation The rotation quaternion.
+	 * @return This for chaining.
+	 */
+	public Camera rotate(Quaternion rotation) {
+		buffer.setRotation(rotation);
+		this.direction.transform(buffer, 0);		
+		this.dirtyView = true;
+		return this;
+	}
+
+	/**
+	 * Returns the projection matrix.
+	 * @return The projection matrix.
+	 */
+	public Matrix4 getProjection() {
+		if(this.dirtyProj) {
+			this.projection.setPerspective(this.fov, this.aspectRatio, this.zNear, this.zFar);
+			this.dirtyProj = false;
+		}
+		return this.projection;
+	}
+
+	/**
+	 * Returns the view matrix.
+	 * @return The view matrix.
+	 */
+	public Matrix4 getView() {
+		if(this.dirtyView) {
+			this.view.setLookAt(this.position, Vector3.add(this.position, this.direction), this.up);
+			this.dirtyView = false;
+		}
+		return this.view;
+	}
+
+	/**
+	 * Returns a matrix which is the product of view and projection
+	 * matrices.
+	 * @return The view/projection matrix.
+	 */
+	public Matrix4 getViewProj() {
+		if(this.dirtyProj || this.dirtyView) {
+			Matrix4.mul(this.getProjection(), this.getView(), this.viewProj);
+		}
+		return this.viewProj;
+	}
+	
+	/**
+	 * Returns a matrix which is the product of view and projection
+	 * matrices with the camera positioned at the origin (0, 0, 0).
+	 * @return The view/projection matrix at origin.
+	 */
+	public Matrix4 getViewProjAtOrigin() {
+		this.getViewProj().removeTranslation(this.viewProjAtOrigin);
+		return this.viewProjAtOrigin;
 	}
 
 	public Vector3 getPosition() {
@@ -50,43 +117,20 @@ public class Camera {
 	public Vector3 getUp() {
 		return up;
 	}
-
-	public Matrix4 getProjection() {
-		if(dirtyProj) {
-			projection.setPerspective(fov, aspectRatio, zNear, zFar);
-			dirtyProj = false;
-		}
-		return projection;
-	}
-
-	public Matrix4 getView() {
-		if(dirtyView) {
-			view.setLookAt(position, Vector3.add(position, direction), up);
-			dirtyView = false;
-		}
-		return view;
-	}
-
-	public Matrix4 getViewProj() {
-		if(dirtyProj || dirtyView) {
-			Matrix4.mul(getProjection(), getView(), viewProj);
-		}
-		return viewProj;
-	}
-
+	
 	public void setPosition(Vector3 position) {
 		this.position = position;
-		dirtyView = true;
+		this.dirtyView = true;
 	}
 
 	public void setDirection(Vector3 direction) {
 		this.direction = direction;
-		dirtyView = true;
+		this.dirtyView = true;
 	}
 
 	public void setUp(Vector3 up) {
 		this.up = up;
-		dirtyView = true;
+		this.dirtyView = true;
 	}
 
 }
