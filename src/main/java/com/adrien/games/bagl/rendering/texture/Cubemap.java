@@ -64,6 +64,7 @@ public class Cubemap {
 	 * Binds the cube map.
 	 */
 	public void bind() {
+		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, this.handle);
 	}
 	
