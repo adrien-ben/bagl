@@ -1,6 +1,11 @@
 package com.adrien.games.bagl.sample;
 
-import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
+import static org.lwjgl.opengl.GL11.GL_DEPTH_TEST;
+import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
+import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
+import static org.lwjgl.opengl.GL11.glDrawElements;
+import static org.lwjgl.opengl.GL11.glEnable;
 
 import java.io.File;
 
@@ -9,7 +14,7 @@ import com.adrien.games.bagl.core.Configuration;
 import com.adrien.games.bagl.core.Engine;
 import com.adrien.games.bagl.core.Game;
 import com.adrien.games.bagl.core.Time;
-import com.adrien.games.bagl.core.math.Matrix4;
+import com.adrien.games.bagl.core.math.Quaternion;
 import com.adrien.games.bagl.core.math.Vector3;
 import com.adrien.games.bagl.rendering.IndexBuffer;
 import com.adrien.games.bagl.rendering.Shader;
@@ -29,8 +34,6 @@ public class SkyboxSample {
 		private Skybox skybox;
 		private Shader shader;
 		private Camera camera;
-		
-		private Matrix4 transform;
 		
 		@Override
 		public void init() {
@@ -52,8 +55,6 @@ public class SkyboxSample {
 					this.getResourcePath("/skybox/back.png"),
 					this.getResourcePath("/skybox/front.png"));
 			
-			this.transform = new Matrix4();
-			
 			glEnable(GL_DEPTH_TEST);
 			glEnable(GL_CULL_FACE);
 		}
@@ -63,20 +64,17 @@ public class SkyboxSample {
 		}
 		
 		@Override
-		public void update(Time time) {
-			Matrix4.mul(this.camera.getViewProj(), Matrix4.createRotation(Vector3.UP, 
-					(float)Math.toRadians(5*time.getElapsedTime())), this.camera.getViewProj());
-			this.camera.getViewProj().removeTranslation(transform);
+		public void update(Time time) {			
+			this.camera.rotate(Quaternion.fromAngleAndVector((float)Math.toRadians(-5*time.getElapsedTime()), Vector3.UP));
 		}
 
 		@Override
 		public void render() {
-			
 			this.skybox.getVertexBuffer().bind();
 			this.skybox.getIndexBuffer().bind();
 			this.skybox.getCubemap().bind();
 			this.shader.bind();
-			this.shader.setUniform("viewProj", transform);
+			this.shader.setUniform("viewProj", this.camera.getViewProjAtOrigin());
 
 			glDrawElements(GL_TRIANGLES, this.skybox.getIndexBuffer().getSize(), GL_UNSIGNED_INT, 0);
 			
