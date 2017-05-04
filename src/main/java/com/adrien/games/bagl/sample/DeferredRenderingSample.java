@@ -1,14 +1,6 @@
 package com.adrien.games.bagl.sample;
 
-import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
-import static org.lwjgl.opengl.GL11.GL_DEPTH_TEST;
-import static org.lwjgl.opengl.GL11.GL_POINTS;
-import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
-import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
-import static org.lwjgl.opengl.GL11.glDrawArrays;
-import static org.lwjgl.opengl.GL11.glDrawElements;
-import static org.lwjgl.opengl.GL11.glEnable;
-import static org.lwjgl.opengl.GL11.glPointSize;
+import static org.lwjgl.opengl.GL11.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +23,7 @@ import com.adrien.games.bagl.rendering.FrameBuffer;
 import com.adrien.games.bagl.rendering.IndexBuffer;
 import com.adrien.games.bagl.rendering.Mesh;
 import com.adrien.games.bagl.rendering.Shader;
+import com.adrien.games.bagl.rendering.Skybox;
 import com.adrien.games.bagl.rendering.Spritebatch;
 import com.adrien.games.bagl.rendering.VertexBuffer;
 import com.adrien.games.bagl.rendering.light.Attenuation;
@@ -39,10 +32,12 @@ import com.adrien.games.bagl.rendering.light.Light;
 import com.adrien.games.bagl.rendering.light.PointLight;
 import com.adrien.games.bagl.rendering.light.SpotLight;
 import com.adrien.games.bagl.rendering.scene.SceneNode;
+import com.adrien.games.bagl.rendering.texture.Cubemap;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.vertex.Vertex;
 import com.adrien.games.bagl.rendering.vertex.VertexPositionColor;
 import com.adrien.games.bagl.rendering.vertex.VertexPositionTexture;
+import com.adrien.games.bagl.utils.FileUtils;
 import com.adrien.games.bagl.utils.MeshFactory;
 
 public class DeferredRenderingSample {
@@ -56,6 +51,7 @@ public class DeferredRenderingSample {
 		
 		private FrameBuffer gbuffer;
 		
+		private Skybox skybox;
 		private Mesh floor;
 		private Mesh sphere;
 		private SceneNode<Mesh> scene;
@@ -70,6 +66,7 @@ public class DeferredRenderingSample {
 		private VertexBuffer vertexBuffer;
 		private IndexBuffer indexBuffer;
 		
+		private Shader skyboxShader;
 		private Shader gbufferShader;
 		private Shader deferredShader;
 		private Shader debugShader;
@@ -108,6 +105,12 @@ public class DeferredRenderingSample {
 		}
 		
 		private void loadMeshes() {
+			this.skybox = new Skybox(FileUtils.getResourceAbsolutePath("/skybox/left.png"),
+					FileUtils.getResourceAbsolutePath("/skybox/right.png"),
+					FileUtils.getResourceAbsolutePath("/skybox/bottom.png"),
+					FileUtils.getResourceAbsolutePath("/skybox/top.png"),
+					FileUtils.getResourceAbsolutePath("/skybox/back.png"),
+					FileUtils.getResourceAbsolutePath("/skybox/front.png"));
 			this.floor = MeshFactory.fromResourceFile("/models/floor/floor.obj");
 			this.sphere = MeshFactory.fromResourceFile("/models/sphere/sphere.obj");
 		}
@@ -120,20 +123,10 @@ public class DeferredRenderingSample {
 		}
 		
 		private void initShaders() {
-			this.gbufferShader = new Shader();
-			this.gbufferShader.addVertexShader("/gbuffer.vert");
-			this.gbufferShader.addFragmentShader("/gbuffer.frag");
-			this.gbufferShader.compile();
-			
-			this.deferredShader = new Shader();
-			this.deferredShader.addVertexShader("/deferred.vert");
-			this.deferredShader.addFragmentShader("/deferred.frag");
-			this.deferredShader.compile();
-			
-			this.debugShader = new Shader();
-			this.debugShader.addVertexShader("/debug.vert");
-			this.debugShader.addFragmentShader("/debug.frag");
-			this.debugShader.compile();
+			this.skyboxShader = new Shader().addVertexShader("/skybox.vert").addFragmentShader("/skybox.frag").compile();
+			this.gbufferShader = new Shader().addVertexShader("/gbuffer.vert").addFragmentShader("/gbuffer.frag").compile();
+			this.deferredShader = new Shader().addVertexShader("/deferred.vert").addFragmentShader("/deferred.frag").compile();
+			this.debugShader = new Shader().addVertexShader("/debug.vert").addFragmentShader("/debug.frag").compile();
 		}
 		
 		private void initLightsPosition() {
@@ -203,29 +196,44 @@ public class DeferredRenderingSample {
 
 		@Override
 		public void render() {
-			
+			this.renderSkybox();
 			this.renderScene();
 			this.renderDeferred();
 			this.renderLightsPositions();
 			
 			if(this.displayGbuffer) {
 				this.spritebatch.start();
+				this.spritebatch.draw(this.gbuffer.getDepthTexture(), new Vector2(0, 2*this.height/3), this.width/3, this.height/3);
 				this.spritebatch.draw(this.gbuffer.getColorTexture(0), Vector2.ZERO, this.width/3, this.height/3);
 				this.spritebatch.draw(this.gbuffer.getColorTexture(1), new Vector2(0, this.height/3), this.width/3, this.height/3);
-				this.spritebatch.draw(this.gbuffer.getDepthTexture(), new Vector2(0, 2*this.height/3), this.width/3, this.height/3);
 				this.spritebatch.end();
 			}
+		}
+		
+		private void renderSkybox() {
+			this.skybox.getVertexBuffer().bind();
+			this.skybox.getIndexBuffer().bind();
+			this.skybox.getCubemap().bind();
+			this.skyboxShader.bind();
+			this.skyboxShader.setUniform("viewProj", this.camera.getViewProjAtOrigin());
 			
+			glDisable(GL_DEPTH_TEST);
+			glDrawElements(GL_TRIANGLES, this.skybox.getIndexBuffer().getSize(), GL_UNSIGNED_INT, 0);
+			glEnable(GL_DEPTH_TEST);
+			
+			Shader.unbind();
+			Cubemap.unbind();
+			IndexBuffer.unbind();
+			VertexBuffer.unbind();
 		}
 		
 		private void renderScene() {
-			this.gbufferShader.bind();
 			this.gbuffer.bind();
 			FrameBuffer.clear();
+			this.gbufferShader.bind();			
 			this.scene.apply(this::renderSceneNode);
-			this.renderSceneNode(this.scene);
-			FrameBuffer.unbind();
 			Shader.unbind();
+			FrameBuffer.unbind();
 		}
 		
 		private void renderSceneNode(SceneNode<Mesh> node) {
@@ -329,8 +337,11 @@ public class DeferredRenderingSample {
 		
 		@Override
 		public void destroy() {
+			this.skybox.destroy();
 			this.floor.destroy();
 			this.sphere.destroy();
+			this.skyboxShader.destroy();
+			this.debugShader.destroy();
 			this.gbufferShader.destroy();
 			this.deferredShader.destroy();
 			this.gbuffer.destroy();
