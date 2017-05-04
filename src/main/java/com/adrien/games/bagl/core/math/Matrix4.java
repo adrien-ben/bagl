@@ -322,6 +322,16 @@ public final class Matrix4 {
 	}
 	
 	/**
+	 * Multiplies this matrix with another.
+	 * @param other The matrix to multiply this one with.
+	 * @return This for chaining.
+	 */
+	public Matrix4 mul(Matrix4 other) {
+		Matrix4.mul(this, other, this);
+		return this;
+	}
+	
+	/**
 	 * Multiplies two matrices as follows : left*right.
 	 * @param left The left matrix. Will not be changed.
 	 * @param right The right matrix. Will not be changed.
