@@ -7,7 +7,7 @@ import com.adrien.games.bagl.rendering.vertex.VertexPosition;
 
 public class Skybox {
 
-	private final static float SKYBOX_HALF_SIZE = 10f;
+	private final static float SKYBOX_HALF_SIZE = 2f;
 	
 	private final VertexBuffer vertexBuffer;
 	private final IndexBuffer indexBuffer;
