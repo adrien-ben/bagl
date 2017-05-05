@@ -298,30 +298,6 @@ public final class Matrix4 {
 	}
 	
 	/**
-	 * Removes the translation component of this matrix.
-	 * @return a new matrix
-	 */
-	public Matrix4 removeTranslation() {
-		final Matrix4 result = new Matrix4();
-		this.removeTranslation(result);
-		return result;
-	}
-	
-	/**
-	 * Removes the translation component of this matrix and
-	 * stores the result in another matrix. This matrix is
-	 * not changed.
-	 * @param result The matrix where to store the result.
-	 */
-	public void removeTranslation(Matrix4 result) {
-		result.set(this);
-		result.setM14(0);
-		result.setM24(0);
-		result.setM34(0);
-		result.setM44(1);
-	}
-	
-	/**
 	 * Multiplies this matrix with another.
 	 * @param other The matrix to multiply this one with.
 	 * @return This for chaining.
