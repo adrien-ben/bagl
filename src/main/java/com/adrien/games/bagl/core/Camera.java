@@ -56,6 +56,7 @@ public class Camera {
 	public Camera rotate(Quaternion rotation) {
 		buffer.setRotation(rotation);
 		this.direction.transform(buffer, 0);		
+		this.up.transform(buffer, 0);		
 		this.dirtyView = true;
 		return this;
 	}
