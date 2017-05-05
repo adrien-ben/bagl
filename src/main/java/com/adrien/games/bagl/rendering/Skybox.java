@@ -7,6 +7,8 @@ import com.adrien.games.bagl.rendering.vertex.VertexPosition;
 
 public class Skybox {
 
+	private final static float SKYBOX_HALF_SIZE = 10f;
+	
 	private final VertexBuffer vertexBuffer;
 	private final IndexBuffer indexBuffer;
 	private final Cubemap cubemap;
@@ -40,14 +42,14 @@ public class Skybox {
 
 	private static VertexBuffer initVertices() {
 		Vertex[] vertices = new VertexPosition[] {
-				new VertexPosition(new Vector3(-2f, -2f, 2f)),
-				new VertexPosition(new Vector3(2f, -2f, 2f)),
-				new VertexPosition(new Vector3(-2f, 2f, 2f)),
-				new VertexPosition(new Vector3(2f, 2f, 2f)),
-				new VertexPosition(new Vector3(-2f, -2f, -2f)),
-				new VertexPosition(new Vector3(2f, -2f, -2f)),
-				new VertexPosition(new Vector3(-2f, 2f, -2f)),
-				new VertexPosition(new Vector3(2f, 2f, -2f))
+				new VertexPosition(new Vector3(-SKYBOX_HALF_SIZE, -SKYBOX_HALF_SIZE, SKYBOX_HALF_SIZE)),
+				new VertexPosition(new Vector3(SKYBOX_HALF_SIZE, -SKYBOX_HALF_SIZE, SKYBOX_HALF_SIZE)),
+				new VertexPosition(new Vector3(-SKYBOX_HALF_SIZE, SKYBOX_HALF_SIZE, SKYBOX_HALF_SIZE)),
+				new VertexPosition(new Vector3(SKYBOX_HALF_SIZE, SKYBOX_HALF_SIZE, SKYBOX_HALF_SIZE)),
+				new VertexPosition(new Vector3(-SKYBOX_HALF_SIZE, -SKYBOX_HALF_SIZE, -SKYBOX_HALF_SIZE)),
+				new VertexPosition(new Vector3(SKYBOX_HALF_SIZE, -SKYBOX_HALF_SIZE, -SKYBOX_HALF_SIZE)),
+				new VertexPosition(new Vector3(-SKYBOX_HALF_SIZE, SKYBOX_HALF_SIZE, -SKYBOX_HALF_SIZE)),
+				new VertexPosition(new Vector3(SKYBOX_HALF_SIZE, SKYBOX_HALF_SIZE, -SKYBOX_HALF_SIZE))
 		};
 		return new VertexBuffer(VertexPosition.DESCRIPTION, vertices);
 	}
