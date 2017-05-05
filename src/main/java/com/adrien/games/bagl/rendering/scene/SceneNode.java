@@ -13,7 +13,7 @@ import com.adrien.games.bagl.core.Transform;
  */
 public class SceneNode<T> {
 
-	private final T t;
+	private T t;
 	
 	/**
 	 * The local transform of this node.
@@ -126,6 +126,10 @@ public class SceneNode<T> {
 
 	public T get() {
 		return t;
+	}
+	
+	public void set(T t) {
+		this.t = t;
 	}
 	
 	public SceneNode<T> getParent() {

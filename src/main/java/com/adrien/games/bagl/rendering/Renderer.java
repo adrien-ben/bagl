@@ -7,12 +7,10 @@ import static org.lwjgl.opengl.GL11.glDisable;
 import static org.lwjgl.opengl.GL11.glDrawElements;
 import static org.lwjgl.opengl.GL11.glEnable;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 import com.adrien.games.bagl.core.Camera;
-import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.core.Configuration;
 import com.adrien.games.bagl.core.math.Matrix4;
 import com.adrien.games.bagl.core.math.Vector2;
@@ -21,6 +19,7 @@ import com.adrien.games.bagl.rendering.light.DirectionalLight;
 import com.adrien.games.bagl.rendering.light.Light;
 import com.adrien.games.bagl.rendering.light.PointLight;
 import com.adrien.games.bagl.rendering.light.SpotLight;
+import com.adrien.games.bagl.rendering.scene.Scene;
 import com.adrien.games.bagl.rendering.scene.SceneNode;
 import com.adrien.games.bagl.rendering.texture.Cubemap;
 import com.adrien.games.bagl.rendering.texture.Texture;
@@ -45,11 +44,6 @@ public class Renderer {
 	
 	private final Matrix4 wvpBuffer;
 	
-	private Light ambient;
-	private final List<DirectionalLight> directionals;
-	private final List<PointLight> points;
-	private final List<SpotLight> spots;
-	
 	private VertexBuffer vertexBuffer;
 	private IndexBuffer indexBuffer;
 	private final FrameBuffer gbuffer;
@@ -58,7 +52,6 @@ public class Renderer {
 	private Shader gbufferShader;
 	private Shader deferredShader;
 	
-	private Skybox skybox;
 	
 	public Renderer() {
 		final Configuration config = Configuration.getInstance();
@@ -66,11 +59,6 @@ public class Renderer {
 		this.yResolution = config.getYResolution();
 		
 		this.wvpBuffer = Matrix4.createZero();
-		
-		this.ambient = new Light(1f, Color.WHITE);
-		this.directionals = new ArrayList<>();
-		this.points = new ArrayList<>();
-		this.spots = new ArrayList<>();
 
 		this.initFullScreenQuad();
 		this.gbuffer = new FrameBuffer(this.xResolution, this.yResolution, 2);
@@ -98,23 +86,24 @@ public class Renderer {
 		this.deferredShader = new Shader().addVertexShader(DEFERRED_VERT_SHADER).addFragmentShader(DEFERRED_FRAG_SHADER).compile();
 	}
 	
-	public void render(SceneNode<Mesh> scene, Camera camera) {
-		if(Objects.nonNull(this.skybox)) {			
-			this.renderSkybox(camera);
-		}
-		this.renderScene(scene, camera);
-		this.renderDeferred(camera);
+	public void render(Scene scene, Camera camera) {		
+		this.renderSkybox(scene.getSkybox(), camera);
+		this.renderScene(scene.getRoot(), camera);
+		this.renderDeferred(scene, camera);
 	}
 	
-	private void renderSkybox(Camera camera) {
-		this.skybox.getVertexBuffer().bind();
-		this.skybox.getIndexBuffer().bind();
-		this.skybox.getCubemap().bind();
+	private void renderSkybox(Skybox skybox, Camera camera) {
+		if(Objects.isNull(skybox)) {
+			return;
+		}
+		skybox.getVertexBuffer().bind();
+		skybox.getIndexBuffer().bind();
+		skybox.getCubemap().bind();
 		this.skyboxShader.bind();
 		this.skyboxShader.setUniform("viewProj", camera.getViewProjAtOrigin());
 		
 		glDisable(GL_DEPTH_TEST);
-		glDrawElements(GL_TRIANGLES, this.skybox.getIndexBuffer().getSize(), GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, skybox.getIndexBuffer().getSize(), GL_UNSIGNED_INT, 0);
 		glEnable(GL_DEPTH_TEST);
 		
 		Shader.unbind();
@@ -157,7 +146,12 @@ public class Renderer {
 		Texture.unbind(2);
 	}
 	
-	private void renderDeferred(Camera camera) {
+	private void renderDeferred(Scene scene, Camera camera) {
+		
+		final Light ambient = scene.getAmbient();
+		final List<DirectionalLight> directionals = scene.getDirectionals();
+		final List<PointLight> points = scene.getPoints();
+		final List<SpotLight> spots = scene.getSpots();
 		
 		this.gbuffer.getColorTexture(0).bind(0);
 		this.gbuffer.getColorTexture(1).bind(1);
@@ -167,16 +161,16 @@ public class Renderer {
 		this.deferredShader.bind();
 		this.deferredShader.setUniform("uCamera.vp", camera.getViewProj());
 		this.deferredShader.setUniform("uCamera.position", camera.getPosition());
-		this.deferredShader.setUniform("uAmbient.intensity", this.ambient.getIntensity());
-		this.deferredShader.setUniform("uAmbient.color", this.ambient.getColor());
-		for(int i = 0; i < this.directionals.size(); i++) {				
-			this.setDirectionalLight(this.deferredShader, i, this.directionals.get(i));
+		this.deferredShader.setUniform("uAmbient.intensity", ambient.getIntensity());
+		this.deferredShader.setUniform("uAmbient.color", ambient.getColor());
+		for(int i = 0; i < directionals.size(); i++) {				
+			this.setDirectionalLight(this.deferredShader, i, directionals.get(i));
 		}
-		for(int i = 0; i < this.points.size(); i++) {
-			this.setPointLight(this.deferredShader, i, this.points.get(i));
+		for(int i = 0; i < points.size(); i++) {
+			this.setPointLight(this.deferredShader, i, points.get(i));
 		}
-		for(int i = 0; i < this.spots.size(); i++) {
-			this.setSpotLight(this.deferredShader, i, this.spots.get(i));
+		for(int i = 0; i < spots.size(); i++) {
+			this.setSpotLight(this.deferredShader, i, spots.get(i));
 		}
 		this.deferredShader.setUniform("uGBuffer.colors", 0);
 		this.deferredShader.setUniform("uGBuffer.normals", 1);
@@ -223,7 +217,6 @@ public class Renderer {
 	}
 	
 	public void destroy() {
-		this.skybox.destroy();
 		this.skyboxShader.destroy();
 		this.gbufferShader.destroy();
 		this.deferredShader.destroy();
@@ -232,28 +225,8 @@ public class Renderer {
 		this.vertexBuffer.destroy();
 	}
 	
-	public void setSkybox(Skybox skybox) {
-		this.skybox = skybox;
-	}
-	
-	public void setAmbientLight(Light ambient) {
-		this.ambient = ambient;
-	}
-	
 	public FrameBuffer getGBuffer() {
 		return this.gbuffer;
-	}
-	
-	public List<DirectionalLight> getDirectionals() {
-		return directionals;
-	}
-
-	public List<PointLight> getPoints() {
-		return points;
-	}
-
-	public List<SpotLight> getSpots() {
-		return spots;
 	}
 	
 }
