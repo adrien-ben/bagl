@@ -1,4 +1,4 @@
-package com.adrien.games.bagl.parser;
+package com.adrien.games.bagl.parser.glsl;
 
 public class GLSLAttribute {
 	
