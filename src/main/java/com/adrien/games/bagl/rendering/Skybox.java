@@ -37,7 +37,7 @@ public class Skybox {
 				6, 7, 2, 2, 7, 3,
 				0, 1, 4, 4, 1, 5
 			};
-		return new IndexBuffer(indices);
+		return new IndexBuffer(BufferUsage.STATIC_DRAW, indices);
 	}
 
 	private static VertexBuffer initVertices() {
@@ -51,7 +51,7 @@ public class Skybox {
 				new VertexPosition(new Vector3(-SKYBOX_HALF_SIZE, SKYBOX_HALF_SIZE, -SKYBOX_HALF_SIZE)),
 				new VertexPosition(new Vector3(SKYBOX_HALF_SIZE, SKYBOX_HALF_SIZE, -SKYBOX_HALF_SIZE))
 		};
-		return new VertexBuffer(VertexPosition.DESCRIPTION, vertices);
+		return new VertexBuffer(VertexPosition.DESCRIPTION, BufferUsage.STATIC_DRAW, vertices);
 	}
 
 	/**

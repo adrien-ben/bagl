@@ -16,6 +16,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.adrien.games.bagl.core.math.Vector2;
 import com.adrien.games.bagl.core.math.Vector3;
+import com.adrien.games.bagl.rendering.BufferUsage;
 import com.adrien.games.bagl.rendering.IndexBuffer;
 import com.adrien.games.bagl.rendering.Material;
 import com.adrien.games.bagl.rendering.Mesh;
@@ -150,8 +151,8 @@ public class ObjParser implements ModelParser {
 			indexArray[i] = this.faceIndices.get(i);
 		}
 		
-		VertexBuffer vertexBuffer = new VertexBuffer(MeshVertex.DESCRIPTION, vertexArray);
-		IndexBuffer indexBuffer = new IndexBuffer(indexArray);
+		VertexBuffer vertexBuffer = new VertexBuffer(MeshVertex.DESCRIPTION, BufferUsage.STATIC_DRAW, vertexArray);
+		IndexBuffer indexBuffer = new IndexBuffer(BufferUsage.STATIC_DRAW, indexArray);
 		return new Mesh(vertexBuffer, indexBuffer, this.usedMaterial);
 	}
 	

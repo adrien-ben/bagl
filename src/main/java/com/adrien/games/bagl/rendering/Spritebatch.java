@@ -60,7 +60,7 @@ public class Spritebatch {
 		this.spriteShader = this.createShader(SPRITE_VERTEX_SHADER, SPRITE_FRAGMENT_SHADER);
 		this.textShader = this.createShader(TEXT_VERTEX_SHADER, TEXT_FRAGMENT_SHADER);
 		this.size = size < MAX_SIZE ? size : MAX_SIZE;
-		this.vertexBuffer = new VertexBuffer(VertexPositionColorTexture.DESCRIPTION, this.size*VERTICES_PER_SPRITE);
+		this.vertexBuffer = new VertexBuffer(VertexPositionColorTexture.DESCRIPTION, BufferUsage.STATIC_DRAW, this.size*VERTICES_PER_SPRITE);
 		this.vertices = this.initVertices(this.size);
 		this.indexBuffer = this.initIndexBuffer(this.size);
 		this.drawnSprites = 0;
@@ -92,7 +92,7 @@ public class Spritebatch {
 			indices[offset + 4] = firstIndex + 1;
 			indices[offset + 5] = firstIndex + 3;
 		}
-		return new IndexBuffer(indices);
+		return new IndexBuffer(BufferUsage.STATIC_DRAW, indices);
 	}
 	
 	/**

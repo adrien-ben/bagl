@@ -76,8 +76,8 @@ public class Renderer {
 
 		final int[] indices = new int[]{0, 1, 2, 2, 1, 3};
 		
-		this.indexBuffer = new IndexBuffer(indices);
-		this.vertexBuffer = new VertexBuffer(VertexPositionTexture.DESCRIPTION, vertices);
+		this.indexBuffer = new IndexBuffer(BufferUsage.STATIC_DRAW, indices);
+		this.vertexBuffer = new VertexBuffer(VertexPositionTexture.DESCRIPTION, BufferUsage.STATIC_DRAW, vertices);
 	}
 	
 	private void initShaders() {

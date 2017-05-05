@@ -7,6 +7,7 @@ import com.adrien.games.bagl.core.math.Vector2;
 import com.adrien.games.bagl.core.math.Vector3;
 import com.adrien.games.bagl.parser.model.ModelParser;
 import com.adrien.games.bagl.parser.model.ObjParser;
+import com.adrien.games.bagl.rendering.BufferUsage;
 import com.adrien.games.bagl.rendering.IndexBuffer;
 import com.adrien.games.bagl.rendering.Material;
 import com.adrien.games.bagl.rendering.Mesh;
@@ -48,8 +49,8 @@ public final class MeshFactory {
 
 		int[] indices = new int[]{0, 1, 2, 2, 1, 3, 4, 5, 6, 6, 7, 4, 8, 9, 10, 10, 11, 8};
 		
-		IndexBuffer indexBuffer = new IndexBuffer(indices);
-		VertexBuffer vertexBuffer = new VertexBuffer(VertexPositionNormalTexture.DESCRIPTION, vertices);
+		IndexBuffer indexBuffer = new IndexBuffer(BufferUsage.STATIC_DRAW, indices);
+		VertexBuffer vertexBuffer = new VertexBuffer(VertexPositionNormalTexture.DESCRIPTION, BufferUsage.STATIC_DRAW, vertices);
 		
 		Material material = MaterialFactory.createDiffuseMap(texture, 0.1f, 32.0f);
 		return new Mesh(vertexBuffer, indexBuffer, material);
@@ -70,8 +71,8 @@ public final class MeshFactory {
 		
 		int[] indices = new int[]{0, 1, 2, 2, 1, 3};
 		
-		IndexBuffer indexBuffer = new IndexBuffer(indices);
-		VertexBuffer vertexBuffer = new VertexBuffer(VertexPositionNormalTexture.DESCRIPTION, vertices);
+		IndexBuffer indexBuffer = new IndexBuffer(BufferUsage.STATIC_DRAW, indices);
+		VertexBuffer vertexBuffer = new VertexBuffer(VertexPositionNormalTexture.DESCRIPTION, BufferUsage.STATIC_DRAW, vertices);
 		
 		Material material = MaterialFactory.createDiffuseMap(texture, 0.4f, 2f);
 		return new Mesh(vertexBuffer, indexBuffer, material);
@@ -129,8 +130,8 @@ public final class MeshFactory {
 			20, 21, 22, 22, 21, 23
 		};
 		
-		IndexBuffer indexBuffer = new IndexBuffer(indices);
-		VertexBuffer vertexBuffer = new VertexBuffer(VertexPositionNormalTexture.DESCRIPTION, vertices);
+		IndexBuffer indexBuffer = new IndexBuffer(BufferUsage.STATIC_DRAW, indices);
+		VertexBuffer vertexBuffer = new VertexBuffer(VertexPositionNormalTexture.DESCRIPTION, BufferUsage.STATIC_DRAW, vertices);
 		
 		Material material = MaterialFactory.createDiffuseMap(texture, 1.0f, 256.0f);
 		return new Mesh(vertexBuffer, indexBuffer, material);

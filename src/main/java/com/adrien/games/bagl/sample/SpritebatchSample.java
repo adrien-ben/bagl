@@ -28,7 +28,7 @@ public class SpritebatchSample {
 	private static final class TestGame implements Game {
 		
 		private static final String TITLE = "Spritebatch";
-		private static final int SPRITE_COUNT = 10000;
+		private static final int SPRITE_COUNT = 100000;
 		private static final String HELLO_WORLD = "Hello World ! :)";
 
 		private int width;
