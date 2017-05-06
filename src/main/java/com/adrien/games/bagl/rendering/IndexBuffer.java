@@ -1,8 +1,5 @@
 package com.adrien.games.bagl.rendering;
 
-import java.nio.IntBuffer;
-
-import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL15;
 
 /**
@@ -45,12 +42,8 @@ public final class IndexBuffer {
 			throw new IllegalArgumentException("Too much indices");
 		}
 		
-		final IntBuffer buffer = BufferUtils.createIntBuffer(this.size);
-		buffer.put(indices);
-		buffer.flip();
-		
 		this.bind();
-		GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, buffer, this.usage.getGlCode());
+		GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, indices, this.usage.getGlCode());
 		unbind();
 	}
 	

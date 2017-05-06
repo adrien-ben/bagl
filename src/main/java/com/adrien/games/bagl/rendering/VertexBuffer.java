@@ -1,8 +1,5 @@
 package com.adrien.games.bagl.rendering;
 
-import java.nio.FloatBuffer;
-
-import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
@@ -17,12 +14,13 @@ import com.adrien.games.bagl.rendering.vertex.VertexElement;
  *
  */
 public final class VertexBuffer {
-		
+	
 	private final VertexDescription description;
 	private final BufferUsage usage;
 	private final int vertexCount;
 	private final int vaoHandle;
 	private final int vboHandle;
+	private final float[] buffer;
 	
 	public VertexBuffer(VertexDescription description, BufferUsage usage, int size) {
 		this.description = description;
@@ -30,6 +28,7 @@ public final class VertexBuffer {
 		this.vertexCount = size;
 		this.vaoHandle = GL30.glGenVertexArrays();
 		this.vboHandle = GL15.glGenBuffers();
+		this.buffer = new float[this.vertexCount*this.description.getStride()];
 	}
 	
 	public VertexBuffer(VertexDescription description, BufferUsage usage, Vertex[] vertices) {
@@ -49,11 +48,12 @@ public final class VertexBuffer {
 		
 		final int stride = this.description.getStride();
 		
-		final FloatBuffer buffer = BufferUtils.createFloatBuffer(limit*stride);
 		for(int i = 0; i < limit; i++) {
-			buffer.put(vertices[i].getData());
+			final float[] data = vertices[i].getData();
+			for(int j = 0; j < data.length; j++) {
+				this.buffer[i*stride + j] = data[j];
+			}
 		}
-		buffer.flip();
 		
 		GL30.glBindVertexArray(this.vaoHandle);
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, this.vboHandle);
