@@ -60,7 +60,7 @@ public class Spritebatch {
 		this.spriteShader = this.createShader(SPRITE_VERTEX_SHADER, SPRITE_FRAGMENT_SHADER);
 		this.textShader = this.createShader(TEXT_VERTEX_SHADER, TEXT_FRAGMENT_SHADER);
 		this.size = size < MAX_SIZE ? size : MAX_SIZE;
-		this.vertexBuffer = new VertexBuffer(VertexPositionColorTexture.DESCRIPTION, BufferUsage.STATIC_DRAW, this.size*VERTICES_PER_SPRITE);
+		this.vertexBuffer = new VertexBuffer(VertexPositionColorTexture.DESCRIPTION, BufferUsage.DYNAMIC_DRAW, this.size*VERTICES_PER_SPRITE);
 		this.vertices = this.initVertices(this.size);
 		this.indexBuffer = this.initIndexBuffer(this.size);
 		this.drawnSprites = 0;
@@ -344,7 +344,6 @@ public class Spritebatch {
 			this.currentTexture.bind();
 			
 			this.vertexBuffer.setData(this.vertices, this.drawnSprites*VERTICES_PER_SPRITE);
-			
 			this.vertexBuffer.bind();
 			this.indexBuffer.bind();
 			
