@@ -28,7 +28,7 @@ import com.adrien.games.bagl.rendering.vertex.VertexPositionTexture;
  */
 public class Spritebatch {
 
-	private static final int MAX_SIZE = 1024;
+	private static final int MAX_SIZE = 4096;
 	private static final int VERTICES_PER_SPRITE = 4;
 	private static final int INDICES_PER_SPRITE = 6;
 	private static final String SPRITE_VERTEX_SHADER = "/sprite.vert";

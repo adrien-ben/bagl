@@ -48,7 +48,7 @@ public class SpritebatchSample {
 			this.width = Configuration.getInstance().getXResolution();
 			this.height = Configuration.getInstance().getYResolution();
 			
-			this.spritebatch = new Spritebatch(512, this.width, this.height);
+			this.spritebatch = new Spritebatch(1024, this.width, this.height);
 			
 			this.texture = new Texture(new File(TestGame.class.getResource("/default.png").getFile()).getAbsolutePath(),
 					new TextureParameters());
