@@ -29,11 +29,31 @@ public final class VertexBuffer {
 		this.vaoHandle = GL30.glGenVertexArrays();
 		this.vboHandle = GL15.glGenBuffers();
 		this.buffer = new float[this.vertexCount*this.description.getStride()];
+		this.init();
 	}
 	
 	public VertexBuffer(VertexDescription description, BufferUsage usage, Vertex[] vertices) {
 		this(description, usage, vertices.length);
 		this.setData(vertices);
+	}
+	
+	private void init() {
+		GL30.glBindVertexArray(this.vaoHandle);
+		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, this.vboHandle);
+		GL15.glBufferData(GL15.GL_ARRAY_BUFFER, this.buffer, this.usage.getGlCode());
+		
+		final int stride = this.description.getStride();
+		for(VertexElement element : this.description.getVertexElements()) {
+			final int location = element.getLocation();
+			final int byteStride = stride*Float.SIZE/8;
+			final int byteOffset = element.getOffset()*Float.SIZE/8;
+			
+			GL20.glEnableVertexAttribArray(location);
+			GL20.glVertexAttribPointer(location, element.getSize(), GL11.GL_FLOAT, false, byteStride, byteOffset);
+		}
+				
+		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+		GL30.glBindVertexArray(0);
 	}
 	
 	/**
@@ -46,30 +66,21 @@ public final class VertexBuffer {
 			throw new IllegalArgumentException("Too much vertices.");
 		}
 		
-		final int stride = this.description.getStride();
+		this.copyDataToBuffer(vertices, limit);
 		
+		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, this.vboHandle);		
+		GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, this.buffer);
+		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+	}
+	
+	private void copyDataToBuffer(Vertex[] vertices, int limit) {
+		final int stride = this.description.getStride();
 		for(int i = 0; i < limit; i++) {
 			final float[] data = vertices[i].getData();
 			for(int j = 0; j < data.length; j++) {
 				this.buffer[i*stride + j] = data[j];
 			}
 		}
-		
-		GL30.glBindVertexArray(this.vaoHandle);
-		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, this.vboHandle);
-		GL15.glBufferData(GL15.GL_ARRAY_BUFFER, buffer, this.usage.getGlCode());
-		
-		for(VertexElement element : this.description.getVertexElements()) {
-			final int location = element.getLocation();
-			final int byteStride = stride*Float.SIZE/8;
-			final int byteOffset = element.getOffset()*Float.SIZE/8;
-			
-			GL20.glEnableVertexAttribArray(location);
-			GL20.glVertexAttribPointer(location, element.getSize(), GL11.GL_FLOAT, false, byteStride, byteOffset);
-		}
-		
-		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
-		GL30.glBindVertexArray(0);
 	}
 	
 	/**

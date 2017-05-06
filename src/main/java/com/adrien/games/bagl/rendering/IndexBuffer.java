@@ -21,6 +21,7 @@ public final class IndexBuffer {
 		this.usage = usage;
 		this.handle = GL15.glGenBuffers();
 		this.size = size;
+		this.init();
 	}
 	
 	/**
@@ -33,6 +34,12 @@ public final class IndexBuffer {
 		this.setData(data);
 	}
 	
+	private void init() {
+		this.bind();
+		GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, new float[this.size], this.usage.getGlCode());
+		unbind();
+	}
+	
 	/**
 	 * Sets the buffer data.
 	 * @param indices The indices to set.
@@ -43,7 +50,7 @@ public final class IndexBuffer {
 		}
 		
 		this.bind();
-		GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, indices, this.usage.getGlCode());
+		GL15.glBufferSubData(GL15.GL_ELEMENT_ARRAY_BUFFER, 0, indices);
 		unbind();
 	}
 	
