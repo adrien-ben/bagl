@@ -1,11 +1,6 @@
 package com.adrien.games.bagl.rendering;
 
-import static org.lwjgl.opengl.GL11.GL_DEPTH_TEST;
-import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
-import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
-import static org.lwjgl.opengl.GL11.glDisable;
-import static org.lwjgl.opengl.GL11.glDrawElements;
-import static org.lwjgl.opengl.GL11.glEnable;
+import static org.lwjgl.opengl.GL11.*;
 
 import java.util.List;
 import java.util.Objects;
@@ -45,7 +40,6 @@ public class Renderer {
 	private final Matrix4 wvpBuffer;
 	
 	private VertexBuffer vertexBuffer;
-	private IndexBuffer indexBuffer;
 	private final FrameBuffer gbuffer;
 	
 	private Shader skyboxShader;
@@ -67,16 +61,12 @@ public class Renderer {
 	}
 	
 	private void initFullScreenQuad() {
-		
 		final Vertex[] vertices = new Vertex[4];
 		vertices[0] = new VertexPositionTexture(new Vector3(-1, -1, 0), new Vector2(0, 0));
 		vertices[1] = new VertexPositionTexture(new Vector3(1, -1, 0), new Vector2(1, 0));
 		vertices[2] = new VertexPositionTexture(new Vector3(-1, 1, 0), new Vector2(0, 1));
 		vertices[3] = new VertexPositionTexture(new Vector3(1, 1, 0), new Vector2(1, 1));
 
-		final int[] indices = new int[]{0, 1, 2, 2, 1, 3};
-		
-		this.indexBuffer = new IndexBuffer(BufferUsage.STATIC_DRAW, indices);
 		this.vertexBuffer = new VertexBuffer(VertexPositionTexture.DESCRIPTION, BufferUsage.STATIC_DRAW, vertices);
 	}
 	
@@ -157,7 +147,6 @@ public class Renderer {
 		this.gbuffer.getColorTexture(1).bind(1);
 		this.gbuffer.getDepthTexture().bind(2);
 		this.vertexBuffer.bind();
-		this.indexBuffer.bind();
 		this.deferredShader.bind();
 		this.deferredShader.setUniform("uCamera.vp", camera.getViewProj());
 		this.deferredShader.setUniform("uCamera.position", camera.getPosition());
@@ -176,10 +165,9 @@ public class Renderer {
 		this.deferredShader.setUniform("uGBuffer.normals", 1);
 		this.deferredShader.setUniform("uGBuffer.depth", 2);
 		
-		glDrawElements(GL_TRIANGLES, this.indexBuffer.getSize(), GL_UNSIGNED_INT, 0);
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, this.vertexBuffer.getVertexCount());
 		
 		Shader.unbind();
-		IndexBuffer.unbind();
 		VertexBuffer.unbind();
 		Texture.unbind(0);
 		Texture.unbind(1);
@@ -221,7 +209,6 @@ public class Renderer {
 		this.gbufferShader.destroy();
 		this.deferredShader.destroy();
 		this.gbuffer.destroy();
-		this.indexBuffer.destroy();
 		this.vertexBuffer.destroy();
 	}
 	
