@@ -23,7 +23,8 @@ public final class Engine {
 		this.game = game;
 		this.window = new Window(title, 
 				this.configuration.getXResolution(), 
-				this.configuration.getYResolution());
+				this.configuration.getYResolution(),
+				this.configuration.getVsync());
 		this.time = new Time();
 		this.isRunning = false;		
 		this.game.init();

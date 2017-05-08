@@ -25,11 +25,13 @@ public class Configuration {
 	private static final String CONFIGURATION_FILE_PATH = "/config.properties";
 	private static final String X_RESOLUTION_KEY = "resolution.x";
 	private static final String Y_RESOLUTION_KEY = "resolution.y";
+	private static final String VSYNC_KEY = "vsync";
 	private static final String ANISOTROPIC_KEY = "anisotropic";
 	
 	private final Properties properties;
 	private final int xResolution;
 	private final int yResolution;
+	private final  boolean vsync;
 	private final int anisotropicLevel;
 	
 	private static Configuration instance; 
@@ -39,6 +41,7 @@ public class Configuration {
 		this.loadFile();
 		this.xResolution = this.readRequiredInt(X_RESOLUTION_KEY);
 		this.yResolution = this.readRequiredInt(Y_RESOLUTION_KEY);
+		this.vsync = this.readRequiredBool(VSYNC_KEY);
 		this.anisotropicLevel = this.readRequiredInt(ANISOTROPIC_KEY);
 	}
 	
@@ -58,6 +61,15 @@ public class Configuration {
 			log.error("Property {} is not a integer or is missing", key);
 			throw new RuntimeException("Property " + key + " is not a integer or is missing");
 		}
+	}
+	
+	private boolean readRequiredBool(final String key) {
+		final String property = this.properties.getProperty(key);
+		if(Objects.isNull(property)) {
+			log.error("Property {} is missing", key);
+			throw new RuntimeException("Property " + key + " is missing");
+		}
+		return Boolean.parseBoolean(property);
 	}
 	
 	/**
@@ -88,6 +100,10 @@ public class Configuration {
 		return this.yResolution;
 	}
 
+	public boolean getVsync() {
+		return this.vsync;
+	}
+	
 	public int getAnisotropicLevel() {
 		return anisotropicLevel;
 	}

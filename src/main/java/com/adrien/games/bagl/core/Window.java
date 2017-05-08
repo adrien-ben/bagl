@@ -12,7 +12,7 @@ public final class Window {
 	private final int height;
 	private final long windowHandle;
 	
-	public Window(String title, int width, int height) {
+	public Window(String title, int width, int height, boolean vsync) {
 		this.title = title;
 		this.width = width;
 		this.height = height;
@@ -29,6 +29,8 @@ public final class Window {
 		GLFW.glfwSetKeyCallback(this.windowHandle, Input::handleInput);
 		
 		GLFW.glfwMakeContextCurrent(this.windowHandle);
+		GLFW.glfwSwapInterval(vsync ? 1 : 0);
+		
 		GL.createCapabilities();
 		GLFW.glfwShowWindow(this.windowHandle);
 	}
