@@ -16,8 +16,6 @@ public class GLSLParser {
 	
 	private String version;
 	private HashMap<String, GLSLStructure> structures;
-	private ArrayList<GLSLAttribute> inAttributes;
-	private ArrayList<GLSLAttribute> outAttributes;
 	private ArrayList<GLSLAttribute> uniformAttributes;
 	private Map<String, GLSLConstant> constants;
 	
@@ -25,8 +23,6 @@ public class GLSLParser {
 
 	public GLSLParser() {
 		this.structures = new HashMap<String, GLSLStructure>();
-		this.inAttributes = new ArrayList<GLSLAttribute>();
-		this.outAttributes = new ArrayList<GLSLAttribute>();
 		this.uniformAttributes = new ArrayList<GLSLAttribute>();
 		this.constants = new HashMap<>();
 		this.uniforms = new ArrayList<String>();
@@ -44,13 +40,7 @@ public class GLSLParser {
 		StringTokenizer tokenizer = new StringTokenizer(glslSource, " \r\n\t=;{");
 		while(tokenizer.hasMoreTokens()) {
 			String token = tokenizer.nextToken();
-			if(token.equals("#version")) {
-				version = tokenizer.nextToken();
-			} else if(token.equals("in")) {
-				inAttributes.add(parseAttribute(tokenizer));
-			} else if(token.equals("out")) {
-				outAttributes.add(parseAttribute(tokenizer));
-			} else if(token.equals("uniform")) {
+			if(token.equals("uniform")) {
 				uniformAttributes.add(parseAttribute(tokenizer));
 			} else if(token.equals("struct")) {
 				GLSLStructure structure = parseStructure(tokenizer);
@@ -181,22 +171,6 @@ public class GLSLParser {
 		}
 		strBldr.append("\n");
 
-		strBldr.append("inputs : \n");
-		for(GLSLAttribute inAttr : inAttributes) {
-			strBldr.append("\t");
-			strBldr.append(inAttr.toString());
-			strBldr.append("\n");
-		}
-		strBldr.append("\n");
-
-		strBldr.append("outputs : \n");
-		for(GLSLAttribute outAttr : outAttributes) {
-			strBldr.append("\t");
-			strBldr.append(outAttr.toString());
-			strBldr.append("\n");
-		}
-		strBldr.append("\n");
-
 		strBldr.append("uniforms : \n");
 		for(GLSLAttribute uniformAttr : uniformAttributes) {
 			strBldr.append("\t");
@@ -221,14 +195,6 @@ public class GLSLParser {
 	
 	public HashMap<String, GLSLStructure> getStructure() { 
 		return structures; 
-	}
-	
-	public ArrayList<GLSLAttribute> getIns() { 
-		return inAttributes; 
-	}
-	
-	public ArrayList<GLSLAttribute> getOuts() { 
-		return outAttributes; 
 	}
 	
 	public ArrayList<GLSLAttribute> getUniformAttributes() { 
