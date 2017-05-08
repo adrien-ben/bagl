@@ -11,6 +11,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GL32;
 
 import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.core.math.Matrix4;
@@ -65,6 +66,16 @@ public class Shader {
 		return this;
 	}
 
+	/**
+	 * Calls the addShader function for a geometry shader.
+	 * @param file The path to the source file;
+	 * @return This for chaining.
+	 */
+	public Shader addGeometryShader(String file) {
+		this.addShader(file, GL32.GL_GEOMETRY_SHADER);
+		return this;
+	}
+	
 	/**
 	 * Load the source code of the shader. Parses it. Creates a new OpenGL shader object
 	 * and try to compile it. If it fails, displays the shader's log on the error output. 
