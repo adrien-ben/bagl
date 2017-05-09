@@ -3,6 +3,7 @@ package com.adrien.games.bagl.sample;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
 import com.adrien.games.bagl.core.Camera;
@@ -10,7 +11,9 @@ import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.core.Configuration;
 import com.adrien.games.bagl.core.Engine;
 import com.adrien.games.bagl.core.Game;
+import com.adrien.games.bagl.core.Input;
 import com.adrien.games.bagl.core.Time;
+import com.adrien.games.bagl.core.math.Quaternion;
 import com.adrien.games.bagl.core.math.Vector3;
 import com.adrien.games.bagl.rendering.BufferUsage;
 import com.adrien.games.bagl.rendering.Shader;
@@ -120,7 +123,7 @@ public class GeometryShaderParticlesSample implements Game {
 		}
 		this.vbuffer = new VertexBuffer(ParticleVertex.getDescription(), BufferUsage.STREAM_DRAW, this.vertices);
 		
-		this.camera = new Camera(new Vector3(5, 0, 5), new Vector3(-1, 0, -1), Vector3.UP, 
+		this.camera = new Camera(new Vector3(5, 0, 5), new Vector3(-0.89517385f, 0.0f, -0.44571713f), Vector3.UP, 
 				(float)Math.toRadians(60), (float)xRes/yRes, 0.1f, 100f);
 		this.particles = new ArrayList<>();
 		for(int i = 0; i < MAX_PARTICLES_COUNT; i++) {
@@ -168,6 +171,12 @@ public class GeometryShaderParticlesSample implements Game {
 					this.liveParticles++;
 				}
 			}
+		}
+		
+		if(Input.isKeyPressed(GLFW.GLFW_KEY_LEFT)) {
+			this.camera.rotate(Quaternion.fromAngleAndVector((float)Math.toRadians(10*elapsedTime), Vector3.UP));
+		} else if(Input.isKeyPressed(GLFW.GLFW_KEY_RIGHT)) {
+			this.camera.rotate(Quaternion.fromAngleAndVector((float)Math.toRadians(-10*elapsedTime), Vector3.UP));
 		}
 	}
 
