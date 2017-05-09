@@ -30,6 +30,8 @@ public class Camera {
 	private boolean dirtyProj;
 	private boolean dirtyView;
 	private boolean dirtyViewAtOrigin;
+	private boolean dirtyViewProj;
+	private boolean dirtyViewProjAtOrigin;
 	
 	public Camera(Vector3 position, Vector3 direction, Vector3 up, float fovRads, float aspectRatio, float zNear, float zFar) {
 		this.position = position;
@@ -50,6 +52,8 @@ public class Camera {
 		this.dirtyProj = false;
 		this.dirtyView = false;
 		this.dirtyViewAtOrigin = false;
+		this.dirtyViewProj = false;
+		this.dirtyViewProjAtOrigin = false;
 	}
 
 	/**
@@ -59,10 +63,12 @@ public class Camera {
 	 */
 	public Camera rotate(Quaternion rotation) {
 		buffer.setRotation(rotation);
-		this.direction.transform(buffer, 0);		
-		this.up.transform(buffer, 0);		
+		this.direction.transform(buffer, 0);
+		this.up.transform(buffer, 0);
 		this.dirtyView = true;
 		this.dirtyViewAtOrigin = true;
+		this.dirtyViewProj = true;
+		this.dirtyViewProjAtOrigin = true;
 		return this;
 	}
 
@@ -96,8 +102,9 @@ public class Camera {
 	 * @return The view/projection matrix.
 	 */
 	public Matrix4 getViewProj() {
-		if(this.dirtyProj || this.dirtyView) {
+		if(this.dirtyViewProj) {
 			Matrix4.mul(this.getProjection(), this.getView(), this.viewProj);
+			this.dirtyViewProj = false;
 		}
 		return this.viewProj;
 	}
@@ -105,6 +112,7 @@ public class Camera {
 	public Matrix4 getViewAtOrigin() {
 		if(this.dirtyViewAtOrigin) {			
 			this.viewAtOrigin.setLookAt(Vector3.ZERO, this.direction, this.up);
+			this.dirtyViewAtOrigin = false;
 		}
 		return this.viewAtOrigin;
 	}
@@ -115,8 +123,9 @@ public class Camera {
 	 * @return The view/projection matrix at origin.
 	 */
 	public Matrix4 getViewProjAtOrigin() {
-		if(this.dirtyProj || this.dirtyViewAtOrigin) {			
+		if(this.dirtyViewProjAtOrigin) {			
 			Matrix4.mul(this.getProjection(), this.getViewAtOrigin(), this.viewProjAtOrigin);
+			this.dirtyViewProjAtOrigin = false;
 		}
 		return this.viewProjAtOrigin;
 	}
@@ -136,18 +145,23 @@ public class Camera {
 	public void setPosition(Vector3 position) {
 		this.position = position;
 		this.dirtyView = true;
+		this.dirtyViewProj = true;
 	}
 
 	public void setDirection(Vector3 direction) {
 		this.direction = direction;
 		this.dirtyView = true;
 		this.dirtyViewAtOrigin = true;
+		this.dirtyViewProj = true;
+		this.dirtyViewProjAtOrigin = true;
 	}
 
 	public void setUp(Vector3 up) {
 		this.up = up;
 		this.dirtyView = true;
+		this.dirtyViewProj = true;
 		this.dirtyViewAtOrigin = true;
+		this.dirtyViewProjAtOrigin = true;
 	}
 
 }
