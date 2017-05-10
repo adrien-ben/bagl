@@ -1,13 +1,13 @@
 package com.adrien.games.bagl.rendering.particles;
 
-import java.util.function.Consumer;
-
 import com.adrien.games.bagl.core.Time;
+
+import java.util.function.Consumer;
 
 public class ParticleEmitter {
 
-	public static final int MAX_PARTICLE_COUNT = 100000;
-	
+	public static final int MAX_PARTICLE_COUNT = 10000;
+
 	private float rate;
 	private int batchSize;
 	

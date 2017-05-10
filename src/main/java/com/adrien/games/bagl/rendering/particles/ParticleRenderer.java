@@ -1,13 +1,5 @@
 package com.adrien.games.bagl.rendering.particles;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
-import org.lwjgl.opengl.GL11;
-
 import com.adrien.games.bagl.core.Camera;
 import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.core.Time;
@@ -15,9 +7,13 @@ import com.adrien.games.bagl.core.math.Vector3;
 import com.adrien.games.bagl.rendering.BufferUsage;
 import com.adrien.games.bagl.rendering.Shader;
 import com.adrien.games.bagl.rendering.VertexBuffer;
+import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.vertex.Vertex;
 import com.adrien.games.bagl.rendering.vertex.VertexDescription;
 import com.adrien.games.bagl.rendering.vertex.VertexElement;
+import org.lwjgl.opengl.GL11;
+
+import java.util.*;
 
 /**
  * Renders particles using OpenGL geometry shaders.
@@ -35,7 +31,7 @@ public class ParticleRenderer {
 		private Color color;
 		private float size;
 		
-		public ParticleVertex(Vector3 position, Color color, float size) {
+		ParticleVertex(Vector3 position, Color color, float size) {
 			this.position = position;
 			this.color = color;
 			this.size = size;
@@ -74,7 +70,8 @@ public class ParticleRenderer {
 		}
 		
 	}
-	
+
+	private static final String HAS_TEXTURE_UNIFORM = "hasTexture";
 	private static final String VIEW_PROJ_UNIFORM = "camera.viewProj";
 	private static final String VIEW_UNIFORM = "camera.view";
 	private static final String PARTICLES_GEOMETRY_SHADER = "particles.geom";
@@ -105,7 +102,7 @@ public class ParticleRenderer {
 		this.timer = new Time();
 	}
 	
-	public void render(ParticleEmitter emitter, Camera camera) {
+	public void render(ParticleEmitter emitter, Texture texture, Camera camera) {
 		int particleToRender = 0;
 		
 		this.timer.update();
@@ -115,7 +112,7 @@ public class ParticleRenderer {
 		
 		this.timer.update();
 		COMPARATOR.setCamera(camera);
-		Collections.sort(this.particlesToRender, COMPARATOR); 
+		this.particlesToRender.sort(COMPARATOR);
 		System.out.println("Sorting particles: " + this.timer.getElapsedTime());
 		
 		this.timer.update();
@@ -123,12 +120,16 @@ public class ParticleRenderer {
 			final ParticleVertex particleVertex = this.vertices[particleToRender];
 			particleVertex.position = p.getPosition();
 			particleVertex.color = p.getColor();
-			particleVertex.size = 1f;
+			particleVertex.size = p.getSize();
 			particleToRender++;
 		}
 		System.out.println("Copying data to cpu buffer : " + this.timer.getElapsedTime());
-		
+
+		if(Objects.nonNull(texture)) {
+			texture.bind();
+		}
 		this.shader.bind();
+		this.shader.setUniform(HAS_TEXTURE_UNIFORM, Objects.nonNull(texture));
 		this.shader.setUniform(VIEW_UNIFORM, camera.getView());
 		this.shader.setUniform(VIEW_PROJ_UNIFORM, camera.getViewProj());
 		this.vbuffer.bind();
@@ -148,6 +149,7 @@ public class ParticleRenderer {
 		
 		VertexBuffer.unbind();
 		Shader.unbind();
+		Texture.unbind();
 	}
 	
 	public void destroy() {

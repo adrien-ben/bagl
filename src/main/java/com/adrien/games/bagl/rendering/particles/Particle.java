@@ -8,18 +8,19 @@ public class Particle {
 
 	private Vector3 position;
 	private Vector3 direction;
+	private float size;
 	private float speed;
 	private Color color;
 	private float ttl;
 	
 	private boolean alive;
 	
-	public Particle(Vector3 position, Vector3 direction, float speed, Color color, float ttl) {
-		this.reset(position, direction, speed, color, ttl);
+	public Particle(Vector3 position, Vector3 direction, float size, float speed, Color color, float ttl) {
+		this.reset(position, direction, size, speed, color, ttl);
 	}
 	
 	public Particle() {
-		this(new Vector3(), new Vector3(), 0, Color.WHITE, 0);
+		this(new Vector3(), new Vector3(), 1, 0, Color.WHITE, 0);
 	}
 	
 	public void update(Time time) {
@@ -33,9 +34,10 @@ public class Particle {
 		}
 	}
 	
-	public void reset(Vector3 position, Vector3 direction, float speed, Color color, float ttl) {
+	public void reset(Vector3 position, Vector3 direction, float size, float speed, Color color, float ttl) {
 		this.position = position;
 		this.direction = direction;
+		this.size = size;
 		this.speed = speed;
 		this.color = color;
 		this.ttl = ttl;
@@ -45,13 +47,21 @@ public class Particle {
 	public boolean isAlive() {
 		return alive;
 	}
-	
+
 	public Vector3 getPosition() {
 		return position;
 	}
 
 	public void setPosition(Vector3 position) {
 		this.position = position;
+	}
+
+	public float getSize() {
+		return size;
+	}
+
+	public void setSize(float size) {
+		this.size = size;
 	}
 
 	public Color getColor() {
