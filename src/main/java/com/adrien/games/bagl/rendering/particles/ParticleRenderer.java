@@ -64,8 +64,8 @@ public class ParticleRenderer {
 		public int compare(Particle p0, Particle p1) {
 			Vector3.sub(p0.getPosition(), camera.getPosition(), v0);
 			Vector3.sub(p1.getPosition(), camera.getPosition(), v1);
-			float dist0 = v0.length();
-			float dist1 = v1.length();
+			float dist0 = v0.squareLength();
+			float dist1 = v1.squareLength();
 			return dist0 > dist1 ? -1 : 1;
 		}
 		
