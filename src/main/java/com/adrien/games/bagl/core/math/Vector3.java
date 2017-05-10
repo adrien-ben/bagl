@@ -1,5 +1,9 @@
 package com.adrien.games.bagl.core.math;
 
+/**
+ * Tree-dimensional math vector. 
+ *
+ */
 public final class Vector3 {
 	
 	public static final Vector3 ZERO = new Vector3();
@@ -15,9 +19,11 @@ public final class Vector3 {
 	private float z;
 	
 	public Vector3() {
-		this.x = 0;
-		this.y = 0;
-		this.z = 0;
+		this(0, 0, 0);
+	}
+
+	public Vector3(Vector3 other) {
+		this(other.x, other.y, other.z);
 	}
 	
 	public Vector3(float x, float y, float z) {
@@ -26,28 +32,36 @@ public final class Vector3 {
 		this.z = z;
 	}
 	
-	public Vector3(Vector3 other) {
-		this.x = other.getX();
-		this.y = other.getY();
-		this.z = other.getZ();
-	}
-	
 	public boolean isZero() {
 		return x == 0 && y == 0 && z == 0;
 	}
 	
+	/**
+	 * Computes and returns the squared length of the vector.
+	 * @return The length of the vector squared.
+	 */
+	public float squareLength() {
+		return x*x + y*y + z*z;
+	}
+	
+	/**
+	 * Computes and return the length of the vector.
+	 * @return The length of the vector.
+	 */
 	public float length() {
 		return (float)Math.sqrt(x*x + y*y + z*z);
 	}
 		
 	/**
-	 * Normalise the current vector.
+	 * Normalizes the current vector.
+	 * @return This for chaining.
 	 */
-	public void normalise() {
+	public Vector3 normalise() {
 		float length = length();
 		this.x /= length;
 		this.y /= length;
 		this.z /= length;
+		return this;
 	}
 	
 	/**
@@ -57,19 +71,19 @@ public final class Vector3 {
 	 */
 	public void normalise(Vector3 result) {
 		float length = length();
-		result.setX(getX() / length);
-		result.setY(getY() / length);
-		result.setZ(getZ() / length);
+		result.setXYZ(this.x/length, this.y/length, this.z/length);
 	}
 	
 	/**
 	 * Adds a Vector3 to the current Vector3.
 	 * @param other The vector to add to the current one.
+	 * @return This for chaining.
 	 */
-	public void add(Vector3 other) {
-		x += other.getX();
-		y += other.getY();
-		z += other.getZ();
+	public Vector3 add(Vector3 other) {
+		this.x += other.x;
+		this.y += other.y;
+		this.z += other.z;
+		return this;
 	}
 	
 	/**
@@ -79,10 +93,7 @@ public final class Vector3 {
 	 * @return A new Vector3 which is the addition of left and right.
 	 */
 	public static Vector3 add(Vector3 left, Vector3 right) {
-		float _x = left.getX() + right.getX();
-		float _y = left.getY() + right.getY();
-		float _z = left.getZ() + right.getZ();
-		return new Vector3(_x, _y, _z);
+		return new Vector3(left).add(right);
 	}
 	
 	/**
@@ -92,20 +103,19 @@ public final class Vector3 {
 	 * @param result The vector in which the result will be stored.
 	 */
 	public static void add(Vector3 left, Vector3 right, Vector3 result) {
-		float _x = left.getX() + right.getX();
-		float _y = left.getY() + right.getY();
-		float _z = left.getZ() + right.getZ();
-		result.setXYZ(_x, _y, _z);
+		result.set(left).add(right);
 	}
 	
 	/**
 	 * Subs a Vector3 to the current Vector3.
 	 * @param other The Vector3 to substract to the current one.
+	 * @return This for chaining.
 	 */
-	public void sub(Vector3 other) {
-		x -= other.getX();
-		y -= other.getY();
-		z -= other.getZ();
+	public Vector3 sub(Vector3 other) {
+		this.x -= other.getX();
+		this.y -= other.getY();
+		this.z -= other.getZ();
+		return this;
 	}
 	
 	/**
@@ -115,10 +125,7 @@ public final class Vector3 {
 	 * @return A new Vector3 which is the substraction of left and right.
 	 */
 	public static Vector3 sub(Vector3 left, Vector3 right) {
-		float _x = left.getX() - right.getX();
-		float _y = left.getY() - right.getY();
-		float _z = left.getZ() - right.getZ();
-		return new Vector3(_x, _y, _z);
+		return new Vector3(left).sub(right);
 	}
 	
 	/**
@@ -128,10 +135,7 @@ public final class Vector3 {
 	 * @param result The vector in which the result will be stored
 	 */
 	public static void sub(Vector3 left, Vector3 right, Vector3 result) {
-		float _x = left.getX() - right.getX();
-		float _y = left.getY() - right.getY();
-		float _z = left.getZ() - right.getZ();
-		result.setXYZ(_x, _y, _z);
+		result.set(left).sub(right);
 	}
 	
 	/**
@@ -153,7 +157,7 @@ public final class Vector3 {
 	 * @return A new vector which is the product of two vectors.
 	 */
 	public static Vector3 mul(Vector3 left, Vector3 right) {
-		return new Vector3(left.x*right.x, left.y*right.y, left.z*right.z);
+		return new Vector3(left).mul(right);
 	}
 	
 	/**
@@ -163,33 +167,59 @@ public final class Vector3 {
 	 * @param result The vector where to store the result.
 	 */
 	public static void mul(Vector3 left, Vector3 right, Vector3 result) {
-		result.setXYZ(left.x*right.x, left.y*right.y, left.z*right.z);
+		result.set(left).mul(right);
 	}
 	
-	public void scale(float factor) {
-		x *= factor;
-		y *= factor;
-		z *= factor;
+	/**
+	 * Multiplies a vector by a scalar.
+	 * @param factor The scalar.
+	 * @return This for chaining.
+	 */
+	public Vector3 scale(float factor) {
+		this.x *= factor;
+		this.y *= factor;
+		this.z *= factor;
+		return this;
 	}
 	
+	/**
+	 * Multiplies a vector by a scalar and stores
+	 * the result in another vector.
+	 * @param factor The scalar.
+	 * @param result The vector where to store the result.
+	 */
 	public void scale(float factor, Vector3 result) {
-		result.setX(x * factor);
-		result.setY(y * factor);
-		result.setZ(z * factor);
+		result.set(this).scale(factor);
 	}
 	
-	public void average(Vector3 other) {
-		x = (x + other.x)/2;
-		y = (y + other.y)/2;
-		z = (z + other.z)/2;
+	/**
+	 * Averages this vector with another vector.
+	 * @param other The vector to use to average this one.
+	 * @return This for chaining.
+	 */
+	public Vector3 average(Vector3 other) {
+		this.x = (this.x + other.x)/2;
+		this.y = (this.y + other.y)/2;
+		this.z = (this.z + other.z)/2;
+		return this;
 	}
 	
+	/**
+	 * Averages this vector with another vector and stores the result
+	 * in another vector.
+	 * @param other The vector to use to average this one.
+	 * @param result The vector where to store the result.
+	 */
 	public void average(Vector3 other, Vector3 result) {
-		result.setX((x + other.x)/2);
-		result.setY((y + other.y)/2);
-		result.setZ((z + other.z)/2);
+		result.set(this).average(other);
 	}
 	
+	/**
+	 * Computes the cross product of two vectors.
+	 * @param left The left vector.
+	 * @param right The right vector.
+	 * @return A new vector containing the cross product.
+	 */
 	public static Vector3 cross(Vector3 left, Vector3 right) {
 		float _x = left.getY()*right.getZ() - left.getZ()*right.getY();
 		float _y = left.getZ()*right.getX() - left.getX()*right.getZ();
@@ -197,6 +227,13 @@ public final class Vector3 {
 		return new Vector3(_x, _y, _z);
 	}
 	
+	/**
+	 * Computes the cross product of two vectors and
+	 * stores the result in another vector.
+	 * @param left The left vector.
+	 * @param right The right vector.
+	 * @param result The vector where to store the result.
+	 */
 	public static void cross(Vector3 left, Vector3 right, Vector3 result) {
 		float _x = left.getY()*right.getZ() - left.getZ()*right.getY();
 		float _y = left.getZ()*right.getX() - left.getX()*right.getZ();
@@ -204,6 +241,11 @@ public final class Vector3 {
 		result.setXYZ(_x, _y, _z);
 	}
 	
+	/**
+	 * Computes the dot product between this vector and another.
+	 * @param other The other vector.
+	 * @return The dot products of the two vectors.
+	 */
 	public float dot(Vector3 other) {
 		return this.x*other.getX() + this.y*other.getY() + this.z*other.getZ();
 	}
@@ -250,11 +292,13 @@ public final class Vector3 {
 	 * @param x The x component.
 	 * @param y The y component.
 	 * @param z The z component.
+	 * @return This for chaining.
 	 */
-	public void setXYZ(float x, float y, float z) {
+	public Vector3 setXYZ(float x, float y, float z) {
 		this.x = x;
 		this.y = y;
 		this.z = z;
+		return this;
 	}
 	
 	/**
@@ -314,16 +358,19 @@ public final class Vector3 {
 		return z;
 	}
 
-	public void setX(float x) {
+	public Vector3 setX(float x) {
 		this.x = x;
+		return this;
 	}
 
-	public void setY(float y) {
+	public Vector3 setY(float y) {
 		this.y = y;
+		return this;
 	}
 
-	public void setZ(float z) {
+	public Vector3 setZ(float z) {
 		this.z = z;
+		return this;
 	}
 	
 }
