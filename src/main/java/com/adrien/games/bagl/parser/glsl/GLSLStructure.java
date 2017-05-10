@@ -4,40 +4,40 @@ import java.util.ArrayList;
 
 public class GLSLStructure {
 
-	private String name;
-	private ArrayList<GLSLAttribute> attributes;
+    private String name;
+    private ArrayList<GLSLAttribute> attributes;
 
-	public GLSLStructure(String name, ArrayList<GLSLAttribute> attributes) {
+    public GLSLStructure(String name, ArrayList<GLSLAttribute> attributes) {
 
-		if(name == null || attributes == null) {
-			throw new NullPointerException();
-		}
+        if(name == null || attributes == null) {
+            throw new NullPointerException();
+        }
 
-		this.name = name;
-		this.attributes = attributes;
-	}
+        this.name = name;
+        this.attributes = attributes;
+    }
 
-	@Override
-	public String toString() {
+    @Override
+    public String toString() {
 
-		StringBuilder strBldr = new StringBuilder();
+        StringBuilder strBldr = new StringBuilder();
 
-		strBldr.append(name);
-		strBldr.append(" { ");
-		for(GLSLAttribute attribute : attributes) {
-			strBldr.append(attribute.toString());
-		}
-		strBldr.append(" }");
+        strBldr.append(name);
+        strBldr.append(" { ");
+        for(GLSLAttribute attribute : attributes) {
+            strBldr.append(attribute.toString());
+        }
+        strBldr.append(" }");
 
-		return strBldr.toString();
-	}
+        return strBldr.toString();
+    }
 
-	public String getName() { 
-		return name; 
-	}
-	
-	public ArrayList<GLSLAttribute> getAttributes() { 
-		return attributes; 
-	}
-	
+    public String getName() {
+        return name;
+    }
+
+    public ArrayList<GLSLAttribute> getAttributes() {
+        return attributes;
+    }
+
 }

@@ -7,38 +7,38 @@ package com.adrien.games.bagl.rendering.texture;
  */
 public class TextureRegion {
 
-	private final Texture texture;
-	private final float left;
-	private final float bottom;
-	private final float right;
-	private final float top;
-	
-	public TextureRegion(Texture texture, float left, float bottom, float right, float top) {
-		this.texture = texture;
-		this.left = left;
-		this.bottom = bottom;
-		this.right = right;
-		this.top = top;
-	}
+    private final Texture texture;
+    private final float left;
+    private final float bottom;
+    private final float right;
+    private final float top;
 
-	public Texture getTexture() {
-		return texture;
-	}
+    public TextureRegion(Texture texture, float left, float bottom, float right, float top) {
+        this.texture = texture;
+        this.left = left;
+        this.bottom = bottom;
+        this.right = right;
+        this.top = top;
+    }
 
-	public float getLeft() {
-		return left;
-	}
+    public Texture getTexture() {
+        return texture;
+    }
 
-	public float getBottom() {
-		return bottom;
-	}
+    public float getLeft() {
+        return left;
+    }
 
-	public float getRight() {
-		return right;
-	}
+    public float getBottom() {
+        return bottom;
+    }
 
-	public float getTop() {
-		return top;
-	}
-	
+    public float getRight() {
+        return right;
+    }
+
+    public float getTop() {
+        return top;
+    }
+
 }

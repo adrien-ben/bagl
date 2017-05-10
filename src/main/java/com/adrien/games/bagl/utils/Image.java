@@ -4,32 +4,32 @@ import java.nio.ByteBuffer;
 
 public class Image {
 
-	private final int width;
-	private final int height;
-	private final int channelCount;
-	private final ByteBuffer data;
-	
-	public Image(int width, int height, int channelCount, ByteBuffer data) {
-		this.width = width;
-		this.height = height;
-		this.channelCount = channelCount;
-		this.data = data;
-	}
+    private final int width;
+    private final int height;
+    private final int channelCount;
+    private final ByteBuffer data;
 
-	public int getWidth() {
-		return width;
-	}
+    public Image(int width, int height, int channelCount, ByteBuffer data) {
+        this.width = width;
+        this.height = height;
+        this.channelCount = channelCount;
+        this.data = data;
+    }
 
-	public int getHeight() {
-		return height;
-	}
+    public int getWidth() {
+        return width;
+    }
 
-	public int getChannelCount() {
-		return channelCount;
-	}
+    public int getHeight() {
+        return height;
+    }
 
-	public ByteBuffer getData() {
-		return data;
-	}
-	
+    public int getChannelCount() {
+        return channelCount;
+    }
+
+    public ByteBuffer getData() {
+        return data;
+    }
+
 }
