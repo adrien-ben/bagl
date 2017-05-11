@@ -10,38 +10,48 @@ public class Particle {
     private Vector3 direction;
     private float size;
     private float speed;
-    private Color color;
+    private Color startColor;
+    private Color endColor;
     private float ttl;
 
+    private final Color color = new Color(0, 0, 0,0);
+    private float timeLeft;
     private boolean alive;
 
-    public Particle(Vector3 position, Vector3 direction, float size, float speed, Color color, float ttl) {
-        this.reset(position, direction, size, speed, color, ttl);
+    public Particle(Vector3 position, Vector3 direction, float size, float speed, Color startColor, Color endColor, float ttl) {
+        this.reset(position, direction, size, speed, startColor, endColor, ttl);
     }
 
     public Particle() {
-        this(new Vector3(), new Vector3(), 1, 0, Color.WHITE, 0);
+        this(new Vector3(), new Vector3(), 1, 0, Color.WHITE, Color.WHITE, 0);
     }
 
     public void update(Time time) {
-        this.alive = this.ttl > 0;
+        this.alive = this.timeLeft > 0;
         if(this.alive) {
             final float elapsedTime = time.getElapsedTime();
-            this.ttl -= elapsedTime;
+            this.timeLeft -= elapsedTime;
             this.direction.normalise();
             this.direction.scale(elapsedTime*this.speed);
             this.position.add(this.direction);
+
+            final float life = this.timeLeft/this.ttl;
+            Color.blend(this.startColor, this.endColor, life, this.color);
         }
     }
 
-    public void reset(Vector3 position, Vector3 direction, float size, float speed, Color color, float ttl) {
+    public void reset(Vector3 position, Vector3 direction, float size, float speed, Color startColor, Color endColor, float ttl) {
         this.position = position;
         this.direction = direction;
         this.size = size;
         this.speed = speed;
-        this.color = color;
+        this.startColor = startColor;
+        this.endColor = endColor;
         this.ttl = ttl;
-        this.alive = this.ttl > 0;
+
+        this.color.set(startColor);
+        this.timeLeft = ttl;
+        this.alive = this.timeLeft > 0;
     }
 
     public boolean isAlive() {
@@ -66,10 +76,6 @@ public class Particle {
 
     public Color getColor() {
         return color;
-    }
-
-    public void setColor(Color color) {
-        this.color = color;
     }
 
     public Vector3 getDirection() {
