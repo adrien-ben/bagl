@@ -45,10 +45,10 @@ public class ParticlesSample implements Game {
                 (float)Math.toRadians(60), (float)xRes/yRes, 0.1f, 100f);
         this.timer = new Time();
 
-        this.snowEmitter = new ParticleEmitter(0.5f, 10, this.snow);
+        this.texture = new Texture(FileUtils.getResourceAbsolutePath("/snowflake.png"), new TextureParameters());
+        this.snowEmitter = new ParticleEmitter(this.texture, 0.5f, 10, this.snow);
         this.explosionEmitter = new ParticleEmitter(0.1f, 100, this.exploder);
         this.renderer = new ParticleRenderer();
-        this.texture = new Texture(FileUtils.getResourceAbsolutePath("/snowflake.png"), new TextureParameters());
 
         GL11.glEnable(GL11.GL_DEPTH_TEST);
         GL11.glEnable(GL11.GL_CULL_FACE);
@@ -77,17 +77,18 @@ public class ParticlesSample implements Game {
     @Override
     public void render() {
         this.timer.update();
-        this.renderer.render(this.snowEmitter, this.texture, this.camera);
+        this.renderer.render(this.snowEmitter, this.camera);
         System.out.println("Rendering snow particles: " + this.timer.getElapsedTime());
 
         this.timer.update();
-        this.renderer.render(this.explosionEmitter, null, this.camera);
+        this.renderer.render(this.explosionEmitter, this.camera);
         System.out.println("Rendering explosion particles: " + this.timer.getElapsedTime());
     }
 
     @Override
     public void destroy() {
         this.renderer.destroy();
+        this.texture.destroy();
     }
 
     public static void main(String[] args) {

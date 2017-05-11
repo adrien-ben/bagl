@@ -50,6 +50,10 @@ public class ParticleRenderer {
 
     }
 
+    /**
+     * This comparators is used to sort particles from the furthest aways from
+     * the camera to the closest.
+     */
     private static class ParticleComparator implements Comparator<Particle> {
 
         private Camera camera;
@@ -102,7 +106,13 @@ public class ParticleRenderer {
         this.timer = new Time();
     }
 
-    public void render(ParticleEmitter emitter, Texture texture, Camera camera) {
+    /**
+     * Renders all particles owned by the passed in {@link ParticleEmitter} from
+     * a {@link Camera} point of wiew.
+     * @param emitter The emitter to render.
+     * @param camera The camera.
+     */
+    public void render(ParticleEmitter emitter, Camera camera) {
         int particleToRender = 0;
 
         this.timer.update();
@@ -125,11 +135,14 @@ public class ParticleRenderer {
         }
         System.out.println("Copying data to cpu buffer : " + this.timer.getElapsedTime());
 
-        if(Objects.nonNull(texture)) {
-            texture.bind();
+        boolean hasTexture;
+        final Optional<Texture> texture = emitter.getTexture();
+        if(hasTexture = texture.isPresent()) {
+            texture.get().bind();
         }
+
         this.shader.bind();
-        this.shader.setUniform(HAS_TEXTURE_UNIFORM, Objects.nonNull(texture));
+        this.shader.setUniform(HAS_TEXTURE_UNIFORM, hasTexture);
         this.shader.setUniform(VIEW_UNIFORM, camera.getView());
         this.shader.setUniform(VIEW_PROJ_UNIFORM, camera.getViewProj());
         this.vbuffer.bind();
