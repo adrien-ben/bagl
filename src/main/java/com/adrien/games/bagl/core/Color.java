@@ -1,7 +1,10 @@
 package com.adrien.games.bagl.core;
 
+import com.adrien.games.bagl.utils.MathUtils;
+
 public class Color {
 
+    public static final Color TRANSPARENT = new Color(1, 1, 1, 0);
     public static final Color BLACK = new Color(0, 0, 0);
     public static final Color WHITE = new Color(1, 1, 1);
     public static final Color DARK_GRAY = new Color(0.66f, 0.66f, 0.66f);
@@ -30,6 +33,35 @@ public class Color {
         this.green = green;
         this.blue = blue;
         this.alpha = alpha;
+    }
+
+    /**
+     * Sets this color with the values of another color.
+     * @param color The other color.
+     * @return This for chaining.
+     */
+    public Color set(Color color) {
+        this.red = color.red;
+        this.green = color.green;
+        this.blue = color.blue;
+        this.alpha = color.alpha;
+        return this;
+    }
+
+    /**
+     * Blends two colors together and stores the result in a passed in color.
+     * @param color The first color to blend.
+     * @param other The other color to blend.
+     * @param blendFactor The blend factor. Will be clamped between 0 and 1.
+     * @param result The color where to store the result.
+     */
+    public static void blend(Color color, Color other, float blendFactor, Color result) {
+        final float clampedBlendFactor = MathUtils.clamp(blendFactor, 0, 1);
+        final float oneMinusBlendFactor = 1 - clampedBlendFactor;
+        result.setRed(clampedBlendFactor*color.getRed() + oneMinusBlendFactor*other.getRed());
+        result.setGreen(clampedBlendFactor*color.getGreen() + oneMinusBlendFactor*other.getGreen());
+        result.setBlue(clampedBlendFactor*color.getBlue() + oneMinusBlendFactor*other.getBlue());
+        result.setAlpha(clampedBlendFactor*color.getAlpha() + oneMinusBlendFactor*other.getAlpha());
     }
 
     public float getRed() {
