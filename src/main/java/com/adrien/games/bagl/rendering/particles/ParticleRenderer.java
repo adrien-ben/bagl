@@ -50,6 +50,10 @@ public class ParticleRenderer {
 
     }
 
+    /**
+     * This comparators is used to sort particles from the furthest aways from
+     * the camera to the closest.
+     */
     private static class ParticleComparator implements Comparator<Particle> {
 
         private Camera camera;
@@ -62,7 +66,7 @@ public class ParticleRenderer {
             Vector3.sub(p1.getPosition(), camera.getPosition(), v1);
             float dist0 = v0.squareLength();
             float dist1 = v1.squareLength();
-            return dist0 > dist1 ? -1 : 1;
+            return dist0 >= dist1 ? -1 : 1;
         }
 
         public void setCamera(Camera camera) {
@@ -102,7 +106,13 @@ public class ParticleRenderer {
         this.timer = new Time();
     }
 
-    public void render(ParticleEmitter emitter, Texture texture, Camera camera) {
+    /**
+     * Renders all particles owned by the passed in {@link ParticleEmitter} from
+     * a {@link Camera} point of wiew.
+     * @param emitter The emitter to render.
+     * @param camera The camera.
+     */
+    public void render(ParticleEmitter emitter, Camera camera) {
         int particleToRender = 0;
 
         this.timer.update();
@@ -125,11 +135,14 @@ public class ParticleRenderer {
         }
         System.out.println("Copying data to cpu buffer : " + this.timer.getElapsedTime());
 
-        if(Objects.nonNull(texture)) {
-            texture.bind();
+        boolean hasTexture;
+        final Optional<Texture> texture = emitter.getTexture();
+        if(hasTexture = texture.isPresent()) {
+            texture.get().bind();
         }
+
         this.shader.bind();
-        this.shader.setUniform(HAS_TEXTURE_UNIFORM, Objects.nonNull(texture));
+        this.shader.setUniform(HAS_TEXTURE_UNIFORM, hasTexture);
         this.shader.setUniform(VIEW_UNIFORM, camera.getView());
         this.shader.setUniform(VIEW_PROJ_UNIFORM, camera.getViewProj());
         this.vbuffer.bind();
@@ -139,12 +152,14 @@ public class ParticleRenderer {
         System.out.println("Copying data to gpu : " + this.timer.getElapsedTime());
 
         GL11.glEnable(GL11.GL_BLEND);
-        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+        GL11.glDepthMask(false);
+        GL11.glBlendFunc(emitter.getBlendMode().getGlSource(), emitter.getBlendMode().getGlDestination());
 
         this.timer.update();
         GL11.glDrawArrays(GL11.GL_POINTS, 0, particleToRender);
         System.out.println("Rendering " + particleToRender + " particles : " + this.timer.getElapsedTime());
 
+        GL11.glDepthMask(true);
         GL11.glDisable(GL11.GL_BLEND);
 
         VertexBuffer.unbind();
