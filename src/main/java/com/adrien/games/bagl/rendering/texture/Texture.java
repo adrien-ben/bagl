@@ -26,7 +26,7 @@ public final class Texture {
     public Texture(int width, int height, TextureParameters parameters) {
         this.width = width;
         this.height = height;
-        this.handle = this.generateGlTexture(this.width, this.height, parameters, ByteBuffer.class.cast(null));
+        this.handle = generateGlTexture(this.width, this.height, parameters, ByteBuffer.class.cast(null));
     }
 
     /**
@@ -39,7 +39,7 @@ public final class Texture {
         this.width = image.getWidth();
         this.height = image.getHeight();
         parameters.format(this.getFormat(image.getChannelCount()));
-        this.handle = this.generateGlTexture(this.width, this.height, parameters, image.getData());
+        this.handle = generateGlTexture(this.width, this.height, parameters, image.getData());
     }
 
     /**
@@ -54,13 +54,13 @@ public final class Texture {
     public Texture(int width, int height, ByteBuffer pixels, TextureParameters parameters) {
         this.width = width;
         this.height = height;
-        this.handle = this.generateGlTexture(this.width, this.height, parameters, pixels);
+        this.handle = generateGlTexture(this.width, this.height, parameters, pixels);
     }
 
-    private int generateGlTexture(int width, int height, TextureParameters parameters, ByteBuffer image) {
+    private static int generateGlTexture(int width, int height, TextureParameters parameters, ByteBuffer image) {
         int handle = glGenTextures();
         glBindTexture(GL_TEXTURE_2D, handle);
-        glTexImage2D(GL_TEXTURE_2D, 0, parameters.getFormat().getGlInternalFormat(), this.width, this.height, 0,
+        glTexImage2D(GL_TEXTURE_2D, 0, parameters.getFormat().getGlInternalFormat(), width, height, 0,
                 parameters.getFormat().getGlFormat(), GL_UNSIGNED_BYTE, image);
         if(parameters.getMipmaps()) {
             glGenerateMipmap(GL_TEXTURE_2D);

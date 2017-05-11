@@ -17,7 +17,7 @@ public final class Input {
     private Input() {
     }
 
-    public static void handleInput(long window, int key, int scancode, int action, int mods) {
+    static void handleInput(long window, int key, int scancode, int action, int mods) {
         if(action == GLFW_PRESS) {
             KEY_STATES[key] = true;
         } else if(action == GLFW_RELEASE) {

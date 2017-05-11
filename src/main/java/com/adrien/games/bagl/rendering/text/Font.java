@@ -50,7 +50,7 @@ public class Font {
         STBTruetype.stbtt_InitFont(infos, ttf);
 
         this.getFontVMetrics(infos);
-        this.getCharInfos(infos, cdata);
+        this.getCharInfos(cdata);
 
         infos.free();
         cdata.free();
@@ -67,7 +67,7 @@ public class Font {
         this.lineGap = (int)(scale*lineGap[0]);
     }
 
-    private void getCharInfos(STBTTFontinfo infos, STBTTBakedChar.Buffer cdata) {
+    private void getCharInfos(STBTTBakedChar.Buffer cdata) {
         float[] xpos = {0};
         float[] ypos = {0};
         STBTTAlignedQuad q = STBTTAlignedQuad.malloc();
