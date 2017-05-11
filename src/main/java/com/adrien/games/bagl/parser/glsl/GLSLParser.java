@@ -6,48 +6,47 @@ import java.util.regex.Pattern;
 
 public class GLSLParser {
 
-    private static final Pattern ARRAY_PATTERN = Pattern.compile("^.+\\[.+\\]$");
-    private static final Pattern ARRAY_SIZE_PATTERN = Pattern.compile("^.+\\[(.+)?\\]$");
-    private static final Pattern ARRAY_NAME_PATTERN = Pattern.compile("^(.+)?\\[.+\\]$");
+    private static final Pattern ARRAY_PATTERN = Pattern.compile("^.+\\[.+]$");
+    private static final Pattern ARRAY_SIZE_PATTERN = Pattern.compile("^.+\\[(.+)?]$");
+    private static final Pattern ARRAY_NAME_PATTERN = Pattern.compile("^(.+)?\\[.+]$");
     private static final String INTEGER_TYPE = "int";
 
-    private String version;
-    private HashMap<String, GLSLStructure> structures;
-    private ArrayList<GLSLAttribute> uniformAttributes;
-    private Map<String, GLSLConstant> constants;
+    private final HashMap<String, GLSLStructure> structures;
+    private final ArrayList<GLSLAttribute> uniformAttributes;
+    private final Map<String, GLSLConstant> constants;
 
-    private ArrayList<String> uniforms;
+    private final ArrayList<String> uniforms;
 
     public GLSLParser() {
-        this.structures = new HashMap<String, GLSLStructure>();
-        this.uniformAttributes = new ArrayList<GLSLAttribute>();
+        this.structures = new HashMap<>();
+        this.uniformAttributes = new ArrayList<>();
         this.constants = new HashMap<>();
-        this.uniforms = new ArrayList<String>();
+        this.uniforms = new ArrayList<>();
     }
 
-    public Boolean parse(String glslSource) {
-        if(!constructSourceSkeleton(glslSource)) {
-            return false;
-        }
-        generateUniforms();
-        return true;
+    public void parse(String glslSource) {
+        this.constructSourceSkeleton(glslSource);
+        this.generateUniforms();
     }
 
-    private Boolean constructSourceSkeleton(String glslSource) {
+    private void constructSourceSkeleton(String glslSource) {
         StringTokenizer tokenizer = new StringTokenizer(glslSource, " \r\n\t=;{");
         while(tokenizer.hasMoreTokens()) {
-            String token = tokenizer.nextToken();
-            if(token.equals("uniform")) {
-                uniformAttributes.add(parseAttribute(tokenizer));
-            } else if(token.equals("struct")) {
-                GLSLStructure structure = parseStructure(tokenizer);
-                structures.put(structure.getName(), structure);
-            } else if("const".equals(token)) {
-                GLSLConstant constant = this.parseConstant(tokenizer);
-                constants.put(constant.getName(), constant);
+            final String token = tokenizer.nextToken();
+            switch (token) {
+                case "uniform":
+                    uniformAttributes.add(parseAttribute(tokenizer));
+                    break;
+                case "struct":
+                    GLSLStructure structure = parseStructure(tokenizer);
+                    structures.put(structure.getName(), structure);
+                    break;
+                case "const":
+                    GLSLConstant constant = this.parseConstant(tokenizer);
+                    constants.put(constant.getName(), constant);
+                    break;
             }
         }
-        return true;
     }
 
     private GLSLAttribute parseAttribute(StringTokenizer tokenizer) {
@@ -56,7 +55,7 @@ public class GLSLParser {
 
     private GLSLStructure parseStructure(StringTokenizer tokenizer) {
         String name = tokenizer.nextToken();
-        ArrayList<GLSLAttribute> attributes = new ArrayList<GLSLAttribute>();
+        ArrayList<GLSLAttribute> attributes = new ArrayList<>();
         Boolean hasMoreAttributes = true;
         while(hasMoreAttributes) {
             String attrType = tokenizer.nextToken();
@@ -92,7 +91,7 @@ public class GLSLParser {
     }
 
     private ArrayList<String> generateUniformsFormStructure(String uniformName, GLSLStructure structure) {
-        ArrayList<String> structUniforms = new ArrayList<String>();
+        ArrayList<String> structUniforms = new ArrayList<>();
 
         boolean isArray = this.isArray(uniformName);
         int size = isArray ? this.getArraySize(uniformName) : 1;
@@ -154,12 +153,6 @@ public class GLSLParser {
     public String toString() {
         StringBuilder strBldr = new StringBuilder();
 
-        if(version != null) {
-            strBldr.append("version : ");
-            strBldr.append(version);
-            strBldr.append("\n\n");
-        }
-
         strBldr.append("structures : \n");
         for(GLSLStructure struct : structures.values()) {
             strBldr.append("\t");
@@ -184,10 +177,6 @@ public class GLSLParser {
         }
 
         return strBldr.toString();
-    }
-
-    public String getVersion() {
-        return version;
     }
 
     public HashMap<String, GLSLStructure> getStructure() {

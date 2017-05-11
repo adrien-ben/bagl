@@ -4,18 +4,18 @@ import java.util.ArrayList;
 
 public final class VertexDescription {
 
-    private ArrayList<VertexElement> vertexElements;
+    private final ArrayList<VertexElement> vertexElements;
     private int vertexElementCount;
     private int stride;
 
     public VertexDescription() {
-        this.vertexElements = new ArrayList<VertexElement>();
+        this.vertexElements = new ArrayList<>();
         this.vertexElementCount = 0;
         this.stride = 0;
     }
 
     public VertexDescription(VertexElement[] vertexElements) {
-        this.vertexElements = new ArrayList<VertexElement>();
+        this.vertexElements = new ArrayList<>();
         this.vertexElementCount = 0;
         this.stride = 0;
 

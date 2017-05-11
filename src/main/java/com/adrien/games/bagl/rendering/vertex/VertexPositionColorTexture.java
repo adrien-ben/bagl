@@ -6,11 +6,11 @@ import com.adrien.games.bagl.core.math.Vector3;
 
 public class VertexPositionColorTexture implements Vertex {
 
-    public static VertexDescription DESCRIPTION = createVertexDescription();
+    public static final VertexDescription DESCRIPTION = createVertexDescription();
 
-    private Vector3 position;
-    private Color color;
-    private Vector2 coords;
+    private final Vector3 position;
+    private final Color color;
+    private final Vector2 coords;
 
     public VertexPositionColorTexture(Vector3 position, Color color, Vector2 coords) {
         this.position = position;

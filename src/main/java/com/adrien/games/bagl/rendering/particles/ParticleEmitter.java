@@ -8,12 +8,12 @@ public class ParticleEmitter {
 
     public static final int MAX_PARTICLE_COUNT = 10000;
 
-    private float rate;
-    private int batchSize;
+    private final float rate;
+    private final int batchSize;
 
     private final Particle[] pool;
     private float timeToNextBatch;
-    private Consumer<Particle> initializer;
+    private final Consumer<Particle> initializer;
 
     public ParticleEmitter(float rate, int batchSize, Consumer<Particle> initializer) {
         this.rate = rate;

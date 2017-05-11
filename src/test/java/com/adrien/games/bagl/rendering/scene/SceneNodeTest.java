@@ -14,8 +14,8 @@ public class SceneNodeTest {
 
     @Test
     public void itShouldAddChild() {
-        final SceneNode<Integer> parent = new SceneNode<Integer>(0);
-        final SceneNode<Integer> child = new SceneNode<Integer>(0);
+        final SceneNode<Integer> parent = new SceneNode<>(0);
+        final SceneNode<Integer> child = new SceneNode<>(0);
 
         parent.addChild(child);
 
@@ -24,8 +24,8 @@ public class SceneNodeTest {
 
     @Test
     public void itShouldSetParent() {
-        final SceneNode<Integer> parent = new SceneNode<Integer>(0);
-        final SceneNode<Integer> child = new SceneNode<Integer>(0);
+        final SceneNode<Integer> parent = new SceneNode<>(0);
+        final SceneNode<Integer> child = new SceneNode<>(0);
 
         parent.addChild(child);
 
@@ -34,9 +34,9 @@ public class SceneNodeTest {
 
     @Test
     public void itShouldRemoveNodeFromPreviousParent() {
-        final SceneNode<Integer> parent = new SceneNode<Integer>(0);
-        final SceneNode<Integer> newParent = new SceneNode<Integer>(0);
-        final SceneNode<Integer> child = new SceneNode<Integer>(0);
+        final SceneNode<Integer> parent = new SceneNode<>(0);
+        final SceneNode<Integer> newParent = new SceneNode<>(0);
+        final SceneNode<Integer> child = new SceneNode<>(0);
 
         parent.addChild(child);
         newParent.addChild(child);
@@ -46,8 +46,8 @@ public class SceneNodeTest {
 
     @Test
     public void itShouldRemoveChild() {
-        final SceneNode<Integer> parent = new SceneNode<Integer>(0);
-        final SceneNode<Integer> child = new SceneNode<Integer>(0);
+        final SceneNode<Integer> parent = new SceneNode<>(0);
+        final SceneNode<Integer> child = new SceneNode<>(0);
 
         parent.addChild(child);
         parent.removeChild(child);
@@ -57,8 +57,8 @@ public class SceneNodeTest {
 
     @Test
     public void itShouldResetParentOnRemovingChild() {
-        final SceneNode<Integer> parent = new SceneNode<Integer>(0);
-        final SceneNode<Integer> child = new SceneNode<Integer>(0);
+        final SceneNode<Integer> parent = new SceneNode<>(0);
+        final SceneNode<Integer> child = new SceneNode<>(0);
 
         parent.addChild(child);
         parent.removeChild(child);
@@ -68,15 +68,15 @@ public class SceneNodeTest {
 
     @Test
     public void itShouldBeRoot() {
-        final SceneNode<Integer> root = new SceneNode<Integer>(0);
+        final SceneNode<Integer> root = new SceneNode<>(0);
 
         MatcherAssert.assertThat(root.isRoot(), Is.is(true));
     }
 
     @Test
     public void itShouldNotBeRootWhenAdded() {
-        final SceneNode<Integer> parent = new SceneNode<Integer>(0);
-        final SceneNode<Integer> child = new SceneNode<Integer>(0);
+        final SceneNode<Integer> parent = new SceneNode<>(0);
+        final SceneNode<Integer> child = new SceneNode<>(0);
 
         parent.addChild(child);
 
@@ -85,31 +85,27 @@ public class SceneNodeTest {
 
     @Test
     public void itShouldApplyConsumer() {
-        final SceneNode<Integer> parent = new SceneNode<Integer>(0);
+        final SceneNode<Integer> parent = new SceneNode<>(0);
 
-        parent.apply(node -> {
-            node.getLocalTransform().setScale(new Vector3(2, 2, 2));
-        });
+        parent.apply(node -> node.getLocalTransform().setScale(new Vector3(2, 2, 2)));
 
         MatcherAssert.assertThat(parent.getLocalTransform().getScale(), IsEqual.equalTo(new Vector3(2f, 2f, 2f)));
     }
 
     @Test
     public void itShouldApplyToChildren() {
-        final SceneNode<Integer> parent = new SceneNode<Integer>(0);
-        final SceneNode<Integer> child = new SceneNode<Integer>(0);
+        final SceneNode<Integer> parent = new SceneNode<>(0);
+        final SceneNode<Integer> child = new SceneNode<>(0);
 
         parent.addChild(child);
-        parent.apply(node -> {
-            node.getLocalTransform().setScale(new Vector3(3, 3, 3));
-        });
+        parent.apply(node -> node.getLocalTransform().setScale(new Vector3(3, 3, 3)));
 
         MatcherAssert.assertThat(child.getLocalTransform().getScale(), IsEqual.equalTo(new Vector3(3f, 3f, 3f)));
     }
 
     @Test
     public void itShouldBeEmpty() {
-        final SceneNode<Integer> parent = new SceneNode<Integer>();
+        final SceneNode<Integer> parent = new SceneNode<>();
 
         MatcherAssert.assertThat(parent.isEmpty(), Is.is(true));
     }

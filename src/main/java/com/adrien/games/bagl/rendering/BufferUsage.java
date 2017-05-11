@@ -20,7 +20,7 @@ public enum BufferUsage {
 
     final private int glCode;
 
-    private BufferUsage(int glCode) {
+    BufferUsage(int glCode) {
         this.glCode = glCode;
     }
 

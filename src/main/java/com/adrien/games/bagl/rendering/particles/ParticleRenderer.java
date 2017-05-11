@@ -80,11 +80,11 @@ public class ParticleRenderer {
 
     private static final ParticleComparator COMPARATOR = new ParticleComparator();
 
-    private Shader shader;
-    private VertexBuffer vbuffer;
-    private ParticleVertex[] vertices;
-    private List<Particle> particlesToRender;
-    private Time timer;
+    private final Shader shader;
+    private final VertexBuffer vbuffer;
+    private final ParticleVertex[] vertices;
+    private final List<Particle> particlesToRender;
+    private final Time timer;
 
     public ParticleRenderer() {
         this.shader = new Shader()

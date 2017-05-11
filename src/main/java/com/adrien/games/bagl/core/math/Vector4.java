@@ -56,7 +56,7 @@ public final class Vector4 {
      * Return a vector which is the tranformation of the passed in vector by the passed in Matrix.
      * @param matrix The transformation matrix.
      * @param vector The vector to be tranformed.
-     * @return
+     * @return A new vector.
      */
     public static Vector4 transform(Matrix4 matrix, Vector4 vector) {
         float _x = matrix.getM11()*vector.getX() + matrix.getM12()*vector.getY() + matrix.getM13()*vector.getZ() + matrix.getM14()*vector.getW();
@@ -70,7 +70,7 @@ public final class Vector4 {
      * Return a vector which is the tranformation of the passed in vector by the passed in Matrix.
      * @param matrix The transformation matrix.
      * @param vector The vector to be tranformed.
-     * @return
+     * @param result The vector where to store the result.
      */
     public static void transform(Matrix4 matrix, Vector4 vector, Vector4 result) {
         float _x = matrix.getM11()*vector.getX() + matrix.getM12()*vector.getY() + matrix.getM13()*vector.getZ() + matrix.getM14()*vector.getW();
@@ -88,6 +88,13 @@ public final class Vector4 {
 
     public Vector3 getXYZ() {
         return new Vector3(x, y, z);
+    }
+
+    public void setXYZW(float x, float y, float z, float w) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.w = w;
     }
 
     public float getX() {
@@ -119,13 +126,6 @@ public final class Vector4 {
     }
 
     public void setW(float w) {
-        this.w = w;
-    }
-
-    public void setXYZW(float x, float y, float z, float w) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
         this.w = w;
     }
 

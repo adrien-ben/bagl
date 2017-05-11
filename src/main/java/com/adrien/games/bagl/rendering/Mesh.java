@@ -4,9 +4,9 @@ import java.util.Objects;
 
 public class Mesh {
 
-    private VertexBuffer vertices;
-    private IndexBuffer indices;
-    private Material material;
+    private final VertexBuffer vertices;
+    private final IndexBuffer indices;
+    private final Material material;
 
     public Mesh(VertexBuffer vertices, IndexBuffer indices, Material material) {
         this.vertices = vertices;

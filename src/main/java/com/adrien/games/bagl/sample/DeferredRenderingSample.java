@@ -79,7 +79,7 @@ public class DeferredRenderingSample {
 
         private void initSceneGraph() {
             this.scene.getRoot().set(this.floor);
-            final SceneNode<Mesh> sphereNode = new SceneNode<Mesh>(this.sphere);
+            final SceneNode<Mesh> sphereNode = new SceneNode<>(this.sphere);
             sphereNode.getLocalTransform().setTranslation(new Vector3(0, 0.5f, 0));
             this.scene.getRoot().addChild(sphereNode);
         }
@@ -106,10 +106,8 @@ public class DeferredRenderingSample {
         public void update(Time time) {
             //rotating the first child if any
             final Optional<SceneNode<Mesh>> node = this.scene.getRoot().getChildren().stream().findFirst();
-            if(node.isPresent()) {
-                node.get().getLocalTransform().getRotation().mul(Quaternion.fromAngleAndVector(
-                        (float)Math.toRadians(10*time.getElapsedTime()), Vector3.UP));
-            }
+            node.ifPresent(meshSceneNode -> meshSceneNode.getLocalTransform().getRotation().mul(Quaternion.fromAngleAndVector(
+                    (float) Math.toRadians(10 * time.getElapsedTime()), Vector3.UP)));
 
             if(Input.isKeyPressed(GLFW.GLFW_KEY_SPACE) && !this.isKeyPressed) {
                 this.displayGbuffer = !this.displayGbuffer;

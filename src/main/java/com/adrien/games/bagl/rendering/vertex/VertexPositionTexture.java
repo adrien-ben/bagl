@@ -5,10 +5,10 @@ import com.adrien.games.bagl.core.math.Vector3;
 
 public class VertexPositionTexture implements Vertex {
 
-    public static VertexDescription DESCRIPTION = createVertexDescription();
+    public static final VertexDescription DESCRIPTION = createVertexDescription();
 
-    private Vector3 position;
-    private Vector2 coords;
+    private final Vector3 position;
+    private final Vector2 coords;
 
     public VertexPositionTexture() {
         this.position = new Vector3();

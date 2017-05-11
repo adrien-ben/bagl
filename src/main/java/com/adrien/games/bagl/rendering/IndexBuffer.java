@@ -27,7 +27,7 @@ public final class IndexBuffer {
     /**
      * Creates an index buffer and sets the data.
      * @param usage The buffer usage.
-     * @param size The size of the buffer.
+     * @param data The index data.
      */
     public IndexBuffer(BufferUsage usage, int[] data) {
         this(usage, data.length);

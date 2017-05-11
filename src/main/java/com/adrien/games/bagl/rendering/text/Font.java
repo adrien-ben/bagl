@@ -28,7 +28,7 @@ public class Font {
 
     private final int size;
     private Texture bitmap;
-    private Glyph[] glyphs = new Glyph[CHAR_COUNT];
+    private final Glyph[] glyphs = new Glyph[CHAR_COUNT];
     private int ascent;
     private int descent;
     private int lineGap;

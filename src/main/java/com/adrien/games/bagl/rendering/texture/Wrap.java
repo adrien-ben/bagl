@@ -14,9 +14,9 @@ public enum Wrap {
     REPEAT(GL_REPEAT),
     MIRROR_CLAMP_TO_EDGE(GL_MIRROR_CLAMP_TO_EDGE);
 
-    private int glWrap;
+    private final int glWrap;
 
-    private Wrap(int glWrap) {
+    Wrap(int glWrap) {
         this.glWrap = glWrap;
     }
 

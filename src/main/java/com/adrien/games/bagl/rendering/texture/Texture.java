@@ -13,9 +13,9 @@ import static org.lwjgl.opengl.GL30.glGenerateMipmap;
 
 public final class Texture {
 
-    private int handle;
-    private int width;
-    private int height;
+    private final int handle;
+    private final int width;
+    private final int height;
 
     /**
      * Creates a new texture.

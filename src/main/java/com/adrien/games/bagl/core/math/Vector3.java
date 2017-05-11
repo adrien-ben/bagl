@@ -265,20 +265,21 @@ public final class Vector3 {
      * Return a vector which is the tranformation of the passed in vector by the passed in Matrix.
      * @param matrix The transformation matrix.
      * @param vector The vector to be tranformed.
-     * @return
+     * @param w The homogeneous part of the vector. Should be one or 0. If 0 the translation is ignored.
+     * @return A new vector.
      */
     public static Vector3 transform(Matrix4 matrix, Vector3 vector, float w) {
-        float _x = matrix.getM11()*vector.getX() + matrix.getM12()*vector.getY() + matrix.getM13()*vector.getZ() + w*matrix.getM14();
-        float _y = matrix.getM21()*vector.getX() + matrix.getM22()*vector.getY() + matrix.getM23()*vector.getZ() + w*matrix.getM24();
-        float _z = matrix.getM31()*vector.getX() + matrix.getM32()*vector.getY() + matrix.getM33()*vector.getZ() + w*matrix.getM34();
-        return new Vector3(_x, _y, _z);
+        final Vector3 result = new Vector3();
+        transform(matrix, vector, w, result);
+        return result;
     }
 
     /**
-     * Return a vector which is the tranformation of the passed in vector by the passed in Matrix.
+     * Computes the transformation of a vector and sets the result in a passed in vector.
      * @param matrix The transformation matrix.
      * @param vector The vector to be tranformed.
-     * @return
+     * @param w The homogeneous part of the vector. Should be one or 0. If 0 the translation is ignored.
+     * @param result The vector where to store the result.
      */
     public static void transform(Matrix4 matrix, Vector3 vector, float w, Vector3 result) {
         float _x = matrix.getM11()*vector.getX() + matrix.getM12()*vector.getY() + matrix.getM13()*vector.getZ() + w*matrix.getM14();
@@ -332,13 +333,10 @@ public final class Vector3 {
         if (obj == null || !(obj instanceof Vector3)) {
             return false;
         }
-        Vector3 other = (Vector3) obj;
-        if (Float.floatToIntBits(x) != Float.floatToIntBits(other.x)
-                || Float.floatToIntBits(y) != Float.floatToIntBits(other.y)
-                || Float.floatToIntBits(z) != Float.floatToIntBits(other.z)) {
-            return false;
-        }
-        return true;
+        final Vector3 other = (Vector3) obj;
+        return Float.floatToIntBits(x) == Float.floatToIntBits(other.x)
+                && Float.floatToIntBits(y) == Float.floatToIntBits(other.y)
+                && Float.floatToIntBits(z) == Float.floatToIntBits(other.z);
     }
 
     @Override

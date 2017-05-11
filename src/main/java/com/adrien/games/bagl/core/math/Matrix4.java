@@ -45,9 +45,7 @@ public final class Matrix4 {
      * @param other The matrix to copy.
      */
     public Matrix4(Matrix4 other) {
-        for(int i = 0; i < SIZE; ++i) {
-            this.matrix[i] = other.matrix[i];
-        }
+        System.arraycopy(other.matrix, 0, this.matrix, 0, SIZE);
     }
 
     /**
@@ -392,17 +390,15 @@ public final class Matrix4 {
      * @param other The matrix to copy.
      */
     public void set(Matrix4 other) {
-        for(int i = 0; i < SIZE; ++i) {
-            this.matrix[i] = other.matrix[i];
-        }
+        System.arraycopy(other.matrix, 0, this.matrix, 0, SIZE);
     }
 
     @Override
     public String toString() {
-        return new StringBuilder().append(getM11()).append(' ').append(getM12()).append(' ').append(getM13()).append(' ').append(getM14()).append('\n')
-                .append(getM21()).append(' ').append(getM22()).append(' ').append(getM23()).append(' ').append(getM24()).append('\n')
-                .append(getM31()).append(' ').append(getM32()).append(' ').append(getM33()).append(' ').append(getM34()).append('\n')
-                .append(getM41()).append(' ').append(getM42()).append(' ').append(getM43()).append(' ').append(getM44()).toString();
+        return "" + getM11() + ' ' + getM12() + ' ' + getM13() + ' ' + getM14() + '\n' +
+                getM21() + ' ' + getM22() + ' ' + getM23() + ' ' + getM24() + '\n' +
+                getM31() + ' ' + getM32() + ' ' + getM33() + ' ' + getM34() + '\n' +
+                getM41() + ' ' + getM42() + ' ' + getM43() + ' ' + getM44();
     }
 
     public float getM11() {

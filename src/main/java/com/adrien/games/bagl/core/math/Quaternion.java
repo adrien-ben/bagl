@@ -30,11 +30,10 @@ public class Quaternion {
     public static Quaternion fromAngleAndVector(float angle, Vector3 vector) {
         float cosa = (float)Math.cos(angle/2);
         float sina = (float)Math.sin(angle/2);
-        float a = cosa;
         float i = vector.getX()*sina;
         float j = vector.getY()*sina;
         float k = vector.getZ()*sina;
-        return new Quaternion(a, i, j, k).normalize();
+        return new Quaternion(cosa, i, j, k).normalize();
     }
 
     /**

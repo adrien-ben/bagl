@@ -13,7 +13,7 @@ public enum Filter {
 
     private final int glFilter;
 
-    private Filter(int glFilter) {
+    Filter(int glFilter) {
         this.glFilter = glFilter;
     }
 

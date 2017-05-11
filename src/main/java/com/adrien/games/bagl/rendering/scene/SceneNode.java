@@ -77,7 +77,7 @@ public class SceneNode<T> {
      */
     public void apply(Consumer<SceneNode<T>> consumer) {
         consumer.accept(this);
-        this.children.stream().forEach(consumer);
+        this.children.forEach(consumer);
     }
 
     /**

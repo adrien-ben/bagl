@@ -35,7 +35,6 @@ public class MtlParser {
     private static final Logger log = LogManager.getLogger(MtlParser.class);
 
     private static final String SPACE_SEP = " ";
-    private static final String COMMENT_LINE_FLAG = "#";
     private static final String NEW_MTL_FLAG = "newmtl";
     private static final String DIFFUSE_COLOR_FLAG = "Kd";
     private static final String SPECULAR_COLOR_FLAG = "Ks";
@@ -45,7 +44,7 @@ public class MtlParser {
     private static final String BUMP_MAP_FLAG = "bump|map_bump";
 
     private String currentFile;
-    private Map<String, Material> materials = new HashMap<>();
+    private final Map<String, Material> materials = new HashMap<>();
     private Material currentMaterial;
 
     /**
@@ -75,9 +74,7 @@ public class MtlParser {
         String[] tokens = line.split(SPACE_SEP);
         if(tokens.length > 0) {
             String first = tokens[0];
-            if(COMMENT_LINE_FLAG.equals(first)) {
-                return;
-            } else if(NEW_MTL_FLAG.equals(first) && tokens.length > 1) {
+            if(NEW_MTL_FLAG.equals(first) && tokens.length > 1) {
                 this.parseNewMaterial(tokens[1]);
             } else if(DIFFUSE_MAP_FLAG.equals(first) && tokens.length > 1) {
                 this.parseDiffuseMap(tokens[1]);

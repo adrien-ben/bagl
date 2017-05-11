@@ -32,15 +32,15 @@ public class Shader {
      */
     private static Shader boundShader;
 
-    private ArrayList<String> uniforms;
-    private HashMap<String, Integer> uniformToLocationMap;
-    private ArrayList<Integer> attachedShaders;
-    private int handle;
+    private final ArrayList<String> uniforms;
+    private final HashMap<String, Integer> uniformToLocationMap;
+    private final ArrayList<Integer> attachedShaders;
+    private final int handle;
 
     public Shader() {
-        this.uniforms = new ArrayList<String>();
-        this.uniformToLocationMap = new HashMap<String, Integer>();
-        this.attachedShaders = new ArrayList<Integer>();
+        this.uniforms = new ArrayList<>();
+        this.uniformToLocationMap = new HashMap<>();
+        this.attachedShaders = new ArrayList<>();
         //TODO: error check
         this.handle = GL20.glCreateProgram();
     }
@@ -106,7 +106,7 @@ public class Shader {
 
     /**
      * Loads the shader's source code from a file.
-     * @param file The path to the file containing the source code.
+     * @param name The path to the file containing the source code.
      * @return The shader's source code.
      * @author Adrien.
      */

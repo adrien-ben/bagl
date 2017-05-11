@@ -15,7 +15,7 @@ public enum Format {
     private final int glInternalFormat;
     private final int glFormat;
 
-    private Format(int glInternalFormat, int glFormat) {
+    Format(int glInternalFormat, int glFormat) {
         this.glInternalFormat = glInternalFormat;
         this.glFormat = glFormat;
     }

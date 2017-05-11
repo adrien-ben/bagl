@@ -28,11 +28,11 @@ public class ParticlesSample implements Game {
     private ParticleRenderer renderer;
     private Texture texture;
 
-    private Consumer<Particle> exploder = p -> p.reset(new Vector3(0, 0, 0),
+    private final Consumer<Particle> exploder = p -> p.reset(new Vector3(0, 0, 0),
             new Vector3((float)Math.random()*2 - 1, (float)Math.random()*2 - 1, (float)Math.random()*2 - 1),
             0.1f,10f, Color.WHITE,3f);
 
-    private Consumer<Particle> snow = p -> p.reset(
+    private final Consumer<Particle> snow = p -> p.reset(
             new Vector3((float)Math.random()*20 - 10, 10, (float)Math.random()*20 - 10),
             new Vector3(0, -1, 0),0.4f, 1f, Color.WHITE,10f);
 

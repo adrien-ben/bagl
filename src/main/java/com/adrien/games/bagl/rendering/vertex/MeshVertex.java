@@ -5,11 +5,11 @@ import com.adrien.games.bagl.core.math.Vector3;
 
 public class MeshVertex implements Vertex {
 
-    public static VertexDescription DESCRIPTION = createVertexDescription();
+    public static final VertexDescription DESCRIPTION = createVertexDescription();
 
-    private Vector3 position;
-    private Vector3 normal;
-    private Vector2 coords;
+    private final Vector3 position;
+    private final Vector3 normal;
+    private final Vector2 coords;
     private Vector3 tangent;
 
     public MeshVertex() {

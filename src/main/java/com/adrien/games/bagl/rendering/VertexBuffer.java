@@ -76,9 +76,7 @@ public final class VertexBuffer {
         final int stride = this.description.getStride();
         for(int i = 0; i < limit; i++) {
             final float[] data = vertices[i].getData();
-            for(int j = 0; j < data.length; j++) {
-                this.buffer[i*stride + j] = data[j];
-            }
+            System.arraycopy(data, 0, this.buffer, i*stride, data.length);
         }
     }
 
@@ -114,7 +112,7 @@ public final class VertexBuffer {
 
     /**
      * Returns the size of the buffer.
-     * @return
+     * @return The number of vertices.
      */
     public int getVertexCount() {
         return vertexCount;

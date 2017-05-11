@@ -13,12 +13,12 @@ public class Transform {
     private Vector3 translation;
     private Quaternion rotation;
     private Vector3 scale;
-    private Matrix4 transform;
+    private final Matrix4 transform;
     private boolean isDirty;
 
-    private Matrix4 transBuff;
-    private Matrix4 rotBuff;
-    private Matrix4 scaleBuff;
+    private final Matrix4 transBuff;
+    private final Matrix4 rotBuff;
+    private final Matrix4 scaleBuff;
 
     public Transform() {
         this.translation = new Vector3();

@@ -16,8 +16,8 @@ import java.io.File;
 
 public final class MeshFactory {
 
-    private static ModelParser parser = new ObjParser();
-    private static Configuration configuration = Configuration.getInstance();
+    private static final ModelParser parser = new ObjParser();
+    private static final Configuration configuration = Configuration.getInstance();
 
     private MeshFactory() {
     }

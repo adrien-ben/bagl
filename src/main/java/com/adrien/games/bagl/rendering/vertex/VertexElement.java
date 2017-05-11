@@ -2,9 +2,9 @@ package com.adrien.games.bagl.rendering.vertex;
 
 public final class VertexElement {
 
-    private int location;
-    private int size;
-    private int offset;
+    private final int location;
+    private final int size;
+    private final int offset;
 
     public VertexElement(int location, int size, int offset) {
         this.location = location;

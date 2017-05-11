@@ -69,7 +69,7 @@ public class FrameBuffer {
      * Create the actual OpenGL frame buffer object and attaches
      * the color buffer textures and the depth render buffer.
      * @param textures The textures to use as color outputs.
-     * @param depthBufferHandle The handle of the OpenGL render buffer.
+     * @param depth The depth texture.
      * @return The handle of the OpengGL frame buffer.
      */
     private int createBuffer(Texture[] textures, Texture depth) {

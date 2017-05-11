@@ -7,8 +7,8 @@ public class VertexPositionColor implements Vertex {
 
     public static VertexDescription DESCRIPTION = createVertexDescription();
 
-    private Vector3 position;
-    private Color color;
+    private final Vector3 position;
+    private final Color color;
 
     public VertexPositionColor(Vector3 position, Color color) {
         this.position = position;

@@ -4,9 +4,9 @@ import com.adrien.games.bagl.core.math.Vector3;
 
 public class VertexPosition implements Vertex {
 
-    public static VertexDescription DESCRIPTION = createVertexDescription();
+    public static final VertexDescription DESCRIPTION = createVertexDescription();
 
-    private Vector3 position;
+    private final Vector3 position;
 
     public VertexPosition(Vector3 position) {
         this.position = position;

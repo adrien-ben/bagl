@@ -18,7 +18,7 @@ import static org.lwjgl.opengl.GL13.*;
  */
 public class Cubemap {
 
-    private int handle;
+    private final int handle;
 
     /**
      * Creates a new CubeMap from the different faces file path.

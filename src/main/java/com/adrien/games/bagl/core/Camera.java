@@ -16,16 +16,16 @@ public class Camera {
     private Vector3 direction;
     private Vector3 up;
 
-    private float fov;
-    private float aspectRatio;
-    private float zNear;
-    private float zFar;
+    private final float fov;
+    private final float aspectRatio;
+    private final float zNear;
+    private final float zFar;
 
-    private Matrix4 projection;
-    private Matrix4 view;
-    private Matrix4 viewProj;
-    private Matrix4 viewAtOrigin;
-    private Matrix4 viewProjAtOrigin;
+    private final Matrix4 projection;
+    private final Matrix4 view;
+    private final Matrix4 viewProj;
+    private final Matrix4 viewAtOrigin;
+    private final Matrix4 viewProjAtOrigin;
 
     private boolean dirtyProj;
     private boolean dirtyView;

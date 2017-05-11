@@ -29,9 +29,9 @@ public class SpritebatchSample {
         private Spritebatch spritebatch;
 
         private float xTextPos;
-        private Vector2[] positions = new Vector2[SPRITE_COUNT];
-        private int[] sizes = new int[SPRITE_COUNT];
-        private float[] rotations = new float[SPRITE_COUNT];
+        private final Vector2[] positions = new Vector2[SPRITE_COUNT];
+        private final int[] sizes = new int[SPRITE_COUNT];
+        private final float[] rotations = new float[SPRITE_COUNT];
 
         @Override
         public void init() {

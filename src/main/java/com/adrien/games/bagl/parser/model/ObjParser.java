@@ -25,7 +25,6 @@ public class ObjParser implements ModelParser {
     private static final Logger log = LogManager.getLogger(ObjParser.class);
 
     private static final String SPACE_SEP = " ";
-    private static final String COMMENT_LINE_FLAG = "#";
     private static final String POSITION_LINE_FLAG = "v";
     private static final String TEXTURE_LINE_FLAG = "vt";
     private static final String NORMAL_LINE_FLAG = "vn";
@@ -108,9 +107,7 @@ public class ObjParser implements ModelParser {
             this.setTangentForFace(tangents, index2, tangent);
         }
 
-        for(Vector3 tangent : tangents) {
-            this.tangents.add(tangent);
-        }
+        Collections.addAll(this.tangents, tangents);
 
     }
 
@@ -166,9 +163,7 @@ public class ObjParser implements ModelParser {
         String[] tokens = line.split(SPACE_SEP);
         if(tokens.length > 0) {
             String first = tokens[0];
-            if(COMMENT_LINE_FLAG.equals(first)) {
-                return;
-            } else if(POSITION_LINE_FLAG.equals(first)) {
+            if(POSITION_LINE_FLAG.equals(first)) {
                 this.parsePosition(tokens);
             } else if(TEXTURE_LINE_FLAG.equals(first)) {
                 this.parseTextureCoords(tokens);
@@ -255,8 +250,7 @@ public class ObjParser implements ModelParser {
             String fileName = this.getContentInBrackets(tokens[1]);
             String folderPath = Paths.get(this.currentFile).getParent().toString();
             String mtlPath = folderPath + "/" + fileName;
-            this.mtlParser.parse(mtlPath).entrySet().stream()
-                    .forEach(entry -> this.materialLib.put(entry.getKey(), entry.getValue()));
+            this.mtlParser.parse(mtlPath).forEach(this.materialLib::put);
         } else {
             this.handleParseError("A material lib reference is incorrect at line " + this.currentLine + ".");
         }
