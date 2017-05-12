@@ -1,6 +1,7 @@
 package com.adrien.games.bagl.rendering;
 
 import com.adrien.games.bagl.core.Color;
+import com.adrien.games.bagl.core.Engine;
 import com.adrien.games.bagl.rendering.texture.Format;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.texture.TextureParameters;
@@ -109,7 +110,7 @@ public class FrameBuffer {
      * @param color The background color.
      */
     public static void clear(Color color) {
-        glClearColor(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+        Engine.setClearColor(color);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 

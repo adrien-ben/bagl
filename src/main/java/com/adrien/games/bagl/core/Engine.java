@@ -59,6 +59,15 @@ public final class Engine {
         this.isRunning = false;
     }
 
+    /**
+     * Sets the color to une when clear the color buffer. This color is only applied to the currently
+     * bound framebuffer.
+     * @param color The clear color.
+     */
+    public static void setClearColor(Color color) {
+        GL11.glClearColor(color.getRed(), color.getGreen(), color.getBlue(), 1);
+    }
+
     private void destroy() {
         log.info("Destroying engine");
         game.destroy();
