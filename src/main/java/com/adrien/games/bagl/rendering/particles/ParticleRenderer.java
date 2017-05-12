@@ -122,10 +122,12 @@ public class ParticleRenderer {
         Arrays.stream(emitter.getParticles()).filter(Particle::isAlive).forEach(this.particlesToRender::add);
         System.out.println("Retrieving active particles: " + this.timer.getElapsedTime());
 
-        this.timer.update();
-        COMPARATOR.setCamera(camera);
-        this.particlesToRender.sort(COMPARATOR);
-        System.out.println("Sorting particles: " + this.timer.getElapsedTime());
+        if(emitter.getBlendMode() != BlendMode.ADDITIVE) {
+            this.timer.update();
+            COMPARATOR.setCamera(camera);
+            this.particlesToRender.sort(COMPARATOR);
+            System.out.println("Sorting particles: " + this.timer.getElapsedTime());
+        }
 
         this.timer.update();
         for(Particle p : this.particlesToRender) {
