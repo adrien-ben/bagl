@@ -1,5 +1,6 @@
 package com.adrien.games.bagl.core;
 
+import com.adrien.games.bagl.rendering.BlendMode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.GL11;
@@ -61,11 +62,24 @@ public final class Engine {
 
     /**
      * Sets the color to une when clear the color buffer. This color is only applied to the currently
-     * bound framebuffer.
+     * bound framebuffer. The engine must have been started first.
      * @param color The clear color.
      */
     public static void setClearColor(Color color) {
         GL11.glClearColor(color.getRed(), color.getGreen(), color.getBlue(), 1);
+    }
+
+    /**
+     * Sets the blend mode for the current rendering context.
+     * @param blendMode The blend mode to apply.
+     */
+    public static void setBlendMode(BlendMode blendMode) {
+        if(blendMode == BlendMode.NONE) {
+            GL11.glDisable(GL11.GL_BLEND);
+        } else {
+            GL11.glEnable(GL11.GL_BLEND);
+            GL11.glBlendFunc(blendMode.getGlSource(), blendMode.getGlDestination());
+        }
     }
 
     private void destroy() {

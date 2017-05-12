@@ -7,6 +7,8 @@ import org.lwjgl.opengl.GL11;
  */
 public enum BlendMode {
 
+    NONE(Constants.NONE_VALUE, Constants.NONE_VALUE),
+    DEFAULT(GL11.GL_ONE, GL11.GL_ZERO),
     TRANSPARENCY(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA),
     ADDITIVE(GL11.GL_SRC_ALPHA, GL11.GL_ONE);
 
@@ -25,4 +27,9 @@ public enum BlendMode {
     public int getGlDestination() {
         return glDestination;
     }
+
+    private static class Constants {
+        static final int NONE_VALUE = -1;
+    }
+
 }

@@ -2,8 +2,10 @@ package com.adrien.games.bagl.rendering.particles;
 
 import com.adrien.games.bagl.core.Camera;
 import com.adrien.games.bagl.core.Color;
+import com.adrien.games.bagl.core.Engine;
 import com.adrien.games.bagl.core.Time;
 import com.adrien.games.bagl.core.math.Vector3;
+import com.adrien.games.bagl.rendering.BlendMode;
 import com.adrien.games.bagl.rendering.BufferUsage;
 import com.adrien.games.bagl.rendering.Shader;
 import com.adrien.games.bagl.rendering.VertexBuffer;
@@ -151,16 +153,15 @@ public class ParticleRenderer {
         this.vbuffer.setData(this.vertices, particleToRender);
         System.out.println("Copying data to gpu : " + this.timer.getElapsedTime());
 
-        GL11.glEnable(GL11.GL_BLEND);
+        Engine.setBlendMode(emitter.getBlendMode());
         GL11.glDepthMask(false);
-        GL11.glBlendFunc(emitter.getBlendMode().getGlSource(), emitter.getBlendMode().getGlDestination());
 
         this.timer.update();
         GL11.glDrawArrays(GL11.GL_POINTS, 0, particleToRender);
         System.out.println("Rendering " + particleToRender + " particles : " + this.timer.getElapsedTime());
 
         GL11.glDepthMask(true);
-        GL11.glDisable(GL11.GL_BLEND);
+        Engine.setBlendMode(BlendMode.NONE);
 
         VertexBuffer.unbind();
         Shader.unbind();

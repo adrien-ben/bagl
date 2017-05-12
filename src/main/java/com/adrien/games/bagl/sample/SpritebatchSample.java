@@ -2,6 +2,7 @@ package com.adrien.games.bagl.sample;
 
 import com.adrien.games.bagl.core.*;
 import com.adrien.games.bagl.core.math.Vector2;
+import com.adrien.games.bagl.rendering.BlendMode;
 import com.adrien.games.bagl.rendering.Spritebatch;
 import com.adrien.games.bagl.rendering.text.Font;
 import com.adrien.games.bagl.rendering.texture.Texture;
@@ -18,7 +19,7 @@ public class SpritebatchSample {
     private static final class TestGame implements Game {
 
         private static final String TITLE = "Spritebatch";
-        private static final int SPRITE_COUNT = 100000;
+        private static final int SPRITE_COUNT = 10000;
         private static final String HELLO_WORLD = "Hello World ! :)";
 
         private int width;
@@ -54,8 +55,7 @@ public class SpritebatchSample {
             }
 
             glEnable(GL_CULL_FACE);
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            Engine.setBlendMode(BlendMode.TRANSPARENCY);
             Engine.setClearColor(Color.CORNFLOWER_BLUE);
         }
 
