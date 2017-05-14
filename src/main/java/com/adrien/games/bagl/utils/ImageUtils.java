@@ -15,7 +15,7 @@ public final class ImageUtils {
         IntBuffer width = BufferUtils.createIntBuffer(1);
         IntBuffer height = BufferUtils.createIntBuffer(1);
         IntBuffer comp = BufferUtils.createIntBuffer(1);
-        STBImage.stbi_set_flip_vertically_on_load(0);
+        STBImage.stbi_set_flip_vertically_on_load(1);
         ByteBuffer data = STBImage.stbi_load(filePath, width, height, comp, 0);
         if(data == null) {
             throw new RuntimeException("Failed to load image : '" + filePath + "'.");
