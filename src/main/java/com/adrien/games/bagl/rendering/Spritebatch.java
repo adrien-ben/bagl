@@ -4,15 +4,11 @@ import com.adrien.games.bagl.core.Camera2D;
 import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.core.math.Vector2;
 import com.adrien.games.bagl.core.math.Vector3;
-import com.adrien.games.bagl.rendering.text.Font;
-import com.adrien.games.bagl.rendering.text.Glyph;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.texture.TextureRegion;
 import com.adrien.games.bagl.rendering.vertex.VertexPositionColorTexture;
 import com.adrien.games.bagl.rendering.vertex.VertexPositionTexture;
 import org.lwjgl.opengl.GL11;
-
-import java.util.Objects;
 
 /**
  * Class allowing to render sprites in batch.
@@ -32,12 +28,9 @@ public class Spritebatch {
     private static final int INDICES_PER_SPRITE = 6;
     private static final String SPRITE_VERTEX_SHADER = "/sprite.vert";
     private static final String SPRITE_FRAGMENT_SHADER = "/sprite.frag";
-    private static final String TEXT_VERTEX_SHADER = "/text.vert";
-    private static final String TEXT_FRAGMENT_SHADER = "/text.frag";
 
     private final Camera2D camera;
     private final Shader spriteShader;
-    private final Shader textShader;
     private Shader currentShader;
     private final int size;
     private final VertexBuffer vertexBuffer;
@@ -57,7 +50,6 @@ public class Spritebatch {
     public Spritebatch(int size, int width, int height) {
         this.camera = new Camera2D(new Vector2(width/2, height/2), width, height);
         this.spriteShader = this.createShader(SPRITE_VERTEX_SHADER, SPRITE_FRAGMENT_SHADER);
-        this.textShader = this.createShader(TEXT_VERTEX_SHADER, TEXT_FRAGMENT_SHADER);
         this.size = size < MAX_SIZE ? size : MAX_SIZE;
         this.vertexBuffer = new VertexBuffer(VertexPositionColorTexture.DESCRIPTION, BufferUsage.DYNAMIC_DRAW, this.size*VERTICES_PER_SPRITE);
         this.vertices = this.initVertices(this.size);
@@ -123,7 +115,7 @@ public class Spritebatch {
     /**
      * Checks that the spritebatch is started before it is used.
      */
-    public void checkStarted() {
+    private void checkStarted() {
         if(!started) {
             throw new IllegalStateException("You must call Spritebatch::start before calling Spritebatch::end or Spritebatch::draw.");
         }
@@ -245,49 +237,6 @@ public class Spritebatch {
                 rotation, xCenter, yCenter, color);
 
         this.drawnSprites++;
-    }
-
-    /**
-     * Renders text with a given font at a given position with a given color.
-     * @param text The text to render.
-     * @param font The font to use to render the text.
-     * @param position The position at which to render the text.
-     * @param color The color of the text.
-     */
-    public void drawText(String text, Font font, Vector2 position, Color color) {
-        this.checkStarted();
-
-        if(shouldRender(font.getBitmap(), this.textShader)) {
-            renderBatch();
-        }
-
-        this.currentShader = this.textShader;
-        this.currentTexture = font.getBitmap();
-
-        float xadvance = 0;
-        for(int i = 0; i < text.length(); i++) {
-            char c = text.charAt(i);
-            Glyph glyph = font.getGlyph(c);
-            if(Objects.nonNull(glyph)) {
-                TextureRegion region = glyph.getRegion();
-                float xpos = xadvance + glyph.getXOffset() + position.getX();
-                float ypos = -(glyph.getHeight() + glyph.getYOffset()) + position.getY();
-
-                int offset = this.drawnSprites*VERTICES_PER_SPRITE;
-                this.computeVertex(offset, xpos, ypos, region.getLeft(), region.getBottom(),
-                        0f, 0, 0, color);
-                this.computeVertex(offset + 1, xpos + glyph.getWidth(), ypos, region.getRight(),
-                        region.getBottom(), 0f, 0, 0, color);
-                this.computeVertex(offset + 2, xpos, ypos + glyph.getHeight(), region.getLeft(),
-                        region.getTop(), 0f, 0, 0, color);
-                this.computeVertex(offset + 3, xpos + glyph.getWidth(), ypos + glyph.getHeight(),
-                        region.getRight(), region.getTop(), 0f, 0, 0, color);
-
-                xadvance += glyph.getXAdvance();
-
-                this.drawnSprites++;
-            }
-        }
     }
 
     /**
