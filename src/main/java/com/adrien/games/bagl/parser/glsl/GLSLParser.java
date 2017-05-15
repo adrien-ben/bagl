@@ -74,7 +74,7 @@ public class GLSLParser {
         String type = tokenizer.nextToken();
         String name = tokenizer.nextToken();
         String value = tokenizer.nextToken();
-        return new GLSLConstant(type, name, Integer.parseInt(value));
+        return new GLSLConstant(type, name, (int)Float.parseFloat(value));
     }
 
     private void generateUniforms() {
