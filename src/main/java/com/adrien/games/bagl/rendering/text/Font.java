@@ -4,82 +4,97 @@ import com.adrien.games.bagl.rendering.texture.Format;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.texture.TextureParameters;
 import com.adrien.games.bagl.rendering.texture.TextureRegion;
-import com.adrien.games.bagl.utils.FileUtils;
-import org.lwjgl.BufferUtils;
-import org.lwjgl.stb.STBTTAlignedQuad;
-import org.lwjgl.stb.STBTTBakedChar;
-import org.lwjgl.stb.STBTTFontinfo;
-import org.lwjgl.stb.STBTruetype;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import java.nio.ByteBuffer;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 /**
  * Text font used to render text.
- * @author Adrien
  *
  */
 public class Font {
 
-    private static final int BMP_WIDTH = 512;
-    private static final int BMP_HEIGHT = 512;
-    private static final int FIRST_CHAR = 32;
-    private static final int CHAR_COUNT = 96;
+    private static final Logger log = LogManager.getLogger(Font.class);
 
-    private final int size;
+    private static final Pattern HEADER_PAGE_PATTERN = Pattern.compile("^page.+file=\"(.+)\".*");
+    private static final Pattern HEADER_COMMON_PATTERN = Pattern.compile("^common\\slineHeight=(\\d+)\\s+" +
+            "base=(\\d+)\\s+scaleW=(\\d+)\\s+scaleH=(\\d+).*");
+    private static final Pattern CHAR_LINE_PATTERN = Pattern.compile("^char\\sid=(\\d+)\\s+x=(\\d+)\\s+y=(\\d+)\\s+" +
+            "width=(\\d+)\\s+height=(\\d+)\\s+xoffset=(-?\\d+)\\s+yoffset=(-?\\d+)\\s+xadvance=(-?\\d+)\\s+.*");
+
+    private float lineHeight;
+    private int pageWidth;
+    private int pageHeight;
+    private String atlasName;
+    private Map<Integer, Glyph> glyphs = new HashMap<>();
     private Texture bitmap;
-    private final Glyph[] glyphs = new Glyph[CHAR_COUNT];
-    private int ascent;
-    private int descent;
-    private int lineGap;
 
-    public Font(String filePath, int size) {
-        this.size = size;
+    public Font(String filePath) {
         this.load(filePath);
     }
 
     private void load(String filePath) {
-        ByteBuffer ttf = FileUtils.loadAsByteBuffer(filePath);
-
-        STBTTBakedChar.Buffer cdata = STBTTBakedChar.malloc(CHAR_COUNT);
-        ByteBuffer bitmap = BufferUtils.createByteBuffer(BMP_WIDTH * BMP_HEIGHT);
-        STBTruetype.stbtt_BakeFontBitmap(ttf, this.size, bitmap, BMP_WIDTH, BMP_HEIGHT, FIRST_CHAR, cdata);
-        this.bitmap = new Texture(BMP_WIDTH, BMP_HEIGHT, bitmap, new TextureParameters().format(Format.ALPHA8));
-
-        STBTTFontinfo infos = STBTTFontinfo.malloc();
-        STBTruetype.stbtt_InitFont(infos, ttf);
-
-        this.getFontVMetrics(infos);
-        this.getCharInfos(cdata);
-
-        infos.free();
-        cdata.free();
-    }
-
-    private void getFontVMetrics(STBTTFontinfo infos) {
-        float scale = STBTruetype.stbtt_ScaleForPixelHeight(infos, this.size);
-        int[] ascent = new int[1];
-        int[] descent = new int[1];
-        int[] lineGap = new int[1];
-        STBTruetype.stbtt_GetFontVMetrics(infos, ascent, descent, lineGap);
-        this.ascent = (int)(scale*ascent[0]);
-        this.descent = (int)(scale*descent[0]);
-        this.lineGap = (int)(scale*lineGap[0]);
-    }
-
-    private void getCharInfos(STBTTBakedChar.Buffer cdata) {
-        float[] xpos = {0};
-        float[] ypos = {0};
-        STBTTAlignedQuad q = STBTTAlignedQuad.malloc();
-        for(int i = 0; i < CHAR_COUNT; i++) {
-            int codePoint = i + FIRST_CHAR;
-            STBTTBakedChar charBuffer = cdata.get(i);
-            STBTruetype.stbtt_GetBakedQuad(cdata, BMP_WIDTH, BMP_HEIGHT, i, xpos, ypos, q, true);
-            TextureRegion region = new TextureRegion(this.bitmap, q.s0(), q.t1(), q.s1(), q.t0());
-            glyphs[i] = new Glyph(region, q.x1() - q.x0(), q.y1() - q.y0(), charBuffer.xoff(),
-                    charBuffer.yoff(), charBuffer.xadvance(), (char)codePoint);
+        final File file = new File(filePath);
+        if(!file.exists()) {
+            log.error("Font file '{}' does not exists.", filePath);
+            throw new RuntimeException("Font file '" + filePath + "' does not exists.");
         }
-        q.free();
+
+        try(final Stream<String> lines = Files.lines(Paths.get(filePath))) {
+            lines.forEach(this::parseLine);
+        } catch (IOException e) {
+            log.error("Failed to load font file", e);
+        }
+
+        this.bitmap = new Texture(file.getParentFile().getAbsolutePath() + File.separator + this.atlasName,
+                new TextureParameters().format(Format.ALPHA8));
+    }
+
+    private void parseLine(String line) {
+        final Matcher headerCommonMatcher = HEADER_COMMON_PATTERN.matcher(line);
+        final Matcher headerPageMatcher = HEADER_PAGE_PATTERN.matcher(line);
+        final Matcher charLineMatcher = CHAR_LINE_PATTERN.matcher(line);
+        if(headerCommonMatcher.matches()) {
+            this.processCommonHeader(headerCommonMatcher);
+        } else if(headerPageMatcher.matches()) {
+            this.processPageHeader(headerPageMatcher);
+        } else if(charLineMatcher.matches()){
+            this.processCharLine(charLineMatcher);
+        }
+    }
+
+    private void processCommonHeader(Matcher matcher) {
+        this.pageWidth = Integer.parseInt(matcher.group(3));
+        this.pageHeight = Integer.parseInt(matcher.group(4));
+        this.lineHeight = Float.parseFloat(matcher.group(1)) / this.pageHeight;
+    }
+
+    private void processPageHeader(Matcher matcher) {
+        this.atlasName = matcher.group(1);
+    }
+
+    private void processCharLine(Matcher matcher) {
+        final int id = Integer.parseInt(matcher.group(1));
+        final float x = Float.parseFloat(matcher.group(2)) / this.pageWidth;
+        final float y = Float.parseFloat(matcher.group(3)) / this.pageHeight;
+        final float width = Float.parseFloat(matcher.group(4)) / this.pageWidth;
+        final float height = Float.parseFloat(matcher.group(5)) / this.pageHeight;
+        final float xOffset = Float.parseFloat(matcher.group(6)) / this.pageWidth;
+        final float yOffset = Float.parseFloat(matcher.group(7)) / this.pageHeight;
+        final float xAdvance = Float.parseFloat(matcher.group(8)) / this.pageWidth;
+
+        this.glyphs.put(id, new Glyph(new TextureRegion(this.bitmap, x, 1f - y - height, x + width, 1f - y),
+                width, height, xOffset, this.lineHeight - height - yOffset, xAdvance, (char)id));
     }
 
     /**
@@ -98,8 +113,7 @@ public class Font {
      * @return The glyph information as a {@link Glyph} or null if no glyph is found.
      */
     public Glyph getGlyph(char c) {
-        int index = (int)c - FIRST_CHAR;
-        return (index < 0 || index >= CHAR_COUNT) ?  null : this.glyphs[index];
+        return this.glyphs.get((int)c);
     }
 
     public void destroy() {
@@ -107,23 +121,23 @@ public class Font {
     }
 
     public int getSize() {
-        return size;
+        return 0;
     }
 
     public Texture getBitmap() {
-        return bitmap;
+        return this.bitmap;
     }
 
     public int getAscent() {
-        return ascent;
+        return 0;
     }
 
     public int getDescent() {
-        return descent;
+        return 0;
     }
 
     public int getLineGap() {
-        return lineGap;
+        return 0;
     }
 
 }
