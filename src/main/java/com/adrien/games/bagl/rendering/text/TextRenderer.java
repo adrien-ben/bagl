@@ -56,12 +56,12 @@ public class TextRenderer {
             } else {
                 final Glyph glyph = font.getGlyph(c);
                 if(Objects.nonNull(glyph)) {
-                    final float left = i == 0 ? caretPosition.getX() : glyph.getXOffset()*scale + caretPosition.getX();
-                    final float right = left + glyph.getWidth()*scale;
-                    final float bottom = caretPosition.getY() + glyph.getYOffset()*scale;
-                    final float top = bottom + glyph.getHeight()*aspectRatio*scale;
-
                     final TextureRegion region = glyph.getRegion();
+
+                    final float left = i == 0 ? caretPosition.getX() : glyph.getXOffset()*scale + caretPosition.getX();
+                    final float right = left + (region.getRight() - region.getLeft())*scale;
+                    final float bottom = caretPosition.getY() + glyph.getYOffset()*scale;
+                    final float top = bottom + (region.getTop() - region.getBottom())*aspectRatio*scale;
 
                     vertices[verticesIndex++] = new TextVertex(new Vector2(left,  bottom), new Vector2(region.getLeft(), region.getBottom()), color);
                     vertices[verticesIndex++] = new TextVertex(new Vector2(right, bottom), new Vector2(region.getRight(), region.getBottom()), color);

@@ -44,7 +44,6 @@ public class TextSample implements Game {
 
     @Override
     public void render() {
-//        this.renderer.render(TEST_STRING, this.arial, new Vector2(0, 0f), TEXT_SCALE, TEXT_COLOR);
         this.renderer.render(TEST_STRING, this.segoe, new Vector2(0, 0f), TEXT_SCALE, TEXT_COLOR);
     }
 

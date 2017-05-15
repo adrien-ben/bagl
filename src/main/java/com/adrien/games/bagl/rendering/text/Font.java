@@ -94,7 +94,7 @@ public class Font {
 
         this.glyphs.put(id, new Glyph(
                 new TextureRegion(this.bitmap, x, 1f - y - height, x + width, 1f - y),
-                width, height, xOffset, this.lineGap - height - yOffset, xAdvance, (char)id));
+                xOffset, this.lineGap - height - yOffset, xAdvance, (char)id));
     }
 
     /**
