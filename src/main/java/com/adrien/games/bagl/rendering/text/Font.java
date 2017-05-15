@@ -7,8 +7,7 @@ import com.adrien.games.bagl.rendering.texture.TextureRegion;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -32,7 +31,7 @@ public class Font {
     private static final Pattern CHAR_LINE_PATTERN = Pattern.compile("^char\\sid=(\\d+)\\s+x=(\\d+)\\s+y=(\\d+)\\s+" +
             "width=(\\d+)\\s+height=(\\d+)\\s+xoffset=(-?\\d+)\\s+yoffset=(-?\\d+)\\s+xadvance=(-?\\d+)\\s+.*");
 
-    private float lineHeight;
+    private float lineGap;
     private int pageWidth;
     private int pageHeight;
     private String atlasName;
@@ -53,7 +52,7 @@ public class Font {
         try(final Stream<String> lines = Files.lines(Paths.get(filePath))) {
             lines.forEach(this::parseLine);
         } catch (IOException e) {
-            log.error("Failed to load font file", e);
+
         }
 
         this.bitmap = new Texture(file.getParentFile().getAbsolutePath() + File.separator + this.atlasName,
@@ -76,7 +75,7 @@ public class Font {
     private void processCommonHeader(Matcher matcher) {
         this.pageWidth = Integer.parseInt(matcher.group(3));
         this.pageHeight = Integer.parseInt(matcher.group(4));
-        this.lineHeight = Float.parseFloat(matcher.group(1)) / this.pageHeight;
+        this.lineGap = Float.parseFloat(matcher.group(1)) / this.pageHeight;
     }
 
     private void processPageHeader(Matcher matcher) {
@@ -93,8 +92,9 @@ public class Font {
         final float yOffset = Float.parseFloat(matcher.group(7)) / this.pageHeight;
         final float xAdvance = Float.parseFloat(matcher.group(8)) / this.pageWidth;
 
-        this.glyphs.put(id, new Glyph(new TextureRegion(this.bitmap, x, 1f - y - height, x + width, 1f - y),
-                width, height, xOffset, this.lineHeight - height - yOffset, xAdvance, (char)id));
+        this.glyphs.put(id, new Glyph(
+                new TextureRegion(this.bitmap, x, 1f - y - height, x + width, 1f - y),
+                width, height, xOffset, this.lineGap - height - yOffset, xAdvance, (char)id));
     }
 
     /**
@@ -120,24 +120,12 @@ public class Font {
         this.bitmap.destroy();
     }
 
-    public int getSize() {
-        return 0;
-    }
-
     public Texture getBitmap() {
         return this.bitmap;
     }
 
-    public int getAscent() {
-        return 0;
-    }
-
-    public int getDescent() {
-        return 0;
-    }
-
-    public int getLineGap() {
-        return 0;
+    public float getLineGap() {
+        return this.lineGap;
     }
 
 }

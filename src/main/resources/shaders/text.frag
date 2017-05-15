@@ -10,7 +10,7 @@ out vec4 color;
 uniform sampler2D atlas;
 
 const float width = 0.5;
-const float smoothing = 0.015;
+const float smoothing = 0.05;
 
 void main() {
     float alpha = smoothstep(1 - width - smoothing, 1 - width + smoothing, texture2D(atlas, vertOut.coords).a);
