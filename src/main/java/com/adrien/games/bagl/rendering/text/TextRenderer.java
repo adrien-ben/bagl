@@ -33,17 +33,34 @@ public class TextRenderer {
         this.shader = new Shader().addVertexShader(TEXT_VERTEX_SHADER).addFragmentShader(TEXT_FRAGMENT_SHADER).compile();
     }
 
+    /**
+     * Release resources.
+     */
     public void destroy() {
         this.shader.destroy();
     }
 
+    /**
+     * <p>Renders a {@link String} on screen.
+     * <p>The text is renderer at a given position with a given font, color and size.
+     * The position and scale must be expressed in screen space values ranging from
+     * 0 to 1. This allows text position and size to be consistent when resolution
+     * changes. The origin is the bottom-left corner.
+     * <p>For example, to render a text from the bottom left corner, with an height
+     * equals to the height of the viewport. Position must be (0, 0) and scale = 1.
+     * @param text The text to render.
+     * @param font The font to use to render the text.
+     * @param position The position of the text.
+     * @param scale The scale of the text.
+     * @param color The color of the text.
+     */
     public void render(String text, Font font, Vector2 position, float scale, Color color) {
         final int textLength = text.length();
         final TextVertex[] vertices = new TextVertex[textLength*VERTEX_PER_CHAR];
         final int[] indices = new int[textLength*INDEX_PER_CHAR];
 
         final float aspectRatio = (float)this.configuration.getXResolution()/this.configuration.getYResolution();
-        final Vector2 caretPosition = new Vector2(position.getX() - HALF_SCREEN_SIZE, position.getY() - HALF_SCREEN_SIZE);
+        final Vector2 caretPosition = new Vector2(position.getX()*2 - HALF_SCREEN_SIZE, position.getY()*2 - HALF_SCREEN_SIZE);
 
         for(int i = 0 ; i < textLength; i++) {
 

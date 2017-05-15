@@ -16,8 +16,8 @@ public class TextSample implements Game {
 
     private static final String TITLE = "Text Sample";
 
-    private static final String TEST_STRING = "Hello p{World}.. :) XXXxxx";
-    private static final Color TEXT_COLOR = Color.DARK_GRAY;
+    private static final String TEST_STRING = "Hello World.. ;)";
+    private static final Color TEXT_COLOR = Color.WHITE;
     private static final float TEXT_SCALE = 1f;
 
     private Font arial;
@@ -44,7 +44,7 @@ public class TextSample implements Game {
 
     @Override
     public void render() {
-        this.renderer.render(TEST_STRING, this.segoe, new Vector2(0, 0f), TEXT_SCALE, TEXT_COLOR);
+        this.renderer.render(TEST_STRING, this.segoe, new Vector2(0, 0), TEXT_SCALE, TEXT_COLOR);
     }
 
     public static void main(String[] args) {
