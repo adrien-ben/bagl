@@ -55,58 +55,63 @@ public class TextRenderer {
      * @param color The color of the text.
      */
     public void render(String text, Font font, Vector2 position, float scale, Color color) {
+        final float aspectRatio = (float)this.configuration.getXResolution()/this.configuration.getYResolution();
+        final float vScale = scale/font.getLineGap()*2;
+        final float hScale = vScale/aspectRatio;
+
+        final Caret caret = new Caret(font.getLineGap()*vScale, position.getX()*2 - HALF_SCREEN_SIZE,
+                position.getY()*2 - HALF_SCREEN_SIZE);
+
+        int charCount = 0;
         final int textLength = text.length();
         final TextVertex[] vertices = new TextVertex[textLength*VERTEX_PER_CHAR];
-        final int[] indices = new int[textLength*INDEX_PER_CHAR];
-
-        final float aspectRatio = (float)this.configuration.getXResolution()/this.configuration.getYResolution();
-        final Vector2 caretPosition = new Vector2(position.getX()*2 - HALF_SCREEN_SIZE, position.getY()*2 - HALF_SCREEN_SIZE);
-
         for(int i = 0 ; i < textLength; i++) {
 
-            int verticesIndex = i*VERTEX_PER_CHAR;
-            int indicesIndex = i*INDEX_PER_CHAR;
+            int verticesIndex = charCount*VERTEX_PER_CHAR;
 
             final char c = text.charAt(i);
             if(c == '\n' || c == '\r') {
-                caretPosition.setY(caretPosition.getY() + font.getLineGap());
+                caret.nextLine();
             } else {
                 final Glyph glyph = font.getGlyph(c);
                 if(Objects.nonNull(glyph)) {
                     final TextureRegion region = glyph.getRegion();
 
-                    final float left = i == 0 ? caretPosition.getX() : glyph.getXOffset()*scale + caretPosition.getX();
-                    final float right = left + (region.getRight() - region.getLeft())*scale;
-                    final float bottom = caretPosition.getY() + glyph.getYOffset()*scale;
-                    final float top = bottom + (region.getTop() - region.getBottom())*aspectRatio*scale;
+                    final float left = caret.isNewLine() ? caret.getX() : glyph.getXOffset()*hScale + caret.getX();
+                    final float right = left + (region.getRight() - region.getLeft())*hScale;
+                    final float bottom = caret.getY() + glyph.getYOffset();
+                    final float top = bottom + (region.getTop() - region.getBottom())*vScale;
 
-                    vertices[verticesIndex++] = new TextVertex(new Vector2(left,  bottom), new Vector2(region.getLeft(), region.getBottom()), color);
-                    vertices[verticesIndex++] = new TextVertex(new Vector2(right, bottom), new Vector2(region.getRight(), region.getBottom()), color);
-                    vertices[verticesIndex++] = new TextVertex(new Vector2(left, top), new Vector2(region.getLeft(), region.getTop()), color);
-                    vertices[verticesIndex] = new TextVertex(new Vector2(right, top), new Vector2(region.getRight(), region.getTop()), color);
+                    vertices[verticesIndex++] = new TextVertex(new Vector2(left,  bottom),
+                            new Vector2(region.getLeft(), region.getBottom()), color);
+                    vertices[verticesIndex++] = new TextVertex(new Vector2(right, bottom),
+                            new Vector2(region.getRight(), region.getBottom()), color);
+                    vertices[verticesIndex++] = new TextVertex(new Vector2(left, top),
+                            new Vector2(region.getLeft(), region.getTop()), color);
+                    vertices[verticesIndex] = new TextVertex(new Vector2(right, top),
+                            new Vector2(region.getRight(), region.getTop()), color);
 
-                    indices[indicesIndex++] = i*VERTEX_PER_CHAR;
-                    indices[indicesIndex++] = i*VERTEX_PER_CHAR + 1;
-                    indices[indicesIndex++] = i*VERTEX_PER_CHAR + 2;
-                    indices[indicesIndex++] = i*VERTEX_PER_CHAR + 2;
-                    indices[indicesIndex++] = i*VERTEX_PER_CHAR + 1;
-                    indices[indicesIndex] = i*VERTEX_PER_CHAR + 3;
-
-                    caretPosition.setX(caretPosition.getX() + glyph.getXAdvance()*scale);
+                    caret.advance(glyph.getXAdvance()*hScale);
+                    charCount++;
                 }
             }
         }
 
-        final VertexBuffer vertexBuffer = new VertexBuffer(TextVertex.VERTEX_DESCRIPTION, BufferUsage.STATIC_DRAW, vertices);
-        final IndexBuffer indexBuffer = new IndexBuffer(BufferUsage.STATIC_DRAW, indices);
+        final IndexBuffer indexBuffer = this.generateIndexBuffer(charCount);
+
+        final VertexBuffer vertexBuffer = new VertexBuffer(TextVertex.VERTEX_DESCRIPTION, BufferUsage.STATIC_DRAW,
+                charCount*VERTEX_PER_CHAR);
+        vertexBuffer.setData(vertices, charCount*VERTEX_PER_CHAR);
 
         font.getBitmap().bind();
         this.shader.bind();
+        this.shader.setUniform("thickness", 0.5f);
+        this.shader.setUniform("smoothing", font.computeSmoothing(this.configuration.getYResolution()*scale));
         vertexBuffer.bind();
         indexBuffer.bind();
 
         Engine.setBlendMode(BlendMode.TRANSPARENCY);
-        GL11.glDrawElements(GL11.GL_TRIANGLES, indices.length, GL11.GL_UNSIGNED_INT, 0);
+        GL11.glDrawElements(GL11.GL_TRIANGLES, charCount*INDEX_PER_CHAR, GL11.GL_UNSIGNED_INT, 0);
         Engine.setBlendMode(BlendMode.NONE);
 
         Shader.unbind();
@@ -116,6 +121,20 @@ public class TextRenderer {
 
         vertexBuffer.destroy();
         indexBuffer.destroy();
+    }
+
+    private IndexBuffer generateIndexBuffer(int size) {
+        final int[] indices = new int[size*INDEX_PER_CHAR];
+        for(int i = 0 ; i < size; i++) {
+            int indicesIndex = i*INDEX_PER_CHAR;
+            indices[indicesIndex++] = i*VERTEX_PER_CHAR;
+            indices[indicesIndex++] = i*VERTEX_PER_CHAR + 1;
+            indices[indicesIndex++] = i*VERTEX_PER_CHAR + 2;
+            indices[indicesIndex++] = i*VERTEX_PER_CHAR + 2;
+            indices[indicesIndex++] = i*VERTEX_PER_CHAR + 1;
+            indices[indicesIndex] = i*VERTEX_PER_CHAR + 3;
+        }
+        return new IndexBuffer(BufferUsage.STATIC_DRAW, indices);
     }
 
     /**

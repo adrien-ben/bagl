@@ -8,27 +8,16 @@ public class Glyph {
     private final float xOffset;
     private final float yOffset;
     private final float xAdvance;
-    private final char value;
 
-    public Glyph(TextureRegion region, float xOffset, float yOffset, float xAdvance, char value) {
+    public Glyph(TextureRegion region, float xOffset, float yOffset, float xAdvance) {
         this.region = region;
         this.xOffset = xOffset;
         this.yOffset = yOffset;
         this.xAdvance = xAdvance;
-        this.value = value;
-    }
-
-    @Override
-    public String toString() {
-        return "char : " + this.value;
     }
 
     public TextureRegion getRegion() {
         return region;
-    }
-
-    public char getValue() {
-        return value;
     }
 
     public float getXOffset() {

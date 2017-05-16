@@ -16,9 +16,8 @@ public class TextSample implements Game {
 
     private static final String TITLE = "Text Sample";
 
-    private static final String TEST_STRING = "Hello World.. ;)";
-    private static final Color TEXT_COLOR = Color.WHITE;
-    private static final float TEXT_SCALE = 1f;
+    private static final String TEST_STRING = "|Hello World";
+    private static final Color TEXT_COLOR = Color.BLACK;
 
     private Font arial;
     private Font segoe;
@@ -35,6 +34,7 @@ public class TextSample implements Game {
     @Override
     public void destroy() {
         this.arial.destroy();
+        this.segoe.destroy();
         this.renderer.destroy();
     }
 
@@ -44,7 +44,12 @@ public class TextSample implements Game {
 
     @Override
     public void render() {
-        this.renderer.render(TEST_STRING, this.segoe, new Vector2(0, 0), TEXT_SCALE, TEXT_COLOR);
+        this.renderer.render(TEST_STRING, this.segoe, new Vector2(0, 1 - 0.25f), 0.25f, TEXT_COLOR);
+        this.renderer.render(TEST_STRING, this.segoe, new Vector2(0, 1 - 0.45f), 0.20f, TEXT_COLOR);
+        this.renderer.render(TEST_STRING, this.segoe, new Vector2(0, 1 - 0.63f), 0.18f, TEXT_COLOR);
+        this.renderer.render(TEST_STRING, this.segoe, new Vector2(0, 1 - 0.78f), 0.15f, TEXT_COLOR);
+        this.renderer.render(TEST_STRING, this.segoe, new Vector2(0, 1 - 0.9f), 0.12f, TEXT_COLOR);
+        this.renderer.render(TEST_STRING, this.segoe, new Vector2(0, 0), 0.10f, TEXT_COLOR);
     }
 
     public static void main(String[] args) {

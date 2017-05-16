@@ -1,9 +1,6 @@
 package com.adrien.games.bagl.rendering.text;
 
-import com.adrien.games.bagl.rendering.texture.Format;
-import com.adrien.games.bagl.rendering.texture.Texture;
-import com.adrien.games.bagl.rendering.texture.TextureParameters;
-import com.adrien.games.bagl.rendering.texture.TextureRegion;
+import com.adrien.games.bagl.rendering.texture.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -31,7 +28,11 @@ public class Font {
     private static final Pattern CHAR_LINE_PATTERN = Pattern.compile("^char\\sid=(\\d+)\\s+x=(\\d+)\\s+y=(\\d+)\\s+" +
             "width=(\\d+)\\s+height=(\\d+)\\s+xoffset=(-?\\d+)\\s+yoffset=(-?\\d+)\\s+xadvance=(-?\\d+)\\s+.*");
 
+    private static final float FONT_SPREAD = 2.8f;
+    private static final float SMOOTHING_FACTOR = 0.3f;
+
     private float lineGap;
+    private float lineGapInPixels;
     private int pageWidth;
     private int pageHeight;
     private String atlasName;
@@ -52,11 +53,12 @@ public class Font {
         try(final Stream<String> lines = Files.lines(Paths.get(filePath))) {
             lines.forEach(this::parseLine);
         } catch (IOException e) {
-
+            log.error("Failed to parse font file '{}'.", filePath);
+            throw new RuntimeException("Failed to parse font file '" + filePath + "'.");
         }
 
         this.bitmap = new Texture(file.getParentFile().getAbsolutePath() + File.separator + this.atlasName,
-                new TextureParameters().format(Format.ALPHA8));
+                new TextureParameters().format(Format.ALPHA8).mipmaps(true).minFilter(Filter.MIPMAP_LINEAR_NEAREST));
     }
 
     private void parseLine(String line) {
@@ -75,7 +77,8 @@ public class Font {
     private void processCommonHeader(Matcher matcher) {
         this.pageWidth = Integer.parseInt(matcher.group(3));
         this.pageHeight = Integer.parseInt(matcher.group(4));
-        this.lineGap = Float.parseFloat(matcher.group(1)) / this.pageHeight;
+        this.lineGapInPixels = Float.parseFloat(matcher.group(1));
+        this.lineGap = this.lineGapInPixels / this.pageHeight;
     }
 
     private void processPageHeader(Matcher matcher) {
@@ -94,7 +97,7 @@ public class Font {
 
         this.glyphs.put(id, new Glyph(
                 new TextureRegion(this.bitmap, x, 1f - y - height, x + width, 1f - y),
-                xOffset, this.lineGap - height - yOffset, xAdvance, (char)id));
+                xOffset, this.lineGap - height - yOffset, xAdvance));
     }
 
     /**
@@ -116,6 +119,16 @@ public class Font {
         return this.glyphs.get((int)c);
     }
 
+    /**
+     * Computes the smoothing of the font.
+     * @param height The height of the rendered glyphs in pixels.
+     * @return The smoothing factor to use at this given height.
+     */
+    public float computeSmoothing(float height) {
+        final float pixelScaling = height / lineGapInPixels;
+        return SMOOTHING_FACTOR / (FONT_SPREAD*pixelScaling);
+    }
+
     public void destroy() {
         this.bitmap.destroy();
     }
@@ -126,6 +139,10 @@ public class Font {
 
     public float getLineGap() {
         return this.lineGap;
+    }
+
+    public float getLineGapInPixels() {
+        return this.lineGapInPixels;
     }
 
 }

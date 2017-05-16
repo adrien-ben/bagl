@@ -8,11 +8,10 @@ in VertOut {
 out vec4 color;
 
 uniform sampler2D atlas;
-
-const float width = 0.5;
-const float smoothing = 0.05;
+uniform float thickness;
+uniform float smoothing;
 
 void main() {
-    float alpha = smoothstep(1 - width - smoothing, 1 - width + smoothing, texture2D(atlas, vertOut.coords).a);
+    float alpha = smoothstep(1 - thickness - smoothing, 1 - thickness + smoothing, texture2D(atlas, vertOut.coords).a);
     color = vec4(vertOut.color.rgb, alpha*vertOut.color.a);
 }
