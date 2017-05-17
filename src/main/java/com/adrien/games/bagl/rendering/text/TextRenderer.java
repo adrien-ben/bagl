@@ -79,7 +79,7 @@ public class TextRenderer {
 
                     final float left = caret.isNewLine() ? caret.getX() : glyph.getXOffset()*hScale + caret.getX();
                     final float right = left + (region.getRight() - region.getLeft())*hScale;
-                    final float bottom = caret.getY() + glyph.getYOffset();
+                    final float bottom = caret.getY() + glyph.getYOffset()*vScale;
                     final float top = bottom + (region.getTop() - region.getBottom())*vScale;
 
                     vertices[verticesIndex++] = new TextVertex(new Vector2(left,  bottom),
