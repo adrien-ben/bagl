@@ -16,7 +16,7 @@ public class TextSample implements Game {
 
     private static final String TITLE = "Text Sample";
 
-    private static final String TEST_STRING = "|Hello World";
+    private static final String TEST_STRING = "|Hello Potatoe World";
     private static final Color TEXT_COLOR = Color.BLACK;
 
     private Font arial;
@@ -49,7 +49,8 @@ public class TextSample implements Game {
         this.renderer.render(TEST_STRING, this.segoe, new Vector2(0, 1 - 0.63f), 0.18f, TEXT_COLOR);
         this.renderer.render(TEST_STRING, this.segoe, new Vector2(0, 1 - 0.78f), 0.15f, TEXT_COLOR);
         this.renderer.render(TEST_STRING, this.segoe, new Vector2(0, 1 - 0.9f), 0.12f, TEXT_COLOR);
-        this.renderer.render(TEST_STRING, this.segoe, new Vector2(0, 0), 0.10f, TEXT_COLOR);
+        this.renderer.render(TEST_STRING, this.segoe, new Vector2(0, 1 - 0.96f), 0.06f, TEXT_COLOR);
+        this.renderer.render(TEST_STRING, this.segoe, new Vector2(0, 0), 0.04f, TEXT_COLOR);
     }
 
     public static void main(String[] args) {
