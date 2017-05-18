@@ -102,7 +102,7 @@ public class Renderer {
         VertexBuffer.unbind();
     }
 
-    private void renderScene(SceneNode<Mesh> scene, Camera camera) {
+    private void renderScene(SceneNode<Model> scene, Camera camera) {
         this.gbuffer.bind();
         FrameBuffer.clear();
         this.gbufferShader.bind();
@@ -111,29 +111,34 @@ public class Renderer {
         FrameBuffer.unbind();
     }
 
-    private void renderSceneNode(SceneNode<Mesh> node, Camera camera) {
+    private void renderSceneNode(SceneNode<Model> node, Camera camera) {
         if(node.isEmpty()) {
             return;
         }
 
         final Matrix4 world = node.getTransform().getTransformMatrix();
-        final Mesh mesh = node.get();
+        final Model model = node.get();
 
         Matrix4.mul(camera.getViewProj(), world, this.wvpBuffer);
 
-        mesh.getVertices().bind();
-        mesh.getIndices().bind();
-        mesh.getMaterial().applyTo(this.gbufferShader);
         this.gbufferShader.setUniform("uMatrices.world", world);
         this.gbufferShader.setUniform("uMatrices.wvp", this.wvpBuffer);
 
+        model.getMeshes().forEach(this::renderMesh);
+    }
+
+    private void renderMesh(Mesh mesh) {
+        mesh.getVertices().bind();
+        mesh.getIndices().bind();
+        mesh.getMaterial().applyTo(this.gbufferShader);
+
         glDrawElements(GL_TRIANGLES, mesh.getIndices().getSize(), GL_UNSIGNED_INT, 0);
 
-        IndexBuffer.unbind();
-        VertexBuffer.unbind();
         Texture.unbind();
         Texture.unbind(1);
         Texture.unbind(2);
+        IndexBuffer.unbind();
+        VertexBuffer.unbind();
     }
 
     private void renderDeferred(Scene scene, Camera camera) {

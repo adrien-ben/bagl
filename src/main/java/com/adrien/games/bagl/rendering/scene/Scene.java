@@ -1,7 +1,7 @@
 package com.adrien.games.bagl.rendering.scene;
 
 import com.adrien.games.bagl.core.Color;
-import com.adrien.games.bagl.rendering.Mesh;
+import com.adrien.games.bagl.rendering.Model;
 import com.adrien.games.bagl.rendering.Skybox;
 import com.adrien.games.bagl.rendering.light.DirectionalLight;
 import com.adrien.games.bagl.rendering.light.Light;
@@ -17,7 +17,7 @@ import java.util.List;
  */
 public class Scene {
 
-    private final SceneNode<Mesh> root;
+    private final SceneNode<Model> root;
 
     private Skybox skybox;
 
@@ -51,7 +51,7 @@ public class Scene {
         this.ambient = ambient;
     }
 
-    public SceneNode<Mesh> getRoot() {
+    public SceneNode<Model> getRoot() {
         return root;
     }
 
