@@ -27,6 +27,7 @@ public class TextRenderer {
     private static final float HALF_SCREEN_SIZE = 1f;
 
     private TextVertex[] buffer;
+    private int bufferedChar;
     private VertexBuffer vertexBuffer;
     private IndexBuffer indexBuffer;
 
@@ -34,9 +35,10 @@ public class TextRenderer {
     private Shader shader;
 
     public TextRenderer() {
-        this.indexBuffer = initIndexBuffer();
-        this.vertexBuffer = initVertexBuffer();
         this.buffer = initVertices();
+        this.bufferedChar = 0;
+        this.vertexBuffer = initVertexBuffer();
+        this.indexBuffer = initIndexBuffer();
 
         this.configuration = Configuration.getInstance();
         this.shader = new Shader().addVertexShader(TEXT_VERTEX_SHADER).addFragmentShader(TEXT_FRAGMENT_SHADER).compile();
@@ -100,7 +102,6 @@ public class TextRenderer {
         final Caret caret = new Caret(font.getLineGap()*vScale, position.getX()*2 - HALF_SCREEN_SIZE,
                 position.getY()*2 - HALF_SCREEN_SIZE);
 
-        int charCount = 0;
         final int textLength = text.length();
         for(int i = 0 ; i < textLength; i++) {
 
@@ -110,49 +111,45 @@ public class TextRenderer {
             } else {
                 final Glyph glyph = font.getGlyph(c);
                 if(Objects.nonNull(glyph)) {
-                    final TextureRegion region = glyph.getRegion();
-
-                    final float left = caret.isNewLine() ? caret.getX() : glyph.getXOffset()*hScale + caret.getX();
-                    final float right = left + (region.getRight() - region.getLeft())*hScale;
-                    final float bottom = caret.getY() + glyph.getYOffset()*vScale;
-                    final float top = bottom + (region.getTop() - region.getBottom())*vScale;
-
-                    final TextVertex v0 = this.buffer[charCount*VERTEX_PER_CHAR];
-                    final TextVertex v1 = this.buffer[charCount*VERTEX_PER_CHAR + 1];
-                    final TextVertex v2 = this.buffer[charCount*VERTEX_PER_CHAR + 2];
-                    final TextVertex v3 = this.buffer[charCount*VERTEX_PER_CHAR + 3];
-
-                    v0.position.setX(left);
-                    v0.position.setY(bottom);
-                    v0.coords.setX(region.getLeft());
-                    v0.coords.setY(region.getBottom());
-                    v0.color.set(color);
-
-                    v1.position.setX(right);
-                    v1.position.setY(bottom);
-                    v1.coords.setX(region.getRight());
-                    v1.coords.setY(region.getBottom());
-                    v1.color.set(color);
-
-                    v2.position.setX(left);
-                    v2.position.setY(top);
-                    v2.coords.setX(region.getLeft());
-                    v2.coords.setY(region.getTop());
-                    v2.color.set(color);
-
-                    v3.position.setX(right);
-                    v3.position.setY(top);
-                    v3.coords.setX(region.getRight());
-                    v3.coords.setY(region.getTop());
-                    v3.color.set(color);
-
-                    caret.advance(glyph.getXAdvance()*hScale);
-                    charCount++;
+                    this.generateGlyphVertices(glyph, caret, hScale, vScale, color);
                 }
             }
         }
+        this.renderText(font, scale);
+    }
 
-        this.vertexBuffer.setData(this.buffer, charCount*VERTEX_PER_CHAR);
+    private void generateGlyphVertices(Glyph glyph, Caret caret, float hScale, float vScale, Color color) {
+        final TextureRegion region = glyph.getRegion();
+
+        final float left = caret.isNewLine() ? caret.getX() : glyph.getXOffset()*hScale + caret.getX();
+        final float right = left + (region.getRight() - region.getLeft())*hScale;
+        final float bottom = caret.getY() + glyph.getYOffset()*vScale;
+        final float top = bottom + (region.getTop() - region.getBottom())*vScale;
+
+        final TextVertex v0 = this.buffer[this.bufferedChar*VERTEX_PER_CHAR];
+        final TextVertex v1 = this.buffer[this.bufferedChar*VERTEX_PER_CHAR + 1];
+        final TextVertex v2 = this.buffer[this.bufferedChar*VERTEX_PER_CHAR + 2];
+        final TextVertex v3 = this.buffer[this.bufferedChar*VERTEX_PER_CHAR + 3];
+
+        this.fillTextVertex(v0, left, bottom, region.getLeft(), region.getBottom(), color);
+        this.fillTextVertex(v1, right, bottom, region.getRight(), region.getBottom(), color);
+        this.fillTextVertex(v2, left, top, region.getLeft(), region.getTop(), color);
+        this.fillTextVertex(v3, right, top, region.getRight(), region.getTop(), color);
+
+        caret.advance(glyph.getXAdvance()*hScale);
+        this.bufferedChar++;
+    }
+
+    private void fillTextVertex(TextVertex vertex, float x, float y, float u, float v, Color color) {
+        vertex.position.setX(x);
+        vertex.position.setY(y);
+        vertex.coords.setX(u);
+        vertex.coords.setY(v);
+        vertex.color.set(color);
+    }
+
+    private void renderText(Font font, float scale) {
+        this.vertexBuffer.setData(this.buffer, this.bufferedChar*VERTEX_PER_CHAR);
 
         font.getBitmap().bind();
         this.shader.bind();
@@ -162,13 +159,15 @@ public class TextRenderer {
         this.indexBuffer.bind();
 
         Engine.setBlendMode(BlendMode.TRANSPARENCY);
-        GL11.glDrawElements(GL11.GL_TRIANGLES, charCount*INDEX_PER_CHAR, GL11.GL_UNSIGNED_INT, 0);
+        GL11.glDrawElements(GL11.GL_TRIANGLES, this.bufferedChar*INDEX_PER_CHAR, GL11.GL_UNSIGNED_INT, 0);
         Engine.setBlendMode(BlendMode.NONE);
 
         Shader.unbind();
         IndexBuffer.unbind();
         VertexBuffer.unbind();
         Texture.unbind();
+
+        this.bufferedChar = 0;
     }
 
     /**
