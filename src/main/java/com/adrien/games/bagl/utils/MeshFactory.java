@@ -133,7 +133,7 @@ public final class MeshFactory {
         return new Mesh(vertexBuffer, indexBuffer, material);
     }
 
-    public static Mesh fromResourceFile(String resourceName) {
+    public static Model fromResourceFile(String resourceName) {
         return parser.parse(new File(MeshFactory.class.getResource(resourceName).getFile()).getAbsolutePath());
     }
 

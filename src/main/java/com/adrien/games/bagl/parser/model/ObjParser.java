@@ -55,8 +55,9 @@ public class ObjParser implements ModelParser {
      * <li>triangle faces (each vertex MUST reference a position, coordinates and normal)
      */
     @Override
-    public Mesh parse(String filePath) {
+    public Model parse(String filePath) {
         log.info("Parsing .obj file '{}'", filePath);
+        final Model model = new Model();
         this.resetParser(filePath);
         try(Stream<String> stream = Files.lines(Paths.get(filePath))) {
             stream.filter(StringUtils::isNotBlank).forEach(this::parseLine);
@@ -65,7 +66,7 @@ public class ObjParser implements ModelParser {
             throw new RuntimeException("Failed to parse model file", e);
         }
         this.computeTangents();
-        return this.build();
+        return model.addMesh(this.build());
     }
 
     private void computeTangents() {

@@ -4,10 +4,7 @@ import com.adrien.games.bagl.core.*;
 import com.adrien.games.bagl.core.math.Quaternion;
 import com.adrien.games.bagl.core.math.Vector2;
 import com.adrien.games.bagl.core.math.Vector3;
-import com.adrien.games.bagl.rendering.Mesh;
-import com.adrien.games.bagl.rendering.Renderer;
-import com.adrien.games.bagl.rendering.Skybox;
-import com.adrien.games.bagl.rendering.Spritebatch;
+import com.adrien.games.bagl.rendering.*;
 import com.adrien.games.bagl.rendering.light.*;
 import com.adrien.games.bagl.rendering.scene.Scene;
 import com.adrien.games.bagl.rendering.scene.SceneNode;
@@ -32,8 +29,8 @@ public class DeferredRenderingSample {
 
         private Scene scene;
         private Skybox skybox;
-        private Mesh floor;
-        private Mesh sphere;
+        private Model floor;
+        private Model sphere;
 
         private Camera camera;
 
@@ -79,7 +76,7 @@ public class DeferredRenderingSample {
 
         private void initSceneGraph() {
             this.scene.getRoot().set(this.floor);
-            final SceneNode<Mesh> sphereNode = new SceneNode<>(this.sphere);
+            final SceneNode<Model> sphereNode = new SceneNode<>(this.sphere);
             sphereNode.getLocalTransform().setTranslation(new Vector3(0, 0.5f, 0));
             this.scene.getRoot().addChild(sphereNode);
         }
@@ -105,7 +102,7 @@ public class DeferredRenderingSample {
         @Override
         public void update(Time time) {
             //rotating the first child if any
-            final Optional<SceneNode<Mesh>> node = this.scene.getRoot().getChildren().stream().findFirst();
+            final Optional<SceneNode<Model>> node = this.scene.getRoot().getChildren().stream().findFirst();
             node.ifPresent(meshSceneNode -> meshSceneNode.getLocalTransform().getRotation().mul(Quaternion.fromAngleAndVector(
                     (float) Math.toRadians(10 * time.getElapsedTime()), Vector3.UP)));
 

@@ -1,6 +1,7 @@
 package com.adrien.games.bagl.parser.model;
 
 import com.adrien.games.bagl.rendering.Mesh;
+import com.adrien.games.bagl.rendering.Model;
 
 public interface ModelParser {
 
@@ -9,6 +10,6 @@ public interface ModelParser {
      * @param filePath The path to the file.
      * @return A {@link Mesh}.
      */
-    Mesh parse(String filePath);
+    Model parse(String filePath);
 
 }
