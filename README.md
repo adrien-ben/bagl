@@ -6,8 +6,9 @@ baGL is an OpengGL framework that I use for educational purpose.
 - Simple .obj and .mtl loaders
 - Lights (ambient lights, directional lights, point lights and spot lights)
 - Skyboxes
+- 3D Particles using Geometry Shader
 - Spritebatching
-- Basic True Type fonts rendering
+- Scalable text using Signed Distance Field fonts. See [Valve's paper](http://www.valvesoftware.com/publications/2007/SIGGRAPH2007_AlphaTestedMagnification.pdf).
 - Simple scene graph
 
 ## TODO
