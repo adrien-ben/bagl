@@ -71,7 +71,7 @@ public class DeferredRenderingSample {
             this.scene.setSkybox(this.skybox);
 
             this.floor = MeshFactory.fromResourceFile("/models/floor/floor.obj");
-            this.sphere = MeshFactory.fromResourceFile("/models/tree/tree.obj");
+            this.sphere = MeshFactory.fromResourceFile("/models/sphere/sphere.obj");
         }
 
         private void initSceneGraph() {
