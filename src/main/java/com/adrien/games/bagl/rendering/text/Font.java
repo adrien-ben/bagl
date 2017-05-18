@@ -60,7 +60,7 @@ public class Font {
         }
 
         this.bitmap = new Texture(file.getParentFile().getAbsolutePath() + File.separator + this.atlasName,
-                new TextureParameters().format(Format.ALPHA8).mipmaps(true).minFilter(Filter.MIPMAP_LINEAR_LINEAR));
+                new TextureParameters().format(Format.ALPHA8));
     }
 
     private void parseHeader(BufferedReader reader) throws IOException, ParseException {
