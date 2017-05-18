@@ -58,7 +58,7 @@ public class Font {
         }
 
         this.bitmap = new Texture(file.getParentFile().getAbsolutePath() + File.separator + this.atlasName,
-                new TextureParameters().format(Format.ALPHA8).mipmaps(true).minFilter(Filter.MIPMAP_LINEAR_NEAREST));
+                new TextureParameters().format(Format.ALPHA8).mipmaps(true).minFilter(Filter.MIPMAP_LINEAR_LINEAR));
     }
 
     private void parseLine(String line) {
