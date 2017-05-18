@@ -26,12 +26,14 @@ public class Configuration {
     private static final String X_RESOLUTION_KEY = "resolution.x";
     private static final String Y_RESOLUTION_KEY = "resolution.y";
     private static final String VSYNC_KEY = "vsync";
+    private static final String FULLSCREEN_KEY = "fullscreen";
     private static final String ANISOTROPIC_KEY = "anisotropic";
 
     private final Properties properties;
     private final int xResolution;
     private final int yResolution;
     private final  boolean vsync;
+    private final boolean fullscreen;
     private final int anisotropicLevel;
 
     private static Configuration instance;
@@ -42,6 +44,7 @@ public class Configuration {
         this.xResolution = this.readRequiredInt(X_RESOLUTION_KEY);
         this.yResolution = this.readRequiredInt(Y_RESOLUTION_KEY);
         this.vsync = this.readRequiredBool(VSYNC_KEY);
+        this.fullscreen = this.readRequiredBool(FULLSCREEN_KEY);
         this.anisotropicLevel = this.readRequiredInt(ANISOTROPIC_KEY);
     }
 
@@ -102,6 +105,10 @@ public class Configuration {
 
     public boolean getVsync() {
         return this.vsync;
+    }
+
+    public boolean getFullscreen() {
+        return this.fullscreen;
     }
 
     public int getAnisotropicLevel() {
