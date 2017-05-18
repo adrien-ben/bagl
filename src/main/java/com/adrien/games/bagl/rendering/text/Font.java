@@ -1,18 +1,19 @@
 package com.adrien.games.bagl.rendering.text;
 
+import com.adrien.games.bagl.parser.ParseException;
 import com.adrien.games.bagl.rendering.texture.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 /**
  * Text font used to render text.
@@ -50,42 +51,45 @@ public class Font {
             throw new RuntimeException("Font file '" + filePath + "' does not exists.");
         }
 
-        try(final Stream<String> lines = Files.lines(Paths.get(filePath))) {
-            lines.forEach(this::parseLine);
-        } catch (IOException e) {
-            log.error("Failed to parse font file '{}'.", filePath);
-            throw new RuntimeException("Failed to parse font file '" + filePath + "'.");
+        try(final BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            this.parseHeader(reader);
+            reader.lines().map(CHAR_LINE_PATTERN::matcher).filter(Matcher::matches).forEach(this::parseCharLine);
+        } catch (IOException | ParseException e) {
+            log.error("Failed to parse font file '{}'.", filePath, e);
+            throw new RuntimeException("Failed to parse font file '" + filePath + "'.", e);
         }
 
         this.bitmap = new Texture(file.getParentFile().getAbsolutePath() + File.separator + this.atlasName,
                 new TextureParameters().format(Format.ALPHA8).mipmaps(true).minFilter(Filter.MIPMAP_LINEAR_LINEAR));
     }
 
-    private void parseLine(String line) {
-        final Matcher headerCommonMatcher = HEADER_COMMON_PATTERN.matcher(line);
-        final Matcher headerPageMatcher = HEADER_PAGE_PATTERN.matcher(line);
-        final Matcher charLineMatcher = CHAR_LINE_PATTERN.matcher(line);
-        if(headerCommonMatcher.matches()) {
-            this.processCommonHeader(headerCommonMatcher);
-        } else if(headerPageMatcher.matches()) {
-            this.processPageHeader(headerPageMatcher);
-        } else if(charLineMatcher.matches()){
-            this.processCharLine(charLineMatcher);
-        }
+    private void parseHeader(BufferedReader reader) throws IOException, ParseException {
+        reader.readLine();//skip first line
+        this.parseCommonHeader(this.checkMatch(HEADER_COMMON_PATTERN, reader.readLine()));
+        this.parsePageHeader(this.checkMatch(HEADER_PAGE_PATTERN, reader.readLine()));
+        reader.readLine();//skip the fourth line
     }
 
-    private void processCommonHeader(Matcher matcher) {
+    private Matcher checkMatch(Pattern pattern, String line) throws ParseException{
+        final Matcher matcher = pattern.matcher(line);
+        if(!matcher.matches()) {
+            throw new ParseException("Font file content is not correct");
+        }
+        return matcher;
+    }
+
+    private void parseCommonHeader(Matcher matcher) {
         this.pageWidth = Integer.parseInt(matcher.group(3));
         this.pageHeight = Integer.parseInt(matcher.group(4));
         this.lineGapInPixels = Float.parseFloat(matcher.group(1));
         this.lineGap = this.lineGapInPixels / this.pageHeight;
     }
 
-    private void processPageHeader(Matcher matcher) {
+    private void parsePageHeader(Matcher matcher) {
         this.atlasName = matcher.group(1);
     }
 
-    private void processCharLine(Matcher matcher) {
+    private void parseCharLine(Matcher matcher) {
         final int id = Integer.parseInt(matcher.group(1));
         final float x = Float.parseFloat(matcher.group(2)) / this.pageWidth;
         final float y = Float.parseFloat(matcher.group(3)) / this.pageHeight;
