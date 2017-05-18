@@ -25,7 +25,8 @@ public final class Engine {
         this.window = new Window(title,
                 this.configuration.getXResolution(),
                 this.configuration.getYResolution(),
-                this.configuration.getVsync());
+                this.configuration.getVsync(),
+                this.configuration.getFullscreen());
         this.time = new Time();
         this.isRunning = false;
         this.game.init();

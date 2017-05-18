@@ -12,16 +12,17 @@ public final class Window {
     private final int height;
     private final long windowHandle;
 
-    public Window(String title, int width, int height, boolean vsync) {
+    public Window(String title, int width, int height, boolean vsync, boolean fullscreen) {
         this.title = title;
         this.width = width;
         this.height = height;
 
         GLFW.glfwInit();
         GLFW.glfwSetErrorCallback(GLFWErrorCallback.createPrint(System.err));
-
         GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_FALSE);
-        this.windowHandle = GLFW.glfwCreateWindow(this.width, this.height, this.title, 0, 0);
+
+        final long primaryMonitor = fullscreen ? GLFW.glfwGetPrimaryMonitor() : 0;
+        this.windowHandle = GLFW.glfwCreateWindow(this.width, this.height, this.title, primaryMonitor, 0);
         if(this.windowHandle == 0) {
             throw new RuntimeException("Failed to create window");
         }
