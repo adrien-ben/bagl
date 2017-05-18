@@ -26,13 +26,13 @@ public class TextRenderer {
     private static final int INDEX_PER_CHAR = 6;
     private static final float HALF_SCREEN_SIZE = 1f;
 
-    private TextVertex[] buffer;
+    private final TextVertex[] buffer;
     private int bufferedChar;
-    private VertexBuffer vertexBuffer;
-    private IndexBuffer indexBuffer;
+    private final VertexBuffer vertexBuffer;
+    private final IndexBuffer indexBuffer;
 
-    private Configuration configuration;
-    private Shader shader;
+    private final Configuration configuration;
+    private final Shader shader;
 
     public TextRenderer() {
         this.buffer = initVertices();

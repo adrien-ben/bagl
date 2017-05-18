@@ -8,7 +8,7 @@ import java.util.List;
  */
 public class Model {
 
-    private List<Mesh> meshes = new ArrayList<>();
+    private final List<Mesh> meshes = new ArrayList<>();
 
     /**
      * Adds a mesh to the model.

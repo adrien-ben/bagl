@@ -149,10 +149,9 @@ public class ObjParser implements ModelParser {
 
     private void parseFaceVertex(String faceVertex) {
         final String[] tokens = faceVertex.split("/");
-        if(tokens.length >= 3 && StringUtils.isNotBlank(tokens[0]) &&
-                StringUtils.isNotBlank(tokens[1]) && StringUtils.isNotBlank(tokens[2])) {
+        if(tokens.length >= 3 && StringUtils.isNotBlank(tokens[0]) && StringUtils.isNotBlank(tokens[2])) {
             final int positionIndex = Integer.parseInt(tokens[0]) - 1;
-            final int textCoordIndex = Integer.parseInt(tokens[1]) - 1;
+            final int textCoordIndex = StringUtils.isNotBlank(tokens[1]) ?Integer.parseInt(tokens[1]) - 1 : -1;
             final int normalIndex = Integer.parseInt(tokens[2]) - 1;
             final Face face = new Face(positionIndex, normalIndex, textCoordIndex);
 
@@ -230,15 +229,17 @@ public class ObjParser implements ModelParser {
         }
 
         Mesh build() {
-            this.computeTangents();
+            if(this.material.hasBumpMap()) {
+                this.computeTangents();
+            }
             final int vertexCount = this.faces.size();
             final Vertex[] vertexArray = new MeshVertex[vertexCount];
             for(int i = 0; i < vertexCount; i++) {
                 final Face face = this.faces.get(i);
                 final Vector3 position = positions.get(face.getPositionIndex());
                 final Vector3 normal = normals.get(face.getNormalIndex());
-                final Vector2 coord = coords.get(face.getCoordsIndex());
-                final Vector3 tangent = this.tangents.get(i);
+                final Vector2 coord = face.getCoordsIndex() > -1 ? coords.get(face.getCoordsIndex()) : new Vector2();
+                final Vector3 tangent = this.tangents.isEmpty() ? new Vector3() : this.tangents.get(i);
                 vertexArray[i] = new MeshVertex(position, normal, coord, tangent);
             }
 

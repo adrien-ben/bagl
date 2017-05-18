@@ -77,7 +77,7 @@ public class DeferredRenderingSample {
         private void initSceneGraph() {
             this.scene.getRoot().set(this.floor);
             final SceneNode<Model> sphereNode = new SceneNode<>(this.sphere);
-            sphereNode.getLocalTransform().setScale(new Vector3(0.5f, 0.5f, 0.5f));
+            sphereNode.getLocalTransform().setTranslation(new Vector3(4f, 0f, 1.5f));
             this.scene.getRoot().addChild(sphereNode);
         }
 

@@ -37,7 +37,7 @@ public class Font {
     private int pageWidth;
     private int pageHeight;
     private String atlasName;
-    private Map<Integer, Glyph> glyphs = new HashMap<>();
+    private final Map<Integer, Glyph> glyphs = new HashMap<>();
     private Texture bitmap;
 
     public Font(String filePath) {
