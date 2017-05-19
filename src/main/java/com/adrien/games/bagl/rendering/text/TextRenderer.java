@@ -158,9 +158,11 @@ public class TextRenderer {
         this.vertexBuffer.bind();
         this.indexBuffer.bind();
 
+        GL11.glDisable(GL11.GL_DEPTH_TEST);
         Engine.setBlendMode(BlendMode.TRANSPARENCY);
         GL11.glDrawElements(GL11.GL_TRIANGLES, this.bufferedChar*INDEX_PER_CHAR, GL11.GL_UNSIGNED_INT, 0);
         Engine.setBlendMode(BlendMode.NONE);
+        GL11.glEnable(GL11.GL_DEPTH_TEST);
 
         Shader.unbind();
         IndexBuffer.unbind();
