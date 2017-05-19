@@ -51,7 +51,7 @@ public class DeferredRenderingSample {
             this.initSceneGraph();
             this.setUpLights();
 
-            this.camera = new Camera(new Vector3(0f, 2f, 6f), new Vector3(0f, -2f, -6f), Vector3.UP,
+            this.camera = new Camera(new Vector3(0f, 2f, 6f), new Vector3(0f, -2f, -6f), new Vector3(Vector3.UP),
                     (float)Math.toRadians(60f), (float)this.width/(float)this.height, 1, 1000);
 
             this.spritebatch = new Spritebatch(1024, this.width, this.height);
@@ -113,13 +113,30 @@ public class DeferredRenderingSample {
             if(!Input.isKeyPressed(GLFW.GLFW_KEY_SPACE) && this.isKeyPressed) {
                 this.isKeyPressed = false;
             }
+
+            this.moveCamera(time.getElapsedTime());
+        }
+
+        private void moveCamera(float elapsed) {
+
+            if(Input.isKeyPressed(GLFW.GLFW_KEY_LEFT)) {
+                this.camera.rotate(Quaternion.fromAngleAndVector((float)Math.toRadians(20*elapsed), Vector3.UP));
+            } else if(Input.isKeyPressed(GLFW.GLFW_KEY_RIGHT)) {
+                this.camera.rotate(Quaternion.fromAngleAndVector((float)Math.toRadians(-20*elapsed), Vector3.UP));
+            }
+
+            if(Input.isKeyPressed(GLFW.GLFW_KEY_UP)) {
+                this.camera.rotate(Quaternion.fromAngleAndVector((float)Math.toRadians(10*elapsed),
+                        Vector3.cross(this.camera.getDirection(), Vector3.UP)));
+            } else if(Input.isKeyPressed(GLFW.GLFW_KEY_DOWN)) {
+                this.camera.rotate(Quaternion.fromAngleAndVector((float)Math.toRadians(-10*elapsed),
+                        Vector3.cross(this.camera.getDirection(), Vector3.UP)));
+            }
         }
 
         @Override
         public void render() {
-
             this.renderer.render(this.scene, this.camera);
-
             if(this.displayGbuffer) {
                 this.spritebatch.start();
                 this.spritebatch.draw(this.renderer.getGBuffer().getDepthTexture(), new Vector2(0, 2*this.height/3), this.width/3, this.height/3);
@@ -128,7 +145,6 @@ public class DeferredRenderingSample {
                 this.spritebatch.end();
             }
         }
-
 
         @Override
         public void destroy() {

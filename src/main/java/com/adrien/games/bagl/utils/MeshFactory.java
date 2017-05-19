@@ -137,4 +137,8 @@ public final class MeshFactory {
         return parser.parse(new File(MeshFactory.class.getResource(resourceName).getFile()).getAbsolutePath());
     }
 
+    public static Model fromFile(String filepath) {
+        return parser.parse(filepath);
+    }
+
 }

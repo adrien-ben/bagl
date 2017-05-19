@@ -6,6 +6,8 @@ import com.adrien.games.bagl.rendering.texture.Format;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.texture.TextureParameters;
 
+import java.util.Arrays;
+
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL20.glDrawBuffers;
 import static org.lwjgl.opengl.GL30.*;
@@ -25,30 +27,33 @@ public class FrameBuffer {
     private final int handle;
     private final int width;
     private final int height;
+    private final boolean depthOnly;
     private final Texture[] colorOutputs;
     private final Texture depthTexture;
 
     /**
-     * Creates a new {@link FrameBuffer}.
+     * Creates a new {@link FrameBuffer}. This is a depth only frame buffer.
      * @param width The width of the frame buffer.
      * @param height The height of the frame buffer.
      */
     public FrameBuffer(int width, int height) {
-        this(width, height, 1);
+        this(width, height, 0);
     }
 
     /**
-     * Creates a new {@link FrameBuffer}.
+     * Creates a new {@link FrameBuffer}. If colorOutputs is 0 then the
+     * frame buffer will be depth only.
      * @param width The width of the frame buffer.
      * @param height The height of the frame buffer.
-     * @param colorOutputs The number of color outputs.
+     * @param colorOutputs The number of color outputs. 0 Means depth only.
      */
     public FrameBuffer(int width, int height, int colorOutputs) {
         this.width = width;
         this.height = height;
-        this.colorOutputs = this.createColorOutputs(colorOutputs, this.width, this.height);
+        this.depthOnly = colorOutputs == 0;
+        this.colorOutputs = this.depthOnly ? null : createColorOutputs(colorOutputs, this.width, this.height);
         this.depthTexture = new Texture(this.width, this.height, new TextureParameters().format(Format.DEPTH_32F));
-        this.handle = this.createBuffer(this.colorOutputs, this.depthTexture);
+        this.handle = createBuffer(this.colorOutputs, this.depthOnly, this.depthTexture);
     }
 
     /**
@@ -58,8 +63,8 @@ public class FrameBuffer {
      * @param height The height of the frame buffer.
      * @return An array of {@link Texture}.
      */
-    private Texture[] createColorOutputs(int colorOutputs, int width, int height) {
-        Texture[] textures = new Texture[colorOutputs];
+    private static Texture[] createColorOutputs(int colorOutputs, int width, int height) {
+        final Texture[] textures = new Texture[colorOutputs];
         for(int i = 0; i < colorOutputs; i++) {
             textures[i] = new Texture(width, height, new TextureParameters().format(Format.RGBA8));
         }
@@ -68,19 +73,26 @@ public class FrameBuffer {
 
     /**
      * Create the actual OpenGL frame buffer object and attaches
-     * the color buffer textures and the depth render buffer.
+     * the color buffer textures and the depth render buffer. If
+     * the frame buffer is depth only, only depth texture is attached.
      * @param textures The textures to use as color outputs.
+     * @param depthOnly Is the frame buffer depth only.
      * @param depth The depth texture.
      * @return The handle of the OpengGL frame buffer.
      */
-    private int createBuffer(Texture[] textures, Texture depth) {
-        int bufferHandle = glGenFramebuffers();
+    private static int createBuffer(Texture[] textures, boolean depthOnly, Texture depth) {
+        final int bufferHandle = glGenFramebuffers();
         glBindFramebuffer(GL_FRAMEBUFFER, bufferHandle);
-        for(int i = 0; i < textures.length; i++) {
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, textures[i].getHandle(), 0);
-        }
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth.getHandle(), 0);
-        glDrawBuffers(this.generateBuffersToDraw(textures.length));
+        if(!depthOnly) {
+            for(int i = 0; i < textures.length; i++) {
+                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, textures[i].getHandle(), 0);
+            }
+            glDrawBuffers(generateBuffersToDraw(textures.length));
+        } else {
+            glDrawBuffer(GL_NONE);
+            glReadBuffer(GL_NONE);
+        }
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         return bufferHandle;
     }
@@ -90,8 +102,8 @@ public class FrameBuffer {
      * @param count The number of buffer to draw.
      * @return An array of integer.
      */
-    private int[] generateBuffersToDraw(int count) {
-        int[] buffers = new int[count];
+    private static int[] generateBuffersToDraw(int count) {
+        final int[] buffers = new int[count];
         for(int i = 0; i < count; i++) {
             buffers[i] = GL_COLOR_ATTACHMENT0 + i;
         }
@@ -132,8 +144,8 @@ public class FrameBuffer {
      * Releases resources.
      */
     public void destroy() {
-        for(Texture t : this.colorOutputs) {
-            t.destroy();
+        if(!this.depthOnly) {
+            Arrays.stream(this.colorOutputs).forEach(Texture::destroy);
         }
         this.depthTexture.destroy();
         glDeleteFramebuffers(this.handle);
@@ -144,6 +156,9 @@ public class FrameBuffer {
     }
 
     public Texture getColorTexture(int index) {
+        if(this.depthOnly) {
+            throw new RuntimeException("This frame buffer is depth only. Color textures should not be queried.");
+        }
         return this.colorOutputs[index];
     }
 
