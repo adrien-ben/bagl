@@ -29,20 +29,29 @@ public class Renderer {
 
     private static final String DEFERRED_FRAG_SHADER = "/deferred.frag";
     private static final String DEFERRED_VERT_SHADER = "/deferred.vert";
+    private static final String SHADOW_FRAG_SHADER = "/shadow.frag";
+    private static final String SHADOW_VERT_SHADER = "/shadow.vert";
     private static final String GBUFFER_FRAG_SHADER = "/gbuffer.frag";
     private static final String GBUFFER_VERT_SHADER = "/gbuffer.vert";
     private static final String SKYBOX_FRAG_SHADER = "/skybox.frag";
     private static final String SKYBOX_VERT_SHADER = "/skybox.vert";
 
+    private static final int SHADOW_MAP_SIZE = 1000;
+
     private final int xResolution;
     private final int yResolution;
 
     private final Matrix4 wvpBuffer;
+    private final Matrix4 lightViewProj;
 
     private VertexBuffer vertexBuffer;
     private final FrameBuffer gbuffer;
 
+    private boolean renderShadow;
+    private final FrameBuffer shadowBuffer;
+
     private Shader skyboxShader;
+    private Shader shadowShader;
     private Shader gbufferShader;
     private Shader deferredShader;
 
@@ -53,11 +62,25 @@ public class Renderer {
         this.yResolution = config.getYResolution();
 
         this.wvpBuffer = Matrix4.createZero();
+        this.lightViewProj = Matrix4.createZero();
 
         this.initFullScreenQuad();
         this.gbuffer = new FrameBuffer(this.xResolution, this.yResolution, 2);
+        this.shadowBuffer = new FrameBuffer(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
 
         this.initShaders();
+    }
+
+    /**
+     * Releases resources.
+     */
+    public void destroy() {
+        this.skyboxShader.destroy();
+        this.gbufferShader.destroy();
+        this.deferredShader.destroy();
+        this.gbuffer.destroy();
+        this.shadowBuffer.destroy();
+        this.vertexBuffer.destroy();
     }
 
     private void initFullScreenQuad() {
@@ -72,12 +95,23 @@ public class Renderer {
 
     private void initShaders() {
         this.skyboxShader = new Shader().addVertexShader(SKYBOX_VERT_SHADER).addFragmentShader(SKYBOX_FRAG_SHADER).compile();
+        this.shadowShader = new Shader().addVertexShader(SHADOW_VERT_SHADER).addFragmentShader(SHADOW_FRAG_SHADER).compile();
         this.gbufferShader = new Shader().addVertexShader(GBUFFER_VERT_SHADER).addFragmentShader(GBUFFER_FRAG_SHADER).compile();
         this.deferredShader = new Shader().addVertexShader(DEFERRED_VERT_SHADER).addFragmentShader(DEFERRED_FRAG_SHADER).compile();
     }
 
+    /**
+     * <p>Renders a scene from the camera point of view.
+     * <p>First, if a skybox is present it is renderer the the default frame buffer.
+     * Then, the shadow map is generated for the first available directional light
+     * of the scene. After that, the scene is rendered to the gbuffer and finally,
+     * the final scene is renderer.
+     * @param scene The scene to render.
+     * @param camera The camera view the scene.
+     */
     public void render(Scene scene, Camera camera) {
         this.renderSkybox(scene.getSkybox(), camera);
+        this.renderShadowMap(scene);
         this.renderScene(scene.getRoot(), camera);
         this.renderDeferred(scene, camera);
     }
@@ -102,6 +136,38 @@ public class Renderer {
         VertexBuffer.unbind();
     }
 
+    private void renderShadowMap(Scene scene) {
+        this.renderShadow = !scene.getDirectionals().isEmpty();
+        if(this.renderShadow) {
+            final Vector3 position = new Vector3(scene.getDirectionals().get(0).getDirection()).scale(-1);
+            Matrix4.mul(Matrix4.createOrthographic( -10, 10, -10, 10, 0.1f, 20),
+                    Matrix4.createLookAt(position, new Vector3(), Vector3.UP), this.lightViewProj);
+
+            glViewport(0, 0, SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
+            this.shadowBuffer.bind();
+            FrameBuffer.clear();
+            this.shadowShader.bind();
+
+            scene.getRoot().apply(node -> this.renderNodeShadow(node, this.lightViewProj));
+
+            Shader.unbind();
+            FrameBuffer.unbind();
+            glViewport(0, 0, this.xResolution, this.yResolution);
+
+            this.renderShadow = true;
+        }
+    }
+
+    private void renderNodeShadow(SceneNode<Model> node, Matrix4 lightViewProj) {
+        final Model model = node.get();
+        final Matrix4 world = node.getTransform().getTransformMatrix();
+
+        Matrix4.mul(lightViewProj, world, this.wvpBuffer);
+        this.shadowShader.setUniform("wvp", this.wvpBuffer);
+
+        model.getMeshes().forEach(this::renderMesh);
+    }
+
     private void renderScene(SceneNode<Model> scene, Camera camera) {
         this.gbuffer.bind();
         FrameBuffer.clear();
@@ -124,19 +190,21 @@ public class Renderer {
         this.gbufferShader.setUniform("uMatrices.world", world);
         this.gbufferShader.setUniform("uMatrices.wvp", this.wvpBuffer);
 
-        model.getMeshes().forEach(this::renderMesh);
+        model.getMeshes().forEach(this::renderMeshToGBuffer);
+    }
+
+    private void renderMeshToGBuffer(Mesh mesh) {
+        mesh.getMaterial().applyTo(this.gbufferShader);
+        this.renderMesh(mesh);
+        Texture.unbind();
+        Texture.unbind(1);
+        Texture.unbind(2);
     }
 
     private void renderMesh(Mesh mesh) {
         mesh.getVertices().bind();
         mesh.getIndices().bind();
-        mesh.getMaterial().applyTo(this.gbufferShader);
-
         glDrawElements(GL_TRIANGLES, mesh.getIndices().getSize(), GL_UNSIGNED_INT, 0);
-
-        Texture.unbind();
-        Texture.unbind(1);
-        Texture.unbind(2);
         IndexBuffer.unbind();
         VertexBuffer.unbind();
     }
@@ -157,6 +225,13 @@ public class Renderer {
         this.deferredShader.setUniform("uCamera.position", camera.getPosition());
         this.deferredShader.setUniform("uAmbient.intensity", ambient.getIntensity());
         this.deferredShader.setUniform("uAmbient.color", ambient.getColor());
+        this.deferredShader.setUniform("uShadow.hasShadow", this.renderShadow);
+        if(this.renderShadow) {
+            this.deferredShader.setUniform("uShadow.lightViewProj", this.lightViewProj);
+            this.shadowBuffer.getDepthTexture().bind(3);
+            this.deferredShader.setUniform("uShadow.shadowMap", 3);
+        }
+
         for(int i = 0; i < directionals.size(); i++) {
             this.setDirectionalLight(this.deferredShader, i, directionals.get(i));
         }
@@ -177,7 +252,7 @@ public class Renderer {
         Texture.unbind(0);
         Texture.unbind(1);
         Texture.unbind(2);
-
+        Texture.unbind(3);
     }
 
     private void setDirectionalLight(Shader shader, int index, DirectionalLight light) {
@@ -209,12 +284,8 @@ public class Renderer {
         shader.setUniform("uSpots[" + index + "].outerCutOff", light.getOuterCutOff());
     }
 
-    public void destroy() {
-        this.skyboxShader.destroy();
-        this.gbufferShader.destroy();
-        this.deferredShader.destroy();
-        this.gbuffer.destroy();
-        this.vertexBuffer.destroy();
+    public FrameBuffer getShadowBuffer() {
+        return this.shadowBuffer;
     }
 
     public FrameBuffer getGBuffer() {
