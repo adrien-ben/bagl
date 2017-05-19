@@ -1,5 +1,11 @@
 #version 330
 
+struct Shadow {
+    bool hasShadow;
+    sampler2D shadowMap;
+    mat4 lightViewProj;
+};
+
 struct GBuffer {
 	sampler2D colors;
 	sampler2D normals;
@@ -45,11 +51,13 @@ const int MAX_DIR_LIGHTS = 2;
 const int MAX_POINT_LIGHTS = 6;
 const int MAX_SPOT_LIGHTS = 3;
 const float MAX_GLOSSINESS = 512;
+const float SHADOW_BIAS = 0.0001;
 
 in vec2 passCoords;
 
 out vec4 finalColor;
 
+uniform Shadow uShadow;
 uniform GBuffer uGBuffer;
 uniform Camera uCamera;
 uniform Light uAmbient;
@@ -107,15 +115,25 @@ void main() {
 		vec4 specular = vec4(0, 0, 0, 1);
 	
 		vec3 lightDirection;
-			
+
+
 		//directional lights
 		for(int i = 0; i < MAX_DIR_LIGHTS; i++) {
+		    float shadow = 0;
+		    if(i == 0 && uShadow.hasShadow) {
+                vec4 lightSpacePosition = uShadow.lightViewProj*position;
+                lightSpacePosition.xyz /= lightSpacePosition.w;
+                float shadowMapDepth = texture2D(uShadow.shadowMap, lightSpacePosition.xy*0.5 + 0.5).r;
+                if(shadowMapDepth + SHADOW_BIAS < lightSpacePosition.z*0.5 + 0.5) {
+                    shadow = 1;
+                }
+		    }
 			DirectionalLight light = uDirectionals[i];
 			lightDirection = normalize(light.direction);
-			diffuse += computeDiffuse(light.base, normal, lightDirection);
-			specular += computeSpecular(light.base, shininess, glossiness, position, normal, lightDirection);
+			diffuse += computeDiffuse(light.base, normal, lightDirection)*(1 - shadow);
+			specular += computeSpecular(light.base, shininess, glossiness, position, normal, lightDirection)*(1 - shadow);
 		}
-		
+
 		//point lights
 		for(int i = 0; i < MAX_POINT_LIGHTS; i++) {
 			PointLight light = uPoints[i];
