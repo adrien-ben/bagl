@@ -40,7 +40,7 @@ public class RenderToTextureSample {
             this.paddingH = (int)(this.height*0.2);
             this.paddingV = (int)(this.width*0.2);
 
-            this.frameBuffer = new FrameBuffer(this.width, this.height);
+            this.frameBuffer = new FrameBuffer(this.width, this.height, 1);
 
             this.mesh = MeshFactory.createBox(5, 5, 5);
 
