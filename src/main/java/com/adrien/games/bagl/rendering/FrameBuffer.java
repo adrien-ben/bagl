@@ -91,6 +91,7 @@ public class FrameBuffer {
             glDrawBuffers(generateBuffersToDraw(textures.length));
         } else {
             glDrawBuffer(GL_NONE);
+            glReadBuffer(GL_NONE);
         }
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         return bufferHandle;
