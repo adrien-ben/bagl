@@ -273,7 +273,21 @@ public final class Matrix4 {
      * @return A new matrix.
      */
     public static Matrix4 createOrthographic(float left, float right, float bottom, float top) {
-        return new Matrix4().setOrthographic(left, right, bottom, top);
+        return new Matrix4().setOrthographic(left, right, bottom, top, 0f, 1000f);
+    }
+
+    /**
+     * Creates an orthographic projection matrix
+     * @param left The left border.
+     * @param right The right border.
+     * @param bottom The bottom border.
+     * @param top The top border.
+     * @param near The near plane.
+     * @param far The far plane.
+     * @return A new matrix.
+     */
+    public static Matrix4 createOrthographic(float left, float right, float bottom, float top, float near, float far) {
+        return new Matrix4().setOrthographic(left, right, bottom, top, near, far);
     }
 
     /**
@@ -285,9 +299,21 @@ public final class Matrix4 {
      * @return This for chaining.
      */
     public Matrix4 setOrthographic(float left, float right, float bottom, float top) {
-        final float near = 0f;
-        final float far = 1000f;
+        this.setOrthographic(left, right, bottom, top, 0f, 1000f);
+        return this;
+    }
 
+    /**
+     * Changes this matrix into an orthographic projection matrix.
+     * @param left The left border.
+     * @param right The right border.
+     * @param bottom The bottom border.
+     * @param top The top border.
+     * @param near The near plane.
+     * @param far The far plane.
+     * @return This for chaining.
+     */
+    public Matrix4 setOrthographic(float left, float right, float bottom, float top, float near, float far) {
         this.matrix[M11] = 2f/(right - left);	this.matrix[M12] = 0; 					this.matrix[M13] = 0; 					this.matrix[M14] = -(right + left)/(right - left);
         this.matrix[M21] = 0;					this.matrix[M22] = 2f/(top - bottom); 	this.matrix[M23] = 0; 					this.matrix[M24] = -(top + bottom)/(top - bottom);
         this.matrix[M31] = 0;					this.matrix[M32] = 0; 					this.matrix[M33] = -2f/(far - near); 	this.matrix[M34] = -(far + near)/(far - near);
