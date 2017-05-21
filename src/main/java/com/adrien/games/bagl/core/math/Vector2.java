@@ -155,6 +155,24 @@ public final class Vector2 {
         this.setY((float)_y);
     }
 
+    /**
+     * Sets the vectors components to the values of another vector.
+     * @param other The vector to copy the value from.
+     */
+    public void set(Vector2 other) {
+        this.setXY(other.x, other.y);
+    }
+
+    /**
+     * Sets the vectors x and y components.
+     * @param x The x component.
+     * @param y The y component.
+     */
+    public void setXY(float x, float y) {
+        this.x = x;
+        this.y = y;
+    }
+
     @Override
     public String toString() {
         return "x:" + this.x + " y:" + this.y;
