@@ -51,7 +51,7 @@ const int MAX_DIR_LIGHTS = 2;
 const int MAX_POINT_LIGHTS = 6;
 const int MAX_SPOT_LIGHTS = 3;
 const float MAX_GLOSSINESS = 512;
-const float SHADOW_BIAS = 0.0001;
+const float SHADOW_BIAS = 0.005;
 
 in vec2 passCoords;
 
