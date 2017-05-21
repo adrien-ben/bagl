@@ -68,7 +68,7 @@ public class DeferredRenderingSample {
             this.initSceneGraph();
             this.setUpLights();
 
-            this.camera = new Camera(new Vector3(0f, 2f, 6f), new Vector3(0f, -2f, -6f), new Vector3(Vector3.UP),
+            this.camera = new Camera(new Vector3(-10f, 8f, 6f), new Vector3(10f, -8f, -6f), new Vector3(Vector3.UP),
                     (float)Math.toRadians(60f), (float)this.width/(float)this.height, 1, 1000);
             this.cameraController = new CameraController(this.camera);
 
