@@ -15,6 +15,7 @@ public class Camera {
     private Vector3 position;
     private Vector3 direction;
     private Vector3 up;
+    private Vector3 side;
 
     private final float fov;
     private final float aspectRatio;
@@ -37,6 +38,7 @@ public class Camera {
         this.position = position;
         this.direction = direction;
         this.up = up;
+        this.side = Vector3.cross(this.direction, this.up);
 
         this.fov = fovRads;
         this.aspectRatio = aspectRatio;
@@ -65,10 +67,24 @@ public class Camera {
         buffer.setRotation(rotation);
         this.direction.transform(buffer, 0);
         this.up.transform(buffer, 0);
+        Vector3.cross(this.direction, this.up, this.side);
         this.dirtyView = true;
         this.dirtyViewAtOrigin = true;
         this.dirtyViewProj = true;
         this.dirtyViewProjAtOrigin = true;
+        return this;
+    }
+
+    /**
+     * Moves the camera in a direction. This only changes
+     * the position of the camera not its orientation.
+     * @param direction The direction to move towards.
+     * @return This for chaining.
+     */
+    public Camera move(Vector3 direction) {
+        this.position.add(direction);
+        this.dirtyView = true;
+        this.dirtyViewProj = true;
         return this;
     }
 
@@ -142,6 +158,10 @@ public class Camera {
         return up;
     }
 
+    public Vector3 getSide() {
+        return this.side;
+    }
+
     public void setPosition(Vector3 position) {
         this.position = position;
         this.dirtyView = true;
@@ -150,6 +170,7 @@ public class Camera {
 
     public void setDirection(Vector3 direction) {
         this.direction = direction;
+        Vector3.cross(this.direction, this.up, this.side);
         this.dirtyView = true;
         this.dirtyViewAtOrigin = true;
         this.dirtyViewProj = true;
@@ -158,6 +179,7 @@ public class Camera {
 
     public void setUp(Vector3 up) {
         this.up = up;
+        Vector3.cross(this.direction, this.up, this.side);
         this.dirtyView = true;
         this.dirtyViewProj = true;
         this.dirtyViewAtOrigin = true;
