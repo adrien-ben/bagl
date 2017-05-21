@@ -28,8 +28,8 @@ public class DeferredRenderingSample {
 
         private static final String TITLE = "Deferred Rendering";
 
-        private static final String INSTRUCTIONS = "Display GBuffer and shadow map : Space\n" +
-                "Move camera : UP, RIGHT, DOWN, LEFT\nAdvance time: 1, 2";
+        private static final String INSTRUCTIONS = "Display debug infos : G\n" +
+                "Move camera : Z, Q, S, D, LCTRL, SPACE\nAdvance time: 1, 2";
 
         private int width;
         private int height;
@@ -42,10 +42,11 @@ public class DeferredRenderingSample {
         private Scene scene;
         private Skybox skybox;
         private Model floor;
-        private Model sphere;
+        private Model cube;
         private Model tree;
 
         private Camera camera;
+        private CameraController cameraController;
 
         private Spritebatch spritebatch;
 
@@ -69,6 +70,7 @@ public class DeferredRenderingSample {
 
             this.camera = new Camera(new Vector3(0f, 2f, 6f), new Vector3(0f, -2f, -6f), new Vector3(Vector3.UP),
                     (float)Math.toRadians(60f), (float)this.width/(float)this.height, 1, 1000);
+            this.cameraController = new CameraController(this.camera);
 
             this.spritebatch = new Spritebatch(1024, this.width, this.height);
 
@@ -83,7 +85,7 @@ public class DeferredRenderingSample {
             this.font.destroy();
             this.skybox.destroy();
             this.floor.destroy();
-            this.sphere.destroy();
+            this.cube.destroy();
             this.tree.destroy();
         }
 
@@ -97,18 +99,18 @@ public class DeferredRenderingSample {
             this.scene.setSkybox(this.skybox);
 
             this.floor = MeshFactory.fromResourceFile("/models/floor/floor.obj");
-            this.sphere = MeshFactory.fromResourceFile("/models/sphere/sphere.obj");
+            this.cube = MeshFactory.fromResourceFile("/models/cube/cube.obj");
             this.tree = MeshFactory.fromResourceFile("/models/tree/tree.obj");
         }
 
         private void initSceneGraph() {
             this.scene.getRoot().set(this.floor);
-            final SceneNode<Model> sphereNode = new SceneNode<>(this.sphere);
-            sphereNode.getLocalTransform().setTranslation(new Vector3(0, 0.5f, 0));
+            final SceneNode<Model> cubeNode = new SceneNode<>(this.cube);
+            cubeNode.getLocalTransform().setTranslation(new Vector3(0, 0.5f, 0));
             final SceneNode<Model> treeNode = new SceneNode<>(this.tree);
             treeNode.getLocalTransform().setTranslation(new Vector3(4f, 0f, 1.5f));
             this.scene.getRoot().addChild(treeNode);
-            this.scene.getRoot().addChild(sphereNode);
+            this.scene.getRoot().addChild(cubeNode);
         }
 
         private void setUpLights() {
@@ -141,30 +143,15 @@ public class DeferredRenderingSample {
                         (float)Math.toRadians(speed*time.getElapsedTime()), new Vector3(1f, 1f, 0f).normalise())), 0);
             }
 
-            if(Input.isKeyPressed(GLFW.GLFW_KEY_SPACE) && !this.isKeyPressed) {
+            if(Input.isKeyPressed(GLFW.GLFW_KEY_G) && !this.isKeyPressed) {
                 this.displayGbuffer = !this.displayGbuffer;
                 this.isKeyPressed = true;
             }
-            if(!Input.isKeyPressed(GLFW.GLFW_KEY_SPACE) && this.isKeyPressed) {
+            if(!Input.isKeyPressed(GLFW.GLFW_KEY_G) && this.isKeyPressed) {
                 this.isKeyPressed = false;
             }
 
-            this.moveCamera(time.getElapsedTime());
-        }
-
-        private void moveCamera(float elapsed) {
-            if(Input.isKeyPressed(GLFW.GLFW_KEY_LEFT)) {
-                this.camera.rotate(Quaternion.fromAngleAndVector((float)Math.toRadians(30*elapsed), Vector3.UP));
-            } else if(Input.isKeyPressed(GLFW.GLFW_KEY_RIGHT)) {
-                this.camera.rotate(Quaternion.fromAngleAndVector((float)Math.toRadians(-30*elapsed), Vector3.UP));
-            }
-            if(Input.isKeyPressed(GLFW.GLFW_KEY_UP)) {
-                this.camera.rotate(Quaternion.fromAngleAndVector((float)Math.toRadians(10*elapsed),
-                        Vector3.cross(this.camera.getDirection(), Vector3.UP)));
-            } else if(Input.isKeyPressed(GLFW.GLFW_KEY_DOWN)) {
-                this.camera.rotate(Quaternion.fromAngleAndVector((float)Math.toRadians(-10*elapsed),
-                        Vector3.cross(this.camera.getDirection(), Vector3.UP)));
-            }
+            this.cameraController.update(time);
         }
 
         @Override
