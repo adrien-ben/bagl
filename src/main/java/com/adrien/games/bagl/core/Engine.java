@@ -41,6 +41,7 @@ public final class Engine {
             }
             this.update();
             this.render();
+            Input.update();
             this.window.update();
         }
         this.destroy();

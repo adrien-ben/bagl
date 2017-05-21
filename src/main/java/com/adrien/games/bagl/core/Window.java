@@ -28,6 +28,7 @@ public final class Window {
         }
 
         GLFW.glfwSetKeyCallback(this.windowHandle, Input::handleInput);
+        GLFW.glfwSetCursorPosCallback(this.windowHandle, (window, x, y) -> Input.handleMouse(window, x, this.height - y));
 
         GLFW.glfwMakeContextCurrent(this.windowHandle);
         GLFW.glfwSwapInterval(vsync ? 1 : 0);
