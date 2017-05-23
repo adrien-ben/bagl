@@ -158,14 +158,14 @@ vec3 computeLight(Light light, float attenuation, vec3 L, vec3 V, vec3 N, float 
 void main() {
 	vec4 normalMetallic = texture2D(uGBuffer.normals, passCoords);
 	vec3 N = normalMetallic.xyz;
-	if(N.x == 0.0 && N.y == 0.0 && N.z == 0.0) {
+	if(N == 0.0) {
 		gl_FragDepth = 1.0;
 		finalColor = vec4(0.0, 0.0, 0.0, 1.0);
 	} else {
 		//retrive data from gbuffer
 		N = normalize(N*2 - 1);
 		vec4 colorRoughness = texture2D(uGBuffer.colors, passCoords);
-		vec3 color = pow(colorRoughness.rgb, vec3(2.2));
+		vec3 color = colorRoughness.rgb;
 		float depthValue = texture2D(uGBuffer.depth, passCoords).r;
 		vec4 position = positionFromDepth(depthValue);
 		float roughness = colorRoughness.a;

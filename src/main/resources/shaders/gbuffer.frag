@@ -24,7 +24,7 @@ layout (location = 1) out vec4 normals;
 uniform Material uMaterial;
 
 void main() {
-	colors.rgb = uMaterial.hasDiffuseMap ? texture2D(uMaterial.diffuseMap, passCoords).rgb : uMaterial.diffuseColor.rgb;
+	colors.rgb = uMaterial.hasDiffuseMap ? pow(texture2D(uMaterial.diffuseMap, passCoords).rgb, vec3(2.2)) : uMaterial.diffuseColor.rgb;
     colors.a = uMaterial.hasRoughnessMap ? texture2D(uMaterial.roughnessMap, passCoords).r : uMaterial.roughness;
 
 	vec3 normal;
