@@ -84,6 +84,10 @@ public class Material {
         }
     }
 
+    public boolean hasNormalMap() {
+        return Objects.nonNull(this.normalMap);
+    }
+
     public Color getDiffuseColor() {
         return diffuseColor;
     }

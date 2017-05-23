@@ -229,9 +229,9 @@ public class ObjParser implements ModelParser {
         }
 
         Mesh build() {
-//            if(this.material.hasBumpMap()) {
+            if(this.material.hasNormalMap()) {
                 this.computeTangents();
-//            }
+            }
             final int vertexCount = this.faces.size();
             final Vertex[] vertexArray = new MeshVertex[vertexCount];
             for(int i = 0; i < vertexCount; i++) {
