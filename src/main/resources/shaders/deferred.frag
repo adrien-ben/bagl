@@ -17,12 +17,6 @@ struct Camera {
 	vec3 position;
 };
 
-struct Attenuation {
-	float constant;
-	float linear;
-	float quadratic;
-};
-
 struct Light {
 	float intensity;
 	vec4 color;
@@ -37,7 +31,6 @@ struct PointLight {
 	Light base;
 	vec3 position;
 	float radius;
-	Attenuation attenuation;
 };
 
 struct SpotLight {
