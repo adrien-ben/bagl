@@ -129,7 +129,38 @@ float geometry(vec3 N, vec3 V, vec3 L, float roughness) {
     return ggx1*ggx2;
 }
 
+vec3 computeLight(Light light, float attenuation, vec3 L, vec3 V, vec3 N, float NdotV, vec3 F0, vec3 color, float roughness, float metallic) {
 
+    //N.L
+    float NdotL = dot(N, L);
+    if(NdotL <= 0) {
+        return vec3(0);
+    }
+
+    //half vector
+    vec3 H = normalize(L + V);
+
+    //radiance
+    vec3 Li = light.color.rgb*light.intensity*attenuation;
+
+    //fresnel factor
+    vec3 F = fresnel(max(dot(H, V), 0.0), F0);
+
+    //normal distribution
+    float ND = distribution(N, H, roughness);
+
+    //geometry factor
+    float G = geometry(N, V, L, roughness);
+
+    vec3 nominator = ND*G*F;
+    float denominator = 4*NdotV*NdotL + 0.001;
+    vec3 specular = nominator/denominator;
+
+    //diffuse factor
+    vec3 kD = (1.0 - F)*(1.0 - metallic);
+
+    return (kD*color/PI + specular)*Li*NdotL;
+}
 
 void main() {
 	vec4 normalMetallic = texture2D(uGBuffer.normals, passCoords);
@@ -168,55 +199,30 @@ void main() {
                     continue;
                 }
 		    }
+
 			DirectionalLight light = uDirectionals[i];
 
             //light direction
             vec3 L = normalize(-light.direction);
 
-            //N.L
-            float NdotL = dot(N, L);
-            if(NdotL <= 0) {
-                continue;
-            }
-
-            //half vector
-            vec3 H = normalize(L + V);
-
-            //radiance
-            vec3 Li = light.base.color.rgb*light.base.intensity;
-
-            //fresnel factor
-            vec3 F = fresnel(max(dot(H, V), 0.0), F0);
-
-            //normal distribution
-            float ND = distribution(N, H, roughness);
-
-            //geometry factor
-            float G = geometry(N, V, L, roughness);
-
-            vec3 nominator = ND*G*F;
-            float denominator = 4*NdotV*NdotL + 0.001;
-            vec3 specular = nominator/denominator;
-
-            //diffuse factor
-            vec3 kD = (1.0 - F)*(1.0 - metallic);
-
-            L0 += (kD*color/PI + specular)*Li*NdotL;
-
+            L0 += computeLight(light.base, 1.0, L, V, N, NdotV, F0, color, roughness, metallic);
 		}
 
 		//point lights
-//		for(int i = 0; i < MAX_POINT_LIGHTS; i++) {
-//			PointLight light = uPoints[i];
-//			lightDirection = position.xyz - light.position;
-//			float distance = length(lightDirection);
-//			if(distance <= light.radius) {
-//				lightDirection = normalize(lightDirection);
-//				float attenuation = computeAttenuation(distance, light.attenuation);
-//				diffuse += computeDiffuse(light.base, normal, lightDirection)*attenuation;
-//				specular += computeSpecular(light.base, shininess, glossiness, position, normal, lightDirection)*attenuation;
-//			}
-//		}
+		for(int i = 0; i < MAX_POINT_LIGHTS; i++) {
+			PointLight light = uPoints[i];
+
+            vec3 lightDirection = light.position - position.xyz;
+            float distance = length(lightDirection);
+            if(distance > light.radius) {
+                continue;
+            }
+
+			vec3 L = normalize(light.position - position.xyz);
+			float attenuation = 1.0/(distance*distance);
+
+            L0 += computeLight(light.base, attenuation, L, V, N, NdotV, F0, color, roughness, metallic);
+		}
 
 		//spot lights
 //		for(int i = 0; i < MAX_SPOT_LIGHTS; i++) {
