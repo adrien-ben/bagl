@@ -171,7 +171,7 @@ void main() {
 		float roughness = colorRoughness.a;
 		float metallic = normalMetallic.a;
 
-        vec3 L0 = vec3(0.0);
+        vec3 L0 = uAmbient.color.rgb*uAmbient.intensity*color;
 
         //View vector
         vec3 V = normalize(uCamera.position - position.xyz);
@@ -211,30 +211,32 @@ void main() {
                 continue;
             }
 
-			vec3 L = normalize(light.position - position.xyz);
+			vec3 L = normalize(lightDirection);
 			float attenuation = 1.0/(distance*distance);
 
             L0 += computeLight(light.base, attenuation, L, V, N, NdotV, F0, color, roughness, metallic);
 		}
 
 		//spot lights
-//		for(int i = 0; i < MAX_SPOT_LIGHTS; i++) {
-//			SpotLight light = uSpots[i];
-//			lightDirection = position.xyz - light.point.position;
-//			float distance = length(lightDirection);
-//			lightDirection = normalize(lightDirection);
-//			float theta = dot(-light.direction, -lightDirection);
-//			if(theta > light.outerCutOff && distance <= light.point.radius) {
-//				float epsilon = light.cutOff - light.outerCutOff;
-//				float intensity = clamp((theta - light.outerCutOff)/epsilon, 0, 1);
-//				float attenuation = computeAttenuation(distance, light.point.attenuation);
-//				diffuse += computeDiffuse(light.point.base, normal, lightDirection)*attenuation*intensity;
-//				specular += computeSpecular(light.point.base, shininess, glossiness, position, normal, lightDirection)*attenuation*intensity;
-//			}
-//		}
+		for(int i = 0; i < MAX_SPOT_LIGHTS; i++) {
+			SpotLight light = uSpots[i];
 
+			vec3 lightDirection = light.point.position - position.xyz;
+            float distance = length(lightDirection);
+            vec3 L = normalize(lightDirection);
+            float theta = dot(-normalize(light.direction), L);
 
-//		L0 += uAmbient.color.rgb*uAmbient.intensity*color;
+            if(theta <= light.outerCutOff || distance > light.point.radius) {
+                continue;
+            }
+
+            float attenuation = 1.0/(distance*distance);
+
+            float epsilon = light.cutOff - light.outerCutOff;
+            float falloff = clamp((theta - light.outerCutOff)/epsilon, 0, 1);
+
+            L0 += computeLight(light.point.base, attenuation*falloff, L, V, N, NdotV, F0, color, roughness, metallic);
+		}
 
 		//HDR
 		L0 = L0/(L0 + 1.0);
