@@ -4,3 +4,9 @@ newmtl default
 map_Kd stone.png
 map_bump stone_normal.png
 map_roughness stone_roughness.png
+
+newmtl test
+Kd 1 0 0
+metallic 1
+roughness 0.05
+
