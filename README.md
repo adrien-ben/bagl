@@ -2,7 +2,8 @@
 baGL is an OpengGL framework that I use for educational purpose.
 
 ### Features
-- Blinn-Phong deferred rendering
+- Physically Based Rendering
+- Shadow mapping
 - Simple .obj and .mtl loaders
 - Lights (ambient lights, directional lights, point lights and spot lights)
 - Skyboxes
@@ -15,8 +16,6 @@ baGL is an OpengGL framework that I use for educational purpose.
 - Improving scene graph
     - Game Objects with components(Mesh, Light, ...)
 - Rendering
-    - Shadow mapping
-    - Physically Based Rendering
     - Animations
     - Sprites in 3D environment (particles, debug icons, ...)
 - 2D scene

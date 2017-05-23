@@ -9,7 +9,10 @@ import com.adrien.games.bagl.rendering.Model;
 import com.adrien.games.bagl.rendering.Renderer;
 import com.adrien.games.bagl.rendering.Skybox;
 import com.adrien.games.bagl.rendering.Spritebatch;
-import com.adrien.games.bagl.rendering.light.*;
+import com.adrien.games.bagl.rendering.light.DirectionalLight;
+import com.adrien.games.bagl.rendering.light.Light;
+import com.adrien.games.bagl.rendering.light.PointLight;
+import com.adrien.games.bagl.rendering.light.SpotLight;
 import com.adrien.games.bagl.rendering.scene.Scene;
 import com.adrien.games.bagl.rendering.scene.SceneNode;
 import com.adrien.games.bagl.rendering.text.Font;
@@ -17,8 +20,6 @@ import com.adrien.games.bagl.rendering.text.TextRenderer;
 import com.adrien.games.bagl.utils.FileUtils;
 import com.adrien.games.bagl.utils.MeshFactory;
 import org.lwjgl.glfw.GLFW;
-
-import java.util.Optional;
 
 import static org.lwjgl.opengl.GL11.*;
 
@@ -68,8 +69,8 @@ public class DeferredRenderingSample {
             this.initSceneGraph();
             this.setUpLights();
 
-            this.camera = new Camera(new Vector3(-10f, 8f, 6f), new Vector3(10f, -8f, -6f), new Vector3(Vector3.UP),
-                    (float)Math.toRadians(60f), (float)this.width/(float)this.height, 1, 1000);
+            this.camera = new Camera(new Vector3(5f, 4f, 6f), new Vector3(-5f, -4f, -6f), new Vector3(Vector3.UP),
+                    (float)Math.toRadians(60f), (float)this.width/(float)this.height, 0.1f, 1000);
             this.cameraController = new CameraController(this.camera);
 
             this.spritebatch = new Spritebatch(1024, this.width, this.height);
@@ -106,7 +107,7 @@ public class DeferredRenderingSample {
         private void initSceneGraph() {
             this.scene.getRoot().set(this.floor);
             final SceneNode<Model> cubeNode = new SceneNode<>(this.cube);
-            cubeNode.getLocalTransform().setTranslation(new Vector3(0, 0.5f, 0));
+            cubeNode.getLocalTransform().setTranslation(new Vector3(0, 1f, 0)).setScale(new Vector3(0.5f, 0.5f, 0.5f));
             final SceneNode<Model> treeNode = new SceneNode<>(this.tree);
             treeNode.getLocalTransform().setTranslation(new Vector3(4f, 0f, 1.5f));
             this.scene.getRoot().addChild(treeNode);
@@ -114,31 +115,29 @@ public class DeferredRenderingSample {
         }
 
         private void setUpLights() {
-            this.scene.setAmbient(new Light(0.1f));
-            this.scene.getDirectionals().add(new DirectionalLight(0.4f, Color.WHITE, new Vector3(0.5f, -2, 4)));
-            this.scene.getDirectionals().add(new DirectionalLight(0.2f, Color.WHITE, new Vector3(0.5f, -2, 4)));
-            this.scene.getPoints().add(new PointLight(1f, Color.GREEN, new Vector3(4f, 0.5f, 2f), 7f, Attenuation.CLOSE));
-            this.scene.getPoints().add(new PointLight(1f, Color.YELLOW, new Vector3(-4f, 0.2f, 2f), 7f, Attenuation.CLOSE));
-            this.scene.getPoints().add(new PointLight(1f, Color.BLUE, new Vector3(0f, 0.5f, 3f), 7f, Attenuation.CLOSE));
-            this.scene.getPoints().add(new PointLight(1f, Color.PURPLE, new Vector3(0f, 3f, 0f), 7f, Attenuation.CLOSE));
-            this.scene.getPoints().add(new PointLight(2f, Color.TURQUOISE, new Vector3(-1f, 0.1f, 1f), 7f, Attenuation.CLOSE));
-            this.scene.getPoints().add(new PointLight(1f, Color.CYAN, new Vector3(3f, 0.6f, -3f), 7f, Attenuation.CLOSE));
-            this.scene.getSpots().add(new SpotLight(10f, Color.RED, new Vector3(-2f, 0.5f, -3f), 7f, Attenuation.CLOSE,
-                    new Vector3(0f, -1f, 0.8f), 20f, 5f));
-            this.scene.getSpots().add(new SpotLight(2f, Color.WHITE, new Vector3(2f, 2f, 2f), 7f, Attenuation.CLOSE,
+            this.scene.setAmbient(new Light(0.01f));
+            this.scene.getDirectionals().add(new DirectionalLight(0.5f, Color.WHITE, new Vector3(3f, -2, 4)));
+            this.scene.getDirectionals().add(new DirectionalLight(0.3f, Color.ORANGE, new Vector3(0.5f, -2, 4)));
+            this.scene.getPoints().add(new PointLight(1f, Color.GREEN, new Vector3(4f, 0.5f, 2f), 7f));
+            this.scene.getPoints().add(new PointLight(1f, Color.YELLOW, new Vector3(-4f, 0.2f, 2f), 7f));
+            this.scene.getPoints().add(new PointLight(1f, Color.BLUE, new Vector3(0f, 0.5f, 3f), 7f));
+            this.scene.getPoints().add(new PointLight(1f, Color.PURPLE, new Vector3(0f, 3f, 0f), 7f));
+            this.scene.getPoints().add(new PointLight(2f, Color.TURQUOISE, new Vector3(-1f, 0.1f, 1f), 7f));
+            this.scene.getPoints().add(new PointLight(1f, Color.CYAN, new Vector3(3f, 0.6f, -3f), 7f));
+            this.scene.getSpots().add(new SpotLight(10f, Color.RED, new Vector3(-2f, 0.5f, -3f), 7f,
+                    new Vector3(0f, -1f, 1.2f), 20f, 5f));
+            this.scene.getSpots().add(new SpotLight(2f, Color.WHITE, new Vector3(2f, 2f, 2f), 7f,
                     new Vector3(0f, -1f, -0f), 10f, 5f));
-            this.scene.getSpots().add(new SpotLight(1f, Color.ORANGE, new Vector3(-0.5f, 0.5f, 0.5f), 7f, Attenuation.CLOSE,
-                    new Vector3(2f, 0.7f, -1f), 20f, 5f));
         }
 
         @Override
         public void update(Time time) {
-            final Optional<SceneNode<Model>> node = this.scene.getRoot().getChildren().stream().findFirst();
-            node.ifPresent(meshSceneNode -> meshSceneNode.getLocalTransform().getRotation().mul(Quaternion.fromAngleAndVector(
+            this.scene.getRoot().getChildren().forEach(meshSceneNode ->
+                    meshSceneNode.getLocalTransform().getRotation().mul(Quaternion.fromAngleAndVector(
                     (float) Math.toRadians(10 * time.getElapsedTime()), Vector3.UP)));
 
             if(Input.isKeyPressed(GLFW.GLFW_KEY_1) || Input.isKeyPressed(GLFW.GLFW_KEY_2)) {
-                float speed = Input.isKeyPressed(GLFW.GLFW_KEY_1) ? 12 : -12;
+                float speed = Input.isKeyPressed(GLFW.GLFW_KEY_1) ? 20 : -20;
                 this.scene.getDirectionals().get(0).getDirection().transform(Matrix4.createRotation(Quaternion.fromAngleAndVector(
                         (float)Math.toRadians(speed*time.getElapsedTime()), new Vector3(1f, 1f, 0f).normalise())), 0);
             }
