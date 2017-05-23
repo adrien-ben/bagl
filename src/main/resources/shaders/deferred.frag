@@ -67,13 +67,14 @@ vec4 positionFromDepth(float depth) {
 }
 
 /**
- * Computes the fresnel factor of the BRDF. This is the Schlick implementation.
+ * Computes the fresnel factor of the BRDF. This is Epic's version of the Schlick implementation.
  * @param cosTheta The angle between the half vector and the view vector.
  * @param F0 Base reflexivity of the material.
  * @return Reflected light factor.
  */
 vec3 fresnel(float cosTheta, vec3 F0) {
-    return F0 + (1.0 - F0)*pow(1.0 - cosTheta, 5.0);
+    float powValue = (-5.55473*cosTheta - 6.98316)*cosTheta;
+    return F0 + (1.0 - F0)*pow(2, powValue);
 }
 
 /**
@@ -98,7 +99,7 @@ float distribution(vec3 N, vec3 H, float roughness) {
 
 float geometrySchlickGGX(float NdotV, float roughness) {
     float r = roughness + 1.0;
-    float k = r*r/8.0;
+    float k = (r*r)/8.0;
     float nominator = NdotV;
     float denominator = NdotV*(1.0 - k) + k;
 
