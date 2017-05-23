@@ -123,6 +123,17 @@ float geometry(vec3 N, vec3 V, vec3 L, float roughness) {
     return ggx1*ggx2;
 }
 
+float computeFalloff(float distance, float radius) {
+    float distanceFactor = distance/radius;
+    float distanceFactor2 = distanceFactor*distanceFactor;
+    float distanceFactor4 = distanceFactor2*distanceFactor2;
+
+    float nominator = pow(clamp(1 - distanceFactor4, 0.0, 1.0), 2);
+    float denominator = distanceFactor2 + 1;
+
+    return nominator/denominator;
+}
+
 vec3 computeLight(Light light, float attenuation, vec3 L, vec3 V, vec3 N, float NdotV, vec3 F0, vec3 color, float roughness, float metallic) {
 
     //N.L
@@ -213,7 +224,7 @@ void main() {
             }
 
 			vec3 L = normalize(lightDirection);
-			float attenuation = 1.0/(distance*distance);
+			float attenuation = computeFalloff(distance, light.radius);
 
             L0 += computeLight(light.base, attenuation, L, V, N, NdotV, F0, color, roughness, metallic);
 		}
@@ -231,7 +242,7 @@ void main() {
                 continue;
             }
 
-            float attenuation = 1.0/(distance*distance);
+            float attenuation = computeFalloff(distance, light.point.radius);
 
             float epsilon = light.cutOff - light.outerCutOff;
             float falloff = clamp((theta - light.outerCutOff)/epsilon, 0, 1);

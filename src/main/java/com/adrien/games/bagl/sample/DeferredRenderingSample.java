@@ -101,6 +101,7 @@ public class DeferredRenderingSample {
 
             this.floor = MeshFactory.fromResourceFile("/models/floor/floor.obj");
             this.cube = MeshFactory.fromResourceFile("/models/cube/cube.obj");
+//            this.cube = MeshFactory.fromFile("D:/Documents/3D Models/sphere/sphere.obj");
             this.tree = MeshFactory.fromResourceFile("/models/tree/tree.obj");
         }
 
@@ -109,7 +110,7 @@ public class DeferredRenderingSample {
             final SceneNode<Model> cubeNode = new SceneNode<>(this.cube);
             cubeNode.getLocalTransform().setTranslation(new Vector3(0, 1f, 0)).setScale(new Vector3(0.5f, 0.5f, 0.5f));
             final SceneNode<Model> treeNode = new SceneNode<>(this.tree);
-            treeNode.getLocalTransform().setTranslation(new Vector3(4f, 0f, 1.5f));
+            treeNode.getLocalTransform().setTranslation(new Vector3(2f, 0f, 0));
             this.scene.getRoot().addChild(treeNode);
             this.scene.getRoot().addChild(cubeNode);
         }
@@ -118,13 +119,13 @@ public class DeferredRenderingSample {
             this.scene.setAmbient(new Light(0.01f));
             this.scene.getDirectionals().add(new DirectionalLight(0.5f, Color.WHITE, new Vector3(3f, -2, 4)));
             this.scene.getDirectionals().add(new DirectionalLight(0.3f, Color.ORANGE, new Vector3(0.5f, -2, 4)));
-            this.scene.getPoints().add(new PointLight(1f, Color.GREEN, new Vector3(4f, 0.5f, 2f), 7f));
-            this.scene.getPoints().add(new PointLight(1f, Color.YELLOW, new Vector3(-4f, 0.2f, 2f), 7f));
-            this.scene.getPoints().add(new PointLight(1f, Color.BLUE, new Vector3(0f, 0.5f, 3f), 7f));
-            this.scene.getPoints().add(new PointLight(1f, Color.PURPLE, new Vector3(0f, 3f, 0f), 7f));
-            this.scene.getPoints().add(new PointLight(2f, Color.TURQUOISE, new Vector3(-1f, 0.1f, 1f), 7f));
-            this.scene.getPoints().add(new PointLight(1f, Color.CYAN, new Vector3(3f, 0.6f, -3f), 7f));
-            this.scene.getSpots().add(new SpotLight(10f, Color.RED, new Vector3(-2f, 0.5f, -3f), 7f,
+            this.scene.getPoints().add(new PointLight(10f, Color.GREEN, new Vector3(4f, 0.5f, 2f), 2f));
+            this.scene.getPoints().add(new PointLight(10f, Color.YELLOW, new Vector3(-4f, 0.2f, 2f), 3f));
+            this.scene.getPoints().add(new PointLight(10f, Color.BLUE, new Vector3(0f, 0.5f, 3f), 2f));
+            this.scene.getPoints().add(new PointLight(10f, Color.PURPLE, new Vector3(0f, 3f, 0f), 2f));
+            this.scene.getPoints().add(new PointLight(10f, Color.TURQUOISE, new Vector3(-1f, 0.1f, 1f), 2f));
+            this.scene.getPoints().add(new PointLight(10f, Color.CYAN, new Vector3(3f, 0.6f, -3f), 2f));
+            this.scene.getSpots().add(new SpotLight(10f, Color.RED, new Vector3(-2f, 0.5f, -3f), 20f,
                     new Vector3(0f, -1f, 1.2f), 20f, 5f));
             this.scene.getSpots().add(new SpotLight(2f, Color.WHITE, new Vector3(2f, 2f, 2f), 7f,
                     new Vector3(0f, -1f, -0f), 10f, 5f));
