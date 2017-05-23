@@ -9,7 +9,10 @@ import com.adrien.games.bagl.rendering.Model;
 import com.adrien.games.bagl.rendering.Renderer;
 import com.adrien.games.bagl.rendering.Skybox;
 import com.adrien.games.bagl.rendering.Spritebatch;
-import com.adrien.games.bagl.rendering.light.*;
+import com.adrien.games.bagl.rendering.light.DirectionalLight;
+import com.adrien.games.bagl.rendering.light.Light;
+import com.adrien.games.bagl.rendering.light.PointLight;
+import com.adrien.games.bagl.rendering.light.SpotLight;
 import com.adrien.games.bagl.rendering.scene.Scene;
 import com.adrien.games.bagl.rendering.scene.SceneNode;
 import com.adrien.games.bagl.rendering.text.Font;
@@ -17,8 +20,6 @@ import com.adrien.games.bagl.rendering.text.TextRenderer;
 import com.adrien.games.bagl.utils.FileUtils;
 import com.adrien.games.bagl.utils.MeshFactory;
 import org.lwjgl.glfw.GLFW;
-
-import java.util.Optional;
 
 import static org.lwjgl.opengl.GL11.*;
 
@@ -69,7 +70,7 @@ public class DeferredRenderingSample {
             this.setUpLights();
 
             this.camera = new Camera(new Vector3(5f, 4f, 6f), new Vector3(-5f, -4f, -6f), new Vector3(Vector3.UP),
-                    (float)Math.toRadians(60f), (float)this.width/(float)this.height, 1, 1000);
+                    (float)Math.toRadians(60f), (float)this.width/(float)this.height, 0.1f, 1000);
             this.cameraController = new CameraController(this.camera);
 
             this.spritebatch = new Spritebatch(1024, this.width, this.height);
@@ -131,8 +132,8 @@ public class DeferredRenderingSample {
 
         @Override
         public void update(Time time) {
-            final Optional<SceneNode<Model>> node = this.scene.getRoot().getChildren().stream().findFirst();
-            node.ifPresent(meshSceneNode -> meshSceneNode.getLocalTransform().getRotation().mul(Quaternion.fromAngleAndVector(
+            this.scene.getRoot().getChildren().forEach(meshSceneNode ->
+                    meshSceneNode.getLocalTransform().getRotation().mul(Quaternion.fromAngleAndVector(
                     (float) Math.toRadians(10 * time.getElapsedTime()), Vector3.UP)));
 
             if(Input.isKeyPressed(GLFW.GLFW_KEY_1) || Input.isKeyPressed(GLFW.GLFW_KEY_2)) {
