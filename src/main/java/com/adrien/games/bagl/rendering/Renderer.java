@@ -36,7 +36,7 @@ public class Renderer {
     private static final String SKYBOX_FRAG_SHADER = "/skybox.frag";
     private static final String SKYBOX_VERT_SHADER = "/skybox.vert";
 
-    private static final int SHADOW_MAP_SIZE = 1000;
+    private static final int SHADOW_MAP_SIZE = 1024;
 
     private final int xResolution;
     private final int yResolution;

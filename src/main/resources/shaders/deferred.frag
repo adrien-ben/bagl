@@ -160,22 +160,24 @@ void main() {
 
 		//directional lights
 		for(int i = 0; i < MAX_DIR_LIGHTS; i++) {
-//		    float shadow = 0;
-//		    if(i == 0 && uShadow.hasShadow) {
-//                vec4 lightSpacePosition = uShadow.lightViewProj*position;
-//                lightSpacePosition.xyz /= lightSpacePosition.w;
-//                float shadowMapDepth = texture2D(uShadow.shadowMap, lightSpacePosition.xy*0.5 + 0.5).r;
-//                if(shadowMapDepth + SHADOW_BIAS < lightSpacePosition.z*0.5 + 0.5) {
-//                    shadow = 1;
-//                }
-//		    }
+		    if(i == 0 && uShadow.hasShadow) {
+                vec4 lightSpacePosition = uShadow.lightViewProj*position;
+                lightSpacePosition.xyz /= lightSpacePosition.w;
+                float shadowMapDepth = texture2D(uShadow.shadowMap, lightSpacePosition.xy*0.5 + 0.5).r;
+                if(shadowMapDepth + SHADOW_BIAS < lightSpacePosition.z*0.5 + 0.5) {
+                    continue;
+                }
+		    }
 			DirectionalLight light = uDirectionals[i];
 
             //light direction
             vec3 L = normalize(-light.direction);
 
             //N.L
-            float NdotL = max(dot(N, L), 0.0);
+            float NdotL = dot(N, L);
+            if(NdotL <= 0) {
+                continue;
+            }
 
             //half vector
             vec3 H = normalize(L + V);

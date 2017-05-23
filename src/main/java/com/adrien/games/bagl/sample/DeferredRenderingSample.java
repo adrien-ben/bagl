@@ -42,8 +42,8 @@ public class DeferredRenderingSample {
         private Scene scene;
         private Skybox skybox;
         private Model floor;
-//        private Model cube;
-//        private Model tree;
+        private Model cube;
+        private Model tree;
 
         private Camera camera;
         private CameraController cameraController;
@@ -85,8 +85,8 @@ public class DeferredRenderingSample {
             this.font.destroy();
             this.skybox.destroy();
             this.floor.destroy();
-//            this.cube.destroy();
-//            this.tree.destroy();
+            this.cube.destroy();
+            this.tree.destroy();
         }
 
         private void loadMeshes() {
@@ -99,24 +99,24 @@ public class DeferredRenderingSample {
             this.scene.setSkybox(this.skybox);
 
             this.floor = MeshFactory.fromResourceFile("/models/floor/floor.obj");
-//            this.cube = MeshFactory.fromResourceFile("/models/cube/cube.obj");
-//            this.tree = MeshFactory.fromResourceFile("/models/tree/tree.obj");
+            this.cube = MeshFactory.fromResourceFile("/models/cube/cube.obj");
+            this.tree = MeshFactory.fromResourceFile("/models/tree/tree.obj");
         }
 
         private void initSceneGraph() {
             this.scene.getRoot().set(this.floor);
-//            final SceneNode<Model> cubeNode = new SceneNode<>(this.cube);
-//            cubeNode.getLocalTransform().setTranslation(new Vector3(0, 0.5f, 0));
-//            final SceneNode<Model> treeNode = new SceneNode<>(this.tree);
-//            treeNode.getLocalTransform().setTranslation(new Vector3(4f, 0f, 1.5f));
-//            this.scene.getRoot().addChild(treeNode);
-//            this.scene.getRoot().addChild(cubeNode);
+            final SceneNode<Model> cubeNode = new SceneNode<>(this.cube);
+            cubeNode.getLocalTransform().setTranslation(new Vector3(0, 1f, 0)).setScale(new Vector3(0.5f, 0.5f, 0.5f));
+            final SceneNode<Model> treeNode = new SceneNode<>(this.tree);
+            treeNode.getLocalTransform().setTranslation(new Vector3(4f, 0f, 1.5f));
+            this.scene.getRoot().addChild(treeNode);
+            this.scene.getRoot().addChild(cubeNode);
         }
 
         private void setUpLights() {
-            this.scene.setAmbient(new Light(0.03f));
-            this.scene.getDirectionals().add(new DirectionalLight(1f, Color.WHITE, new Vector3(3f, -2, 4)));
-            this.scene.getDirectionals().add(new DirectionalLight(1f, Color.ORANGE, new Vector3(0.5f, -2, 4)));
+            this.scene.setAmbient(new Light(0.1f));
+            this.scene.getDirectionals().add(new DirectionalLight(0.5f, Color.WHITE, new Vector3(3f, -2, 4)));
+            this.scene.getDirectionals().add(new DirectionalLight(0.3f, Color.ORANGE, new Vector3(0.5f, -2, 4)));
 //            this.scene.getPoints().add(new PointLight(1f, Color.GREEN, new Vector3(4f, 0.5f, 2f), 7f, Attenuation.CLOSE));
 //            this.scene.getPoints().add(new PointLight(1f, Color.YELLOW, new Vector3(-4f, 0.2f, 2f), 7f, Attenuation.CLOSE));
 //            this.scene.getPoints().add(new PointLight(1f, Color.BLUE, new Vector3(0f, 0.5f, 3f), 7f, Attenuation.CLOSE));
