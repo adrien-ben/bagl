@@ -1,8 +1,12 @@
 # floor mtl
 
+#newmtl default
+#map_Kd stone.png
+#map_bump stone_normal.png
+#map_roughness stone_roughness.png
+
+#test metal
 newmtl default
-Ns 8
-Ks 0.3 0.3 0.3
-map_Kd brickwall.jpg
-map_bump brickwall_normal.jpg
- 
+Kd 1 1 1
+roughness 0.4
+metallic 1

@@ -42,8 +42,8 @@ public class DeferredRenderingSample {
         private Scene scene;
         private Skybox skybox;
         private Model floor;
-        private Model cube;
-        private Model tree;
+//        private Model cube;
+//        private Model tree;
 
         private Camera camera;
         private CameraController cameraController;
@@ -68,7 +68,7 @@ public class DeferredRenderingSample {
             this.initSceneGraph();
             this.setUpLights();
 
-            this.camera = new Camera(new Vector3(-10f, 8f, 6f), new Vector3(10f, -8f, -6f), new Vector3(Vector3.UP),
+            this.camera = new Camera(new Vector3(5f, 4f, 6f), new Vector3(-5f, -4f, -6f), new Vector3(Vector3.UP),
                     (float)Math.toRadians(60f), (float)this.width/(float)this.height, 1, 1000);
             this.cameraController = new CameraController(this.camera);
 
@@ -85,8 +85,8 @@ public class DeferredRenderingSample {
             this.font.destroy();
             this.skybox.destroy();
             this.floor.destroy();
-            this.cube.destroy();
-            this.tree.destroy();
+//            this.cube.destroy();
+//            this.tree.destroy();
         }
 
         private void loadMeshes() {
@@ -99,36 +99,36 @@ public class DeferredRenderingSample {
             this.scene.setSkybox(this.skybox);
 
             this.floor = MeshFactory.fromResourceFile("/models/floor/floor.obj");
-            this.cube = MeshFactory.fromResourceFile("/models/cube/cube.obj");
-            this.tree = MeshFactory.fromResourceFile("/models/tree/tree.obj");
+//            this.cube = MeshFactory.fromResourceFile("/models/cube/cube.obj");
+//            this.tree = MeshFactory.fromResourceFile("/models/tree/tree.obj");
         }
 
         private void initSceneGraph() {
             this.scene.getRoot().set(this.floor);
-            final SceneNode<Model> cubeNode = new SceneNode<>(this.cube);
-            cubeNode.getLocalTransform().setTranslation(new Vector3(0, 0.5f, 0));
-            final SceneNode<Model> treeNode = new SceneNode<>(this.tree);
-            treeNode.getLocalTransform().setTranslation(new Vector3(4f, 0f, 1.5f));
-            this.scene.getRoot().addChild(treeNode);
-            this.scene.getRoot().addChild(cubeNode);
+//            final SceneNode<Model> cubeNode = new SceneNode<>(this.cube);
+//            cubeNode.getLocalTransform().setTranslation(new Vector3(0, 0.5f, 0));
+//            final SceneNode<Model> treeNode = new SceneNode<>(this.tree);
+//            treeNode.getLocalTransform().setTranslation(new Vector3(4f, 0f, 1.5f));
+//            this.scene.getRoot().addChild(treeNode);
+//            this.scene.getRoot().addChild(cubeNode);
         }
 
         private void setUpLights() {
-            this.scene.setAmbient(new Light(0.1f));
-            this.scene.getDirectionals().add(new DirectionalLight(0.4f, Color.WHITE, new Vector3(0.5f, -2, 4)));
-            this.scene.getDirectionals().add(new DirectionalLight(0.2f, Color.WHITE, new Vector3(0.5f, -2, 4)));
-            this.scene.getPoints().add(new PointLight(1f, Color.GREEN, new Vector3(4f, 0.5f, 2f), 7f, Attenuation.CLOSE));
-            this.scene.getPoints().add(new PointLight(1f, Color.YELLOW, new Vector3(-4f, 0.2f, 2f), 7f, Attenuation.CLOSE));
-            this.scene.getPoints().add(new PointLight(1f, Color.BLUE, new Vector3(0f, 0.5f, 3f), 7f, Attenuation.CLOSE));
-            this.scene.getPoints().add(new PointLight(1f, Color.PURPLE, new Vector3(0f, 3f, 0f), 7f, Attenuation.CLOSE));
-            this.scene.getPoints().add(new PointLight(2f, Color.TURQUOISE, new Vector3(-1f, 0.1f, 1f), 7f, Attenuation.CLOSE));
-            this.scene.getPoints().add(new PointLight(1f, Color.CYAN, new Vector3(3f, 0.6f, -3f), 7f, Attenuation.CLOSE));
-            this.scene.getSpots().add(new SpotLight(10f, Color.RED, new Vector3(-2f, 0.5f, -3f), 7f, Attenuation.CLOSE,
-                    new Vector3(0f, -1f, 0.8f), 20f, 5f));
-            this.scene.getSpots().add(new SpotLight(2f, Color.WHITE, new Vector3(2f, 2f, 2f), 7f, Attenuation.CLOSE,
-                    new Vector3(0f, -1f, -0f), 10f, 5f));
-            this.scene.getSpots().add(new SpotLight(1f, Color.ORANGE, new Vector3(-0.5f, 0.5f, 0.5f), 7f, Attenuation.CLOSE,
-                    new Vector3(2f, 0.7f, -1f), 20f, 5f));
+            this.scene.setAmbient(new Light(0.03f));
+            this.scene.getDirectionals().add(new DirectionalLight(1f, Color.WHITE, new Vector3(3f, -2, 4)));
+            this.scene.getDirectionals().add(new DirectionalLight(1f, Color.ORANGE, new Vector3(0.5f, -2, 4)));
+//            this.scene.getPoints().add(new PointLight(1f, Color.GREEN, new Vector3(4f, 0.5f, 2f), 7f, Attenuation.CLOSE));
+//            this.scene.getPoints().add(new PointLight(1f, Color.YELLOW, new Vector3(-4f, 0.2f, 2f), 7f, Attenuation.CLOSE));
+//            this.scene.getPoints().add(new PointLight(1f, Color.BLUE, new Vector3(0f, 0.5f, 3f), 7f, Attenuation.CLOSE));
+//            this.scene.getPoints().add(new PointLight(1f, Color.PURPLE, new Vector3(0f, 3f, 0f), 7f, Attenuation.CLOSE));
+//            this.scene.getPoints().add(new PointLight(2f, Color.TURQUOISE, new Vector3(-1f, 0.1f, 1f), 7f, Attenuation.CLOSE));
+//            this.scene.getPoints().add(new PointLight(1f, Color.CYAN, new Vector3(3f, 0.6f, -3f), 7f, Attenuation.CLOSE));
+//            this.scene.getSpots().add(new SpotLight(10f, Color.RED, new Vector3(-2f, 0.5f, -3f), 7f, Attenuation.CLOSE,
+//                    new Vector3(0f, -1f, 0.8f), 20f, 5f));
+//            this.scene.getSpots().add(new SpotLight(2f, Color.WHITE, new Vector3(2f, 2f, 2f), 7f, Attenuation.CLOSE,
+//                    new Vector3(0f, -1f, -0f), 10f, 5f));
+//            this.scene.getSpots().add(new SpotLight(1f, Color.ORANGE, new Vector3(-0.5f, 0.5f, 0.5f), 7f, Attenuation.CLOSE,
+//                    new Vector3(2f, 0.7f, -1f), 20f, 5f));
         }
 
         @Override
@@ -138,7 +138,7 @@ public class DeferredRenderingSample {
                     (float) Math.toRadians(10 * time.getElapsedTime()), Vector3.UP)));
 
             if(Input.isKeyPressed(GLFW.GLFW_KEY_1) || Input.isKeyPressed(GLFW.GLFW_KEY_2)) {
-                float speed = Input.isKeyPressed(GLFW.GLFW_KEY_1) ? 12 : -12;
+                float speed = Input.isKeyPressed(GLFW.GLFW_KEY_1) ? 20 : -20;
                 this.scene.getDirectionals().get(0).getDirection().transform(Matrix4.createRotation(Quaternion.fromAngleAndVector(
                         (float)Math.toRadians(speed*time.getElapsedTime()), new Vector3(1f, 1f, 0f).normalise())), 0);
             }

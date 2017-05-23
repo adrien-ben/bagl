@@ -50,8 +50,8 @@ struct SpotLight {
 const int MAX_DIR_LIGHTS = 2;
 const int MAX_POINT_LIGHTS = 6;
 const int MAX_SPOT_LIGHTS = 3;
-const float MAX_GLOSSINESS = 512;
 const float SHADOW_BIAS = 0.005;
+const float PI = 3.14159265359;
 
 in vec2 passCoords;
 
@@ -66,104 +66,182 @@ uniform PointLight uPoints[MAX_POINT_LIGHTS];
 uniform SpotLight uSpots[MAX_SPOT_LIGHTS];
 
 vec4 positionFromDepth(float depth) {
-	depth = depth*2 - 1;
-	vec4 screenSpace = vec4(passCoords*2 - 1, depth, 1);
+	depth = depth*2.0 - 1.0;
+	vec4 screenSpace = vec4(passCoords*2.0 - 1.0, depth, 1.0);
 	vec4 position = inverse(uCamera.vp)*screenSpace;
 	position.xyz /= position.w;
-	return vec4(position.xyz, 1);
+	return vec4(position.xyz, 1.0);
 }
 
-float computeAttenuation(float distance, Attenuation attenuation) {
-	return 1/(attenuation.constant + attenuation.linear*distance + attenuation.quadratic*distance*distance);
+/**
+ * Computes the fresnel factor of the BRDF. This is the Schlick implementation.
+ * @param cosTheta The angle between the half vector and the view vector.
+ * @param F0 Base reflexivity of the material.
+ * @return Reflected light factor.
+ */
+vec3 fresnel(float cosTheta, vec3 F0) {
+    return F0 + (1.0 - F0)*pow(1.0 - cosTheta, 5.0);
 }
 
-vec4 computeAmbient(Light light) {
-	return vec4(light.color.xyz*light.intensity, 1);
+/**
+ * Computes the normal distribution of the surface. This is the GGX implementation.
+ * @param N The normal to the surface. Must be normalized.
+ * @param H The half vector.
+ * @param roughness Roughness of the surface.
+ * @return The normal ditribution of the surface.
+ */
+float distribution(vec3 N, vec3 H, float roughness) {
+    float a = roughness*roughness;
+    float a2 = a*a;
+    float NdotH = max(dot(N, H), 0.0);
+    float NdotH2 = NdotH*NdotH;
+
+    float nominator = a2;
+    float denominator = NdotH2*(a2 - 1.0) + 1.0;
+    denominator = PI*denominator*denominator;
+
+    return nominator/denominator;
 }
 
-vec4 computeDiffuse(Light light, vec3 unitNormal, vec3 unitLightDirection) {
-	float diffuse = max(dot(unitNormal, -unitLightDirection), 0);
-	return vec4(light.color.xyz*diffuse*light.intensity, 1);
+float geometrySchlickGGX(float NdotV, float roughness) {
+    float r = roughness + 1.0;
+    float k = r*r/8.0;
+    float nominator = NdotV;
+    float denominator = NdotV*(1.0 - k) + k;
+
+    return nominator/denominator;
 }
 
-vec4 computeSpecular(Light light, float shininess, float glossiness, vec4 position, vec3 unitNormal, vec3 unitLightDirection) {
-	vec3 viewDir = normalize(uCamera.position - position.xyz);
-	vec3 halfway = normalize(viewDir - unitLightDirection);
-	float specular = pow(max(dot(halfway, unitNormal), 0), glossiness);
-	return vec4(light.color.xyz*specular*light.intensity*shininess, 1);
+/**
+ * Computes the geometry factor of the BRDF. This is the Smith implementation.
+ * @param N The normal to the surface. Must be normalized.
+ * @param V The view vector.
+ * @param L The light vector.
+ * @param roughness Roughness of the surface.
+ * @return The geometry factor of the surface.
+ */
+float geometry(vec3 N, vec3 V, vec3 L, float roughness) {
+    float NdotV = max(dot(N, V), 0.0);
+    float NdotL = max(dot(N, L), 0.0);
+    float ggx1 = geometrySchlickGGX(NdotV, roughness);
+    float ggx2 = geometrySchlickGGX(NdotL, roughness);
+
+    return ggx1*ggx2;
 }
+
+
 
 void main() {
-	vec4 normalGloss = texture2D(uGBuffer.normals, passCoords);
-	vec3 normal = normalGloss.xyz;
-	if(normal.x == 0 && normal.y == 0 && normal.z == 0) {
+	vec4 normalMetallic = texture2D(uGBuffer.normals, passCoords);
+	vec3 N = normalMetallic.xyz;
+	if(N.x == 0.0 && N.y == 0.0 && N.z == 0.0) {
 		gl_FragDepth = 1.0;
-		finalColor = vec4(0, 0, 0, 1);
+		finalColor = vec4(0.0, 0.0, 0.0, 1.0);
 	} else {
 		//retrive data from gbuffer
-		normal = normalize(normal*2 - 1);
-		vec4 colorShininess = texture2D(uGBuffer.colors, passCoords);
-		vec4 color = vec4(colorShininess.rgb, 1);
+		N = normalize(N*2 - 1);
+		vec4 colorRoughness = texture2D(uGBuffer.colors, passCoords);
+		vec3 color = pow(colorRoughness.rgb, vec3(2.2));
 		float depthValue = texture2D(uGBuffer.depth, passCoords).r;
 		vec4 position = positionFromDepth(depthValue);
-		float shininess = colorShininess.a;
-		float glossiness = max(normalGloss.a*MAX_GLOSSINESS, 0.000000001);
-		
-		//compute lights
-		vec4 ambient = vec4(uAmbient.color.xyz*uAmbient.intensity, 1);
-		vec4 diffuse = vec4(0, 0, 0, 1);
-		vec4 specular = vec4(0, 0, 0, 1);
-	
-		vec3 lightDirection;
+		float roughness = colorRoughness.a;
+		float metallic = normalMetallic.a;
 
+        vec3 L0 = vec3(0.0);
+
+        //View vector
+        vec3 V = normalize(uCamera.position - position.xyz);
+
+        //N.V
+        float NdotV = max(dot(N, V), 0.0);
+
+        //base reflexivity
+        vec3 F0 = mix(vec3(0.04), color, metallic);
 
 		//directional lights
 		for(int i = 0; i < MAX_DIR_LIGHTS; i++) {
-		    float shadow = 0;
-		    if(i == 0 && uShadow.hasShadow) {
-                vec4 lightSpacePosition = uShadow.lightViewProj*position;
-                lightSpacePosition.xyz /= lightSpacePosition.w;
-                float shadowMapDepth = texture2D(uShadow.shadowMap, lightSpacePosition.xy*0.5 + 0.5).r;
-                if(shadowMapDepth + SHADOW_BIAS < lightSpacePosition.z*0.5 + 0.5) {
-                    shadow = 1;
-                }
-		    }
+//		    float shadow = 0;
+//		    if(i == 0 && uShadow.hasShadow) {
+//                vec4 lightSpacePosition = uShadow.lightViewProj*position;
+//                lightSpacePosition.xyz /= lightSpacePosition.w;
+//                float shadowMapDepth = texture2D(uShadow.shadowMap, lightSpacePosition.xy*0.5 + 0.5).r;
+//                if(shadowMapDepth + SHADOW_BIAS < lightSpacePosition.z*0.5 + 0.5) {
+//                    shadow = 1;
+//                }
+//		    }
 			DirectionalLight light = uDirectionals[i];
-			lightDirection = normalize(light.direction);
-			diffuse += computeDiffuse(light.base, normal, lightDirection)*(1 - shadow);
-			specular += computeSpecular(light.base, shininess, glossiness, position, normal, lightDirection)*(1 - shadow);
+
+            //light direction
+            vec3 L = normalize(-light.direction);
+
+            //N.L
+            float NdotL = max(dot(N, L), 0.0);
+
+            //half vector
+            vec3 H = normalize(L + V);
+
+            //radiance
+            vec3 Li = light.base.color.rgb*light.base.intensity;
+
+            //fresnel factor
+            vec3 F = fresnel(max(dot(H, V), 0.0), F0);
+
+            //normal distribution
+            float ND = distribution(N, H, roughness);
+
+            //geometry factor
+            float G = geometry(N, V, L, roughness);
+
+            vec3 nominator = ND*G*F;
+            float denominator = 4*NdotV*NdotL + 0.001;
+            vec3 specular = nominator/denominator;
+
+            //diffuse factor
+            vec3 kD = (1.0 - F)*(1.0 - metallic);
+
+            L0 += (kD*color/PI + specular)*Li*NdotL;
+
 		}
 
 		//point lights
-		for(int i = 0; i < MAX_POINT_LIGHTS; i++) {
-			PointLight light = uPoints[i];
-			lightDirection = position.xyz - light.position;
-			float distance = length(lightDirection);
-			if(distance <= light.radius) {
-				lightDirection = normalize(lightDirection);
-				float attenuation = computeAttenuation(distance, light.attenuation);
-				diffuse += computeDiffuse(light.base, normal, lightDirection)*attenuation;
-				specular += computeSpecular(light.base, shininess, glossiness, position, normal, lightDirection)*attenuation;
-			}
-		}
+//		for(int i = 0; i < MAX_POINT_LIGHTS; i++) {
+//			PointLight light = uPoints[i];
+//			lightDirection = position.xyz - light.position;
+//			float distance = length(lightDirection);
+//			if(distance <= light.radius) {
+//				lightDirection = normalize(lightDirection);
+//				float attenuation = computeAttenuation(distance, light.attenuation);
+//				diffuse += computeDiffuse(light.base, normal, lightDirection)*attenuation;
+//				specular += computeSpecular(light.base, shininess, glossiness, position, normal, lightDirection)*attenuation;
+//			}
+//		}
 
 		//spot lights
-		for(int i = 0; i < MAX_SPOT_LIGHTS; i++) {
-			SpotLight light = uSpots[i];
-			lightDirection = position.xyz - light.point.position;
-			float distance = length(lightDirection);
-			lightDirection = normalize(lightDirection);
-			float theta = dot(-light.direction, -lightDirection);
-			if(theta > light.outerCutOff && distance <= light.point.radius) {
-				float epsilon = light.cutOff - light.outerCutOff;
-				float intensity = clamp((theta - light.outerCutOff)/epsilon, 0, 1);
-				float attenuation = computeAttenuation(distance, light.point.attenuation);
-				diffuse += computeDiffuse(light.point.base, normal, lightDirection)*attenuation*intensity;
-				specular += computeSpecular(light.point.base, shininess, glossiness, position, normal, lightDirection)*attenuation*intensity;
-			}
-		}
+//		for(int i = 0; i < MAX_SPOT_LIGHTS; i++) {
+//			SpotLight light = uSpots[i];
+//			lightDirection = position.xyz - light.point.position;
+//			float distance = length(lightDirection);
+//			lightDirection = normalize(lightDirection);
+//			float theta = dot(-light.direction, -lightDirection);
+//			if(theta > light.outerCutOff && distance <= light.point.radius) {
+//				float epsilon = light.cutOff - light.outerCutOff;
+//				float intensity = clamp((theta - light.outerCutOff)/epsilon, 0, 1);
+//				float attenuation = computeAttenuation(distance, light.point.attenuation);
+//				diffuse += computeDiffuse(light.point.base, normal, lightDirection)*attenuation*intensity;
+//				specular += computeSpecular(light.point.base, shininess, glossiness, position, normal, lightDirection)*attenuation*intensity;
+//			}
+//		}
+
+
+//		L0 += uAmbient.color.rgb*uAmbient.intensity*color;
+
+		//HDR
+		L0 = L0/(L0 + 1.0);
+
+		//Gamma correction
+		L0 = pow(L0, vec3(1.0/2.2));
 
 		gl_FragDepth = depthValue;
-		finalColor = (ambient + diffuse)*color + specular;
+		finalColor = vec4(L0, 1.0);
 	} 
 }
