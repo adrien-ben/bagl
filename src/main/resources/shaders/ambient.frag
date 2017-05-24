@@ -12,13 +12,15 @@ struct BaseLight {
 struct Material {
 	vec4 diffuseColor;
 	bool hasDiffuseMap;
-	sampler2D diffuseMap;
-	float shininess;
-	bool hasSpecularMap;
-	sampler2D specularMap;
-	float glossiness;
-	bool hasBumpMap;
-	sampler2D bumpMap;
+    sampler2D diffuseMap;
+	float roughness;
+	bool hasRoughnessMap;
+	sampler2D roughnessMap;
+	float metallic;
+	bool hasMetallicMap;
+	sampler2D metallicMap;
+	bool hasNormalMap;
+    sampler2D normalMap;
 };
 
 uniform BaseLight uBaseLight;

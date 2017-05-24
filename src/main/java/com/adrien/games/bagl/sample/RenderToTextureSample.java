@@ -22,7 +22,7 @@ public class RenderToTextureSample {
         private int paddingH;
         private int paddingV;
 
-        private Mesh mesh;
+        private Model model;
         private Matrix4 world;
         private Matrix4 wvp;
         private float rotation;
@@ -42,7 +42,7 @@ public class RenderToTextureSample {
 
             this.frameBuffer = new FrameBuffer(this.width, this.height, 1);
 
-            this.mesh = MeshFactory.createBox(5, 5, 5);
+            this.model = MeshFactory.fromResourceFile("/models/cube/cube.obj");
 
             this.world = new Matrix4();
             this.wvp = new Matrix4();
@@ -72,8 +72,8 @@ public class RenderToTextureSample {
         @Override
         public void render() {
 
-            this.mesh.getVertices().bind();
-            this.mesh.getIndices().bind();
+            this.model.getMeshes().get(0).getVertices().bind();
+            this.model.getMeshes().get(0).getIndices().bind();
 
             this.renderColors();
 
@@ -93,11 +93,11 @@ public class RenderToTextureSample {
             this.shader.setUniform("uMatrices.wvp", this.wvp);
             this.shader.setUniform("uBaseLight.color", Color.WHITE);
             this.shader.setUniform("uBaseLight.intensity", 1.f);
-            this.mesh.getMaterial().applyTo(this.shader);
+            this.model.getMeshes().get(0).getMaterial().applyTo(this.shader);
             this.frameBuffer.bind();
 
             FrameBuffer.clear(BLUEISH);
-            glDrawElements(GL_TRIANGLES, this.mesh.getIndices().getSize(), GL_UNSIGNED_INT, 0);
+            glDrawElements(GL_TRIANGLES, this.model.getMeshes().get(0).getIndices().getSize(), GL_UNSIGNED_INT, 0);
 
             FrameBuffer.unbind();
             Shader.unbind();
@@ -106,7 +106,7 @@ public class RenderToTextureSample {
         @Override
         public void destroy() {
             this.shader.destroy();
-            this.mesh.destroy();
+            this.model.destroy();
             this.frameBuffer.destroy();
         }
 

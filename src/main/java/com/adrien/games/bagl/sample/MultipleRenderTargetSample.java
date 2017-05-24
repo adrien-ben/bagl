@@ -21,7 +21,7 @@ public class MultipleRenderTargetSample {
 
         private FrameBuffer mrt;
 
-        private Mesh mesh;
+        private Model model;
         private Matrix4 world;
         private Matrix4 wvp;
 
@@ -38,7 +38,7 @@ public class MultipleRenderTargetSample {
 
             this.mrt = new FrameBuffer(this.width, this.height, 3);
 
-            this.mesh = MeshFactory.createBox(5, 5, 5);
+            this.model = MeshFactory.fromResourceFile("/models/cube/cube.obj");
 
             this.world = new Matrix4();
             this.wvp = new Matrix4();
@@ -65,8 +65,8 @@ public class MultipleRenderTargetSample {
         @Override
         public void render() {
 
-            this.mesh.getVertices().bind();
-            this.mesh.getIndices().bind();
+            this.model.getMeshes().get(0).getVertices().bind();
+            this.model.getMeshes().get(0).getIndices().bind();
 
             this.shader.bind();
             this.shader.setUniform("uMatrices.world", this.world);
@@ -74,7 +74,7 @@ public class MultipleRenderTargetSample {
 
             this.mrt.bind();
             FrameBuffer.clear();
-            glDrawElements(GL_TRIANGLES, this.mesh.getIndices().getSize(), GL_UNSIGNED_INT, 0);
+            glDrawElements(GL_TRIANGLES, this.model.getMeshes().get(0).getIndices().getSize(), GL_UNSIGNED_INT, 0);
             FrameBuffer.unbind();
 
             IndexBuffer.unbind();
@@ -92,7 +92,7 @@ public class MultipleRenderTargetSample {
         @Override
         public void destroy() {
             this.shader.destroy();
-            this.mesh.destroy();
+            this.model.destroy();
             this.mrt.destroy();
         }
 

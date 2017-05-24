@@ -36,7 +36,7 @@ public class Renderer {
     private static final String SKYBOX_FRAG_SHADER = "/skybox.frag";
     private static final String SKYBOX_VERT_SHADER = "/skybox.vert";
 
-    private static final int SHADOW_MAP_SIZE = 1000;
+    private static final int SHADOW_MAP_SIZE = 1024;
 
     private final int xResolution;
     private final int yResolution;
@@ -266,9 +266,6 @@ public class Renderer {
         shader.setUniform("uPoints[" + index + "].base.color", light.getColor());
         shader.setUniform("uPoints[" + index + "].position", light.getPosition());
         shader.setUniform("uPoints[" + index + "].radius", light.getRadius());
-        shader.setUniform("uPoints[" + index + "].attenuation.constant", light.getAttenuation().getConstant());
-        shader.setUniform("uPoints[" + index + "].attenuation.linear", light.getAttenuation().getLinear());
-        shader.setUniform("uPoints[" + index + "].attenuation.quadratic", light.getAttenuation().getQuadratic());
     }
 
     private void setSpotLight(Shader shader, int index, SpotLight light) {
@@ -276,9 +273,6 @@ public class Renderer {
         shader.setUniform("uSpots[" + index + "].point.base.color", light.getColor());
         shader.setUniform("uSpots[" + index + "].point.position", light.getPosition());
         shader.setUniform("uSpots[" + index + "].point.radius", light.getRadius());
-        shader.setUniform("uSpots[" + index + "].point.attenuation.constant", light.getAttenuation().getConstant());
-        shader.setUniform("uSpots[" + index + "].point.attenuation.linear", light.getAttenuation().getLinear());
-        shader.setUniform("uSpots[" + index + "].point.attenuation.quadratic", light.getAttenuation().getQuadratic());
         shader.setUniform("uSpots[" + index + "].direction", light.getDirection());
         shader.setUniform("uSpots[" + index + "].cutOff", light.getCutOff());
         shader.setUniform("uSpots[" + index + "].outerCutOff", light.getOuterCutOff());

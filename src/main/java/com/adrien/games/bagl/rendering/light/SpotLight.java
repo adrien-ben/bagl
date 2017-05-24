@@ -11,9 +11,9 @@ public class SpotLight extends PointLight {
     private float cutOff;
     private float outerCutOff;
 
-    public SpotLight(float intensity, Color color, Vector3 position, float radius, Attenuation attenuation, Vector3 direction,
+    public SpotLight(float intensity, Color color, Vector3 position, float radius, Vector3 direction,
                      float angle, float edge) {
-        super(intensity, color, position, radius, attenuation);
+        super(intensity, color, position, radius);
         this.direction = direction;
         this.angle = angle;
         this.edge = edge;
