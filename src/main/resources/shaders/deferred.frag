@@ -97,6 +97,15 @@ float distribution(vec3 N, vec3 H, float roughness) {
     return nominator/denominator;
 }
 
+/**
+ * Computes the normal distribution of the surface. This is the Schlick/GGX implementation.
+ * This method must be called twice. Once passing the dot between normal and view vectors.
+ * The second passing the dot between normal and light vector. Then multiplying the two result
+ * will give you the geometric term.
+ * @param NdotV Dot between normal and view vector ou normal and light vector.
+ * @param roughness Roughness of the surface.
+ * @return Part of the normal ditribution of the surface.
+ */
 float geometrySchlickGGX(float NdotV, float roughness) {
     float r = roughness + 1.0;
     float k = (r*r)/8.0;
@@ -104,23 +113,6 @@ float geometrySchlickGGX(float NdotV, float roughness) {
     float denominator = NdotV*(1.0 - k) + k;
 
     return nominator/denominator;
-}
-
-/**
- * Computes the geometry factor of the BRDF. This is the Smith implementation.
- * @param N The normal to the surface. Must be normalized.
- * @param V The view vector.
- * @param L The light vector.
- * @param roughness Roughness of the surface.
- * @return The geometry factor of the surface.
- */
-float geometry(vec3 N, vec3 V, vec3 L, float roughness) {
-    float NdotV = max(dot(N, V), 0.0);
-    float NdotL = max(dot(N, L), 0.0);
-    float ggx1 = geometrySchlickGGX(NdotV, roughness);
-    float ggx2 = geometrySchlickGGX(NdotL, roughness);
-
-    return ggx1*ggx2;
 }
 
 float computeFalloff(float distance, float radius) {
@@ -155,7 +147,7 @@ vec3 computeLight(Light light, float attenuation, vec3 L, vec3 V, vec3 N, float 
     float ND = distribution(N, H, roughness);
 
     //geometry factor
-    float G = geometry(N, V, L, roughness);
+    float G = geometrySchlickGGX(NdotV, roughness)*geometrySchlickGGX(NdotL, roughness);
 
     vec3 nominator = ND*G*F;
     float denominator = 4*NdotV*NdotL + 0.001;
