@@ -25,7 +25,8 @@ uniform Material uMaterial;
 
 void main() {
 	colors.rgb = uMaterial.hasDiffuseMap ? pow(texture2D(uMaterial.diffuseMap, passCoords).rgb, vec3(2.2)) : uMaterial.diffuseColor.rgb;
-    colors.a = uMaterial.hasRoughnessMap ? texture2D(uMaterial.roughnessMap, passCoords).r : uMaterial.roughness;
+	float roughness = uMaterial.hasRoughnessMap ? texture2D(uMaterial.roughnessMap, passCoords).r : uMaterial.roughness;
+    colors.a = clamp(roughness, 0.01, 1.0);
 
 	vec3 normal;
 	if(uMaterial.hasNormalMap) {
