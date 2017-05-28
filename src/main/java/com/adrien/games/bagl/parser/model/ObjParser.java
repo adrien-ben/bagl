@@ -51,7 +51,7 @@ public class ObjParser implements ModelParser {
      * <li>vertex position (x, y, z)
      * <li>texture coordinates (u, v)
      * <li>normals (x, y, z)
-     * <li>triangle faces (each vertex MUST reference a position, coordinates and normal)
+     * <li>triangle and quad faces (each vertex MUST reference a position and normal)
      * <li>Multi-mesh models</li>
      */
     @Override
@@ -141,9 +141,16 @@ public class ObjParser implements ModelParser {
             this.parseFaceVertex(tokens[1]);
             this.parseFaceVertex(tokens[2]);
             this.parseFaceVertex(tokens[3]);
+        } else if(tokens.length == 5) {
+            this.parseFaceVertex(tokens[1]);
+            this.parseFaceVertex(tokens[2]);
+            this.parseFaceVertex(tokens[3]);
+            this.parseFaceVertex(tokens[1]);
+            this.parseFaceVertex(tokens[3]);
+            this.parseFaceVertex(tokens[4]);
         } else {
-            this.handleParseError("Found vertex with more or less than 3 components at line " + this.currentLine +
-                    ". Only triangle faces are supported.");
+            this.handleParseError("Found face with neither 3 or 4 vertices at line " + this.currentLine +
+                    ". Only quad and triangle faces are supported.");
         }
     }
 

@@ -162,7 +162,7 @@ vec3 computeLight(Light light, float attenuation, vec3 L, vec3 V, vec3 N, float 
 void main() {
 	vec4 normalMetallic = texture2D(uGBuffer.normals, passCoords);
 	vec3 N = normalMetallic.xyz;
-	if(N == 0.0) {
+	if(N == vec3(0.0)) {
 		gl_FragDepth = 1.0;
 		finalColor = vec4(0.0, 0.0, 0.0, 1.0);
 	} else {
