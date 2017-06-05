@@ -42,16 +42,27 @@ public class FrameBuffer {
 
     /**
      * Creates a new {@link FrameBuffer}. If colorOutputs is 0 then the
-     * frame buffer will be depth only.
+     * frame buffer will be depth only. The color output texture format
+     * will be RGBA8.
      * @param width The width of the frame buffer.
      * @param height The height of the frame buffer.
      * @param colorOutputs The number of color outputs. 0 Means depth only.
      */
     public FrameBuffer(int width, int height, int colorOutputs) {
+        this(width, height, FrameBufferParameters.generatesRGBA8Parameters(colorOutputs));
+    }
+
+    /**
+     * Creates a new {@link FrameBuffer} from the passed in {@link FrameBufferParameters}.
+     * @param width The width of the frame buffer.
+     * @param height The height of the frame buffer.
+     * @param parameters The parameters of the frame buffer.
+     */
+    public FrameBuffer(int width, int height, FrameBufferParameters parameters) {
         this.width = width;
         this.height = height;
-        this.depthOnly = colorOutputs == 0;
-        this.colorOutputs = this.depthOnly ? null : createColorOutputs(colorOutputs, this.width, this.height);
+        this.depthOnly = parameters.getColorOutputs().size() == 0;
+        this.colorOutputs = this.depthOnly ? null : createColorOutputs(parameters, this.width, this.height);
         this.depthTexture = new Texture(this.width, this.height, new TextureParameters().format(Format.DEPTH_32F));
         this.handle = createBuffer(this.colorOutputs, this.depthOnly, this.depthTexture);
     }
@@ -67,6 +78,15 @@ public class FrameBuffer {
         final Texture[] textures = new Texture[colorOutputs];
         for(int i = 0; i < colorOutputs; i++) {
             textures[i] = new Texture(width, height, new TextureParameters().format(Format.RGBA8));
+        }
+        return textures;
+    }
+
+    private static Texture[] createColorOutputs(FrameBufferParameters parameters, int width, int height) {
+        final int colorOutputs = parameters.getColorOutputs().size();
+        final Texture[] textures = new Texture[colorOutputs];
+        for(int i = 0; i < colorOutputs; i++) {
+            textures[i] = new Texture(width, height, new TextureParameters().format(parameters.getColorOutputs().get(i)));
         }
         return textures;
     }
