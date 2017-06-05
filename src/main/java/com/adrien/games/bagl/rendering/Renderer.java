@@ -12,6 +12,7 @@ import com.adrien.games.bagl.rendering.light.SpotLight;
 import com.adrien.games.bagl.rendering.scene.Scene;
 import com.adrien.games.bagl.rendering.scene.SceneNode;
 import com.adrien.games.bagl.rendering.texture.Cubemap;
+import com.adrien.games.bagl.rendering.texture.Format;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.vertex.Vertex;
 import com.adrien.games.bagl.rendering.vertex.VertexPositionTexture;
@@ -65,7 +66,8 @@ public class Renderer {
         this.lightViewProj = Matrix4.createZero();
 
         this.initFullScreenQuad();
-        this.gbuffer = new FrameBuffer(this.xResolution, this.yResolution, 2);
+        this.gbuffer = new FrameBuffer(this.xResolution, this.yResolution, new FrameBufferParameters()
+                .addColorOutput(Format.RGBA8).addColorOutput(Format.RGBA16));
         this.shadowBuffer = new FrameBuffer(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
 
         this.initShaders();
