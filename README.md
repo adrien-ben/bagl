@@ -23,11 +23,11 @@ The renderder supports ambient, directional, point, and spot lights.
 
 ### Gbuffer breakdown
 
-The scene data is rendered in two RGBA8 textures and a 32F texture:
+The scene data is rendered in three textures :
 
-- Color(RGB) + Roughness(A)
-- Normals(RGB) + Metallness(A)
-- Depth (32F)
+- Color(RGB) + Roughness(A) : RGBA8
+- Normals(RGB) + Metallness(A) : RGBA16
+- Depth (32F) : DEPTH_32F
 
 ### PBR
 
