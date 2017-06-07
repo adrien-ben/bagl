@@ -61,7 +61,7 @@ public final class Texture {
         int handle = glGenTextures();
         glBindTexture(GL_TEXTURE_2D, handle);
         glTexImage2D(GL_TEXTURE_2D, 0, parameters.getFormat().getGlInternalFormat(), width, height, 0,
-                parameters.getFormat().getGlFormat(), GL_UNSIGNED_BYTE, image);
+                parameters.getFormat().getGlFormat(), parameters.getFormat().getGlDataType(), image);
         if(parameters.getMipmaps()) {
             glGenerateMipmap(GL_TEXTURE_2D);
         }
