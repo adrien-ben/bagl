@@ -67,21 +67,6 @@ public class FrameBuffer {
         this.handle = createBuffer(this.colorOutputs, this.depthOnly, this.depthTexture);
     }
 
-    /**
-     * Creates all textures to use as the different color outputs.
-     * @param colorOutputs The number of texture to generate.
-     * @param width The width of the frame buffer.
-     * @param height The height of the frame buffer.
-     * @return An array of {@link Texture}.
-     */
-    private static Texture[] createColorOutputs(int colorOutputs, int width, int height) {
-        final Texture[] textures = new Texture[colorOutputs];
-        for(int i = 0; i < colorOutputs; i++) {
-            textures[i] = new Texture(width, height, new TextureParameters().format(Format.RGBA8));
-        }
-        return textures;
-    }
-
     private static Texture[] createColorOutputs(FrameBufferParameters parameters, int width, int height) {
         final int colorOutputs = parameters.getColorOutputs().size();
         final Texture[] textures = new Texture[colorOutputs];
