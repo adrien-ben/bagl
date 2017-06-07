@@ -67,7 +67,7 @@ public class Renderer {
 
         this.initFullScreenQuad();
         this.gbuffer = new FrameBuffer(this.xResolution, this.yResolution, new FrameBufferParameters()
-                .addColorOutput(Format.RGBA8).addColorOutput(Format.RGBA16));
+                .addColorOutput(Format.RGBA8).addColorOutput(Format.RGBA16F));
         this.shadowBuffer = new FrameBuffer(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
 
         this.initShaders();
