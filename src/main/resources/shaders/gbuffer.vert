@@ -19,6 +19,9 @@ uniform Matrices uMatrices;
 void main() {
 	vec3 tangent = normalize(vec3(uMatrices.world*vec4(vTangent, 0)));
 	vec3 normal = normalize(vec3(uMatrices.world*vec4(vNormal, 0)));
+
+	tangent = normalize(tangent - dot(tangent, normal)*normal);
+
 	vec3 bitangent = cross(normal, tangent);
 	
 	passTBN = mat3(tangent, bitangent, normal); 	
