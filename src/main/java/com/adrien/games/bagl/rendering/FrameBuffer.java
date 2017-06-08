@@ -63,7 +63,7 @@ public class FrameBuffer {
         this.height = height;
         this.depthOnly = parameters.getColorOutputs().size() == 0;
         this.colorOutputs = this.depthOnly ? null : createColorOutputs(parameters, this.width, this.height);
-        this.depthTexture = new Texture(this.width, this.height, new TextureParameters().format(Format.DEPTH_32F));
+        this.depthTexture = new Texture(this.width, this.height, new TextureParameters().format(parameters.getDepthTextureFormat()));
         this.handle = createBuffer(this.colorOutputs, this.depthOnly, this.depthTexture);
     }
 

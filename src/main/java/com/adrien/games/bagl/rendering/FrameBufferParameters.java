@@ -6,9 +6,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Parameters for {@link FrameBuffer}.
+ * <p>Parameters for {@link FrameBuffer}.
+ * <p>This class allows to specify the format of each of the color output textures
+ * and the format of the depth texture.
  */
 public class FrameBufferParameters {
+
+    private Format depthTextureFormat = Format.DEPTH_32F;
 
     private List<Format> colorOutputFormats = new ArrayList<>();
 
@@ -22,6 +26,15 @@ public class FrameBufferParameters {
      */
     public FrameBufferParameters addColorOutput(Format format) {
         this.colorOutputFormats.add(format);
+        return this;
+    }
+
+    public Format getDepthTextureFormat() {
+        return this.depthTextureFormat;
+    }
+
+    public FrameBufferParameters setDepthTextureFormat(Format depthTextureFormat) {
+        this.depthTextureFormat = depthTextureFormat;
         return this;
     }
 
