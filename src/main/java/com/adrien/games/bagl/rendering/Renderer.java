@@ -225,8 +225,8 @@ public class Renderer {
         this.deferredShader.bind();
         this.deferredShader.setUniform("uCamera.vp", camera.getViewProj());
         this.deferredShader.setUniform("uCamera.position", camera.getPosition());
-        this.deferredShader.setUniform("uAmbient.intensity", ambient.getIntensity());
-        this.deferredShader.setUniform("uAmbient.color", ambient.getColor());
+        this.deferredShader.setUniform("uLights.ambient.intensity", ambient.getIntensity());
+        this.deferredShader.setUniform("uLights.ambient.color", ambient.getColor());
         this.deferredShader.setUniform("uShadow.hasShadow", this.renderShadow);
         if(this.renderShadow) {
             this.deferredShader.setUniform("uShadow.lightViewProj", this.lightViewProj);
@@ -234,15 +234,21 @@ public class Renderer {
             this.deferredShader.setUniform("uShadow.shadowMap", 3);
         }
 
+        this.deferredShader.setUniform("uLights.directionalCount", directionals.size());
         for(int i = 0; i < directionals.size(); i++) {
             this.setDirectionalLight(this.deferredShader, i, directionals.get(i));
         }
+
+        this.deferredShader.setUniform("uLights.pointCount", points.size());
         for(int i = 0; i < points.size(); i++) {
             this.setPointLight(this.deferredShader, i, points.get(i));
         }
+
+        this.deferredShader.setUniform("uLights.spotCount", spots.size());
         for(int i = 0; i < spots.size(); i++) {
             this.setSpotLight(this.deferredShader, i, spots.get(i));
         }
+
         this.deferredShader.setUniform("uGBuffer.colors", 0);
         this.deferredShader.setUniform("uGBuffer.normals", 1);
         this.deferredShader.setUniform("uGBuffer.depth", 2);
@@ -258,26 +264,26 @@ public class Renderer {
     }
 
     private void setDirectionalLight(Shader shader, int index, DirectionalLight light) {
-        shader.setUniform("uDirectionals[" + index + "].base.intensity", light.getIntensity());
-        shader.setUniform("uDirectionals[" + index + "].base.color", light.getColor());
-        shader.setUniform("uDirectionals[" + index + "].direction", light.getDirection());
+        shader.setUniform("uLights.directionals[" + index + "].base.intensity", light.getIntensity());
+        shader.setUniform("uLights.directionals[" + index + "].base.color", light.getColor());
+        shader.setUniform("uLights.directionals[" + index + "].direction", light.getDirection());
     }
 
     private void setPointLight(Shader shader, int index, PointLight light) {
-        shader.setUniform("uPoints[" + index + "].base.intensity", light.getIntensity());
-        shader.setUniform("uPoints[" + index + "].base.color", light.getColor());
-        shader.setUniform("uPoints[" + index + "].position", light.getPosition());
-        shader.setUniform("uPoints[" + index + "].radius", light.getRadius());
+        shader.setUniform("uLights.points[" + index + "].base.intensity", light.getIntensity());
+        shader.setUniform("uLights.points[" + index + "].base.color", light.getColor());
+        shader.setUniform("uLights.points[" + index + "].position", light.getPosition());
+        shader.setUniform("uLights.points[" + index + "].radius", light.getRadius());
     }
 
     private void setSpotLight(Shader shader, int index, SpotLight light) {
-        shader.setUniform("uSpots[" + index + "].point.base.intensity", light.getIntensity());
-        shader.setUniform("uSpots[" + index + "].point.base.color", light.getColor());
-        shader.setUniform("uSpots[" + index + "].point.position", light.getPosition());
-        shader.setUniform("uSpots[" + index + "].point.radius", light.getRadius());
-        shader.setUniform("uSpots[" + index + "].direction", light.getDirection());
-        shader.setUniform("uSpots[" + index + "].cutOff", light.getCutOff());
-        shader.setUniform("uSpots[" + index + "].outerCutOff", light.getOuterCutOff());
+        shader.setUniform("uLights.spots[" + index + "].point.base.intensity", light.getIntensity());
+        shader.setUniform("uLights.spots[" + index + "].point.base.color", light.getColor());
+        shader.setUniform("uLights.spots[" + index + "].point.position", light.getPosition());
+        shader.setUniform("uLights.spots[" + index + "].point.radius", light.getRadius());
+        shader.setUniform("uLights.spots[" + index + "].direction", light.getDirection());
+        shader.setUniform("uLights.spots[" + index + "].cutOff", light.getCutOff());
+        shader.setUniform("uLights.spots[" + index + "].outerCutOff", light.getOuterCutOff());
     }
 
     public FrameBuffer getShadowBuffer() {

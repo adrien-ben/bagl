@@ -1,5 +1,11 @@
 #version 330
 
+const int MAX_DIR_LIGHTS = 50;
+const int MAX_POINT_LIGHTS = 50;
+const int MAX_SPOT_LIGHTS = 50;
+const float SHADOW_BIAS = 0.005;
+const float PI = 3.14159265359;
+
 struct Shadow {
     bool hasShadow;
     sampler2D shadowMap;
@@ -40,11 +46,16 @@ struct SpotLight {
 	float outerCutOff;
 };
 
-const int MAX_DIR_LIGHTS = 2;
-const int MAX_POINT_LIGHTS = 6;
-const int MAX_SPOT_LIGHTS = 3;
-const float SHADOW_BIAS = 0.005;
-const float PI = 3.14159265359;
+
+struct Lights {
+    Light ambient;
+    DirectionalLight directionals[MAX_DIR_LIGHTS];
+    int directionalCount;
+    PointLight points[MAX_POINT_LIGHTS];
+    int pointCount;
+    SpotLight spots[MAX_SPOT_LIGHTS];
+    int spotCount;
+};
 
 in vec2 passCoords;
 
@@ -53,10 +64,7 @@ out vec4 finalColor;
 uniform Shadow uShadow;
 uniform GBuffer uGBuffer;
 uniform Camera uCamera;
-uniform Light uAmbient;
-uniform DirectionalLight uDirectionals[MAX_DIR_LIGHTS];
-uniform PointLight uPoints[MAX_POINT_LIGHTS];
-uniform SpotLight uSpots[MAX_SPOT_LIGHTS];
+uniform Lights uLights;
 
 vec4 positionFromDepth(float depth) {
 	depth = depth*2.0 - 1.0;
@@ -175,7 +183,7 @@ void main() {
 		float roughness = colorRoughness.a;
 		float metallic = normalMetallic.a;
 
-        vec3 L0 = uAmbient.color.rgb*uAmbient.intensity*color;
+        vec3 L0 = uLights.ambient.color.rgb*uLights.ambient.intensity*color;
 
         //View vector
         vec3 V = normalize(uCamera.position - position.xyz);
@@ -187,7 +195,8 @@ void main() {
         vec3 F0 = mix(vec3(0.04), color, metallic);
 
 		//directional lights
-		for(int i = 0; i < MAX_DIR_LIGHTS; i++) {
+		int directionalCount = min(uLights.directionalCount, MAX_DIR_LIGHTS);
+		for(int i = 0; i < directionalCount; i++) {
 		    if(i == 0 && uShadow.hasShadow) {
                 vec4 lightSpacePosition = uShadow.lightViewProj*position;
                 lightSpacePosition.xyz /= lightSpacePosition.w;
@@ -197,7 +206,7 @@ void main() {
                 }
 		    }
 
-			DirectionalLight light = uDirectionals[i];
+			DirectionalLight light = uLights.directionals[i];
 
             //light direction
             vec3 L = normalize(-light.direction);
@@ -206,8 +215,9 @@ void main() {
 		}
 
 		//point lights
-		for(int i = 0; i < MAX_POINT_LIGHTS; i++) {
-			PointLight light = uPoints[i];
+		int pointCount = min(uLights.pointCount, MAX_POINT_LIGHTS);
+		for(int i = 0; i < pointCount; i++) {
+			PointLight light = uLights.points[i];
 
             vec3 lightDirection = light.position - position.xyz;
             float distance = length(lightDirection);
@@ -222,8 +232,9 @@ void main() {
 		}
 
 		//spot lights
-		for(int i = 0; i < MAX_SPOT_LIGHTS; i++) {
-			SpotLight light = uSpots[i];
+		int spotCount = min(uLights.spotCount, MAX_SPOT_LIGHTS);
+		for(int i = 0; i < spotCount; i++) {
+			SpotLight light = uLights.spots[i];
 
 			vec3 lightDirection = light.point.position - position.xyz;
             float distance = length(lightDirection);
