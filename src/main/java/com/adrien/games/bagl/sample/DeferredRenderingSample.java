@@ -1,10 +1,7 @@
 package com.adrien.games.bagl.sample;
 
 import com.adrien.games.bagl.core.*;
-import com.adrien.games.bagl.core.math.Matrix4;
-import com.adrien.games.bagl.core.math.Quaternion;
-import com.adrien.games.bagl.core.math.Vector2;
-import com.adrien.games.bagl.core.math.Vector3;
+import com.adrien.games.bagl.core.math.*;
 import com.adrien.games.bagl.rendering.Model;
 import com.adrien.games.bagl.rendering.Renderer;
 import com.adrien.games.bagl.rendering.Skybox;
@@ -68,6 +65,8 @@ public class DeferredRenderingSample {
             this.loadMeshes();
             this.initSceneGraph();
             this.setUpLights();
+
+            Input.setMouseMode(MouseMode.DISABLED);
 
             this.camera = new Camera(new Vector3(5f, 4f, 6f), new Vector3(-5f, -4f, -6f), new Vector3(Vector3.UP),
                     (float)Math.toRadians(60f), (float)this.width/(float)this.height, 0.1f, 1000);

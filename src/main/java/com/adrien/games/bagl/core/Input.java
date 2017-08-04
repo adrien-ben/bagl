@@ -2,6 +2,9 @@ package com.adrien.games.bagl.core;
 
 import com.adrien.games.bagl.core.math.Vector2;
 
+import java.util.Objects;
+import java.util.function.Consumer;
+
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 
@@ -12,6 +15,7 @@ public final class Input {
     private static final Vector2 MOUSE_PREVIOUS_POSITION = new Vector2();
     private static final Vector2 MOUSE_POSITION = new Vector2();
     private static final Vector2 MOUSE_DELTA = new Vector2();
+    private static Consumer<MouseMode> MOUSE_MODE_UPDATE_CALLBACK = null;
 
     static {
         for(int i = 0; i < KEY_COUNT; i++) {
@@ -20,6 +24,25 @@ public final class Input {
     }
 
     private Input() {
+    }
+
+    /**
+     * Sets a callback to call when the mouse mode is updated. INTERNAL STUFF.
+     * @param callback The callback.
+     */
+    static void setMouseModeUpdateCallback(final Consumer<MouseMode> callback) {
+        MOUSE_MODE_UPDATE_CALLBACK = callback;
+    }
+
+    /**
+     * This method is used to change mouse input mode.
+     * <p>It does nothing except forwarding the call to a callback if one is defined</p>
+     * @param mouseMode The mouse mode to set.
+     */
+    public static void setMouseMode(final MouseMode mouseMode) {
+        if(Objects.nonNull(MOUSE_MODE_UPDATE_CALLBACK)) {
+            MOUSE_MODE_UPDATE_CALLBACK.accept(mouseMode);
+        }
     }
 
     static void update() {

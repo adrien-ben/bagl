@@ -28,10 +28,10 @@ public final class Window {
         }
 
         GLFW.glfwSetKeyCallback(this.windowHandle, Input::handleInput);
-        GLFW.glfwSetInputMode(this.windowHandle, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
-        GLFW.glfwSetCursorPos(this.windowHandle, 1, 1);
-        Input.handleMouse(this.windowHandle, 1, 1);
+
         GLFW.glfwSetCursorPosCallback(this.windowHandle, (window, x, y) -> Input.handleMouse(window, x, -y));
+        Input.setMouseModeUpdateCallback(this::setMouseMode);
+        this.setMouseMode(MouseMode.NORMAL);
 
         GLFW.glfwMakeContextCurrent(this.windowHandle);
         GLFW.glfwSwapInterval(vsync ? 1 : 0);
@@ -47,6 +47,18 @@ public final class Window {
 
     public boolean isCloseRequested() {
         return GLFW.glfwWindowShouldClose(windowHandle);
+    }
+
+    /**
+     * Sets the mouse input mode.
+     * @param mouseMode The mouse mode to set.
+     */
+    public void setMouseMode(final MouseMode mouseMode) {
+        GLFW.glfwSetInputMode(this.windowHandle, GLFW.GLFW_CURSOR, mouseMode.getGlfwCode());
+        if(mouseMode == MouseMode.DISABLED) {
+            GLFW.glfwSetCursorPos(this.windowHandle, 1, 1);
+            Input.handleMouse(this.windowHandle, 1, 1);
+        }
     }
 
     public void destroy() {
