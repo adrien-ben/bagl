@@ -26,8 +26,9 @@ public class Spritebatch {
     private static final int MAX_SIZE = 4096;
     private static final int VERTICES_PER_SPRITE = 4;
     private static final int INDICES_PER_SPRITE = 6;
-    private static final String SPRITE_VERTEX_SHADER = "/sprite.vert";
-    private static final String SPRITE_FRAGMENT_SHADER = "/sprite.frag";
+    private static final float HALF_PIXEL_SIZE = 0.5f;
+    private static final String SPRITE_VERTEX_SHADER = "sprite.vert";
+    private static final String SPRITE_FRAGMENT_SHADER = "sprite.frag";
 
     private final Camera2D camera;
     private final Shader spriteShader;
@@ -49,21 +50,13 @@ public class Spritebatch {
      */
     public Spritebatch(int size, int width, int height) {
         this.camera = new Camera2D(new Vector2(width/2, height/2), width, height);
-        this.spriteShader = this.createShader(SPRITE_VERTEX_SHADER, SPRITE_FRAGMENT_SHADER);
+        this.spriteShader = new Shader().addVertexShader(SPRITE_VERTEX_SHADER).addFragmentShader(SPRITE_FRAGMENT_SHADER).compile();
         this.size = size < MAX_SIZE ? size : MAX_SIZE;
         this.vertexBuffer = new VertexBuffer(VertexPositionColorTexture.DESCRIPTION, BufferUsage.DYNAMIC_DRAW, this.size*VERTICES_PER_SPRITE);
         this.vertices = this.initVertices(this.size);
         this.indexBuffer = this.initIndexBuffer(this.size);
         this.drawnSprites = 0;
         this.started = false;
-    }
-
-    private Shader createShader(String vert, String frag) {
-        Shader shader = new Shader();
-        shader.addVertexShader(vert);
-        shader.addFragmentShader(frag);
-        shader.compile();
-        return shader;
     }
 
     /**
@@ -97,6 +90,15 @@ public class Spritebatch {
             vertices[i] = new VertexPositionColorTexture(new Vector3(), new Color(1, 1, 1, 1), new Vector2());
         }
         return vertices;
+    }
+
+    /**
+     * Releases owned resources.
+     */
+    public void destroy() {
+        this.spriteShader.destroy();
+        this.vertexBuffer.destroy();
+        this.indexBuffer.destroy();
     }
 
     /**
@@ -216,8 +218,8 @@ public class Spritebatch {
         this.currentShader = this.spriteShader;
         this.currentTexture = texture;
 
-        float halfPixelWidth = 0.5f/texture.getWidth();
-        float halfPixelHeight = 0.5f/texture.getHeight();
+        float halfPixelWidth = HALF_PIXEL_SIZE/texture.getWidth();
+        float halfPixelHeight = HALF_PIXEL_SIZE/texture.getHeight();
 
         float x = position.getX();
         float y = position.getY();
