@@ -1,9 +1,9 @@
 package com.adrien.games.bagl.rendering.scene;
 
 import com.adrien.games.bagl.core.math.Vector3;
-import org.hamcrest.MatcherAssert;
+import org.hamcrest.CoreMatchers;
 import org.hamcrest.collection.IsEmptyCollection;
-import org.hamcrest.core.*;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -18,8 +18,7 @@ public class SceneNodeTest {
         final SceneNode<Integer> child = new SceneNode<>(0);
 
         parent.addChild(child);
-
-        MatcherAssert.assertThat(parent.getChildren(), IsCollectionContaining.hasItem(child));
+        Assert.assertThat(parent.getChildren(), CoreMatchers.hasItem(child));
     }
 
     @Test
@@ -29,7 +28,7 @@ public class SceneNodeTest {
 
         parent.addChild(child);
 
-        MatcherAssert.assertThat(parent, IsSame.sameInstance(child.getParent()));
+        Assert.assertThat(parent, CoreMatchers.sameInstance(child.getParent()));
     }
 
     @Test
@@ -41,7 +40,7 @@ public class SceneNodeTest {
         parent.addChild(child);
         newParent.addChild(child);
 
-        MatcherAssert.assertThat(parent.getChildren(), IsEmptyCollection.empty());
+        Assert.assertThat(parent.getChildren(), IsEmptyCollection.empty());
     }
 
     @Test
@@ -52,7 +51,7 @@ public class SceneNodeTest {
         parent.addChild(child);
         parent.removeChild(child);
 
-        MatcherAssert.assertThat(parent.getChildren(), IsEmptyCollection.empty());
+        Assert.assertThat(parent.getChildren(), IsEmptyCollection.empty());
     }
 
     @Test
@@ -63,14 +62,14 @@ public class SceneNodeTest {
         parent.addChild(child);
         parent.removeChild(child);
 
-        MatcherAssert.assertThat(child.getParent(), IsNull.nullValue());
+        Assert.assertThat(child.getParent(), CoreMatchers.nullValue());
     }
 
     @Test
     public void itShouldBeRoot() {
         final SceneNode<Integer> root = new SceneNode<>(0);
 
-        MatcherAssert.assertThat(root.isRoot(), Is.is(true));
+        Assert.assertThat(root.isRoot(), CoreMatchers.is(true));
     }
 
     @Test
@@ -80,7 +79,7 @@ public class SceneNodeTest {
 
         parent.addChild(child);
 
-        MatcherAssert.assertThat(child.isRoot(), Is.is(false));
+        Assert.assertThat(child.isRoot(), CoreMatchers.is(false));
     }
 
     @Test
@@ -89,7 +88,7 @@ public class SceneNodeTest {
 
         parent.apply(node -> node.getLocalTransform().setScale(new Vector3(2, 2, 2)));
 
-        MatcherAssert.assertThat(parent.getLocalTransform().getScale(), IsEqual.equalTo(new Vector3(2f, 2f, 2f)));
+        Assert.assertThat(parent.getLocalTransform().getScale(), CoreMatchers.equalTo(new Vector3(2f, 2f, 2f)));
     }
 
     @Test
@@ -100,13 +99,13 @@ public class SceneNodeTest {
         parent.addChild(child);
         parent.apply(node -> node.getLocalTransform().setScale(new Vector3(3, 3, 3)));
 
-        MatcherAssert.assertThat(child.getLocalTransform().getScale(), IsEqual.equalTo(new Vector3(3f, 3f, 3f)));
+        Assert.assertThat(child.getLocalTransform().getScale(), CoreMatchers.equalTo(new Vector3(3f, 3f, 3f)));
     }
 
     @Test
     public void itShouldBeEmpty() {
         final SceneNode<Integer> parent = new SceneNode<>();
 
-        MatcherAssert.assertThat(parent.isEmpty(), Is.is(true));
+        Assert.assertThat(parent.isEmpty(), CoreMatchers.is(true));
     }
 }
