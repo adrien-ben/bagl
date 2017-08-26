@@ -10,8 +10,8 @@ import org.lwjgl.glfw.GLFW;
  */
 public class CameraController {
 
-    private static final float DEGREES_PER_PIXEL = 3f;
-    private static final float MOVEMENT_SPEED = 3f;
+    private static final float DEFAULT_DEGREES_PER_PIXEL = 0.15f;
+    private static final float DEFAULT_MOVEMENT_SPEED = 3f;
 
     private Camera camera;
     private Vector3 forward;
@@ -35,13 +35,13 @@ public class CameraController {
         this.side.set(this.camera.getSide()).normalise();
         this.up.set(Vector3.UP);
 
-        if(!mouseDelta.isZero()) {
-            if(mouseDelta.getY() != 0) {
-                float vAngle = (float)Math.toRadians(elapsed*mouseDelta.getY()*DEGREES_PER_PIXEL);
+        if (!mouseDelta.isZero()) {
+            if (mouseDelta.getY() != 0) {
+                float vAngle = (float) Math.toRadians(mouseDelta.getY() * DEFAULT_DEGREES_PER_PIXEL);
                 this.camera.rotate(Quaternion.fromAngleAndVector(vAngle, this.side));
             }
-            if(mouseDelta.getX() != 0) {
-                float hAngle = -(float)Math.toRadians(elapsed*mouseDelta.getX()*DEGREES_PER_PIXEL);
+            if (mouseDelta.getX() != 0) {
+                float hAngle = -(float) Math.toRadians(mouseDelta.getX() * DEFAULT_DEGREES_PER_PIXEL);
                 this.camera.rotate(Quaternion.fromAngleAndVector(hAngle, this.up));
             }
         }
@@ -53,29 +53,29 @@ public class CameraController {
     private void computeCameraMove(float elapsed) {
         this.direction.setXYZ(0, 0, 0);
 
-        if(Input.isKeyPressed(GLFW.GLFW_KEY_W) || Input.isKeyPressed(GLFW.GLFW_KEY_S)) {
-            if(Input.isKeyPressed(GLFW.GLFW_KEY_S)) {
+        if (Input.isKeyPressed(GLFW.GLFW_KEY_W) || Input.isKeyPressed(GLFW.GLFW_KEY_S)) {
+            if (Input.isKeyPressed(GLFW.GLFW_KEY_S)) {
                 this.forward.scale(-1);
             }
             this.direction.add(this.forward);
         }
 
-        if(Input.isKeyPressed(GLFW.GLFW_KEY_D) || Input.isKeyPressed(GLFW.GLFW_KEY_A)) {
-            if(Input.isKeyPressed(GLFW.GLFW_KEY_A)) {
+        if (Input.isKeyPressed(GLFW.GLFW_KEY_D) || Input.isKeyPressed(GLFW.GLFW_KEY_A)) {
+            if (Input.isKeyPressed(GLFW.GLFW_KEY_A)) {
                 this.side.scale(-1);
             }
             this.direction.add(this.side);
         }
 
-        if(Input.isKeyPressed(GLFW.GLFW_KEY_LEFT_CONTROL) || Input.isKeyPressed(GLFW.GLFW_KEY_SPACE)) {
-            if(Input.isKeyPressed(GLFW.GLFW_KEY_LEFT_CONTROL)) {
+        if (Input.isKeyPressed(GLFW.GLFW_KEY_LEFT_CONTROL) || Input.isKeyPressed(GLFW.GLFW_KEY_SPACE)) {
+            if (Input.isKeyPressed(GLFW.GLFW_KEY_LEFT_CONTROL)) {
                 this.up.scale(-1);
             }
             this.direction.add(this.up);
         }
 
-        if(!this.direction.isZero()) {
-            this.camera.move(this.direction.normalise().scale(elapsed*MOVEMENT_SPEED));
+        if (!this.direction.isZero()) {
+            this.camera.move(this.direction.normalise().scale(elapsed * DEFAULT_MOVEMENT_SPEED));
         }
     }
 
