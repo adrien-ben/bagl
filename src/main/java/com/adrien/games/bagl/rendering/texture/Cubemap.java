@@ -53,7 +53,7 @@ public class Cubemap {
         IntBuffer width = BufferUtils.createIntBuffer(1);
         IntBuffer height = BufferUtils.createIntBuffer(1);
         IntBuffer comp = BufferUtils.createIntBuffer(1);
-        STBImage.stbi_set_flip_vertically_on_load(0);
+        STBImage.stbi_set_flip_vertically_on_load(false);
         ByteBuffer image = STBImage.stbi_load(path, width, height, comp, 3);
         if(image == null) {
             throw new RuntimeException("Failed to load a face from the cubemap : '" + path + "'.");
