@@ -3,6 +3,9 @@ package com.adrien.games.bagl.core;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
+import org.lwjgl.system.MemoryStack;
+
+import java.nio.DoubleBuffer;
 
 /**
  * Window class.
@@ -46,7 +49,6 @@ public final class Window {
         GLFW.glfwSetKeyCallback(this.windowHandle, Input::handleKeyboard);
         GLFW.glfwSetMouseButtonCallback(this.windowHandle, Input::handleMouseButton);
 
-        GLFW.glfwSetCursorPosCallback(this.windowHandle, (window, x, y) -> Input.handleMouseMove(window, x, -y));
         Input.setMouseModeUpdateCallback(this::setMouseMode);
         this.setMouseMode(MouseMode.NORMAL);
 
@@ -64,7 +66,20 @@ public final class Window {
      */
     public void update() {
         GLFW.glfwPollEvents();
+        this.updateCursorPosition();
         GLFW.glfwSwapBuffers(windowHandle);
+    }
+
+    /**
+     * Retrieve the current cursor position and call {@link Input#handleMouseMove(long, double, double)}
+     */
+    private void updateCursorPosition() {
+        try (final MemoryStack stack = MemoryStack.stackPush()) {
+            final DoubleBuffer x = stack.mallocDouble(1);
+            final DoubleBuffer y = stack.mallocDouble(1);
+            GLFW.glfwGetCursorPos(this.windowHandle, x, y);
+            Input.handleMouseMove(this.windowHandle, x.get(), -y.get());
+        }
     }
 
     public boolean isCloseRequested() {
