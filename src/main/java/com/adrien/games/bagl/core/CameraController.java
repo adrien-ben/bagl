@@ -11,7 +11,7 @@ import org.lwjgl.glfw.GLFW;
 public class CameraController {
 
     private static final float DEFAULT_DEGREES_PER_PIXEL = 0.15f;
-    private static final float DEFAULT_MOVEMENT_SPEED = 3f;
+    private static final float DEFAULT_MOVEMENT_SPEED = 30f;
 
     private Camera camera;
     private Vector3 forward;
