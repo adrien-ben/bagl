@@ -25,7 +25,7 @@ public class Noise {
 		float amplitude = 1;
 		float maxValue = 0;
 		for (int i = 0; i < octaves; i++) {
-			final float noise = perlin(x * frequency, y * frequency, z * frequency) * 0.5f + 0.5f;
+			final float noise = perlin(x * frequency, y * frequency, z * frequency);
 			total += noise * amplitude;
 			maxValue += amplitude;
 			amplitude *= persistence;
