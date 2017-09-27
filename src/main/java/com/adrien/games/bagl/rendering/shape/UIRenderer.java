@@ -12,9 +12,9 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 /**
- * 2D shape renderer.
+ * UI element renderer.
  */
-public class ShapeRenderer {
+public class UIRenderer {
 
     private static final int BUFFER_SIZE = 1024;
     private static final int VERTICES_PER_SHAPE = 4;
@@ -25,14 +25,15 @@ public class ShapeRenderer {
     private boolean started;
     private int bufferedCount;
 
-    private final int vao;
-    private final int vbo;
-    private final int ibo;
     private final FloatBuffer vertexBuffer;
     private final IntBuffer indexBuffer;
     private final Shader shader;
 
-    public ShapeRenderer() {
+    private final int vao;
+    private final int vbo;
+    private final int ibo;
+
+    public UIRenderer() {
         this.started = false;
         this.bufferedCount = 0;
         this.vertexBuffer = MemoryUtil.memAllocFloat(BUFFER_SIZE * VERTICES_PER_SHAPE * ELEMENT_PER_VERTEX);
@@ -87,7 +88,7 @@ public class ShapeRenderer {
     /**
      * Renders the current batch of shapes.
      * <p>
-     * This method must be called after {@link ShapeRenderer#start()}.
+     * This method must be called after {@link UIRenderer#start()}.
      */
     public void end() {
         if (!this.started) {
@@ -130,10 +131,16 @@ public class ShapeRenderer {
         this.shader.destroy();
         MemoryUtil.memFree(this.vertexBuffer);
         MemoryUtil.memFree(this.indexBuffer);
+        GL30.glDeleteVertexArrays(this.vao);
+        GL15.glDeleteBuffers(this.vbo);
+        GL15.glDeleteBuffers(this.ibo);
     }
 
     /**
-     * Renders a colored rectangle.
+     * Renders a colored box.
+     * <p>
+     * Coordinates and dimensions must be expressed in screen-space ([0; 1] on each
+     * axis (0, 0) being the bottom-left corner and (1, 1) the top-right corner).
      *
      * @param x      The x position of the bottom-left corner.
      * @param y      The y position of the bottom-left corner.
@@ -141,9 +148,9 @@ public class ShapeRenderer {
      * @param height The height of the rectangle.
      * @param color  The color of the rectangle.
      */
-    public void renderRectangle(final float x, final float y, final float width, final float height, final Color color) {
+    public void renderBox(final float x, final float y, final float width, final float height, final Color color) {
         if (!this.started) {
-            throw new IllegalStateException("ShaderRenderer#renderRectangle has already been called before ShaderRenderer#start.");
+            throw new IllegalStateException("ShaderRenderer#renderBox has already been called before ShaderRenderer#start.");
         }
 
         this.vertexBuffer.put(x);
@@ -175,7 +182,7 @@ public class ShapeRenderer {
         this.vertexBuffer.put(color.getAlpha());
 
         this.bufferedCount++;
-        if(this.bufferedCount == BUFFER_SIZE) {
+        if (this.bufferedCount == BUFFER_SIZE) {
             this.flush();
         }
     }
