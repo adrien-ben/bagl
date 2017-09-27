@@ -113,14 +113,17 @@ public final class Input {
     /**
      * Mouse movement callback. INTERNAL.
      *
-     * @param window The handle of the source window.
-     * @param x      Position of the cursor on x axis.
-     * @param y      Position of the cursor on y axis.
+     * @param window      The handle of the source window.
+     * @param x           Position of the cursor on x axis.
+     * @param y           Position of the cursor on y axis.
+     * @param updateDelta Should update the mouse position delta ?
      */
-    static void handleMouseMove(long window, double x, double y) {
+    static void handleMouseMove(long window, double x, double y, boolean updateDelta) {
         MOUSE_PREVIOUS_POSITION.set(MOUSE_POSITION);
         MOUSE_POSITION.setXY((float) x, (float) y);
-        Vector2.sub(MOUSE_POSITION, MOUSE_PREVIOUS_POSITION, MOUSE_DELTA);
+        if (updateDelta) {
+            Vector2.sub(MOUSE_POSITION, MOUSE_PREVIOUS_POSITION, MOUSE_DELTA);
+        }
     }
 
     /**

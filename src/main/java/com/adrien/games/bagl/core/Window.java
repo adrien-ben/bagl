@@ -71,14 +71,14 @@ public final class Window {
     }
 
     /**
-     * Retrieve the current cursor position and call {@link Input#handleMouseMove(long, double, double)}
+     * Retrieve the current cursor position and call {@link Input#handleMouseMove(long, double, double, boolean)}
      */
     private void updateCursorPosition() {
         try (final MemoryStack stack = MemoryStack.stackPush()) {
             final DoubleBuffer x = stack.mallocDouble(1);
             final DoubleBuffer y = stack.mallocDouble(1);
             GLFW.glfwGetCursorPos(this.windowHandle, x, y);
-            Input.handleMouseMove(this.windowHandle, x.get(), -y.get());
+            Input.handleMouseMove(this.windowHandle, x.get(), this.height - y.get(), true);
         }
     }
 
@@ -93,9 +93,9 @@ public final class Window {
      */
     public void setMouseMode(final MouseMode mouseMode) {
         GLFW.glfwSetInputMode(this.windowHandle, GLFW.GLFW_CURSOR, mouseMode.getGlfwCode());
-        if (mouseMode == MouseMode.DISABLED) {
-            GLFW.glfwSetCursorPos(this.windowHandle, 1, 1);
-            Input.handleMouseMove(this.windowHandle, 1, 1);
+        if (mouseMode != MouseMode.DISABLED) {
+            GLFW.glfwSetCursorPos(this.windowHandle, this.width / 2, this.height / 2);
+            Input.handleMouseMove(this.windowHandle, this.width / 2, this.height / 2, false);
         }
     }
 
