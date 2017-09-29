@@ -23,59 +23,6 @@ import java.util.*;
  */
 public class ParticleRenderer {
 
-    /**
-     * Particle vertex class.
-     *
-     */
-    private static class ParticleVertex implements Vertex {
-
-        private Vector3 position;
-        private Color color;
-        private float size;
-
-        ParticleVertex(Vector3 position, Color color, float size) {
-            this.position = position;
-            this.color = color;
-            this.size = size;
-        }
-
-        @Override
-        public float[] getData() {
-            return new float[] {this.position.getX(), this.position.getY(), this.position.getZ(), this.color.getRed(),
-                    this.color.getGreen(), this.color.getBlue(), this.color.getAlpha(), this.size};
-        }
-
-        public static VertexDescription getDescription() {
-            return new VertexDescription(new VertexElement[]{ new VertexElement(0, 3, 0), new VertexElement(1, 4, 3),
-                    new VertexElement(2, 1, 7)});
-        }
-
-    }
-
-    /**
-     * This comparators is used to sort particles from the furthest aways from
-     * the camera to the closest.
-     */
-    private static class ParticleComparator implements Comparator<Particle> {
-
-        private Camera camera;
-        final Vector3 v0 = new Vector3();
-        final Vector3 v1 = new Vector3();
-
-        @Override
-        public int compare(Particle p0, Particle p1) {
-            Vector3.sub(p0.getPosition(), camera.getPosition(), v0);
-            Vector3.sub(p1.getPosition(), camera.getPosition(), v1);
-            float dist0 = v0.squareLength();
-            float dist1 = v1.squareLength();
-            return dist0 >= dist1 ? -1 : 1;
-        }
-
-        public void setCamera(Camera camera) {
-            this.camera = camera;
-        }
-
-    }
 
     private static final String HAS_TEXTURE_UNIFORM = "hasTexture";
     private static final String VIEW_PROJ_UNIFORM = "camera.viewProj";
@@ -173,6 +120,60 @@ public class ParticleRenderer {
     public void destroy() {
         this.shader.destroy();
         this.vbuffer.destroy();
+    }
+
+    /**
+     * Particle vertex class.
+     *
+     */
+    private static class ParticleVertex implements Vertex {
+
+        private Vector3 position;
+        private Color color;
+        private float size;
+
+        ParticleVertex(Vector3 position, Color color, float size) {
+            this.position = position;
+            this.color = color;
+            this.size = size;
+        }
+
+        @Override
+        public float[] getData() {
+            return new float[] {this.position.getX(), this.position.getY(), this.position.getZ(), this.color.getRed(),
+                    this.color.getGreen(), this.color.getBlue(), this.color.getAlpha(), this.size};
+        }
+
+        public static VertexDescription getDescription() {
+            return new VertexDescription(new VertexElement[]{ new VertexElement(0, 3, 0), new VertexElement(1, 4, 3),
+                    new VertexElement(2, 1, 7)});
+        }
+
+    }
+
+    /**
+     * This comparators is used to sort particles from the furthest aways from
+     * the camera to the closest.
+     */
+    private static class ParticleComparator implements Comparator<Particle> {
+
+        private Camera camera;
+        private final Vector3 v0 = new Vector3();
+        private final Vector3 v1 = new Vector3();
+
+        @Override
+        public int compare(Particle p0, Particle p1) {
+            Vector3.sub(p0.getPosition(), camera.getPosition(), v0);
+            Vector3.sub(p1.getPosition(), camera.getPosition(), v1);
+            float dist0 = v0.squareLength();
+            float dist1 = v1.squareLength();
+            return (int)(dist1 - dist0);
+        }
+
+        public void setCamera(Camera camera) {
+            this.camera = camera;
+        }
+
     }
 
 }
