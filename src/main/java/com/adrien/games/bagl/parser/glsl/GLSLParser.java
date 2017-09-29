@@ -47,6 +47,8 @@ public class GLSLParser {
                     GLSLConstant constant = this.parseConstant(tokenizer);
                     constants.put(constant.getName(), constant);
                     break;
+                default:
+                    break;
             }
         }
     }
@@ -62,7 +64,7 @@ public class GLSLParser {
         while(hasMoreAttributes) {
             String attrType = tokenizer.nextToken();
 
-            if(attrType.equals("}")) {
+            if("}".equals(attrType)) {
                 hasMoreAttributes = false;
             } else {
                 String attrName = tokenizer.nextToken();
@@ -94,15 +96,16 @@ public class GLSLParser {
 
     private ArrayList<String> generateUniformsFormStructure(String uniformName, GLSLStructure structure) {
         ArrayList<String> structUniforms = new ArrayList<>();
+        String uniformNameCopy = uniformName;
 
-        boolean isArray = this.isArray(uniformName);
-        int size = isArray ? this.getArraySize(uniformName) : 1;
+        boolean isArray = this.isArray(uniformNameCopy);
+        int size = isArray ? this.getArraySize(uniformNameCopy) : 1;
         if(isArray) {
-            uniformName = this.getArrayName(uniformName);
+            uniformNameCopy = this.getArrayName(uniformNameCopy);
         }
 
         for(int i = 0; i < size; i++) {
-            String finalUniformName = uniformName;
+            String finalUniformName = uniformNameCopy;
             if(isArray) {
                 finalUniformName += "[" + i + "]";
             }

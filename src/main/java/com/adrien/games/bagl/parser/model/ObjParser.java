@@ -120,7 +120,7 @@ public class ObjParser implements ModelParser {
         if(tokens.length >= 3) {
             final float u = Float.parseFloat(tokens[1]);
             final float v = Float.parseFloat(tokens[2]);
-            MeshBuilder.coords.add(new Vector2(u, v));
+            MeshBuilder.coordinates.add(new Vector2(u, v));
         } else {
             this.handleParseError("Found texture coordinates with less than 2 components at line " + this.currentLine + ".");
         }
@@ -165,7 +165,7 @@ public class ObjParser implements ModelParser {
             });
             this.currentBuilder.faceIndices.add(faceIndex);
         } else {
-            this.handleParseError("A face vertex does not reference a position, coords and/or a normal at line " +
+            this.handleParseError("A face vertex does not reference a position, coordinates and/or a normal at line " +
                     this.currentLine + ". Only triangle faces are supported.");
         }
     }
@@ -212,26 +212,26 @@ public class ObjParser implements ModelParser {
      */
     private static class MeshBuilder {
 
-        final static List<Vector3> positions = new ArrayList<>();
-        final static List<Vector2> coords = new ArrayList<>();
-        final static List<Vector3> normals = new ArrayList<>();
+        private final static List<Vector3> positions = new ArrayList<>();
+        private final static List<Vector2> coordinates = new ArrayList<>();
+        private final static List<Vector3> normals = new ArrayList<>();
 
-        final String meshName;
-        final List<Vector3> tangents = new ArrayList<>();
-        final List<Face> faces = new ArrayList<>();
-        final List<Integer> faceIndices = new ArrayList<>();
-        final Map<Face, Integer> faceToIndexMap = new HashMap<>();
-        Material material;
+        private final String meshName;
+        private final List<Vector3> tangents = new ArrayList<>();
+        private final List<Face> faces = new ArrayList<>();
+        private final List<Integer> faceIndices = new ArrayList<>();
+        private final Map<Face, Integer> faceToIndexMap = new HashMap<>();
+        private Material material;
 
-        MeshBuilder(String meshName) {
+        private MeshBuilder(String meshName) {
             this.meshName = meshName;
         }
 
-        boolean isNotEmpty() {
+        private boolean isNotEmpty() {
             return !this.faces.isEmpty();
         }
 
-        Mesh build() {
+        private Mesh build() {
             if(this.material.hasNormalMap()) {
                 this.computeTangents();
             }
@@ -241,9 +241,9 @@ public class ObjParser implements ModelParser {
                 final Face face = this.faces.get(i);
                 final Vector3 position = positions.get(face.getPositionIndex());
                 final Vector3 normal = normals.get(face.getNormalIndex());
-                final Vector2 coord = face.getCoordsIndex() > -1 ? coords.get(face.getCoordsIndex()) : new Vector2();
+                final Vector2 coordinate = face.getCoordsIndex() > -1 ? coordinates.get(face.getCoordsIndex()) : new Vector2();
                 final Vector3 tangent = this.tangents.isEmpty() ? new Vector3() : this.tangents.get(i);
-                vertexArray[i] = new MeshVertex(position, normal, coord, tangent);
+                vertexArray[i] = new MeshVertex(position, normal, coordinate, tangent);
             }
 
             final int indexCount = this.faceIndices.size();
@@ -257,7 +257,7 @@ public class ObjParser implements ModelParser {
             return new Mesh(vertexBuffer, indexBuffer, this.material);
         }
 
-        void computeTangents() {
+        private void computeTangents() {
 
             final Vector3[] tangents = new Vector3[this.faces.size()];
 
@@ -277,11 +277,11 @@ public class ObjParser implements ModelParser {
                 final Vector3 edge1 = Vector3.sub(pos1, pos0);
                 final Vector3 edge2 = Vector3.sub(pos2, pos0);
 
-                final Vector2 coords0 = coords.get(face0.getCoordsIndex());
-                final Vector2 coords1 = coords.get(face1.getCoordsIndex());
-                final Vector2 coords2 = coords.get(face2.getCoordsIndex());
-                final Vector2 deltaUVx = Vector2.sub(coords1, coords0);
-                final Vector2 deltaUVy = Vector2.sub(coords2, coords0);
+                final Vector2 coordinates0 = coordinates.get(face0.getCoordsIndex());
+                final Vector2 coordinates1 = coordinates.get(face1.getCoordsIndex());
+                final Vector2 coordinates2 = coordinates.get(face2.getCoordsIndex());
+                final Vector2 deltaUVx = Vector2.sub(coordinates1, coordinates0);
+                final Vector2 deltaUVy = Vector2.sub(coordinates2, coordinates0);
 
                 final float f = 1/(deltaUVx.getX()*deltaUVy.getY() - deltaUVy.getX()*deltaUVx.getY());
 
@@ -300,7 +300,7 @@ public class ObjParser implements ModelParser {
 
         }
 
-        void setTangentForFace(Vector3[] tangents, int index, Vector3 tangent) {
+        private void setTangentForFace(Vector3[] tangents, int index, Vector3 tangent) {
             Vector3 currentTangent = tangents[index];
             if(Objects.isNull(currentTangent)) {
                 currentTangent = new Vector3(tangent);
@@ -310,9 +310,9 @@ public class ObjParser implements ModelParser {
             }
         }
 
-        static void clear() {
+        private static void clear() {
             positions.clear();
-            coords.clear();
+            coordinates.clear();
             normals.clear();
         }
 

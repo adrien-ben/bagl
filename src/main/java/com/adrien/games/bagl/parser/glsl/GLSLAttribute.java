@@ -8,7 +8,7 @@ public class GLSLAttribute {
     public GLSLAttribute(String type, String name) {
 
         if(type == null || name == null) {
-            throw new NullPointerException();
+            throw new IllegalArgumentException("neither type nor name can be null");
         }
 
         this.type = type;

@@ -10,7 +10,7 @@ public class GLSLStructure {
     public GLSLStructure(String name, ArrayList<GLSLAttribute> attributes) {
 
         if(name == null || attributes == null) {
-            throw new NullPointerException();
+            throw new IllegalArgumentException("neither name nor attributes can be null");
         }
 
         this.name = name;

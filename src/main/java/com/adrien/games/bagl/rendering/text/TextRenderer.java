@@ -143,8 +143,8 @@ public class TextRenderer {
     private void fillTextVertex(TextVertex vertex, float x, float y, float u, float v, Color color) {
         vertex.position.setX(x);
         vertex.position.setY(y);
-        vertex.coords.setX(u);
-        vertex.coords.setY(v);
+        vertex.coordinates.setX(u);
+        vertex.coordinates.setY(v);
         vertex.color.set(color);
     }
 
@@ -177,23 +177,23 @@ public class TextRenderer {
      */
     private static class TextVertex implements Vertex {
 
-        static final VertexDescription VERTEX_DESCRIPTION = new VertexDescription(new VertexElement[]{
+        private static final VertexDescription VERTEX_DESCRIPTION = new VertexDescription(new VertexElement[]{
                 new VertexElement(0, 2, 0), new VertexElement(1, 2, 2),
                 new VertexElement(2, 4, 4)});
 
-        final Vector2 position;
-        final Vector2 coords;
-        final Color color;
+        private final Vector2 position;
+        private final Vector2 coordinates;
+        private final Color color;
 
-        TextVertex(Vector2 position, Vector2 coords, Color color) {
+        private TextVertex(Vector2 position, Vector2 coordinates, Color color) {
             this.position = position;
-            this.coords = coords;
+            this.coordinates = coordinates;
             this.color = color;
         }
 
         @Override
         public float[] getData() {
-            return new float[]{this.position.getX(), this.position.getY(), this.coords.getX(), this.coords.getY(),
+            return new float[]{this.position.getX(), this.position.getY(), this.coordinates.getX(), this.coordinates.getY(),
                     this.color.getRed(), this.color.getGreen(), this.color.getBlue(), this.color.getAlpha()};
         }
 
