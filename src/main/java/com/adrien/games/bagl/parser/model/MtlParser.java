@@ -2,6 +2,7 @@ package com.adrien.games.bagl.parser.model;
 
 import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.core.Configuration;
+import com.adrien.games.bagl.core.EngineException;
 import com.adrien.games.bagl.rendering.Material;
 import com.adrien.games.bagl.rendering.texture.Filter;
 import com.adrien.games.bagl.rendering.texture.Texture;
@@ -60,7 +61,7 @@ public class MtlParser {
             stream.filter(StringUtils::isNotBlank).forEach(this::parseLine);
         } catch (IOException e) {
             log.error("Failed to parse file '{}'.", filePath, e);
-            throw new RuntimeException("Failed to parse material file", e);
+            throw new EngineException("Failed to parse material file", e);
         }
         return materials;
     }
@@ -154,7 +155,7 @@ public class MtlParser {
 
     private void handleParseError(String error) {
         log.error(error);
-        throw new RuntimeException(error);
+        throw new EngineException(error);
     }
 
 }

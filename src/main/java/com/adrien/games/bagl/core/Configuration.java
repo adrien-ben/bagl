@@ -53,7 +53,7 @@ public class Configuration {
             this.properties.load(inStream);
         } catch (IOException e) {
             log.error("Failed to load properties file {}", CONFIGURATION_FILE_PATH, e);
-            throw new RuntimeException("Failed to load properties file", e);
+            throw new EngineException("Failed to load properties file", e);
         }
     }
 
@@ -62,7 +62,7 @@ public class Configuration {
             return Integer.parseInt(this.properties.getProperty(key));
         } catch (NumberFormatException e) {
             log.error("Property {} is not a integer or is missing", key);
-            throw new RuntimeException("Property " + key + " is not a integer or is missing");
+            throw new EngineException("Property " + key + " is not a integer or is missing");
         }
     }
 
@@ -70,7 +70,7 @@ public class Configuration {
         final String property = this.properties.getProperty(key);
         if(Objects.isNull(property)) {
             log.error("Property {} is missing", key);
-            throw new RuntimeException("Property " + key + " is missing");
+            throw new EngineException("Property " + key + " is missing");
         }
         return Boolean.parseBoolean(property);
     }

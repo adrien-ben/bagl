@@ -1,6 +1,7 @@
 package com.adrien.games.bagl.rendering;
 
 import com.adrien.games.bagl.core.Color;
+import com.adrien.games.bagl.core.EngineException;
 import com.adrien.games.bagl.core.math.Matrix4;
 import com.adrien.games.bagl.core.math.Vector3;
 import com.adrien.games.bagl.parser.glsl.GLSLParser;
@@ -98,7 +99,7 @@ public class Shader {
             final int loglength = GL20.glGetShaderi(shader, GL20.GL_INFO_LOG_LENGTH);
             final String message = GL20.glGetShaderInfoLog(shader, loglength);
             log.error("Shader compilation error : {}", message);
-            throw new RuntimeException("Shader compilation error : " + message);
+            throw new EngineException("Shader compilation error : " + message);
         }
         GL20.glAttachShader(this.handle, shader);
         this.attachedShaders.add(shader);
@@ -254,7 +255,7 @@ public class Shader {
             final int logLength = GL20.glGetProgrami(this.handle, GL20.GL_INFO_LOG_LENGTH);
             final String message = GL20.glGetProgramInfoLog(this.handle, logLength);
             log.error("Shader linking error : {}", message);
-            throw new RuntimeException("Shader linking error : " + message);
+            throw new EngineException("Shader linking error : " + message);
         }
 
         for(String uniform : this.uniforms) {
@@ -282,7 +283,7 @@ public class Shader {
      */
     private void checkIsShaderBound() {
         if(this != boundShader) {
-            throw new RuntimeException("You're trying to do an operation on an unbound shader."
+            throw new EngineException("You're trying to do an operation on an unbound shader."
                     + "Please bind the shader first.");
         }
     }

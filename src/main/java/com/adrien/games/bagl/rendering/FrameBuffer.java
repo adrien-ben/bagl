@@ -2,7 +2,7 @@ package com.adrien.games.bagl.rendering;
 
 import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.core.Engine;
-import com.adrien.games.bagl.rendering.texture.Format;
+import com.adrien.games.bagl.core.EngineException;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.texture.TextureParameters;
 
@@ -162,7 +162,7 @@ public class FrameBuffer {
 
     public Texture getColorTexture(int index) {
         if(this.depthOnly) {
-            throw new RuntimeException("This frame buffer is depth only. Color textures should not be queried.");
+            throw new EngineException("This frame buffer is depth only. Color textures should not be queried.");
         }
         return this.colorOutputs[index];
     }

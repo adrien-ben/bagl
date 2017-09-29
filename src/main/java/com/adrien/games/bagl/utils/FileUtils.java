@@ -1,5 +1,7 @@
 package com.adrien.games.bagl.utils;
 
+import com.adrien.games.bagl.core.EngineException;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -20,7 +22,7 @@ public final class FileUtils {
         try (final FileChannel channel = FileChannel.open(Paths.get(filePath))) {
             return channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
         } catch (IOException e) {
-            throw new RuntimeException("Failed to load file into the byte buffer", e);
+            throw new EngineException("Failed to load file into the byte buffer", e);
         }
     }
 

@@ -1,5 +1,6 @@
 package com.adrien.games.bagl.rendering.texture;
 
+import com.adrien.games.bagl.core.EngineException;
 import com.adrien.games.bagl.utils.Image;
 import com.adrien.games.bagl.utils.ImageUtils;
 
@@ -83,7 +84,7 @@ public final class Texture {
         } else if(channelCount == 1) {
             return Format.RED8;
         } else {
-            throw new RuntimeException("Only textures with 1, 3 or 4 color channel or supported.");
+            throw new EngineException("Only textures with 1, 3 or 4 color channel or supported.");
         }
     }
 

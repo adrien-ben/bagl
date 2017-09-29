@@ -1,5 +1,7 @@
 package com.adrien.games.bagl.parser.glsl;
 
+import com.adrien.games.bagl.core.EngineException;
+
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -137,7 +139,7 @@ public class GLSLParser {
     private int getIntegerConstantValue(String name) {
         GLSLConstant constant = constants.get(name);
         if(Objects.isNull(constant) || !INTEGER_TYPE.equals(constant.getType())) {
-            throw new RuntimeException("The constant '" + name + "' is not defined or is not an integer");
+            throw new EngineException("The constant '" + name + "' is not defined or is not an integer");
         } else {
             return constant.getValue();
         }

@@ -1,5 +1,6 @@
 package com.adrien.games.bagl.rendering.texture;
 
+import com.adrien.games.bagl.core.EngineException;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.stb.STBImage;
 
@@ -56,7 +57,7 @@ public class Cubemap {
         STBImage.stbi_set_flip_vertically_on_load(false);
         ByteBuffer image = STBImage.stbi_load(path, width, height, comp, 3);
         if(image == null) {
-            throw new RuntimeException("Failed to load a face from the cubemap : '" + path + "'.");
+            throw new EngineException("Failed to load a face from the cubemap : '" + path + "'.");
         }
         glTexImage2D(target, 0, GL_RGB8, width.get(), height.get(), 0, GL_RGB, GL_UNSIGNED_BYTE, image);
     }

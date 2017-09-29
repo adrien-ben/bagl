@@ -1,5 +1,6 @@
 package com.adrien.games.bagl.parser.model;
 
+import com.adrien.games.bagl.core.EngineException;
 import com.adrien.games.bagl.core.math.Vector2;
 import com.adrien.games.bagl.core.math.Vector3;
 import com.adrien.games.bagl.rendering.*;
@@ -63,7 +64,7 @@ public class ObjParser implements ModelParser {
             stream.filter(StringUtils::isNotBlank).forEach(this::parseLine);
         } catch (IOException e) {
             log.error("Failed to parse file '{}'.", filePath, e);
-            throw new RuntimeException("Failed to parse model file", e);
+            throw new EngineException("Failed to parse model file", e);
         }
         this.builders.put(this.currentBuilder.meshName, this.currentBuilder);
         this.builders.values().stream().filter(MeshBuilder::isNotEmpty).map(MeshBuilder::build).forEach(model::addMesh);
@@ -203,7 +204,7 @@ public class ObjParser implements ModelParser {
 
     private void handleParseError(String error) {
         log.error(error);
-        throw new RuntimeException(error);
+        throw new EngineException(error);
     }
 
     /**

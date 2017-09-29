@@ -43,7 +43,7 @@ public final class Window {
         final long primaryMonitor = fullScreen ? GLFW.glfwGetPrimaryMonitor() : 0;
         this.windowHandle = GLFW.glfwCreateWindow(this.width, this.height, title, primaryMonitor, 0);
         if (this.windowHandle == 0) {
-            throw new RuntimeException("Failed to create window");
+            throw new EngineException("Failed to create window");
         }
 
         GLFW.glfwSetKeyCallback(this.windowHandle, Input::handleKeyboard);

@@ -1,7 +1,11 @@
 package com.adrien.games.bagl.rendering.text;
 
+import com.adrien.games.bagl.core.EngineException;
 import com.adrien.games.bagl.parser.ParseException;
-import com.adrien.games.bagl.rendering.texture.*;
+import com.adrien.games.bagl.rendering.texture.Format;
+import com.adrien.games.bagl.rendering.texture.Texture;
+import com.adrien.games.bagl.rendering.texture.TextureParameters;
+import com.adrien.games.bagl.rendering.texture.TextureRegion;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -48,7 +52,7 @@ public class Font {
         final File file = new File(filePath);
         if(!file.exists()) {
             log.error("Font file '{}' does not exists.", filePath);
-            throw new RuntimeException("Font file '" + filePath + "' does not exists.");
+            throw new EngineException("Font file '" + filePath + "' does not exists.");
         }
 
         try(final BufferedReader reader = new BufferedReader(new FileReader(file))) {
@@ -56,7 +60,7 @@ public class Font {
             reader.lines().map(CHAR_LINE_PATTERN::matcher).filter(Matcher::matches).forEach(this::parseCharLine);
         } catch (IOException | ParseException e) {
             log.error("Failed to parse font file '{}'.", filePath, e);
-            throw new RuntimeException("Failed to parse font file '" + filePath + "'.", e);
+            throw new EngineException("Failed to parse font file '" + filePath + "'.", e);
         }
 
         this.bitmap = new Texture(file.getParentFile().getAbsolutePath() + File.separator + this.atlasName,
