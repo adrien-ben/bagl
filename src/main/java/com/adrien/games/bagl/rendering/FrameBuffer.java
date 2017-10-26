@@ -5,6 +5,7 @@ import com.adrien.games.bagl.core.Engine;
 import com.adrien.games.bagl.core.EngineException;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.texture.TextureParameters;
+import com.adrien.games.bagl.rendering.texture.Wrap;
 
 import java.util.Arrays;
 
@@ -71,7 +72,8 @@ public class FrameBuffer {
         final int colorOutputs = parameters.getColorOutputs().size();
         final Texture[] textures = new Texture[colorOutputs];
         for(int i = 0; i < colorOutputs; i++) {
-            textures[i] = new Texture(width, height, new TextureParameters().format(parameters.getColorOutputs().get(i)));
+            textures[i] = new Texture(width, height, new TextureParameters().format(parameters.getColorOutputs().get(i))
+                    .sWrap(Wrap.CLAMP_TO_EDGE).tWrap(Wrap.CLAMP_TO_EDGE));
         }
         return textures;
     }
