@@ -9,6 +9,7 @@ import com.adrien.games.bagl.rendering.light.DirectionalLight;
 import com.adrien.games.bagl.rendering.light.Light;
 import com.adrien.games.bagl.rendering.light.PointLight;
 import com.adrien.games.bagl.rendering.light.SpotLight;
+import com.adrien.games.bagl.rendering.postprocess.PostProcessor;
 import com.adrien.games.bagl.rendering.scene.Scene;
 import com.adrien.games.bagl.rendering.scene.SceneNode;
 import com.adrien.games.bagl.rendering.texture.Cubemap;
@@ -54,7 +55,8 @@ public class Renderer {
     private Shader shadowShader;
     private Shader gBufferShader;
     private Shader deferredShader;
-    private Shader postProcessShader;
+
+    private PostProcessor postProcessor;
 
     /**
      * Constructs the renderer
@@ -75,6 +77,8 @@ public class Renderer {
         this.finalBuffer = new FrameBuffer(this.xResolution, this.yResolution, new FrameBufferParameters().addColorOutput(Format.RGBA32F));
 
         this.initShaders();
+
+        this.postProcessor = new PostProcessor(this.xResolution, this.yResolution);
     }
 
     /**
@@ -85,11 +89,11 @@ public class Renderer {
         this.shadowShader.destroy();
         this.gBufferShader.destroy();
         this.deferredShader.destroy();
-        this.postProcessShader.destroy();
         this.gBuffer.destroy();
         this.shadowBuffer.destroy();
         this.vertexBuffer.destroy();
         this.finalBuffer.destroy();
+        this.postProcessor.destroy();
     }
 
     private void initFullScreenQuad() {
@@ -105,9 +109,8 @@ public class Renderer {
     private void initShaders() {
         this.skyboxShader = new Shader().addVertexShader("/skybox.vert").addFragmentShader("/skybox.frag").compile();
         this.shadowShader = new Shader().addVertexShader("/shadow.vert").addFragmentShader("/shadow.frag").compile();
-        this.gBufferShader = new Shader().addVertexShader("/gBuffer.vert").addFragmentShader("/gBuffer.frag").compile();
+        this.gBufferShader = new Shader().addVertexShader("/gbuffer.vert").addFragmentShader("/gbuffer.frag").compile();
         this.deferredShader = new Shader().addVertexShader("/deferred.vert").addFragmentShader("/deferred.frag").compile();
-        this.postProcessShader = new Shader().addVertexShader("/post_process.vert").addFragmentShader("/post_process.frag").compile();
     }
 
     /**
@@ -125,7 +128,7 @@ public class Renderer {
         this.renderShadowMap(scene);
         this.renderScene(scene.getRoot(), camera);
         this.renderDeferred(scene, camera);
-        this.performPostProcessingPass();
+        this.postProcessor.process(this.finalBuffer.getColorTexture(0));
     }
 
     private void renderSkybox(Skybox skybox, Camera camera) {
@@ -299,18 +302,6 @@ public class Renderer {
         shader.setUniform("uLights.spots[" + index + "].direction", light.getDirection());
         shader.setUniform("uLights.spots[" + index + "].cutOff", light.getCutOff());
         shader.setUniform("uLights.spots[" + index + "].outerCutOff", light.getOuterCutOff());
-    }
-
-    private void performPostProcessingPass() {
-        this.vertexBuffer.bind();
-        this.postProcessShader.bind();
-        this.finalBuffer.getColorTexture(0).bind();
-
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, this.vertexBuffer.getVertexCount());
-
-        Texture.unbind();
-        Shader.unbind();
-        VertexBuffer.unbind();
     }
 
     public FrameBuffer getShadowBuffer() {

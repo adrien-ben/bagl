@@ -1,7 +1,10 @@
 package com.adrien.games.bagl.sample;
 
 import com.adrien.games.bagl.core.*;
-import com.adrien.games.bagl.core.math.*;
+import com.adrien.games.bagl.core.math.Matrix4;
+import com.adrien.games.bagl.core.math.Quaternion;
+import com.adrien.games.bagl.core.math.Vector2;
+import com.adrien.games.bagl.core.math.Vector3;
 import com.adrien.games.bagl.rendering.Model;
 import com.adrien.games.bagl.rendering.Renderer;
 import com.adrien.games.bagl.rendering.Skybox;
@@ -49,7 +52,7 @@ public class DeferredRenderingSample {
         private Spritebatch spritebatch;
 
         private boolean isKeyPressed = false;
-        private boolean displayGbuffer = false;
+        private boolean displayGBuffer = false;
 
         @Override
         public void init() {
@@ -116,7 +119,7 @@ public class DeferredRenderingSample {
 
         private void setUpLights() {
             this.scene.setAmbient(new Light(0.01f));
-            this.scene.getDirectionals().add(new DirectionalLight(0.5f, Color.WHITE, new Vector3(3f, -2, 4)));
+            this.scene.getDirectionals().add(new DirectionalLight(0.8f, Color.WHITE, new Vector3(3f, -2, 4)));
             this.scene.getDirectionals().add(new DirectionalLight(0.3f, Color.ORANGE, new Vector3(0.5f, -2, 4)));
             this.scene.getPoints().add(new PointLight(10f, Color.GREEN, new Vector3(4f, 0.5f, 2f), 2f));
             this.scene.getPoints().add(new PointLight(10f, Color.YELLOW, new Vector3(-4f, 0.2f, 2f), 3f));
@@ -143,7 +146,7 @@ public class DeferredRenderingSample {
             }
 
             if(Input.isKeyPressed(GLFW.GLFW_KEY_G) && !this.isKeyPressed) {
-                this.displayGbuffer = !this.displayGbuffer;
+                this.displayGBuffer = !this.displayGBuffer;
                 this.isKeyPressed = true;
             }
             if(!Input.isKeyPressed(GLFW.GLFW_KEY_G) && this.isKeyPressed) {
@@ -156,7 +159,7 @@ public class DeferredRenderingSample {
         @Override
         public void render() {
             this.renderer.render(this.scene, this.camera);
-            if(this.displayGbuffer) {
+            if (this.displayGBuffer) {
                 this.spritebatch.start();
                 this.spritebatch.draw(this.renderer.getGBuffer().getDepthTexture(),
                         new Vector2(4*this.width/5, 2*this.height/5), this.width/5, this.height/5);

@@ -7,6 +7,7 @@ baGL is an OpenGL framework that I use for educational purpose. It uses [LWJGL 3
 - Deferred Rendering
 - Physically Based Rendering. See [Epic's paper](http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf)
 - Shadow mapping
+- Basic post processing (bloom, gamma correction and tone mapping)
 - Simple .obj and .mtl loaders
 - Lights (ambient lights, directional lights, point lights and spot lights)
 - Sky boxes
@@ -20,7 +21,7 @@ baGL is an OpenGL framework that I use for educational purpose. It uses [LWJGL 3
 This framework uses a deferred renderer. Geometry and material data is first rendered into a frame buffer called the GBuffer (Geometry Buffer).
 Then in a second pass the GBuffer is used to perform lighting calculations. The renderer uses physically based rendering.
 The renderer supports ambient, directional, point, and spot lights.
-The renderer performs a small post processing pass to apply gamma correction and tone map from HDR to SDR.
+The renderer performs a small post processing pass to apply bloom on bright spots, gamma correction and tone map from HDR to SDR.
 
 ### GBuffer breakdown
 
@@ -65,6 +66,7 @@ Basic shadow mapping is implemented. It only works for one directional light (Th
     - Sprites in 3D environment (debug icons, ...)
     - IBL
     - Area lights (sphere and tubes)
+    - Improved shadows
 - Review the Model/Mesh/Material model.
 - 2D scene
 - Assets management
