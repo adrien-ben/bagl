@@ -10,42 +10,41 @@ import java.util.Properties;
 
 /**
  * Engine configuration class. This singleton class is used to load engine
- * configuration. The instantiation fails if one of the required property 
+ * configuration. The instantiation fails if one of the required property
  * is missing. Required properties are :
  * <ul>
  * <li>resolution.x (integer): resolution of the window alongside the x-axis.
  * <li>resolution.y (integer): resolution of the window alongside the y-axis.
+ * <li>vsync (boolean) : flag indicating if vsync should be enabled.
+ * <li>fullscreen (boolean) : flag indicating if full screen should be enabled.
  * <li>anisotropic (integer): level of anisotropic filtering.
- *
+ * <li>shadow_map_resolution : the resolution of the shadow map.
  */
 public class Configuration {
 
     private static final Logger log = LogManager.getLogger(Configuration.class);
 
     private static final String CONFIGURATION_FILE_PATH = "/config.properties";
-    private static final String X_RESOLUTION_KEY = "resolution.x";
-    private static final String Y_RESOLUTION_KEY = "resolution.y";
-    private static final String VSYNC_KEY = "vsync";
-    private static final String FULLSCREEN_KEY = "fullscreen";
-    private static final String ANISOTROPIC_KEY = "anisotropic";
+
+    private static Configuration instance;
 
     private final Properties properties;
     private final int xResolution;
     private final int yResolution;
-    private final  boolean vsync;
+    private final boolean vsync;
     private final boolean fullscreen;
     private final int anisotropicLevel;
-
-    private static Configuration instance;
+    private final int shadowMapResolution;
 
     private Configuration() {
         this.properties = new Properties();
         this.loadFile();
-        this.xResolution = this.readRequiredInt(X_RESOLUTION_KEY);
-        this.yResolution = this.readRequiredInt(Y_RESOLUTION_KEY);
-        this.vsync = this.readRequiredBool(VSYNC_KEY);
-        this.fullscreen = this.readRequiredBool(FULLSCREEN_KEY);
-        this.anisotropicLevel = this.readRequiredInt(ANISOTROPIC_KEY);
+        this.xResolution = this.readRequiredInt("resolution.x");
+        this.yResolution = this.readRequiredInt("resolution.y");
+        this.vsync = this.readRequiredBool("vsync");
+        this.fullscreen = this.readRequiredBool("fullscreen");
+        this.anisotropicLevel = this.readRequiredInt("anisotropic");
+        this.shadowMapResolution = this.readRequiredInt("shadow_map_resolution");
     }
 
     private void loadFile() {
@@ -68,7 +67,7 @@ public class Configuration {
 
     private boolean readRequiredBool(final String key) {
         final String property = this.properties.getProperty(key);
-        if(Objects.isNull(property)) {
+        if (Objects.isNull(property)) {
             log.error("Property {} is missing", key);
             throw new EngineException("Property " + key + " is missing");
         }
@@ -77,10 +76,11 @@ public class Configuration {
 
     /**
      * Returns the instance of the engine configuration.
+     *
      * @return A {@link Configuration} instance.
      */
     public static Configuration getInstance() {
-        if(Objects.isNull(instance)) {
+        if (Objects.isNull(instance)) {
             instance = new Configuration();
         }
         return instance;
@@ -88,6 +88,7 @@ public class Configuration {
 
     /**
      * Gets a property by name.
+     *
      * @param key The name/key of the property.
      * @return The value of the property as a {@link String}.
      */
@@ -113,6 +114,10 @@ public class Configuration {
 
     public int getAnisotropicLevel() {
         return anisotropicLevel;
+    }
+
+    public int getShadowMapResolution() {
+        return this.shadowMapResolution;
     }
 
 }

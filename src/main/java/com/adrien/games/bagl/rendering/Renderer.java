@@ -35,16 +35,15 @@ import static org.lwjgl.opengl.GL11.*;
  */
 public class Renderer {
 
-    private static final int SHADOW_MAP_SIZE = 1024;
-
     private final int xResolution;
     private final int yResolution;
+    private final int shadowMapResolution;
 
     private final Matrix4 wvpBuffer;
     private final Matrix4 lightViewProj;
 
     private VertexBuffer vertexBuffer;
-    private final FrameBuffer gbuffer;
+    private final FrameBuffer gBuffer;
 
     private boolean renderShadow;
     private final FrameBuffer shadowBuffer;
@@ -53,7 +52,7 @@ public class Renderer {
 
     private Shader skyboxShader;
     private Shader shadowShader;
-    private Shader gbufferShader;
+    private Shader gBufferShader;
     private Shader deferredShader;
     private Shader postProcessShader;
 
@@ -64,14 +63,15 @@ public class Renderer {
         final Configuration config = Configuration.getInstance();
         this.xResolution = config.getXResolution();
         this.yResolution = config.getYResolution();
+        this.shadowMapResolution = config.getShadowMapResolution();
 
         this.wvpBuffer = Matrix4.createZero();
         this.lightViewProj = Matrix4.createZero();
 
         this.initFullScreenQuad();
-        this.gbuffer = new FrameBuffer(this.xResolution, this.yResolution, new FrameBufferParameters()
+        this.gBuffer = new FrameBuffer(this.xResolution, this.yResolution, new FrameBufferParameters()
                 .addColorOutput(Format.RGBA8).addColorOutput(Format.RGBA16F));
-        this.shadowBuffer = new FrameBuffer(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
+        this.shadowBuffer = new FrameBuffer(this.shadowMapResolution, this.shadowMapResolution);
         this.finalBuffer = new FrameBuffer(this.xResolution, this.yResolution, new FrameBufferParameters().addColorOutput(Format.RGBA32F));
 
         this.initShaders();
@@ -83,10 +83,10 @@ public class Renderer {
     public void destroy() {
         this.skyboxShader.destroy();
         this.shadowShader.destroy();
-        this.gbufferShader.destroy();
+        this.gBufferShader.destroy();
         this.deferredShader.destroy();
         this.postProcessShader.destroy();
-        this.gbuffer.destroy();
+        this.gBuffer.destroy();
         this.shadowBuffer.destroy();
         this.vertexBuffer.destroy();
         this.finalBuffer.destroy();
@@ -105,7 +105,7 @@ public class Renderer {
     private void initShaders() {
         this.skyboxShader = new Shader().addVertexShader("/skybox.vert").addFragmentShader("/skybox.frag").compile();
         this.shadowShader = new Shader().addVertexShader("/shadow.vert").addFragmentShader("/shadow.frag").compile();
-        this.gbufferShader = new Shader().addVertexShader("/gbuffer.vert").addFragmentShader("/gbuffer.frag").compile();
+        this.gBufferShader = new Shader().addVertexShader("/gBuffer.vert").addFragmentShader("/gBuffer.frag").compile();
         this.deferredShader = new Shader().addVertexShader("/deferred.vert").addFragmentShader("/deferred.frag").compile();
         this.postProcessShader = new Shader().addVertexShader("/post_process.vert").addFragmentShader("/post_process.frag").compile();
     }
@@ -114,7 +114,7 @@ public class Renderer {
      * <p>Renders a scene from the camera point of view.
      * <p>First, if a skybox is present it is renderer to the default frame buffer.
      * Then, the shadow map is generated for the first available directional light
-     * of the scene. After that, the scene is rendered to the gbuffer and finally,
+     * of the scene. After that, the scene is rendered to the gBuffer and finally,
      * the final scene is renderer.
      *
      * @param scene  The scene to render.
@@ -159,7 +159,7 @@ public class Renderer {
             Matrix4.mul(Matrix4.createOrthographic(-10, 10, -10, 10, 0.1f, 20),
                     Matrix4.createLookAt(position, new Vector3(), Vector3.UP), this.lightViewProj);
 
-            glViewport(0, 0, SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
+            glViewport(0, 0, this.shadowMapResolution, this.shadowMapResolution);
             this.shadowBuffer.bind();
             FrameBuffer.clear();
             this.shadowShader.bind();
@@ -183,9 +183,9 @@ public class Renderer {
     }
 
     private void renderScene(SceneNode<Model> scene, Camera camera) {
-        this.gbuffer.bind();
+        this.gBuffer.bind();
         FrameBuffer.clear();
-        this.gbufferShader.bind();
+        this.gBufferShader.bind();
         scene.apply(node -> this.renderSceneNode(node, camera));
         Shader.unbind();
         FrameBuffer.unbind();
@@ -201,14 +201,14 @@ public class Renderer {
 
         Matrix4.mul(camera.getViewProj(), world, this.wvpBuffer);
 
-        this.gbufferShader.setUniform("uMatrices.world", world);
-        this.gbufferShader.setUniform("uMatrices.wvp", this.wvpBuffer);
+        this.gBufferShader.setUniform("uMatrices.world", world);
+        this.gBufferShader.setUniform("uMatrices.wvp", this.wvpBuffer);
 
         model.getMeshes().forEach(this::renderMeshToGBuffer);
     }
 
     private void renderMeshToGBuffer(Mesh mesh) {
-        mesh.getMaterial().applyTo(this.gbufferShader);
+        mesh.getMaterial().applyTo(this.gBufferShader);
         this.renderMesh(mesh);
         Texture.unbind();
         Texture.unbind(1);
@@ -232,9 +232,9 @@ public class Renderer {
         final List<PointLight> points = scene.getPoints();
         final List<SpotLight> spots = scene.getSpots();
 
-        this.gbuffer.getColorTexture(0).bind(0);
-        this.gbuffer.getColorTexture(1).bind(1);
-        this.gbuffer.getDepthTexture().bind(2);
+        this.gBuffer.getColorTexture(0).bind(0);
+        this.gBuffer.getColorTexture(1).bind(1);
+        this.gBuffer.getDepthTexture().bind(2);
         this.vertexBuffer.bind();
         this.deferredShader.bind();
         this.deferredShader.setUniform("uCamera.vp", camera.getViewProj());
@@ -318,7 +318,7 @@ public class Renderer {
     }
 
     public FrameBuffer getGBuffer() {
-        return this.gbuffer;
+        return this.gBuffer;
     }
 
 }
