@@ -2,10 +2,13 @@
 
 in vec3 passPosition;
 
-out vec4 color;
+out vec4 finalColor;
 
 uniform samplerCube cubemap;
 
 void main() {
-	color = texture(cubemap, passPosition);
+    // tonemap the sdr skybox to hdr
+    // TODO : use actual HDR skyboxes instead
+	vec3 color = texture(cubemap, passPosition).rgb;
+	finalColor = vec4(pow(color, vec3(2.2)), 1.0);
 }

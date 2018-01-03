@@ -1,6 +1,6 @@
-# bagl
+# baGL
 
-baGL is an OpengGL framework that I use for educational purpose. It uses [LWJGL 3](https://www.lwjgl.org/).
+baGL is an OpenGL framework that I use for educational purpose. It uses [LWJGL 3](https://www.lwjgl.org/).
 
 ## Features
 
@@ -9,24 +9,25 @@ baGL is an OpengGL framework that I use for educational purpose. It uses [LWJGL 
 - Shadow mapping
 - Simple .obj and .mtl loaders
 - Lights (ambient lights, directional lights, point lights and spot lights)
-- Skyboxes
+- Sky boxes
 - 3D Particles using Geometry Shader
-- Spritebatching
+- Sprite batching
 - Scalable text using Signed Distance Field fonts. See [Valve's paper](http://www.valvesoftware.com/publications/2007/SIGGRAPH2007_AlphaTestedMagnification.pdf)
 - Simple scene graph
 
 ## Rendering
 
-This framework uses a deferred renderer. Geometry and material data is first rendered into a framebuffer called the Guffer.
-Then in a second pass the gbuffer is used to perform lighting calculations. The renderer uses physically based rendering.
-The renderder supports ambient, directional, point, and spot lights.
+This framework uses a deferred renderer. Geometry and material data is first rendered into a frame buffer called the GBuffer (Geometry Buffer).
+Then in a second pass the GBuffer is used to perform lighting calculations. The renderer uses physically based rendering.
+The renderer supports ambient, directional, point, and spot lights.
+The renderer performs a small post processing pass to apply gamma correction and tone map from HDR to SDR.
 
-### Gbuffer breakdown
+### GBuffer breakdown
 
 The scene data is rendered in three textures :
 
 - Color(RGB) + Roughness(A) : RGBA8
-- Normals(RGB) + Metallness(A) : RGBA16
+- Normals(RGB) + Metalness(A) : RGBA16
 - Depth (32F) : DEPTH_32F
 
 ### PBR
@@ -39,7 +40,7 @@ The BRDF used is the same as Epic's Unreal Engine 4. Image Based Lighting is not
 
 ### Materials
 
-We use the roughness/metallic workflow. The materials are descibed as follows :
+We use the roughness/metallic workflow. The materials are described as follows :
 
 - Diffuse color (Color or Texture)
 - Roughness ([0.0..1.0] or Texture)
@@ -48,8 +49,8 @@ We use the roughness/metallic workflow. The materials are descibed as follows :
 
 ### Lights
 
-The renderder supports ambient, directional, point, and spot lights. Some area lights will be implemented (sphere and tube).
-The lights attenuation in computed using Epic's inverse square function.
+The renderer supports ambient, directional, point, and spot lights. Some area lights will be implemented (sphere and tube).
+The lights attenuation in computed using inverse square function as described in Epic's paper on their PBR implementation.
 
 ### Shadows
 
@@ -61,12 +62,13 @@ Basic shadow mapping is implemented. It only works for one directional light (Th
     - Game Objects with components(Mesh, Light, ...)
 - Rendering
     - Animations
-    - Sprites in 3D environment (particles, debug icons, ...)
+    - Sprites in 3D environment (debug icons, ...)
     - IBL
     - Area lights (sphere and tubes)
 - Review the Model/Mesh/Material model.
 - 2D scene
-- Assets managment
+- Assets management
+- Replace the custom obj loader 
 - OpenGL state manager
 - And much more... :)
 

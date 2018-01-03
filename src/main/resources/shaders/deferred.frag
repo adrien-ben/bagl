@@ -253,12 +253,6 @@ void main() {
             L0 += computeLight(light.point.base, attenuation*falloff, L, V, N, NdotV, F0, color, roughness, metallic);
 		}
 
-		//HDR
-		L0 = L0/(L0 + 1.0);
-
-		//Gamma correction
-		L0 = pow(L0, vec3(1.0/2.2));
-
 		gl_FragDepth = depthValue;
 		finalColor = vec4(L0, 1.0);
 	} 

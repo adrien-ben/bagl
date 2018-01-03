@@ -23,19 +23,17 @@ import java.util.Objects;
 import static org.lwjgl.opengl.GL11.*;
 
 /**
- * Deferred renderer.
+ * Deferred renderer
+ * <p>
+ * This renderer supports :
+ * <li>one or no skybox</li>
+ * <li>one shadow map for one directional light</li>
+ * <li>pbr rendering (no IBL yet)</li>
+ * <li>small post processing pass (gamma correction/tone mapping from HDR to SDR</li>
  *
+ * @author adrien
  */
 public class Renderer {
-
-    private static final String DEFERRED_FRAG_SHADER = "/deferred.frag";
-    private static final String DEFERRED_VERT_SHADER = "/deferred.vert";
-    private static final String SHADOW_FRAG_SHADER = "/shadow.frag";
-    private static final String SHADOW_VERT_SHADER = "/shadow.vert";
-    private static final String GBUFFER_FRAG_SHADER = "/gbuffer.frag";
-    private static final String GBUFFER_VERT_SHADER = "/gbuffer.vert";
-    private static final String SKYBOX_FRAG_SHADER = "/skybox.frag";
-    private static final String SKYBOX_VERT_SHADER = "/skybox.vert";
 
     private static final int SHADOW_MAP_SIZE = 1024;
 
@@ -51,12 +49,17 @@ public class Renderer {
     private boolean renderShadow;
     private final FrameBuffer shadowBuffer;
 
+    private final FrameBuffer finalBuffer;
+
     private Shader skyboxShader;
     private Shader shadowShader;
     private Shader gbufferShader;
     private Shader deferredShader;
+    private Shader postProcessShader;
 
-
+    /**
+     * Constructs the renderer
+     */
     public Renderer() {
         final Configuration config = Configuration.getInstance();
         this.xResolution = config.getXResolution();
@@ -69,6 +72,7 @@ public class Renderer {
         this.gbuffer = new FrameBuffer(this.xResolution, this.yResolution, new FrameBufferParameters()
                 .addColorOutput(Format.RGBA8).addColorOutput(Format.RGBA16F));
         this.shadowBuffer = new FrameBuffer(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
+        this.finalBuffer = new FrameBuffer(this.xResolution, this.yResolution, new FrameBufferParameters().addColorOutput(Format.RGBA32F));
 
         this.initShaders();
     }
@@ -78,11 +82,14 @@ public class Renderer {
      */
     public void destroy() {
         this.skyboxShader.destroy();
+        this.shadowShader.destroy();
         this.gbufferShader.destroy();
         this.deferredShader.destroy();
+        this.postProcessShader.destroy();
         this.gbuffer.destroy();
         this.shadowBuffer.destroy();
         this.vertexBuffer.destroy();
+        this.finalBuffer.destroy();
     }
 
     private void initFullScreenQuad() {
@@ -96,19 +103,21 @@ public class Renderer {
     }
 
     private void initShaders() {
-        this.skyboxShader = new Shader().addVertexShader(SKYBOX_VERT_SHADER).addFragmentShader(SKYBOX_FRAG_SHADER).compile();
-        this.shadowShader = new Shader().addVertexShader(SHADOW_VERT_SHADER).addFragmentShader(SHADOW_FRAG_SHADER).compile();
-        this.gbufferShader = new Shader().addVertexShader(GBUFFER_VERT_SHADER).addFragmentShader(GBUFFER_FRAG_SHADER).compile();
-        this.deferredShader = new Shader().addVertexShader(DEFERRED_VERT_SHADER).addFragmentShader(DEFERRED_FRAG_SHADER).compile();
+        this.skyboxShader = new Shader().addVertexShader("/skybox.vert").addFragmentShader("/skybox.frag").compile();
+        this.shadowShader = new Shader().addVertexShader("/shadow.vert").addFragmentShader("/shadow.frag").compile();
+        this.gbufferShader = new Shader().addVertexShader("/gbuffer.vert").addFragmentShader("/gbuffer.frag").compile();
+        this.deferredShader = new Shader().addVertexShader("/deferred.vert").addFragmentShader("/deferred.frag").compile();
+        this.postProcessShader = new Shader().addVertexShader("/post_process.vert").addFragmentShader("/post_process.frag").compile();
     }
 
     /**
      * <p>Renders a scene from the camera point of view.
-     * <p>First, if a skybox is present it is renderer the the default frame buffer.
+     * <p>First, if a skybox is present it is renderer to the default frame buffer.
      * Then, the shadow map is generated for the first available directional light
      * of the scene. After that, the scene is rendered to the gbuffer and finally,
      * the final scene is renderer.
-     * @param scene The scene to render.
+     *
+     * @param scene  The scene to render.
      * @param camera The camera view the scene.
      */
     public void render(Scene scene, Camera camera) {
@@ -116,12 +125,16 @@ public class Renderer {
         this.renderShadowMap(scene);
         this.renderScene(scene.getRoot(), camera);
         this.renderDeferred(scene, camera);
+        this.performPostProcessingPass();
     }
 
     private void renderSkybox(Skybox skybox, Camera camera) {
-        if(Objects.isNull(skybox)) {
+        if (Objects.isNull(skybox)) {
             return;
         }
+
+        this.finalBuffer.bind();
+        FrameBuffer.clear();
         skybox.getVertexBuffer().bind();
         skybox.getIndexBuffer().bind();
         skybox.getCubemap().bind();
@@ -136,13 +149,14 @@ public class Renderer {
         Cubemap.unbind();
         IndexBuffer.unbind();
         VertexBuffer.unbind();
+        FrameBuffer.unbind();
     }
 
     private void renderShadowMap(Scene scene) {
         this.renderShadow = !scene.getDirectionals().isEmpty();
-        if(this.renderShadow) {
+        if (this.renderShadow) {
             final Vector3 position = new Vector3(scene.getDirectionals().get(0).getDirection()).scale(-1);
-            Matrix4.mul(Matrix4.createOrthographic( -10, 10, -10, 10, 0.1f, 20),
+            Matrix4.mul(Matrix4.createOrthographic(-10, 10, -10, 10, 0.1f, 20),
                     Matrix4.createLookAt(position, new Vector3(), Vector3.UP), this.lightViewProj);
 
             glViewport(0, 0, SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
@@ -155,8 +169,6 @@ public class Renderer {
             Shader.unbind();
             FrameBuffer.unbind();
             glViewport(0, 0, this.xResolution, this.yResolution);
-
-            this.renderShadow = true;
         }
     }
 
@@ -180,7 +192,7 @@ public class Renderer {
     }
 
     private void renderSceneNode(SceneNode<Model> node, Camera camera) {
-        if(node.isEmpty()) {
+        if (node.isEmpty()) {
             return;
         }
 
@@ -213,6 +225,8 @@ public class Renderer {
 
     private void renderDeferred(Scene scene, Camera camera) {
 
+        this.finalBuffer.bind();
+
         final Light ambient = scene.getAmbient();
         final List<DirectionalLight> directionals = scene.getDirectionals();
         final List<PointLight> points = scene.getPoints();
@@ -228,24 +242,24 @@ public class Renderer {
         this.deferredShader.setUniform("uLights.ambient.intensity", ambient.getIntensity());
         this.deferredShader.setUniform("uLights.ambient.color", ambient.getColor());
         this.deferredShader.setUniform("uShadow.hasShadow", this.renderShadow);
-        if(this.renderShadow) {
+        if (this.renderShadow) {
             this.deferredShader.setUniform("uShadow.lightViewProj", this.lightViewProj);
             this.shadowBuffer.getDepthTexture().bind(3);
             this.deferredShader.setUniform("uShadow.shadowMap", 3);
         }
 
         this.deferredShader.setUniform("uLights.directionalCount", directionals.size());
-        for(int i = 0; i < directionals.size(); i++) {
+        for (int i = 0; i < directionals.size(); i++) {
             this.setDirectionalLight(this.deferredShader, i, directionals.get(i));
         }
 
         this.deferredShader.setUniform("uLights.pointCount", points.size());
-        for(int i = 0; i < points.size(); i++) {
+        for (int i = 0; i < points.size(); i++) {
             this.setPointLight(this.deferredShader, i, points.get(i));
         }
 
         this.deferredShader.setUniform("uLights.spotCount", spots.size());
-        for(int i = 0; i < spots.size(); i++) {
+        for (int i = 0; i < spots.size(); i++) {
             this.setSpotLight(this.deferredShader, i, spots.get(i));
         }
 
@@ -261,6 +275,7 @@ public class Renderer {
         Texture.unbind(1);
         Texture.unbind(2);
         Texture.unbind(3);
+        FrameBuffer.unbind();
     }
 
     private void setDirectionalLight(Shader shader, int index, DirectionalLight light) {
@@ -284,6 +299,18 @@ public class Renderer {
         shader.setUniform("uLights.spots[" + index + "].direction", light.getDirection());
         shader.setUniform("uLights.spots[" + index + "].cutOff", light.getCutOff());
         shader.setUniform("uLights.spots[" + index + "].outerCutOff", light.getOuterCutOff());
+    }
+
+    private void performPostProcessingPass() {
+        this.vertexBuffer.bind();
+        this.postProcessShader.bind();
+        this.finalBuffer.getColorTexture(0).bind();
+
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, this.vertexBuffer.getVertexCount());
+
+        Texture.unbind();
+        Shader.unbind();
+        VertexBuffer.unbind();
     }
 
     public FrameBuffer getShadowBuffer() {
