@@ -21,22 +21,21 @@ public class PostProcessor {
 
     private static final String POST_PROCESS_VERTEX_SHADER_FILE = "/post_process.vert";
 
-    private FrameBuffer frameBuffer;
+    private FrameBuffer bloomBuffer;
     private DoubleBuffer<FrameBuffer> blurBuffer;
 
-    private final Shader brightnessShader;
+    private final Shader bloomShader;
     private final Shader blurShader;
     private final Shader lastStageShader;
 
     private final VertexBuffer vertexBuffer;
 
     public PostProcessor(final int xResolution, final int yResolution) {
-        this.frameBuffer = new FrameBuffer(xResolution, yResolution,
-                new FrameBufferParameters().addColorOutput(Format.RGBA32F).addColorOutput(Format.RGBA32F));
+        this.bloomBuffer = new FrameBuffer(xResolution, yResolution, new FrameBufferParameters().addColorOutput(Format.RGBA32F));
         this.blurBuffer = new DoubleBuffer<>(
                 () -> new FrameBuffer(xResolution, yResolution, new FrameBufferParameters().addColorOutput(Format.RGBA32F)));
 
-        this.brightnessShader = new Shader().addVertexShader(POST_PROCESS_VERTEX_SHADER_FILE).addFragmentShader("/brightness.frag").compile();
+        this.bloomShader = new Shader().addVertexShader(POST_PROCESS_VERTEX_SHADER_FILE).addFragmentShader("/bloom.frag").compile();
         this.blurShader = new Shader().addVertexShader(POST_PROCESS_VERTEX_SHADER_FILE).addFragmentShader("/blur.frag").compile();
         this.lastStageShader = new Shader().addVertexShader(POST_PROCESS_VERTEX_SHADER_FILE).addFragmentShader("/post_process.frag").compile();
         this.vertexBuffer = this.initQuad();
@@ -55,9 +54,9 @@ public class PostProcessor {
      * Release resources
      */
     public void destroy() {
-        this.frameBuffer.destroy();
+        this.bloomBuffer.destroy();
         this.blurBuffer.apply(FrameBuffer::destroy);
-        this.brightnessShader.destroy();
+        this.bloomShader.destroy();
         this.blurShader.destroy();
         this.lastStageShader.destroy();
         this.vertexBuffer.destroy();
@@ -72,15 +71,15 @@ public class PostProcessor {
      */
     public void process(final Texture image) {
         this.vertexBuffer.bind();
-        this.performBrightnessPass(image);
-        this.performGaussianBlur(this.frameBuffer.getColorTexture(1));
-        this.performFinalPass();
+        this.performBloomPass(image);
+        this.performGaussianBlur(this.bloomBuffer.getColorTexture(0));
+        this.performFinalPass(image);
         VertexBuffer.unbind();
     }
 
-    private void performBrightnessPass(final Texture image) {
-        this.frameBuffer.bind();
-        this.brightnessShader.bind();
+    private void performBloomPass(final Texture image) {
+        this.bloomBuffer.bind();
+        this.bloomShader.bind();
         image.bind();
 
         FrameBuffer.clear();
@@ -92,7 +91,7 @@ public class PostProcessor {
         this.blurShader.bind();
         boolean horizontal = true;
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 10; i++, horizontal = !horizontal) {
             this.blurBuffer.getWriteBuffer().bind();
             FrameBuffer.clear();
             this.blurShader.setUniform("horizontal", horizontal);
@@ -105,7 +104,6 @@ public class PostProcessor {
 
             glDrawArrays(GL_TRIANGLE_STRIP, 0, this.vertexBuffer.getVertexCount());
 
-            horizontal = !horizontal;
             this.blurBuffer.swap();
         }
 
@@ -113,11 +111,11 @@ public class PostProcessor {
         Shader.unbind();
     }
 
-    private void performFinalPass() {
+    private void performFinalPass(final Texture baseImage) {
         this.lastStageShader.bind();
         this.lastStageShader.setUniform("image", 0);
         this.lastStageShader.setUniform("bloom", 1);
-        this.frameBuffer.getColorTexture(0).bind(0);
+        baseImage.bind(0);
         this.blurBuffer.getReadBuffer().getColorTexture(0).bind(1);
 
         glDrawArrays(GL_TRIANGLE_STRIP, 0, this.vertexBuffer.getVertexCount());
