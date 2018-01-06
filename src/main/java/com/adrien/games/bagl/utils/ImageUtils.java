@@ -25,6 +25,7 @@ public final class ImageUtils {
         if(data == null) {
             throw new EngineException("Failed to load image : '" + filePath + "'.");
         }
+        // FIXME : resource allocated by STBImage are not released !
         return new Image(width.get(), height.get(), comp.get(), data);
     }
 

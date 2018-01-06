@@ -13,9 +13,7 @@ import static org.lwjgl.opengl.GL12.GL_TEXTURE_WRAP_R;
 import static org.lwjgl.opengl.GL13.*;
 
 /**
- *
  * OpenGL cube map.
- *
  */
 public class Cubemap {
 
@@ -23,12 +21,13 @@ public class Cubemap {
 
     /**
      * Creates a new CubeMap from the different faces file path.
-     * @param left The path to the file containing the left face.
-     * @param right The path to the file containing the right face.
+     *
+     * @param left   The path to the file containing the left face.
+     * @param right  The path to the file containing the right face.
      * @param bottom The path to the file containing the bottom face.
-     * @param top The path to the file containing the top face.
-     * @param back The path to the file containing the back face.
-     * @param front The path to the file containing the front face.
+     * @param top    The path to the file containing the top face.
+     * @param back   The path to the file containing the back face.
+     * @param front  The path to the file containing the front face.
      */
     public Cubemap(String left, String right, String bottom, String top, String back, String front) {
         this.handle = glGenTextures();
@@ -56,10 +55,17 @@ public class Cubemap {
         IntBuffer comp = BufferUtils.createIntBuffer(1);
         STBImage.stbi_set_flip_vertically_on_load(false);
         ByteBuffer image = STBImage.stbi_load(path, width, height, comp, 3);
-        if(image == null) {
+        if (image == null) {
             throw new EngineException("Failed to load a face from the cubemap : '" + path + "'.");
         }
         glTexImage2D(target, 0, GL_RGB8, width.get(), height.get(), 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+    }
+
+    /**
+     * Release resources.
+     */
+    public void destroy() {
+        glDeleteTextures(this.handle);
     }
 
     /**
@@ -75,13 +81,6 @@ public class Cubemap {
      */
     public static void unbind() {
         glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-    }
-
-    /**
-     * Release resources.
-     */
-    public void destroy() {
-        glDeleteTextures(this.handle);
     }
 
 }

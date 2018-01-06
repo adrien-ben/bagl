@@ -140,7 +140,7 @@ public class Renderer {
         FrameBuffer.clear();
         skybox.getVertexBuffer().bind();
         skybox.getIndexBuffer().bind();
-        skybox.getCubemap().bind();
+        skybox.getEnvironmentMap().bind();
         this.skyboxShader.bind();
         this.skyboxShader.setUniform("viewProj", camera.getViewProjAtOrigin());
 

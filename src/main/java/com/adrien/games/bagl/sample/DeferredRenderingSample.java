@@ -72,7 +72,7 @@ public class DeferredRenderingSample {
             Input.setMouseMode(MouseMode.DISABLED);
 
             this.camera = new Camera(new Vector3(5f, 4f, 6f), new Vector3(-5f, -4f, -6f), new Vector3(Vector3.UP),
-                    (float)Math.toRadians(60f), (float)this.width/(float)this.height, 0.1f, 1000);
+                    (float) Math.toRadians(60f), (float) this.width / (float) this.height, 0.1f, 1000);
             this.cameraController = new CameraController(this.camera);
 
             this.spritebatch = new Spritebatch(1024, this.width, this.height);
@@ -93,12 +93,7 @@ public class DeferredRenderingSample {
         }
 
         private void loadMeshes() {
-            this.skybox = new Skybox(FileUtils.getResourceAbsolutePath("/skybox/left.png"),
-                    FileUtils.getResourceAbsolutePath("/skybox/right.png"),
-                    FileUtils.getResourceAbsolutePath("/skybox/bottom.png"),
-                    FileUtils.getResourceAbsolutePath("/skybox/top.png"),
-                    FileUtils.getResourceAbsolutePath("/skybox/back.png"),
-                    FileUtils.getResourceAbsolutePath("/skybox/front.png"));
+            this.skybox = new Skybox(FileUtils.getResourceAbsolutePath("/envmaps/beach.hdr"));
             this.scene.setSkybox(this.skybox);
 
             this.floor = MeshFactory.fromResourceFile("/models/floor/floor.obj");
@@ -137,19 +132,19 @@ public class DeferredRenderingSample {
         public void update(Time time) {
             this.scene.getRoot().getChildren().forEach(meshSceneNode ->
                     meshSceneNode.getLocalTransform().getRotation().mul(Quaternion.fromAngleAndVector(
-                    (float) Math.toRadians(10 * time.getElapsedTime()), Vector3.UP)));
+                            (float) Math.toRadians(10 * time.getElapsedTime()), Vector3.UP)));
 
-            if(Input.isKeyPressed(GLFW.GLFW_KEY_1) || Input.isKeyPressed(GLFW.GLFW_KEY_2)) {
+            if (Input.isKeyPressed(GLFW.GLFW_KEY_1) || Input.isKeyPressed(GLFW.GLFW_KEY_2)) {
                 float speed = Input.isKeyPressed(GLFW.GLFW_KEY_1) ? 20 : -20;
                 this.scene.getDirectionals().get(0).getDirection().transform(Matrix4.createRotation(Quaternion.fromAngleAndVector(
-                        (float)Math.toRadians(speed*time.getElapsedTime()), new Vector3(1f, 1f, 0f).normalise())), 0);
+                        (float) Math.toRadians(speed * time.getElapsedTime()), new Vector3(1f, 1f, 0f).normalise())), 0);
             }
 
-            if(Input.isKeyPressed(GLFW.GLFW_KEY_G) && !this.isKeyPressed) {
+            if (Input.isKeyPressed(GLFW.GLFW_KEY_G) && !this.isKeyPressed) {
                 this.displayGBuffer = !this.displayGBuffer;
                 this.isKeyPressed = true;
             }
-            if(!Input.isKeyPressed(GLFW.GLFW_KEY_G) && this.isKeyPressed) {
+            if (!Input.isKeyPressed(GLFW.GLFW_KEY_G) && this.isKeyPressed) {
                 this.isKeyPressed = false;
             }
 
@@ -162,13 +157,13 @@ public class DeferredRenderingSample {
             if (this.displayGBuffer) {
                 this.spritebatch.start();
                 this.spritebatch.draw(this.renderer.getGBuffer().getDepthTexture(),
-                        new Vector2(4*this.width/5, 2*this.height/5), this.width/5, this.height/5);
+                        new Vector2(4 * this.width / 5, 2 * this.height / 5), this.width / 5, this.height / 5);
                 this.spritebatch.draw(this.renderer.getGBuffer().getColorTexture(0),
-                        new Vector2(4*this.width/5, 0), this.width/5, this.height/5);
+                        new Vector2(4 * this.width / 5, 0), this.width / 5, this.height / 5);
                 this.spritebatch.draw(this.renderer.getGBuffer().getColorTexture(1),
-                        new Vector2(4*this.width/5, this.height/5), this.width/5, this.height/5);
+                        new Vector2(4 * this.width / 5, this.height / 5), this.width / 5, this.height / 5);
                 this.spritebatch.draw(this.renderer.getShadowBuffer().getDepthTexture(),
-                        new Vector2(4*this.width/5, 3*this.height/5), this.width/5, this.width/5);
+                        new Vector2(4 * this.width / 5, 3 * this.height / 5), this.width / 5, this.width / 5);
                 this.spritebatch.end();
             }
             this.textRenderer.render(INSTRUCTIONS, this.font, new Vector2(0.01f, 0.97f), 0.03f, Color.RED);
@@ -176,7 +171,7 @@ public class DeferredRenderingSample {
 
     }
 
-    public static void main(String [] args) {
+    public static void main(String[] args) {
         new Engine(new TestGame(), TestGame.TITLE).start();
     }
 
