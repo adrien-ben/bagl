@@ -16,5 +16,5 @@ vec2 sampleShericalMap(vec3 position) {
 void main() {
     vec2 uv = sampleShericalMap(normalize(passPosition));
     vec3 color = texture2D(equirectangularMap, uv).rgb;
-	finalColor = vec4(pow(color, vec3(2.2)), 1.0);
+	finalColor = vec4(color, 1.0);
 }
