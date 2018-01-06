@@ -30,7 +30,7 @@ import static org.lwjgl.opengl.GL11.*;
  * <li>one or no skybox</li>
  * <li>one shadow map for one directional light</li>
  * <li>pbr rendering (no IBL yet)</li>
- * <li>small post processing pass (gamma correction/tone mapping from HDR to SDR</li>
+ * <li>small post processing pass (bloom/gamma correction/tone mapping from HDR to SDR</li>
  *
  * @author adrien
  */
@@ -107,10 +107,10 @@ public class Renderer {
     }
 
     private void initShaders() {
-        this.skyboxShader = new Shader().addVertexShader("/skybox.vert").addFragmentShader("/skybox.frag").compile();
-        this.shadowShader = new Shader().addVertexShader("/shadow.vert").addFragmentShader("/shadow.frag").compile();
-        this.gBufferShader = new Shader().addVertexShader("/gbuffer.vert").addFragmentShader("/gbuffer.frag").compile();
-        this.deferredShader = new Shader().addVertexShader("/deferred.vert").addFragmentShader("/deferred.frag").compile();
+        this.skyboxShader = new Shader().addVertexShader("/skybox/skybox.vert").addFragmentShader("/skybox/skybox.frag").compile();
+        this.shadowShader = new Shader().addVertexShader("/shadow/shadow.vert").addFragmentShader("/shadow/shadow.frag").compile();
+        this.gBufferShader = new Shader().addVertexShader("/deferred/gbuffer.vert").addFragmentShader("/deferred/gbuffer.frag").compile();
+        this.deferredShader = new Shader().addVertexShader("/deferred/deferred.vert").addFragmentShader("/deferred/deferred.frag").compile();
     }
 
     /**

@@ -19,49 +19,41 @@ import java.util.*;
 
 /**
  * Renders particles using OpenGL geometry shaders.
- *
  */
 public class ParticleRenderer {
-
-
-    private static final String HAS_TEXTURE_UNIFORM = "hasTexture";
-    private static final String VIEW_PROJ_UNIFORM = "camera.viewProj";
-    private static final String VIEW_UNIFORM = "camera.view";
-    private static final String PARTICLES_GEOMETRY_SHADER = "particles.geom";
-    private static final String PARTICLES_FRAGMENT_SHADER = "particles.frag";
-    private static final String PARTICLES_VERTEX_SHADER = "particles.vert";
 
     private static final ParticleComparator COMPARATOR = new ParticleComparator();
 
     private final Shader shader;
-    private final VertexBuffer vbuffer;
+    private final VertexBuffer vBuffer;
     private final ParticleVertex[] vertices;
     private final List<Particle> particlesToRender;
     private final Time timer;
 
     public ParticleRenderer() {
         this.shader = new Shader()
-                .addVertexShader(PARTICLES_VERTEX_SHADER)
-                .addFragmentShader(PARTICLES_FRAGMENT_SHADER)
-                .addGeometryShader(PARTICLES_GEOMETRY_SHADER)
+                .addVertexShader("/particles/particles.vert")
+                .addFragmentShader("/particles/particles.frag")
+                .addGeometryShader("/particles/particles.geom")
                 .compile();
 
         this.vertices = new ParticleVertex[ParticleEmitter.MAX_PARTICLE_COUNT];
-        for(int i = 0; i < ParticleEmitter.MAX_PARTICLE_COUNT; i++) {
+        for (int i = 0; i < ParticleEmitter.MAX_PARTICLE_COUNT; i++) {
             this.vertices[i] = new ParticleVertex(new Vector3(), Color.WHITE, 1f);
         }
-        this.vbuffer = new VertexBuffer(ParticleVertex.getDescription(), BufferUsage.STREAM_DRAW, this.vertices);
+        this.vBuffer = new VertexBuffer(ParticleVertex.getDescription(), BufferUsage.STREAM_DRAW, this.vertices);
         this.particlesToRender = new ArrayList<>();
         this.timer = new Time();
     }
 
     /**
      * Renders all particles owned by the passed in {@link ParticleEmitter} from
-     * a {@link Camera} point of wiew.
+     * a {@link Camera} point of view.
+     *
      * @param emitter The emitter to render.
-     * @param camera The camera.
+     * @param camera  The camera.
      */
-    public void render(ParticleEmitter emitter, Camera camera) {
+    public void render(final ParticleEmitter emitter, final Camera camera) {
         int particleToRender = 0;
 
         this.timer.update();
@@ -69,7 +61,7 @@ public class ParticleRenderer {
         Arrays.stream(emitter.getParticles()).filter(Particle::isAlive).forEach(this.particlesToRender::add);
         System.out.println("Retrieving active particles: " + this.timer.getElapsedTime());
 
-        if(emitter.getBlendMode() != BlendMode.ADDITIVE) {
+        if (emitter.getBlendMode() != BlendMode.ADDITIVE) {
             this.timer.update();
             COMPARATOR.setCamera(camera);
             this.particlesToRender.sort(COMPARATOR);
@@ -77,7 +69,7 @@ public class ParticleRenderer {
         }
 
         this.timer.update();
-        for(Particle p : this.particlesToRender) {
+        for (Particle p : this.particlesToRender) {
             final ParticleVertex particleVertex = this.vertices[particleToRender];
             particleVertex.position = p.getPosition();
             particleVertex.color = p.getColor();
@@ -88,18 +80,18 @@ public class ParticleRenderer {
 
         boolean hasTexture;
         final Optional<Texture> texture = emitter.getTexture();
-        if(hasTexture = texture.isPresent()) {
+        if (hasTexture = texture.isPresent()) {
             texture.get().bind();
         }
 
         this.shader.bind();
-        this.shader.setUniform(HAS_TEXTURE_UNIFORM, hasTexture);
-        this.shader.setUniform(VIEW_UNIFORM, camera.getView());
-        this.shader.setUniform(VIEW_PROJ_UNIFORM, camera.getViewProj());
-        this.vbuffer.bind();
+        this.shader.setUniform("hasTexture", hasTexture);
+        this.shader.setUniform("camera.view", camera.getView());
+        this.shader.setUniform("camera.viewProj", camera.getViewProj());
+        this.vBuffer.bind();
 
         this.timer.update();
-        this.vbuffer.setData(this.vertices, particleToRender);
+        this.vBuffer.setData(this.vertices, particleToRender);
         System.out.println("Copying data to gpu : " + this.timer.getElapsedTime());
 
         Engine.setBlendMode(emitter.getBlendMode());
@@ -117,14 +109,16 @@ public class ParticleRenderer {
         Texture.unbind();
     }
 
+    /**
+     * Release resources
+     */
     public void destroy() {
         this.shader.destroy();
-        this.vbuffer.destroy();
+        this.vBuffer.destroy();
     }
 
     /**
      * Particle vertex class.
-     *
      */
     private static class ParticleVertex implements Vertex {
 
@@ -132,7 +126,7 @@ public class ParticleRenderer {
         private Color color;
         private float size;
 
-        ParticleVertex(Vector3 position, Color color, float size) {
+        ParticleVertex(final Vector3 position, final Color color, final float size) {
             this.position = position;
             this.color = color;
             this.size = size;
@@ -140,13 +134,17 @@ public class ParticleRenderer {
 
         @Override
         public float[] getData() {
-            return new float[] {this.position.getX(), this.position.getY(), this.position.getZ(), this.color.getRed(),
+            return new float[]{this.position.getX(), this.position.getY(), this.position.getZ(), this.color.getRed(),
                     this.color.getGreen(), this.color.getBlue(), this.color.getAlpha(), this.size};
         }
 
         public static VertexDescription getDescription() {
-            return new VertexDescription(new VertexElement[]{ new VertexElement(0, 3, 0), new VertexElement(1, 4, 3),
-                    new VertexElement(2, 1, 7)});
+            return new VertexDescription(new VertexElement[]
+                    {
+                            new VertexElement(0, 3, 0),
+                            new VertexElement(1, 4, 3),
+                            new VertexElement(2, 1, 7)
+                    });
         }
 
     }
@@ -162,15 +160,15 @@ public class ParticleRenderer {
         private final Vector3 v1 = new Vector3();
 
         @Override
-        public int compare(Particle p0, Particle p1) {
+        public int compare(final Particle p0, final Particle p1) {
             Vector3.sub(p0.getPosition(), camera.getPosition(), v0);
             Vector3.sub(p1.getPosition(), camera.getPosition(), v1);
-            float dist0 = v0.squareLength();
-            float dist1 = v1.squareLength();
-            return (int)(dist1 - dist0);
+            final float dist0 = v0.squareLength();
+            final float dist1 = v1.squareLength();
+            return (int) (dist1 - dist0);
         }
 
-        public void setCamera(Camera camera) {
+        public void setCamera(final Camera camera) {
             this.camera = camera;
         }
 

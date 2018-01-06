@@ -19,8 +19,6 @@ import java.util.Objects;
  */
 public class TextRenderer {
 
-    private static final String TEXT_VERTEX_SHADER = "text.vert";
-    private static final String TEXT_FRAGMENT_SHADER = "text.frag";
     private static final int MAX_TEXT_LENGTH = 1000;
     private static final int VERTEX_PER_CHAR = 4;
     private static final int INDEX_PER_CHAR = 6;
@@ -41,7 +39,7 @@ public class TextRenderer {
         this.indexBuffer = initIndexBuffer();
 
         this.configuration = Configuration.getInstance();
-        this.shader = new Shader().addVertexShader(TEXT_VERTEX_SHADER).addFragmentShader(TEXT_FRAGMENT_SHADER).compile();
+        this.shader = new Shader().addVertexShader("/ui/text.vert").addFragmentShader("/ui/text.frag").compile();
     }
 
     private static TextVertex[] initVertices() {

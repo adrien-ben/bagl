@@ -19,7 +19,7 @@ import static org.lwjgl.opengl.GL11.glDrawArrays;
  */
 public class PostProcessor {
 
-    private static final String POST_PROCESS_VERTEX_SHADER_FILE = "/post_process.vert";
+    private static final String POST_PROCESS_VERTEX_SHADER_FILE = "/post/post_process.vert";
 
     private FrameBuffer bloomBuffer;
     private DoubleBuffer<FrameBuffer> blurBuffer;
@@ -35,9 +35,9 @@ public class PostProcessor {
         this.blurBuffer = new DoubleBuffer<>(
                 () -> new FrameBuffer(xResolution, yResolution, new FrameBufferParameters().addColorOutput(Format.RGBA32F)));
 
-        this.bloomShader = new Shader().addVertexShader(POST_PROCESS_VERTEX_SHADER_FILE).addFragmentShader("/bloom.frag").compile();
-        this.blurShader = new Shader().addVertexShader(POST_PROCESS_VERTEX_SHADER_FILE).addFragmentShader("/blur.frag").compile();
-        this.lastStageShader = new Shader().addVertexShader(POST_PROCESS_VERTEX_SHADER_FILE).addFragmentShader("/post_process.frag").compile();
+        this.bloomShader = new Shader().addVertexShader(POST_PROCESS_VERTEX_SHADER_FILE).addFragmentShader("/post/bloom.frag").compile();
+        this.blurShader = new Shader().addVertexShader(POST_PROCESS_VERTEX_SHADER_FILE).addFragmentShader("/post/blur.frag").compile();
+        this.lastStageShader = new Shader().addVertexShader(POST_PROCESS_VERTEX_SHADER_FILE).addFragmentShader("/post/post_process.frag").compile();
         this.vertexBuffer = this.initQuad();
     }
 

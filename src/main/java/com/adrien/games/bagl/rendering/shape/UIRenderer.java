@@ -38,7 +38,7 @@ public class UIRenderer {
         this.bufferedCount = 0;
         this.vertexBuffer = MemoryUtil.memAllocFloat(BUFFER_SIZE * VERTICES_PER_SHAPE * ELEMENT_PER_VERTEX);
         this.indexBuffer = MemoryUtil.memAllocInt(BUFFER_SIZE * INDICES_PER_SHAPE);
-        this.shader = new Shader().addVertexShader("shape.vert").addFragmentShader("shape.frag").compile();
+        this.shader = new Shader().addVertexShader("/ui/shape.vert").addFragmentShader("/ui/shape.frag").compile();
 
         this.vao = GL30.glGenVertexArrays();
         GL30.glBindVertexArray(this.vao);

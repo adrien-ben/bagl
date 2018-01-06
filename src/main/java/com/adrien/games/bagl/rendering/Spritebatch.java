@@ -27,8 +27,6 @@ public class Spritebatch {
     private static final int VERTICES_PER_SPRITE = 4;
     private static final int INDICES_PER_SPRITE = 6;
     private static final float HALF_PIXEL_SIZE = 0.5f;
-    private static final String SPRITE_VERTEX_SHADER = "sprite.vert";
-    private static final String SPRITE_FRAGMENT_SHADER = "sprite.frag";
 
     private final Camera2D camera;
     private final Shader spriteShader;
@@ -51,7 +49,7 @@ public class Spritebatch {
      */
     public Spritebatch(final int size, final int width, final int height) {
         this.camera = new Camera2D(new Vector2(width / 2, height / 2), width, height);
-        this.spriteShader = new Shader().addVertexShader(SPRITE_VERTEX_SHADER).addFragmentShader(SPRITE_FRAGMENT_SHADER).compile();
+        this.spriteShader = new Shader().addVertexShader("/sprite/sprite.vert").addFragmentShader("/sprite/sprite.frag").compile();
         this.size = size < MAX_SIZE ? size : MAX_SIZE;
         this.vertexBuffer = new VertexBuffer(VertexPositionColorTexture.DESCRIPTION, BufferUsage.DYNAMIC_DRAW, this.size * VERTICES_PER_SPRITE);
         this.vertices = this.initVertices(this.size);
