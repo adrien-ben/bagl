@@ -20,6 +20,9 @@ import static org.lwjgl.opengl.GL30.*;
  * <br>When the frame buffer is bound OpenGL will render into this frame buffer. If no frame buffer
  * is bound OpenGL will then render in the default frame buffer.
  *
+ * TODO: Allow the use of render buffer attachments alongside texture, this is useful when you don't need to read from one of the channel
+ * TODO:    for example id tou need depth testing but wont read yourself the depth data
+ *
  * @author Adrien
  *
  */
