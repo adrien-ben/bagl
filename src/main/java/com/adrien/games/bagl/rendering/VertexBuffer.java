@@ -9,7 +9,7 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 
 /**
- * OpengGL vertex buffer.
+ * OpenGL vertex buffer.
  *
  */
 public final class VertexBuffer {

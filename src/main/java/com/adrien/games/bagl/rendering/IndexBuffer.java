@@ -3,7 +3,7 @@ package com.adrien.games.bagl.rendering;
 import org.lwjgl.opengl.GL15;
 
 /**
- * OpengGL index buffer.
+ * OpenGL index buffer.
  *
  */
 public final class IndexBuffer {

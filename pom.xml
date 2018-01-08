@@ -6,7 +6,7 @@
     <artifactId>bagl</artifactId>
     <version>0.1-SNAPSHOT</version>
     <name>BAGL</name>
-    <description>OpengGL framework that I use for educational purpose.</description>
+    <description>OpenGL framework that I use for educational purpose.</description>
 
     <properties>
         <!-- Dependencies versions -->
