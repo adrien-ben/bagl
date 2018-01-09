@@ -8,6 +8,7 @@ import com.adrien.games.bagl.rendering.texture.TextureParameters;
 import com.adrien.games.bagl.rendering.texture.Wrap;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.stream.IntStream;
 
 import static org.lwjgl.opengl.GL11.*;
@@ -32,9 +33,8 @@ public class FrameBuffer {
     private final int handle;
     private final int width;
     private final int height;
-    private boolean depthOnly;
     private Texture[] colorOutputs;
-    private final Texture depthTexture;
+    private Texture depthTexture;
 
     /**
      * Create a new {@link FrameBuffer}. This is a depth only frame buffer
@@ -56,10 +56,10 @@ public class FrameBuffer {
     public FrameBuffer(final int width, final int height, final FrameBufferParameters parameters) {
         this.width = width;
         this.height = height;
-        this.depthOnly = parameters.getColorOutputs().size() == 0;
-        this.colorOutputs = this.depthOnly ? null : this.createColorOutputs(parameters, this.width, this.height);
-        this.depthTexture = new Texture(this.width, this.height, new TextureParameters().format(parameters.getDepthTextureFormat()));
-        this.handle = this.createBuffer(this.colorOutputs, this.depthOnly, this.depthTexture);
+        this.colorOutputs = parameters.getColorOutputs().isEmpty() ? null : this.createColorOutputs(parameters, this.width, this.height);
+        this.depthTexture = parameters.hadDepth() ?
+                new Texture(this.width, this.height, new TextureParameters().format(parameters.getDepthTextureFormat())) : null;
+        this.handle = this.createBuffer(this.colorOutputs, this.depthTexture);
     }
 
     private Texture[] createColorOutputs(final FrameBufferParameters parameters, final int width, final int height) {
@@ -77,25 +77,26 @@ public class FrameBuffer {
      * the color buffer textures and the depth render buffer. If
      * the frame buffer is depth only, only depth texture is attached
      *
-     * @param textures  The textures to use as color outputs
-     * @param depthOnly Is the frame buffer depth only
-     * @param depth     The depth texture
+     * @param textures The textures to use as color outputs
+     * @param depth    The depth texture
      * @return The handle of the OpenGL frame buffer
      */
-    private int createBuffer(final Texture[] textures, final boolean depthOnly, final Texture depth) {
+    private int createBuffer(final Texture[] textures, final Texture depth) {
         final int bufferHandle = glGenFramebuffers();
         glBindFramebuffer(GL_FRAMEBUFFER, bufferHandle);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth.getHandle(), 0);
-        if (!depthOnly) {
+        glDrawBuffer(GL_NONE);
+
+        if (Objects.nonNull(depth)) {
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth.getHandle(), 0);
+        }
+
+        if (Objects.nonNull(textures)) {
             for (int i = 0; i < textures.length; i++) {
                 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, textures[i].getHandle(), 0);
             }
             this.enableAllColorOutputs();
-        } else {
-            glDrawBuffer(GL_NONE);
-            // TODO: check glReadBuffer behavior
-            //            glReadBuffer(GL_NONE);
         }
+
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         return bufferHandle;
     }
@@ -106,7 +107,7 @@ public class FrameBuffer {
      * @param channels The channels of the outputs (0 for the first channel)
      * @throws EngineException if the frame buffer is not bound
      */
-    public void enableColorOutputs(int... channels) {
+    public void enableColorOutputs(final int... channels) {
         if (!this.isBound()) {
             throw new EngineException("You cannot enable color outputs on a frame buffer that is not currently bound");
         }
@@ -206,20 +207,20 @@ public class FrameBuffer {
             this.unbind();
         }
 
-        if (!this.depthOnly) {
+        if (Objects.nonNull(this.colorOutputs)) {
             Arrays.stream(this.colorOutputs).forEach(Texture::destroy);
         }
-        this.depthTexture.destroy();
+
+        if (Objects.nonNull(this.depthTexture)) {
+            this.depthTexture.destroy();
+        }
+
         glDeleteFramebuffers(this.handle);
     }
 
-    public Texture getColorTexture() {
-        return this.getColorTexture(0);
-    }
-
     public Texture getColorTexture(final int index) {
-        if (this.depthOnly) {
-            throw new EngineException("This frame buffer is depth only. Color textures should not be queried");
+        if (Objects.isNull(this.colorOutputs)) {
+            throw new EngineException("This frame buffer has no color outputs");
         }
         return this.colorOutputs[index];
     }
@@ -237,6 +238,9 @@ public class FrameBuffer {
     }
 
     public Texture getDepthTexture() {
+        if (Objects.isNull(this.depthTexture)) {
+            throw new EngineException("This frame buffer has no depth texture");
+        }
         return this.depthTexture;
     }
 }

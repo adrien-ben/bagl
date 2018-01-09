@@ -48,6 +48,7 @@ struct SpotLight {
 
 
 struct Lights {
+    samplerCube irradiance;
     Light ambient;
     DirectionalLight directionals[MAX_DIR_LIGHTS];
     int directionalCount;
@@ -83,6 +84,21 @@ vec4 positionFromDepth(float depth) {
 vec3 fresnel(float cosTheta, vec3 F0) {
     float powValue = (-5.55473*cosTheta - 6.98316)*cosTheta;
     return F0 + (1.0 - F0)*pow(2, powValue);
+}
+
+/**
+ * Computes the fresnel factor of the BRDF. This is Epic's version of the Schlick implementation.
+ * This is a hacked version of the fresnel function taking into account the roughness of the surface.
+ * It is used when computing the diffuse part of the ambient light since their is no halfway vector.
+ *
+ * @param cosTheta The angle between the half vector and the view vector.
+ * @param F0 Base reflexivity of the material.
+ * @param roughness Roughness of the surface
+ * @return Reflected light factor.
+ */
+vec3 fresnel(float cosTheta, vec3 F0, float roughness) {
+    float powValue = (-5.55473*cosTheta - 6.98316)*cosTheta;
+    return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(2, powValue);
 }
 
 /**
@@ -183,7 +199,7 @@ void main() {
 		float roughness = colorRoughness.a;
 		float metallic = normalMetallic.a;
 
-        vec3 L0 = uLights.ambient.color.rgb*uLights.ambient.intensity*color;
+        vec3 L0 = vec3(0.0);
 
         //View vector
         vec3 V = normalize(uCamera.position - position.xyz);
@@ -193,6 +209,11 @@ void main() {
 
         //base reflexivity
         vec3 F0 = mix(vec3(0.04), color, metallic);
+
+        //Ambient term
+        vec3 kD = 1.0 - fresnel(max(dot(N, V), 0.0), F0, roughness);
+        vec3 irradiance = texture(uLights.irradiance, N).rgb;
+        vec3 ambient = kD * irradiance * color;
 
 		//directional lights
 		int directionalCount = min(uLights.directionalCount, MAX_DIR_LIGHTS);
@@ -254,6 +275,6 @@ void main() {
 		}
 
 		gl_FragDepth = depthValue;
-		finalColor = vec4(L0, 1.0);
+		finalColor = vec4(ambient + L0, 1.0);
 	} 
 }

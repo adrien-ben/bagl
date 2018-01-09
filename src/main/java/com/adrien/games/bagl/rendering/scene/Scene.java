@@ -2,7 +2,7 @@ package com.adrien.games.bagl.rendering.scene;
 
 import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.rendering.Model;
-import com.adrien.games.bagl.rendering.Skybox;
+import com.adrien.games.bagl.rendering.environment.EnvironmentMap;
 import com.adrien.games.bagl.rendering.light.DirectionalLight;
 import com.adrien.games.bagl.rendering.light.Light;
 import com.adrien.games.bagl.rendering.light.PointLight;
@@ -10,16 +10,19 @@ import com.adrien.games.bagl.rendering.light.SpotLight;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
- * 3D scene.
+ * 3D scene
  *
+ * @author adrien
  */
 public class Scene {
 
     private final SceneNode<Model> root;
 
-    private Skybox skybox;
+    private EnvironmentMap environmentMap;
+    private EnvironmentMap irradianceMap;
 
     private Light ambient;
     private final List<DirectionalLight> directionals;
@@ -28,26 +31,35 @@ public class Scene {
 
     public Scene() {
         this.root = new SceneNode<>();
-        this.skybox = null;
+        this.environmentMap = null;
+        this.irradianceMap = null;
         this.ambient = new Light(1f, Color.WHITE);
         this.directionals = new ArrayList<>();
         this.points = new ArrayList<>();
         this.spots = new ArrayList<>();
     }
 
-    public Skybox getSkybox() {
-        return skybox;
+    public Optional<EnvironmentMap> getEnvironmentMap() {
+        return Optional.ofNullable(this.environmentMap);
     }
 
-    public void setSkybox(Skybox skybox) {
-        this.skybox = skybox;
+    public void setEnvironmentMap(final EnvironmentMap environmentMap) {
+        this.environmentMap = environmentMap;
+    }
+
+    public Optional<EnvironmentMap> getIrradianceMap() {
+        return Optional.ofNullable(this.irradianceMap);
+    }
+
+    public void setIrradianceMap(final EnvironmentMap irradianceMap) {
+        this.irradianceMap = irradianceMap;
     }
 
     public Light getAmbient() {
         return ambient;
     }
 
-    public void setAmbient(Light ambient) {
+    public void setAmbient(final Light ambient) {
         this.ambient = ambient;
     }
 
@@ -66,5 +78,4 @@ public class Scene {
     public List<SpotLight> getSpots() {
         return spots;
     }
-
 }

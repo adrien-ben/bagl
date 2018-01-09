@@ -7,8 +7,9 @@ import com.adrien.games.bagl.core.math.Vector2;
 import com.adrien.games.bagl.core.math.Vector3;
 import com.adrien.games.bagl.rendering.Model;
 import com.adrien.games.bagl.rendering.Renderer;
-import com.adrien.games.bagl.rendering.Skybox;
 import com.adrien.games.bagl.rendering.Spritebatch;
+import com.adrien.games.bagl.rendering.environment.EnvironmentMap;
+import com.adrien.games.bagl.rendering.environment.EnvironmentMapGenerator;
 import com.adrien.games.bagl.rendering.light.DirectionalLight;
 import com.adrien.games.bagl.rendering.light.Light;
 import com.adrien.games.bagl.rendering.light.PointLight;
@@ -37,11 +38,13 @@ public class DeferredRenderingSample {
 
         private TextRenderer textRenderer;
         private Renderer renderer;
+        private EnvironmentMapGenerator environmentMapGenerator;
 
         private Font font;
 
         private Scene scene;
-        private Skybox skybox;
+        private EnvironmentMap environmentMap;
+        private EnvironmentMap irradianceMap;
         private Model floor;
         private Model cube;
         private Model tree;
@@ -61,6 +64,7 @@ public class DeferredRenderingSample {
 
             this.textRenderer = new TextRenderer();
             this.renderer = new Renderer();
+            this.environmentMapGenerator = new EnvironmentMapGenerator();
 
             this.font = new Font(FileUtils.getResourceAbsolutePath("/fonts/segoe/segoe.fnt"));
 
@@ -85,20 +89,25 @@ public class DeferredRenderingSample {
         public void destroy() {
             this.textRenderer.destroy();
             this.renderer.destroy();
+            this.environmentMapGenerator.destroy();
             this.font.destroy();
-            this.skybox.destroy();
+            this.environmentMap.destroy();
+            this.irradianceMap.destroy();
             this.floor.destroy();
             this.cube.destroy();
             this.tree.destroy();
         }
 
         private void loadMeshes() {
-            this.skybox = new Skybox(FileUtils.getResourceAbsolutePath("/envmaps/beach.hdr"));
-            this.scene.setSkybox(this.skybox);
+            this.environmentMap = this.environmentMapGenerator.generate(FileUtils.getResourceAbsolutePath("/envmaps/flat.hdr"));
+            this.irradianceMap = this.environmentMapGenerator.generateConvolution(this.environmentMap);
+
+            this.scene.setEnvironmentMap(this.environmentMap);
+            this.scene.setIrradianceMap(this.irradianceMap);
 
             this.floor = MeshFactory.fromResourceFile("/models/floor/floor.obj");
             this.cube = MeshFactory.fromResourceFile("/models/cube/cube.obj");
-//            this.cube = MeshFactory.fromFile("D:/Documents/3D Models/sphere/sphere.obj");
+//            this.cube = MeshFactory.fromFile("D:/Documents/3D Models/sponza/sponza.obj");
             this.tree = MeshFactory.fromResourceFile("/models/tree/tree.obj");
         }
 
@@ -129,7 +138,7 @@ public class DeferredRenderingSample {
         }
 
         @Override
-        public void update(Time time) {
+        public void update(final Time time) {
             this.scene.getRoot().getChildren().forEach(meshSceneNode ->
                     meshSceneNode.getLocalTransform().getRotation().mul(Quaternion.fromAngleAndVector(
                             (float) Math.toRadians(10 * time.getElapsedTime()), Vector3.UP)));

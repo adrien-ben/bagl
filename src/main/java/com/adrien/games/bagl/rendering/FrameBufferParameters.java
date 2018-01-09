@@ -6,21 +6,34 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * <p>Parameters for {@link FrameBuffer}.
- * <p>This class allows to specify the format of each of the color output textures
+ * Parameters for {@link FrameBuffer}
+ * <p>
+ * This class allows to specify the format of each of the color output textures
  * and the format of the depth texture.
  */
 public class FrameBufferParameters {
+
+    private boolean hasDepth = true;
 
     private Format depthTextureFormat = Format.DEPTH_32F;
 
     private List<Format> colorOutputFormats = new ArrayList<>();
 
+    public FrameBufferParameters hasDepth(final boolean depth) {
+        this.hasDepth = depth;
+        return this;
+    }
+
+    public boolean hadDepth() {
+        return this.hasDepth;
+    }
+
     /**
-     * A color output texture will be created in the framebuffer for
+     * A color output texture will be created in the frame buffer for
      * each color output contained in the passed in parameter instance.
      * The outputs will be created in the order that they were added to
      * the parameters.
+     *
      * @param format The format of the color output texture.
      * @return This for chaining.
      */
@@ -40,19 +53,6 @@ public class FrameBufferParameters {
 
     public List<Format> getColorOutputs() {
         return this.colorOutputFormats;
-    }
-
-    /**
-     * Generates parameters for an RGB8 framebuffer.
-     * @param colorOutputs The number of RGBA color outputs.
-     * @return A new instance of {@link FrameBufferParameters}.
-     */
-    public static FrameBufferParameters generatesRGBA8Parameters(int colorOutputs) {
-        final FrameBufferParameters parameters = new FrameBufferParameters();
-        for(int i = 0; i < colorOutputs; i++) {
-            parameters.addColorOutput(Format.RGBA8);
-        }
-        return parameters;
     }
 
 }

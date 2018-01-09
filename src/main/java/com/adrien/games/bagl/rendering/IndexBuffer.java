@@ -3,8 +3,9 @@ package com.adrien.games.bagl.rendering;
 import org.lwjgl.opengl.GL15;
 
 /**
- * OpenGL index buffer.
+ * OpenGL index buffer
  *
+ * TODO: remove until figuring out a better and more flexible way
  */
 public final class IndexBuffer {
 

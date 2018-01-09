@@ -10,7 +10,8 @@ import org.lwjgl.opengl.GL30;
 
 /**
  * OpenGL vertex buffer.
- *
+ * <p>
+ * TODO: remove until figuring out a better and more flexible way
  */
 public final class VertexBuffer {
 
@@ -27,7 +28,7 @@ public final class VertexBuffer {
         this.vertexCount = size;
         this.vaoHandle = GL30.glGenVertexArrays();
         this.vboHandle = GL15.glGenBuffers();
-        this.buffer = new float[this.vertexCount*this.description.getStride()];
+        this.buffer = new float[this.vertexCount * this.description.getStride()];
         this.init();
     }
 
@@ -42,10 +43,10 @@ public final class VertexBuffer {
         GL15.glBufferData(GL15.GL_ARRAY_BUFFER, this.buffer, this.usage.getGlCode());
 
         final int stride = this.description.getStride();
-        for(VertexElement element : this.description.getVertexElements()) {
+        for (VertexElement element : this.description.getVertexElements()) {
             final int location = element.getLocation();
-            final int byteStride = stride*Float.SIZE/8;
-            final int byteOffset = element.getOffset()*Float.SIZE/8;
+            final int byteStride = stride * Float.SIZE / 8;
+            final int byteOffset = element.getOffset() * Float.SIZE / 8;
 
             GL20.glEnableVertexAttribArray(location);
             GL20.glVertexAttribPointer(location, element.getSize(), GL11.GL_FLOAT, false, byteStride, byteOffset);
@@ -57,11 +58,12 @@ public final class VertexBuffer {
 
     /**
      * Puts vertex data in the buffer.
+     *
      * @param vertices The vertices to put.
-     * @param limit The number of vertices to put.
+     * @param limit    The number of vertices to put.
      */
     public void setData(Vertex[] vertices, int limit) {
-        if(limit > this.vertexCount) {
+        if (limit > this.vertexCount) {
             throw new IllegalArgumentException("Too much vertices.");
         }
 
@@ -74,14 +76,15 @@ public final class VertexBuffer {
 
     private void copyDataToBuffer(Vertex[] vertices, int limit) {
         final int stride = this.description.getStride();
-        for(int i = 0; i < limit; i++) {
+        for (int i = 0; i < limit; i++) {
             final float[] data = vertices[i].getData();
-            System.arraycopy(data, 0, this.buffer, i*stride, data.length);
+            System.arraycopy(data, 0, this.buffer, i * stride, data.length);
         }
     }
 
     /**
      * Puts vertex data in the buffer.
+     *
      * @param vertices The vertices to put.
      */
     public void setData(Vertex[] vertices) {
@@ -112,6 +115,7 @@ public final class VertexBuffer {
 
     /**
      * Returns the size of the buffer.
+     *
      * @return The number of vertices.
      */
     public int getVertexCount() {

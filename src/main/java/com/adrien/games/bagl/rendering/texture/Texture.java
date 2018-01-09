@@ -90,6 +90,8 @@ public final class Texture {
 
     private int generateGlTexture(final int width, final int height, final TextureParameters parameters, final ByteBuffer pixels) {
         final int handle = glGenTextures();
+        // FIXME: we should retrieve the currently bound texture here and restore it after generation is finished
+        // FIXME: now we just unbind the currently bound texture silently when it might be used
         glBindTexture(GL_TEXTURE_2D, handle);
         glTexImage2D(GL_TEXTURE_2D, 0, parameters.getFormat().getGlInternalFormat(), width, height, 0,
                 parameters.getFormat().getGlFormat(), parameters.getFormat().getGlDataType(), pixels);

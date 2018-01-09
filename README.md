@@ -10,7 +10,8 @@ baGL is an OpenGL framework that I use for educational purpose. It uses [LWJGL 3
 - Basic post processing (bloom, gamma correction and tone mapping)
 - Simple .obj and .mtl loaders
 - Lights (ambient lights, directional lights, point lights and spot lights)
-- Sky boxes
+- HDR environment maps (from .hdr equirectangular images)
+- IBL (diffuse irradiance only)
 - 3D Particles using Geometry Shader
 - Sprite batching
 - Scalable text using Signed Distance Field fonts. See [Valve's paper](http://www.valvesoftware.com/publications/2007/SIGGRAPH2007_AlphaTestedMagnification.pdf)
@@ -20,6 +21,7 @@ baGL is an OpenGL framework that I use for educational purpose. It uses [LWJGL 3
 
 This framework uses a deferred renderer. Geometry and material data is first rendered into a frame buffer called the GBuffer (Geometry Buffer).
 Then in a second pass the GBuffer is used to perform lighting calculations. The renderer uses physically based rendering.
+Image Based Lighting is partially implemented (diffuse irradiance only)
 The renderer supports ambient, directional, point, and spot lights.
 The renderer performs a small post processing pass to apply bloom on bright spots, gamma correction and tone map from HDR to SDR.
 
@@ -64,7 +66,7 @@ Basic shadow mapping is implemented. It only works for one directional light (Th
 - Rendering
     - Animations
     - Sprites in 3D environment (debug icons, ...)
-    - IBL
+    - IBL (specular)
     - Area lights (sphere and tubes)
     - Improved shadows
 - Review the Model/Mesh/Material model.
@@ -72,6 +74,7 @@ Basic shadow mapping is implemented. It only works for one directional light (Th
 - Assets management
 - Replace the custom obj loader 
 - OpenGL state manager
+- An overall review, some refactoring and code cleanup
 - And much more... :)
 
 ## References
