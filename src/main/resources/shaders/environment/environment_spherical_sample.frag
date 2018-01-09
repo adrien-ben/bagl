@@ -11,8 +11,6 @@ vec2 sampleShericalMap(vec3 position) {
     return 0.5 + (vec2(atan(position.z, position.x), asin(position.y)) * invATan);
 }
 
-// TODO: This is currently used in real time, but the smart thing to do here is to generate a cubemap from
-// TODO: this equirectactular map once and then to sample this cubemap which is way faster
 void main() {
     vec2 uv = sampleShericalMap(normalize(passPosition));
     vec3 color = texture2D(equirectangularMap, uv).rgb;

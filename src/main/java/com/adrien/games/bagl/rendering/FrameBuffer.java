@@ -3,33 +3,31 @@ package com.adrien.games.bagl.rendering;
 import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.core.Engine;
 import com.adrien.games.bagl.core.EngineException;
-import com.adrien.games.bagl.rendering.texture.Format;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.texture.TextureParameters;
 import com.adrien.games.bagl.rendering.texture.Wrap;
 
 import java.util.Arrays;
-import java.util.Objects;
+import java.util.stream.IntStream;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL20.glDrawBuffers;
 import static org.lwjgl.opengl.GL30.*;
 
 /**
- * This class creates an OpenGL {@link FrameBuffer} object. (version >= 3.0).
- * <p>It binds a render buffer to if for the depth component and at least one texture (that you can
- * retrieve for later use) as the color buffers.
+ * This class creates an OpenGL {@link FrameBuffer} object. (version >= 3.0)
  * <br>When the frame buffer is bound OpenGL will render into this frame buffer. If no frame buffer
- * is bound OpenGL will then render in the default frame buffer.
+ * is bound OpenGL will then render in the default frame buffer
  * <p>
  * TODO: Allow the use of render buffer attachments alongside texture, this is useful when you don't need to read from one of the channel
  * TODO:    for example id tou need depth testing but wont read yourself the depth data
- * <p>
- * TODO: Check is the buffer is bound before performing any action on it ? Or leave it to the user ?
  *
  * @author Adrien
  */
 public class FrameBuffer {
+
+    /** Used to keep track of the bound frame buffer */
+    private static int boundBuffer = 0;
 
     private final int handle;
     private final int width;
@@ -92,115 +90,122 @@ public class FrameBuffer {
             for (int i = 0; i < textures.length; i++) {
                 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, textures[i].getHandle(), 0);
             }
-            glDrawBuffers(this.generateBuffersToDraw(textures.length));
+            this.enableAllColorOutputs();
         } else {
             glDrawBuffer(GL_NONE);
-// TODO: check glReadBuffer behavior
-//            glReadBuffer(GL_NONE);
+            // TODO: check glReadBuffer behavior
+            //            glReadBuffer(GL_NONE);
         }
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         return bufferHandle;
     }
 
     /**
-     * Generate an array containing the buffers to draw
+     * Enable one or more color outputs for writing
      *
-     * @param count The number of buffer to draw
-     * @return An array of integer
+     * @param channels The channels of the outputs (0 for the first channel)
+     * @throws EngineException if the frame buffer is not bound
      */
-    private int[] generateBuffersToDraw(final int count) {
-        final int[] buffers = new int[count];
-        for (int i = 0; i < count; i++) {
-            buffers[i] = GL_COLOR_ATTACHMENT0 + i;
+    public void enableColorOutputs(int... channels) {
+        if (!this.isBound()) {
+            throw new EngineException("You cannot enable color outputs on a frame buffer that is not currently bound");
         }
-        return buffers;
-    }
-
-    /**
-     * Add a color output to this frame buffer
-     * <p>
-     * The frame buffer <b>must</b> be bound !
-     * Each time you add a color output to the frame buffer it becomes the
-     * only one enabled for writing. If you want to enable all channels,
-     * use {@link FrameBuffer#enableAllColorOutputs} method.
-     * <p>
-     * It can be useful to render different scenes in the same frame buffer :
-     * <pre>
-     * final FrameBuffer frameBuffer = new FrameBuffer(800, 600);
-     * ...
-     * // in render code
-     * frameBuffer.bind();
-     * for(int i = 0; i < 2; i++) {
-     *     frameBuffer.addColorOutput(Format.RGBA8);
-     *     FrameBuffer.clear()
-     *
-     *     // render you scene
-     * }
-     * FrameBuffer.unbind();
-     * </pre>
-     *
-     * @param format The format the the color output
-     */
-    public void addColorOutput(final Format format) {
-        if (Objects.isNull(this.colorOutputs)) {
-            this.colorOutputs = new Texture[1];
-            this.depthOnly = false;
-        } else {
-            this.colorOutputs = Arrays.copyOf(this.colorOutputs, this.colorOutputs.length + 1);
-        }
-
-        final Texture texture = new Texture(this.width, this.height, new TextureParameters().format(format).sWrap(Wrap.CLAMP_TO_EDGE)
-                .tWrap(Wrap.CLAMP_TO_EDGE));
-        this.colorOutputs[this.colorOutputs.length - 1] = texture;
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + this.colorOutputs.length - 1, GL_TEXTURE_2D, texture.getHandle(), 0);
-        glDrawBuffer(GL_COLOR_ATTACHMENT0 + this.colorOutputs.length - 1);
-        glBindFramebuffer(GL_FRAMEBUFFER, this.handle);
+        glDrawBuffers(IntStream.of(channels).map(channel -> GL_COLOR_ATTACHMENT0 + channel).toArray());
     }
 
     /**
      * Enables all color outputs for writing
-     * <p>
-     * The frame buffer <b>must</b> be bound !
+     *
+     * @throws EngineException if the frame buffer is not bound
      */
     public void enableAllColorOutputs() {
-        glDrawBuffers(this.generateBuffersToDraw(this.colorOutputs.length));
+        if (!this.isBound()) {
+            throw new EngineException("You cannot enable color outputs on a frame buffer that is not currently bound");
+        }
+        glDrawBuffers(IntStream.range(0, this.colorOutputs.length).map(channel -> GL_COLOR_ATTACHMENT0 + channel).toArray());
     }
 
     /**
-     * Clear the <b>currently bound</b> frame buffer
+     * Disable writing for all color outputs
+     *
+     * @throws EngineException if the frame buffer is not bound
      */
-    public static void clear() {
-        FrameBuffer.clear(Color.BLACK);
+    public void disableAllColorOutputs() {
+        if (!this.isBound()) {
+            throw new EngineException("You cannot disable color outputs on a frame buffer that is not currently bound");
+        }
+        glDrawBuffer(GL_NONE);
     }
 
     /**
-     * Clear the <u>currently bound</u> frame buffer
+     * Clear this frame buffer
+     *
+     * @throws EngineException if the frame buffer is not bound
+     */
+    public void clear() {
+        this.clear(Color.BLACK);
+    }
+
+    /**
+     * Clear this frame buffer
      *
      * @param color The background color
+     * @throws EngineException if the frame buffer is not bound
      */
-    public static void clear(final Color color) {
+    public void clear(final Color color) {
+        if (!this.isBound()) {
+            throw new EngineException("You cannot clear a frame buffer that is not currently bound");
+        }
         Engine.setClearColor(color);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
     /**
-     * Bind the frame buffer
+     * Bind this frame buffer
+     * <p>
+     * Only one frame buffer can be bound at a time, so a previously
+     * bound frame buffer would be unbound
      */
     public void bind() {
-        glBindFramebuffer(GL_FRAMEBUFFER, this.handle);
+        if (!this.isBound()) {
+            glBindFramebuffer(GL_FRAMEBUFFER, this.handle);
+            FrameBuffer.boundBuffer = this.handle;
+        }
     }
 
     /**
      * Unbind the currently bound frame buffer
+     * <p>
+     * When you unbind a frame buffer, the default frame buffer is automatically
+     * bound
+     *
+     * @throws EngineException if the frame buffer is not bound
      */
-    public static void unbind() {
+    public void unbind() {
+        if (!this.isBound()) {
+            throw new EngineException("You cannot unbind a frame buffer that is not currently bound");
+        }
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        FrameBuffer.boundBuffer = 0;
+    }
+
+    /**
+     * Check if this buffer is the currently bound buffer
+     *
+     * @return true if this buffer is bound
+     */
+    private boolean isBound() {
+        return this.handle == FrameBuffer.boundBuffer;
     }
 
     /**
      * Release resources
      */
     public void destroy() {
+        if (this.isBound()) {
+            this.unbind();
+        }
+
         if (!this.depthOnly) {
             Arrays.stream(this.colorOutputs).forEach(Texture::destroy);
         }

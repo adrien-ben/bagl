@@ -79,12 +79,13 @@ public class PostProcessor {
 
     private void performBloomPass(final Texture image) {
         this.bloomBuffer.bind();
+        this.bloomBuffer.clear();
+
         this.bloomShader.bind();
         image.bind();
 
-        FrameBuffer.clear();
         glDrawArrays(GL_TRIANGLE_STRIP, 0, this.vertexBuffer.getVertexCount());
-        FrameBuffer.unbind();
+        this.bloomBuffer.unbind();
     }
 
     private void performGaussianBlur(final Texture image) {
@@ -93,7 +94,7 @@ public class PostProcessor {
 
         for (int i = 0; i < 10; i++, horizontal = !horizontal) {
             this.blurBuffer.getWriteBuffer().bind();
-            FrameBuffer.clear();
+            this.blurBuffer.getWriteBuffer().clear();
             this.blurShader.setUniform("horizontal", horizontal);
 
             if (i == 0) {
@@ -107,7 +108,7 @@ public class PostProcessor {
             this.blurBuffer.swap();
         }
 
-        FrameBuffer.unbind();
+        this.blurBuffer.getReadBuffer().unbind();
         Shader.unbind();
     }
 

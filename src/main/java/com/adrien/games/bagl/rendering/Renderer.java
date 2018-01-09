@@ -12,7 +12,6 @@ import com.adrien.games.bagl.rendering.light.SpotLight;
 import com.adrien.games.bagl.rendering.postprocess.PostProcessor;
 import com.adrien.games.bagl.rendering.scene.Scene;
 import com.adrien.games.bagl.rendering.scene.SceneNode;
-import com.adrien.games.bagl.rendering.texture.Cubemap;
 import com.adrien.games.bagl.rendering.texture.Format;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.vertex.Vertex;
@@ -71,8 +70,9 @@ public class Renderer {
         this.lightViewProj = Matrix4.createZero();
 
         this.initFullScreenQuad();
-        this.gBuffer = new FrameBuffer(this.xResolution, this.yResolution, new FrameBufferParameters()
-                .addColorOutput(Format.RGBA8).addColorOutput(Format.RGBA16F));
+        this.gBuffer = new FrameBuffer(this.xResolution, this.yResolution, new FrameBufferParameters().addColorOutput(Format.RGBA8)
+                .addColorOutput(Format.RGBA16F));
+
         this.shadowBuffer = new FrameBuffer(this.shadowMapResolution, this.shadowMapResolution);
         this.finalBuffer = new FrameBuffer(this.xResolution, this.yResolution, new FrameBufferParameters().addColorOutput(Format.RGBA32F));
 
@@ -107,7 +107,7 @@ public class Renderer {
     }
 
     private void initShaders() {
-        this.skyboxShader = new Shader().addVertexShader("/skybox/skybox.vert").addFragmentShader("/skybox/skybox.frag").compile();
+        this.skyboxShader = new Shader().addVertexShader("/environment/environment.vert").addFragmentShader("/environment/environment_spherical_sample.frag").compile();
         this.shadowShader = new Shader().addVertexShader("/shadow/shadow.vert").addFragmentShader("/shadow/shadow.frag").compile();
         this.gBufferShader = new Shader().addVertexShader("/deferred/gbuffer.vert").addFragmentShader("/deferred/gbuffer.frag").compile();
         this.deferredShader = new Shader().addVertexShader("/deferred/deferred.vert").addFragmentShader("/deferred/deferred.frag").compile();
@@ -137,7 +137,7 @@ public class Renderer {
         }
 
         this.finalBuffer.bind();
-        FrameBuffer.clear();
+        this.finalBuffer.clear();
         skybox.getVertexBuffer().bind();
         skybox.getIndexBuffer().bind();
         skybox.getEnvironmentMap().bind();
@@ -149,10 +149,10 @@ public class Renderer {
         glEnable(GL_DEPTH_TEST);
 
         Shader.unbind();
-        Cubemap.unbind();
+        Texture.unbind();
         IndexBuffer.unbind();
         VertexBuffer.unbind();
-        FrameBuffer.unbind();
+        this.finalBuffer.unbind();
     }
 
     private void renderShadowMap(Scene scene) {
@@ -164,13 +164,13 @@ public class Renderer {
 
             glViewport(0, 0, this.shadowMapResolution, this.shadowMapResolution);
             this.shadowBuffer.bind();
-            FrameBuffer.clear();
+            this.shadowBuffer.clear();
             this.shadowShader.bind();
 
             scene.getRoot().apply(node -> this.renderNodeShadow(node, this.lightViewProj));
 
             Shader.unbind();
-            FrameBuffer.unbind();
+            this.shadowBuffer.unbind();
             glViewport(0, 0, this.xResolution, this.yResolution);
         }
     }
@@ -187,11 +187,11 @@ public class Renderer {
 
     private void renderScene(SceneNode<Model> scene, Camera camera) {
         this.gBuffer.bind();
-        FrameBuffer.clear();
+        this.gBuffer.clear();
         this.gBufferShader.bind();
         scene.apply(node -> this.renderSceneNode(node, camera));
         Shader.unbind();
-        FrameBuffer.unbind();
+        this.gBuffer.unbind();
     }
 
     private void renderSceneNode(SceneNode<Model> node, Camera camera) {
@@ -227,13 +227,12 @@ public class Renderer {
     }
 
     private void renderDeferred(Scene scene, Camera camera) {
-
-        this.finalBuffer.bind();
-
         final Light ambient = scene.getAmbient();
         final List<DirectionalLight> directionals = scene.getDirectionals();
         final List<PointLight> points = scene.getPoints();
         final List<SpotLight> spots = scene.getSpots();
+
+        this.finalBuffer.bind();
 
         this.gBuffer.getColorTexture(0).bind(0);
         this.gBuffer.getColorTexture(1).bind(1);
@@ -278,7 +277,7 @@ public class Renderer {
         Texture.unbind(1);
         Texture.unbind(2);
         Texture.unbind(3);
-        FrameBuffer.unbind();
+        this.finalBuffer.unbind();
     }
 
     private void setDirectionalLight(Shader shader, int index, DirectionalLight light) {
