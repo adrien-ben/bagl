@@ -23,6 +23,7 @@ public final class Texture {
     private final int handle;
     private final int width;
     private final int height;
+    private final Format format;
 
     /**
      * Create a new texture
@@ -35,6 +36,7 @@ public final class Texture {
         this.width = width;
         this.height = height;
         this.handle = this.generateGlTexture(this.width, this.height, parameters, ByteBuffer.class.cast(null));
+        this.format = parameters.getFormat();
     }
 
     /**
@@ -47,7 +49,8 @@ public final class Texture {
         final Image image = ImageUtils.loadImage(file);
         this.width = image.getWidth();
         this.height = image.getHeight();
-        parameters.format(this.getFormat(image.getChannelCount()));
+        this.format = this.getFormat(image.getChannelCount());
+        parameters.format(this.format);
         this.handle = this.generateGlTexture(this.width, this.height, parameters, image.getData());
     }
 
@@ -65,6 +68,7 @@ public final class Texture {
         this.width = width;
         this.height = height;
         this.handle = this.generateGlTexture(this.width, this.height, parameters, pixels);
+        this.format = parameters.getFormat();
     }
 
     /**
@@ -81,6 +85,7 @@ public final class Texture {
         this.width = width;
         this.height = height;
         this.handle = this.generateGlTexture(this.width, this.height, parameters, pixels);
+        this.format = parameters.getFormat();
     }
 
     private int generateGlTexture(final int width, final int height, final TextureParameters parameters, final ByteBuffer pixels) {
@@ -181,4 +186,9 @@ public final class Texture {
     public int getHeight() {
         return this.height;
     }
+
+    public Format getFormat() {
+        return this.format;
+    }
 }
+
