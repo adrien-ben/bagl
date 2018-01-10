@@ -164,9 +164,10 @@ public class EnvironmentMapGenerator {
     /**
      * Render a scene in a cubemap
      *
-     * @param target   The target cubemap in which to render
-     * @param mipLevel The level of mipmap in which to render
-     * @param shader   The shader to use
+     * @param target      The target cubemap in which to render
+     * @param mipLevel    The level of mipmap in which to render
+     * @param shader      The shader to use
+     * @param frameBuffer The frame buffer to use
      */
     private void renderToCubemap(final Cubemap target, final int mipLevel, final Shader shader, final FrameBuffer frameBuffer) {
         frameBuffer.bind();
