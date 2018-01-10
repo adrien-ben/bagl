@@ -14,6 +14,7 @@ import org.lwjgl.system.MemoryStack;
 import java.nio.ByteBuffer;
 
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL13.GL_TEXTURE_CUBE_MAP;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE_CUBE_MAP_POSITIVE_X;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
@@ -26,6 +27,7 @@ public class EnvironmentMapGenerator {
 
     private final static int ENVIRONMENT_MAP_RESOLUTION = 1024;
     private final static int CONVOLUTION_RESOLUTION = 64;
+    private final static int PRE_FILTERED_MAP_RESOLUTION = 128;
     private final static float FIELD_OF_VIEW = (float) Math.toRadians(90);
     private final static float ASPECT_RATIO = 1f;
     private final static float NEAR_PLANE = 0.1f;
@@ -38,8 +40,14 @@ public class EnvironmentMapGenerator {
     private final int vaoId;
     private final int iboId;
 
+    private FrameBuffer environmentFrameBuffer;
+    private FrameBuffer convolutionFrameBuffer;
+    private FrameBuffer preFilteredMapFrameBuffer;
+
     private Shader environmentSphericalShader;
     private Shader convolutionShader;
+    private Shader preFilteredMapShader;
+
     private Camera[] cameras;
 
     public EnvironmentMapGenerator() {
@@ -47,6 +55,11 @@ public class EnvironmentMapGenerator {
         this.vboId = glGenBuffers();
         this.generateVertexBuffer();
         this.iboId = this.generateIndexBuffer();
+
+        final FrameBufferParameters frameBufferParameters = new FrameBufferParameters().hasDepth(false);
+        this.environmentFrameBuffer = new FrameBuffer(ENVIRONMENT_MAP_RESOLUTION, ENVIRONMENT_MAP_RESOLUTION, frameBufferParameters);
+        this.convolutionFrameBuffer = new FrameBuffer(CONVOLUTION_RESOLUTION, CONVOLUTION_RESOLUTION, frameBufferParameters);
+        this.preFilteredMapFrameBuffer = new FrameBuffer(PRE_FILTERED_MAP_RESOLUTION, PRE_FILTERED_MAP_RESOLUTION, frameBufferParameters);
 
         this.environmentSphericalShader = new Shader()
                 .addVertexShader("/environment/environment.vert")
@@ -56,6 +69,11 @@ public class EnvironmentMapGenerator {
                 .addVertexShader("/environment/environment.vert")
                 .addFragmentShader("/environment/convolution.frag")
                 .compile();
+        this.preFilteredMapShader = new Shader()
+                .addVertexShader("/environment/environment.vert")
+                .addFragmentShader("/environment/pre_filtered_map.frag")
+                .compile();
+
         this.cameras = this.initCameras();
     }
 
@@ -68,6 +86,10 @@ public class EnvironmentMapGenerator {
         glDeleteVertexArrays(this.vaoId);
         this.environmentSphericalShader.destroy();
         this.convolutionShader.destroy();
+        this.preFilteredMapShader.destroy();
+        this.environmentFrameBuffer.destroy();
+        this.convolutionFrameBuffer.destroy();
+        this.preFilteredMapFrameBuffer.destroy();
     }
 
     /**
@@ -80,10 +102,18 @@ public class EnvironmentMapGenerator {
         final HDRImage hdrImage = ImageUtils.loadHDRImage(filePath);
         final Texture equirectangularMap = new Texture(hdrImage.getWidth(), hdrImage.getHeight(), hdrImage.getData(),
                 new TextureParameters().format(Format.RGB16F).sWrap(Wrap.CLAMP_TO_EDGE).tWrap(Wrap.CLAMP_TO_EDGE));
-        final Cubemap cubemap = this.renderToCubemap(ENVIRONMENT_MAP_RESOLUTION, Format.RGB16F, this.environmentSphericalShader,
+        final Cubemap cubemap = new Cubemap(ENVIRONMENT_MAP_RESOLUTION, ENVIRONMENT_MAP_RESOLUTION,
+                new TextureParameters().format(Format.RGB16F).minFilter(Filter.MIPMAP_LINEAR_LINEAR));
+
+        this.renderToCubemap(cubemap, 0, this.environmentSphericalShader, this.environmentFrameBuffer,
                 equirectangularMap::bind, Texture::unbind);
+
+        cubemap.bind();
+        glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+        Cubemap.unbind();
+
         equirectangularMap.destroy();
-        ImageUtils.destroy(hdrImage);
+        ImageUtils.free(hdrImage);
         return new EnvironmentMap(cubemap);
     }
 
@@ -94,26 +124,47 @@ public class EnvironmentMapGenerator {
      * @return An {@link EnvironmentMap}
      */
     public EnvironmentMap generateConvolution(final EnvironmentMap environmentMap) {
-        final Cubemap cubemap = this.renderToCubemap(CONVOLUTION_RESOLUTION, Format.RGB16F, this.convolutionShader,
-                environmentMap.getCubemap()::bind, Cubemap::unbind);
+        final Cubemap cubemap = new Cubemap(CONVOLUTION_RESOLUTION, CONVOLUTION_RESOLUTION,
+                new TextureParameters().format(Format.RGB16F));
+        this.renderToCubemap(cubemap, 0, this.convolutionShader, this.convolutionFrameBuffer, environmentMap.getCubemap()::bind,
+                Cubemap::unbind);
+        return new EnvironmentMap(cubemap);
+    }
+
+    /**
+     * Generate a pre-filtered map from another environment map
+     *
+     * @param environmentMap The environment map from which to generate the pre-filtered map
+     * @return An {@link EnvironmentMap}
+     */
+    public EnvironmentMap generatePreFilteredMap(final EnvironmentMap environmentMap) {
+        final Cubemap cubemap = new Cubemap(PRE_FILTERED_MAP_RESOLUTION, PRE_FILTERED_MAP_RESOLUTION, new TextureParameters()
+                .format(Format.RGB16F).mipmaps(true).minFilter(Filter.MIPMAP_LINEAR_LINEAR));
+
+        final int maxLod = 5;
+        for (int lod = 0; lod < maxLod; lod++) {
+            final float roughness = (float) lod / (float) (maxLod - 1);
+            this.renderToCubemap(cubemap, lod, this.preFilteredMapShader, this.preFilteredMapFrameBuffer,
+                    () -> {
+                        environmentMap.getCubemap().bind();
+                        this.preFilteredMapShader.setUniform("roughness", roughness);
+                    }, Cubemap::unbind);
+        }
+
         return new EnvironmentMap(cubemap);
     }
 
     /**
      * Render a scene in a cubemap
      *
-     * @param cubemapResolution The resolution of the generated cubemap
-     * @param cubemapFormat     The format of the generated cubemap
-     * @param shader            The shader to use
-     * @param preRender         The action(s) to perform before the rendering loop (binding textures, ...)
-     * @param postRender        The action(s) to perform after the rendering loop (unbinding textures, ...)
-     * @return A {@link Cubemap}
+     * @param target     The target cubemap in which to render
+     * @param mipLevel   The level of mipmap in which to render
+     * @param shader     The shader to use
+     * @param preRender  The action(s) to perform before the rendering loop (binding textures, ...)
+     * @param postRender The action(s) to perform after the rendering loop (unbinding textures, ...)
      */
-    private Cubemap renderToCubemap(final int cubemapResolution, final Format cubemapFormat, final Shader shader,
-                                    final Runnable preRender, final Runnable postRender) {
-
-        final Cubemap cubemap = new Cubemap(cubemapResolution, cubemapResolution, new TextureParameters().format(cubemapFormat));
-        final FrameBuffer frameBuffer = new FrameBuffer(cubemapResolution, cubemapResolution, new FrameBufferParameters().hasDepth(false));
+    private void renderToCubemap(final Cubemap target, final int mipLevel, final Shader shader, final FrameBuffer frameBuffer,
+                                 final Runnable preRender, final Runnable postRender) {
         frameBuffer.bind();
         frameBuffer.enableColorOutputs(0);
 
@@ -122,11 +173,11 @@ public class EnvironmentMapGenerator {
         shader.bind();
         preRender.run();
 
-        glViewport(0, 0, cubemapResolution, cubemapResolution);
+        final float mipFactor = 1f / (float) Math.pow(2, mipLevel);
+        glViewport(0, 0, (int) (target.getWidth() * mipFactor), (int) (target.getHeight() * mipFactor));
         for (int i = 0; i < 6; i++) {
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
-                    cubemap.getHandle(), 0);
-            frameBuffer.clear();
+                    target.getHandle(), mipLevel);
 
             shader.setUniform("viewProj", this.cameras[i].getViewProjAtOrigin());
 
@@ -138,9 +189,7 @@ public class EnvironmentMapGenerator {
         Shader.unbind();
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
-        frameBuffer.destroy();
-
-        return cubemap;
+        frameBuffer.unbind();
     }
 
     private int generateIndexBuffer() {

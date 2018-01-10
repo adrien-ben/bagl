@@ -45,6 +45,7 @@ public class DeferredRenderingSample {
         private Scene scene;
         private EnvironmentMap environmentMap;
         private EnvironmentMap irradianceMap;
+        private EnvironmentMap preFilteredMap;
         private Model floor;
         private Model cube;
         private Model tree;
@@ -93,6 +94,7 @@ public class DeferredRenderingSample {
             this.font.destroy();
             this.environmentMap.destroy();
             this.irradianceMap.destroy();
+            this.preFilteredMap.destroy();
             this.floor.destroy();
             this.cube.destroy();
             this.tree.destroy();
@@ -101,13 +103,15 @@ public class DeferredRenderingSample {
         private void loadMeshes() {
             this.environmentMap = this.environmentMapGenerator.generate(FileUtils.getResourceAbsolutePath("/envmaps/flat.hdr"));
             this.irradianceMap = this.environmentMapGenerator.generateConvolution(this.environmentMap);
+            this.preFilteredMap = this.environmentMapGenerator.generatePreFilteredMap(this.environmentMap);
 
             this.scene.setEnvironmentMap(this.environmentMap);
             this.scene.setIrradianceMap(this.irradianceMap);
+            this.scene.setPreFilteredMap(this.preFilteredMap);
 
             this.floor = MeshFactory.fromResourceFile("/models/floor/floor.obj");
             this.cube = MeshFactory.fromResourceFile("/models/cube/cube.obj");
-//            this.cube = MeshFactory.fromFile("D:/Documents/3D Models/sponza/sponza.obj");
+            //            this.cube = MeshFactory.fromFile("D:/Documents/3D Models/sponza/sponza.obj");
             this.tree = MeshFactory.fromResourceFile("/models/tree/tree.obj");
         }
 
@@ -173,6 +177,11 @@ public class DeferredRenderingSample {
                         new Vector2(4 * this.width / 5, this.height / 5), this.width / 5, this.height / 5);
                 this.spritebatch.draw(this.renderer.getShadowBuffer().getDepthTexture(),
                         new Vector2(4 * this.width / 5, 3 * this.height / 5), this.width / 5, this.width / 5);
+
+                this.spritebatch.draw(this.renderer.getFinalBuffer().getColorTexture(0),
+                        new Vector2(0, this.height / 5), this.width / 5, this.height / 5);
+                this.spritebatch.draw(this.renderer.getBrdfBuffer().getColorTexture(0),
+                        new Vector2(0, 0), this.width / 5, this.height / 5);
                 this.spritebatch.end();
             }
             this.textRenderer.render(INSTRUCTIONS, this.font, new Vector2(0.01f, 0.97f), 0.03f, Color.RED);

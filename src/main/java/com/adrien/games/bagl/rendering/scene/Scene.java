@@ -23,6 +23,7 @@ public class Scene {
 
     private EnvironmentMap environmentMap;
     private EnvironmentMap irradianceMap;
+    private EnvironmentMap preFilteredMap;
 
     private Light ambient;
     private final List<DirectionalLight> directionals;
@@ -53,6 +54,14 @@ public class Scene {
 
     public void setIrradianceMap(final EnvironmentMap irradianceMap) {
         this.irradianceMap = irradianceMap;
+    }
+
+    public Optional<EnvironmentMap> getPreFilteredMap() {
+        return Optional.ofNullable(this.preFilteredMap);
+    }
+
+    public void setPreFilteredMap(final EnvironmentMap preFilteredMap) {
+        this.preFilteredMap = preFilteredMap;
     }
 
     public Light getAmbient() {

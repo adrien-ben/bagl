@@ -31,9 +31,9 @@ public class PostProcessor {
     private final VertexBuffer vertexBuffer;
 
     public PostProcessor(final int xResolution, final int yResolution) {
-        this.bloomBuffer = new FrameBuffer(xResolution, yResolution, new FrameBufferParameters().addColorOutput(Format.RGBA32F));
-        this.blurBuffer = new DoubleBuffer<>(
-                () -> new FrameBuffer(xResolution, yResolution, new FrameBufferParameters().addColorOutput(Format.RGBA32F)));
+        final FrameBufferParameters parameters = new FrameBufferParameters().hasDepth(false).addColorOutput(Format.RGB16F);
+        this.bloomBuffer = new FrameBuffer(xResolution, yResolution, parameters);
+        this.blurBuffer = new DoubleBuffer<>(() -> new FrameBuffer(xResolution, yResolution, parameters));
 
         this.bloomShader = new Shader().addVertexShader(POST_PROCESS_VERTEX_SHADER_FILE).addFragmentShader("/post/bloom.frag").compile();
         this.blurShader = new Shader().addVertexShader(POST_PROCESS_VERTEX_SHADER_FILE).addFragmentShader("/post/blur.frag").compile();

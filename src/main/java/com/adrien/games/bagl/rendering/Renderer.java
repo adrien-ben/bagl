@@ -40,6 +40,8 @@ import static org.lwjgl.opengl.GL30.glBindVertexArray;
  */
 public class Renderer {
 
+    private static final int BRDF_RESOLUTION = 512;
+
     private final int xResolution;
     private final int yResolution;
     private final int shadowMapResolution;
@@ -48,17 +50,19 @@ public class Renderer {
     private final Matrix4 lightViewProj;
 
     private VertexBuffer vertexBuffer;
-    private final FrameBuffer gBuffer;
 
     private boolean renderShadow;
-    private final FrameBuffer shadowBuffer;
 
-    private final FrameBuffer finalBuffer;
+    private FrameBuffer gBuffer;
+    private FrameBuffer shadowBuffer;
+    private FrameBuffer finalBuffer;
+    private FrameBuffer brdfBuffer;
 
     private Shader skyboxShader;
     private Shader shadowShader;
     private Shader gBufferShader;
     private Shader deferredShader;
+    private Shader brdfShader;
 
     private PostProcessor postProcessor;
 
@@ -75,29 +79,30 @@ public class Renderer {
         this.lightViewProj = Matrix4.createZero();
 
         this.initFullScreenQuad();
-        this.gBuffer = new FrameBuffer(this.xResolution, this.yResolution, new FrameBufferParameters().addColorOutput(Format.RGBA8)
-                .addColorOutput(Format.RGBA16F));
 
-        this.shadowBuffer = new FrameBuffer(this.shadowMapResolution, this.shadowMapResolution);
-        this.finalBuffer = new FrameBuffer(this.xResolution, this.yResolution, new FrameBufferParameters().addColorOutput(Format.RGBA32F));
+        this.initFrameBuffers();
 
         this.initShaders();
+
+        this.bakeBRDFIntegration();
 
         this.postProcessor = new PostProcessor(this.xResolution, this.yResolution);
     }
 
     /**
-     * Releases resources.
+     * Releases resources
      */
     public void destroy() {
         this.skyboxShader.destroy();
         this.shadowShader.destroy();
         this.gBufferShader.destroy();
         this.deferredShader.destroy();
+        this.brdfShader.destroy();
         this.gBuffer.destroy();
         this.shadowBuffer.destroy();
-        this.vertexBuffer.destroy();
         this.finalBuffer.destroy();
+        this.brdfBuffer.destroy();
+        this.vertexBuffer.destroy();
         this.postProcessor.destroy();
     }
 
@@ -107,16 +112,51 @@ public class Renderer {
         vertices[1] = new VertexPositionTexture(new Vector3(1, -1, 0), new Vector2(1, 0));
         vertices[2] = new VertexPositionTexture(new Vector3(-1, 1, 0), new Vector2(0, 1));
         vertices[3] = new VertexPositionTexture(new Vector3(1, 1, 0), new Vector2(1, 1));
-
         this.vertexBuffer = new VertexBuffer(VertexPositionTexture.DESCRIPTION, BufferUsage.STATIC_DRAW, vertices);
     }
 
+    private void initFrameBuffers() {
+        this.gBuffer = new FrameBuffer(this.xResolution, this.yResolution, new FrameBufferParameters().addColorOutput(Format.RGBA8).addColorOutput(Format.RGBA16F));
+        this.shadowBuffer = new FrameBuffer(this.shadowMapResolution, this.shadowMapResolution);
+        this.finalBuffer = new FrameBuffer(this.xResolution, this.yResolution, new FrameBufferParameters().addColorOutput(Format.RGBA32F));
+        this.brdfBuffer = new FrameBuffer(BRDF_RESOLUTION, BRDF_RESOLUTION, new FrameBufferParameters().hasDepth(false).addColorOutput(Format.RG16F));
+    }
+
     private void initShaders() {
-        this.skyboxShader = new Shader().addVertexShader("/environment/environment.vert")
-                .addFragmentShader("/environment/environment_cubemap_sample.frag").compile();
-        this.shadowShader = new Shader().addVertexShader("/shadow/shadow.vert").addFragmentShader("/shadow/shadow.frag").compile();
-        this.gBufferShader = new Shader().addVertexShader("/deferred/gbuffer.vert").addFragmentShader("/deferred/gbuffer.frag").compile();
-        this.deferredShader = new Shader().addVertexShader("/deferred/deferred.vert").addFragmentShader("/deferred/deferred.frag").compile();
+        this.skyboxShader = new Shader()
+                .addVertexShader("/environment/environment.vert")
+                .addFragmentShader("/environment/environment_cubemap_sample.frag")
+                .compile();
+        this.shadowShader = new Shader()
+                .addVertexShader("/shadow/shadow.vert")
+                .addFragmentShader("/shadow/shadow.frag")
+                .compile();
+        this.gBufferShader = new Shader()
+                .addVertexShader("/deferred/gbuffer.vert")
+                .addFragmentShader("/deferred/gbuffer.frag")
+                .compile();
+        this.deferredShader = new Shader()
+                .addVertexShader("/deferred/deferred.vert")
+                .addFragmentShader("/deferred/deferred.frag")
+                .compile();
+        this.brdfShader = new Shader()
+                .addVertexShader("/post/post_process.vert")
+                .addFragmentShader("/environment/brdf_integration.frag")
+                .compile();
+    }
+
+    private void bakeBRDFIntegration() {
+        this.brdfBuffer.bind();
+        this.vertexBuffer.bind();
+        this.brdfShader.bind();
+
+        glViewport(0, 0, BRDF_RESOLUTION, BRDF_RESOLUTION);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, vertexBuffer.getVertexCount());
+        glViewport(0, 0, this.xResolution, this.yResolution);
+
+        Shader.unbind();
+        VertexBuffer.unbind();
+        this.brdfBuffer.unbind();
     }
 
     /**
@@ -230,6 +270,7 @@ public class Renderer {
 
     private void renderDeferred(final Scene scene, final Camera camera) {
         final Optional<EnvironmentMap> irradiance = scene.getIrradianceMap();
+        final Optional<EnvironmentMap> preFilteredMap = scene.getPreFilteredMap();
         final Light ambient = scene.getAmbient();
         final List<DirectionalLight> directionals = scene.getDirectionals();
         final List<PointLight> points = scene.getPoints();
@@ -249,6 +290,12 @@ public class Renderer {
             map.getCubemap().bind(4);
             this.deferredShader.setUniform("uLights.irradiance", 4);
         });
+        preFilteredMap.ifPresent(map -> {
+            map.getCubemap().bind(5);
+            this.deferredShader.setUniform("uLights.preFilteredMap", 5);
+        });
+        this.getBrdfBuffer().getColorTexture(0).bind(6);
+        this.deferredShader.setUniform("uLights.brdf", 6);
         this.deferredShader.setUniform("uLights.ambient.intensity", ambient.getIntensity());
         this.deferredShader.setUniform("uLights.ambient.color", ambient.getColor());
         this.deferredShader.setUniform("uShadow.hasShadow", this.renderShadow);
@@ -320,4 +367,11 @@ public class Renderer {
         return this.gBuffer;
     }
 
+    public FrameBuffer getFinalBuffer() {
+        return this.finalBuffer;
+    }
+
+    public FrameBuffer getBrdfBuffer() {
+        return this.brdfBuffer;
+    }
 }

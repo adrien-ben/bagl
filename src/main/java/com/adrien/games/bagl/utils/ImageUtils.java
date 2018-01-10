@@ -24,7 +24,7 @@ public final class ImageUtils {
     /**
      * Load an image file
      * <p>
-     * Image loaded should then be destroyed using {@link ImageUtils#destroy(Image)} to
+     * Image loaded should then be destroyed using {@link ImageUtils#free(Image)} to
      * ensure memory is properly freed
      *
      * @param filePath The path of the image file to load
@@ -48,7 +48,7 @@ public final class ImageUtils {
     /**
      * Load an HDR image file
      * <p>
-     * Image loaded should then be destroyed using {@link ImageUtils#destroy(HDRImage)} to
+     * Image loaded should then be destroyed using {@link ImageUtils#free(HDRImage)} to
      * ensure memory is properly freed
      *
      * @param filePath The path of the image file to load
@@ -77,7 +77,7 @@ public final class ImageUtils {
      *
      * @param image The image whose memory must be free
      */
-    public static void destroy(final Image image) {
+    public static void free(final Image image) {
         STBImage.stbi_image_free(image.getData());
     }
 
@@ -86,7 +86,7 @@ public final class ImageUtils {
      *
      * @param image The image whose memory must be free
      */
-    public static void destroy(final HDRImage image) {
+    public static void free(final HDRImage image) {
         STBImage.stbi_image_free(image.getData());
     }
 }

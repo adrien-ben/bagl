@@ -5,6 +5,7 @@ const int MAX_POINT_LIGHTS = 50;
 const int MAX_SPOT_LIGHTS = 50;
 const float SHADOW_BIAS = 0.005;
 const float PI = 3.14159265359;
+const float MAX_REFLECTION_LOD = 4.0;
 
 struct Shadow {
     bool hasShadow;
@@ -49,6 +50,8 @@ struct SpotLight {
 
 struct Lights {
     samplerCube irradiance;
+    samplerCube preFilteredMap;
+    sampler2D brdf;
     Light ambient;
     DirectionalLight directionals[MAX_DIR_LIGHTS];
     int directionalCount;
@@ -204,6 +207,9 @@ void main() {
         //View vector
         vec3 V = normalize(uCamera.position - position.xyz);
 
+        //Reflected view vector
+        vec3 R = reflect(-V, N);
+
         //N.V
         float NdotV = max(dot(N, V), 0.0);
 
@@ -211,9 +217,19 @@ void main() {
         vec3 F0 = mix(vec3(0.04), color, metallic);
 
         //Ambient term
-        vec3 kD = 1.0 - fresnel(max(dot(N, V), 0.0), F0, roughness);
+        vec3 F = fresnel(NdotV, F0, roughness);
+        vec3 kS = F;
+        vec3 kD = 1.0 - kS;
+        kD *= 1.0 - metallic;
+
         vec3 irradiance = texture(uLights.irradiance, N).rgb;
-        vec3 ambient = kD * irradiance * color;
+        vec3 diffuse = irradiance * color;
+
+        vec3 prefilteredSample = textureLod(uLights.preFilteredMap, R, roughness * MAX_REFLECTION_LOD).rgb;
+        vec2 envBRDF = texture2D(uLights.brdf, vec2(NdotV, roughness)).rg;
+        vec3 specular = prefilteredSample * (F * envBRDF.x + envBRDF.y);
+
+        vec3 ambient = kD * diffuse + specular;
 
 		//directional lights
 		int directionalCount = min(uLights.directionalCount, MAX_DIR_LIGHTS);

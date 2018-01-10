@@ -74,6 +74,7 @@ Basic shadow mapping is implemented. It only works for one directional light (Th
 - Assets management
 - Replace the custom obj loader 
 - OpenGL state manager
+- Composed shaders (#import library.glsl)
 - An overall review, some refactoring and code cleanup
 - And much more... :)
 

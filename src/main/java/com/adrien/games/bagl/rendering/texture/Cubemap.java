@@ -1,6 +1,7 @@
 package com.adrien.games.bagl.rendering.texture;
 
 import com.adrien.games.bagl.core.EngineException;
+import org.lwjgl.opengl.GL30;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
@@ -46,6 +47,9 @@ public class Cubemap {
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+        if (parameters.getMipmaps()) {
+            GL30.glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+        }
         glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     }
 
