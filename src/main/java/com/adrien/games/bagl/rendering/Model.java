@@ -12,6 +12,7 @@ public class Model {
 
     /**
      * Adds a mesh to the model.
+     *
      * @param mesh The mesh to add.
      * @return This for chaining.
      */
@@ -22,6 +23,7 @@ public class Model {
 
     /**
      * Returns all the meshes of the model.
+     *
      * @return A list of {@link Mesh}.
      */
     public List<Mesh> getMeshes() {

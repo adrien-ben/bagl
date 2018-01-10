@@ -28,7 +28,7 @@ public class VertexPositionNormalTexture implements Vertex {
         return new float[]{
                 position.getX(), position.getY(), position.getZ(),
                 normal.getX(), normal.getY(), normal.getZ(),
-                coords.getX(),coords.getY() };
+                coords.getX(), coords.getY()};
     }
 
     public Vector3 getPosition() {
@@ -46,6 +46,6 @@ public class VertexPositionNormalTexture implements Vertex {
     private static VertexDescription createVertexDescription() {
         return new VertexDescription(
                 new VertexElement[]
-                        { new VertexElement(0, 3, 0), new VertexElement(1, 3, 3), new VertexElement(2, 2, 6) });
+                        {new VertexElement(0, 3, 0), new VertexElement(1, 3, 3), new VertexElement(2, 2, 6)});
     }
 }

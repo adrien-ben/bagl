@@ -28,8 +28,8 @@ import java.util.stream.Stream;
  * <li>specular color (Ks RGB)
  * <li>specular map (map_Ks RELATIV_FILEPATH)
  * <li>specular exponent (Ns VALUE)
- * @author Adrien
  *
+ * @author Adrien
  */
 public class MtlParser {
 
@@ -51,13 +51,14 @@ public class MtlParser {
 
     /**
      * Parses a Wavefronts's mtl file.
+     *
      * @param filePath The file to parse.
      * @return A map with material name as key and a {@link Material} as value.
      */
     public Map<String, Material> parse(String filePath) {
         log.info("Parsing .mtl file '{}'.", filePath);
         this.reset(filePath);
-        try(Stream<String> stream = Files.lines(Paths.get(filePath))) {
+        try (Stream<String> stream = Files.lines(Paths.get(filePath))) {
             stream.filter(StringUtils::isNotBlank).forEach(this::parseLine);
         } catch (IOException e) {
             log.error("Failed to parse file '{}'.", filePath, e);
@@ -74,23 +75,23 @@ public class MtlParser {
 
     private void parseLine(String line) {
         final String[] tokens = line.split(SPACE_SEP);
-        if(tokens.length > 0) {
+        if (tokens.length > 0) {
             String first = tokens[0];
-            if(NEW_MTL_FLAG.equals(first) && tokens.length > 1) {
+            if (NEW_MTL_FLAG.equals(first) && tokens.length > 1) {
                 this.parseNewMaterial(tokens[1]);
-            } else if(DIFFUSE_MAP_FLAG.equals(first) && tokens.length > 1) {
+            } else if (DIFFUSE_MAP_FLAG.equals(first) && tokens.length > 1) {
                 this.parseDiffuseMap(tokens[1]);
-            } else if(DIFFUSE_COLOR_FLAG.equals(first) && tokens.length > 3) {
+            } else if (DIFFUSE_COLOR_FLAG.equals(first) && tokens.length > 3) {
                 this.parseDiffuseColor(tokens);
-            } else if(first.matches(BUMP_MAP_FLAG) && tokens.length > 1) {
+            } else if (first.matches(BUMP_MAP_FLAG) && tokens.length > 1) {
                 this.parseBumpMap(tokens[1]);
-            } else if(first.matches(ROUGHNESS_FLAG) && tokens.length > 1) {
+            } else if (first.matches(ROUGHNESS_FLAG) && tokens.length > 1) {
                 this.parseRoughness(tokens[1]);
-            } else if(first.matches(ROUGHNESS_MAP_FLAG) && tokens.length > 1) {
+            } else if (first.matches(ROUGHNESS_MAP_FLAG) && tokens.length > 1) {
                 this.parseRoughnessMap(tokens[1]);
-            } else if(first.matches(METALLIC_FLAG) && tokens.length > 1) {
+            } else if (first.matches(METALLIC_FLAG) && tokens.length > 1) {
                 this.parseMetallic(tokens[1]);
-            } else if(first.matches(METALLIC_MAP_FLAG) && tokens.length > 1) {
+            } else if (first.matches(METALLIC_MAP_FLAG) && tokens.length > 1) {
                 this.parseMetallicMap(tokens[1]);
             }
         }
@@ -111,7 +112,7 @@ public class MtlParser {
         float r = Float.parseFloat(tokens[1]);
         float g = Float.parseFloat(tokens[2]);
         float b = Float.parseFloat(tokens[3]);
-        this.currentMaterial.setDiffuseColor(new Color(r,g ,b));
+        this.currentMaterial.setDiffuseColor(new Color(r, g, b));
     }
 
     private void parseBumpMap(String fileName) {
@@ -148,7 +149,7 @@ public class MtlParser {
     }
 
     private void checkCurrentMaterial() {
-        if(Objects.isNull(this.currentMaterial)) {
+        if (Objects.isNull(this.currentMaterial)) {
             handleParseError("Missing 'newmtl' declaration in '" + this.currentFile + "'.");
         }
     }

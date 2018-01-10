@@ -9,7 +9,7 @@ public class GLSLStructure {
 
     public GLSLStructure(String name, ArrayList<GLSLAttribute> attributes) {
 
-        if(name == null || attributes == null) {
+        if (name == null || attributes == null) {
             throw new IllegalArgumentException("neither name nor attributes can be null");
         }
 
@@ -24,7 +24,7 @@ public class GLSLStructure {
 
         strBldr.append(name);
         strBldr.append(" { ");
-        for(GLSLAttribute attribute : attributes) {
+        for (GLSLAttribute attribute : attributes) {
             strBldr.append(attribute.toString());
         }
         strBldr.append(" }");

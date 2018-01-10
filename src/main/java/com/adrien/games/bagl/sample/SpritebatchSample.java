@@ -41,7 +41,7 @@ public class SpritebatchSample {
                     new TextureParameters());
 
             Random r = new Random();
-            for(int i = 0; i < SPRITE_COUNT; i++) {
+            for (int i = 0; i < SPRITE_COUNT; i++) {
                 this.positions[i] = new Vector2(r.nextFloat() * this.width, r.nextFloat() * this.height);
                 this.sizes[i] = r.nextInt(32) + 32;
                 this.rotations[i] = r.nextFloat() * 360;
@@ -54,15 +54,15 @@ public class SpritebatchSample {
 
         @Override
         public void update(Time time) {
-            for(int i = 0; i < SPRITE_COUNT; i++) {
-                this.rotations[i] += time.getElapsedTime()*50;
+            for (int i = 0; i < SPRITE_COUNT; i++) {
+                this.rotations[i] += time.getElapsedTime() * 50;
             }
         }
 
         @Override
         public void render() {
             this.spritebatch.start();
-            for(int i = 0; i < SPRITE_COUNT; i++) {
+            for (int i = 0; i < SPRITE_COUNT; i++) {
                 this.spritebatch.draw(this.texture, this.positions[i], this.sizes[i], this.sizes[i], this.rotations[i], Color.WHITE);
             }
             this.spritebatch.end();
@@ -75,7 +75,7 @@ public class SpritebatchSample {
 
     }
 
-    public static void main(String [] args) {
+    public static void main(String[] args) {
         new Engine(new TestGame(), TestGame.TITLE).start();
     }
 

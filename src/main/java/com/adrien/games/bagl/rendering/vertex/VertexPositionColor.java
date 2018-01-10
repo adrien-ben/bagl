@@ -17,7 +17,7 @@ public class VertexPositionColor implements Vertex {
 
     @Override
     public float[] getData() {
-        return new float[] { position.getX(), position.getY(), position.getZ(), color.getRed(),
+        return new float[]{position.getX(), position.getY(), position.getZ(), color.getRed(),
                 color.getGreen(), color.getBlue()};
     }
 
@@ -30,7 +30,7 @@ public class VertexPositionColor implements Vertex {
     }
 
     private static VertexDescription createVertexDescription() {
-        return new VertexDescription(new VertexElement[]{ new VertexElement(0, 3, 0), new VertexElement(1, 3, 3)});
+        return new VertexDescription(new VertexElement[]{new VertexElement(0, 3, 0), new VertexElement(1, 3, 3)});
     }
 
 }

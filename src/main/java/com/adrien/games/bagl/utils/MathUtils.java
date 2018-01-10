@@ -10,9 +10,10 @@ public final class MathUtils {
 
     /**
      * Clamps a value between a lower and upper bounds.
+     *
      * @param value The value to clamp.
-     * @param min The lower bound.
-     * @param max The upper bound.
+     * @param min   The lower bound.
+     * @param max   The upper bound.
      * @return The clamped value.
      */
     public static float clamp(float value, float min, float max) {
@@ -21,6 +22,7 @@ public final class MathUtils {
 
     /**
      * Returns the minimum between two values.
+     *
      * @param a The first value.
      * @param b The second value.
      * @return The minimum.
@@ -31,6 +33,7 @@ public final class MathUtils {
 
     /**
      * Returns the maximum between two values.
+     *
      * @param a The first value.
      * @param b The second value.
      * @return The minimum.

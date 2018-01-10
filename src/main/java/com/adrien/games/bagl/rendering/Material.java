@@ -34,13 +34,14 @@ public class Material {
 
     /**
      * Apply the current material to a shader.
+     *
      * @param shader The shader to apply the material to.
      */
     public void applyTo(Shader shader) {
         shader.setUniform(DIFFUSE_COLOR_SHADER_UNIFORM, this.diffuseColor);
         final boolean hasDiffuseMap = Objects.nonNull(this.diffuseMap);
         shader.setUniform(DIFFUSE_MAP_FLAG_SHADER_UNIFORM, hasDiffuseMap);
-        if(hasDiffuseMap) {
+        if (hasDiffuseMap) {
             shader.setUniform(DIFFUSE_MAP_SHADER_UNIFORM, DIFFUSE_MAP_CHANNEL);
             this.diffuseMap.bind(DIFFUSE_MAP_CHANNEL);
         }
@@ -48,7 +49,7 @@ public class Material {
         shader.setUniform(ROUGHNESS_SHADER_UNIFORM, this.roughness);
         final boolean hasRoughnessMap = Objects.nonNull(this.roughnessMap);
         shader.setUniform(ROUGHNESS_MAP_FLAG_SHADER_UNIFORM, hasRoughnessMap);
-        if(hasRoughnessMap) {
+        if (hasRoughnessMap) {
             shader.setUniform(ROUGHNESS_MAP_SHADER_UNIFORM, ROUGHNESS_MAP_CHANNEL);
             this.roughnessMap.bind(ROUGHNESS_MAP_CHANNEL);
         }
@@ -56,30 +57,30 @@ public class Material {
         shader.setUniform(METALLIC_SHADER_UNIFORM, this.metallic);
         final boolean hasMetallicMap = Objects.nonNull(this.metallicMap);
         shader.setUniform(METALLIC_MAP_FLAG_SHADER_UNIFORM, hasMetallicMap);
-        if(hasMetallicMap) {
+        if (hasMetallicMap) {
             shader.setUniform(METALLIC_MAP_SHADER_UNIFORM, METALLIC_MAP_CHANNEL);
             this.metallicMap.bind(METALLIC_MAP_CHANNEL);
         }
 
         final boolean hasNormalMap = Objects.nonNull(this.normalMap);
         shader.setUniform(NORMAL_MAP_FLAG_SHADER_UNIFORM, hasNormalMap);
-        if(hasNormalMap) {
+        if (hasNormalMap) {
             shader.setUniform(NORMAL_MAP_SHADER_UNIFORM, NORMAL_MAP_CHANNEL);
             this.normalMap.bind(NORMAL_MAP_CHANNEL);
         }
     }
 
     public void destroy() {
-        if(Objects.nonNull(this.diffuseMap)) {
+        if (Objects.nonNull(this.diffuseMap)) {
             this.diffuseMap.destroy();
         }
-        if(Objects.nonNull(this.roughnessMap)) {
+        if (Objects.nonNull(this.roughnessMap)) {
             this.roughnessMap.destroy();
         }
-        if(Objects.nonNull(this.metallicMap)) {
+        if (Objects.nonNull(this.metallicMap)) {
             this.metallicMap.destroy();
         }
-        if(Objects.nonNull(this.normalMap)) {
+        if (Objects.nonNull(this.normalMap)) {
             this.normalMap.destroy();
         }
     }

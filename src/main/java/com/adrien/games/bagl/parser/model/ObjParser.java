@@ -60,7 +60,7 @@ public class ObjParser implements ModelParser {
         log.info("Parsing .obj file '{}'", filePath);
         final Model model = new Model();
         this.resetParser(filePath);
-        try(Stream<String> stream = Files.lines(Paths.get(filePath))) {
+        try (Stream<String> stream = Files.lines(Paths.get(filePath))) {
             stream.filter(StringUtils::isNotBlank).forEach(this::parseLine);
         } catch (IOException e) {
             log.error("Failed to parse file '{}'.", filePath, e);
@@ -83,41 +83,41 @@ public class ObjParser implements ModelParser {
     private void parseLine(String line) {
         this.currentLine++;
         final String[] tokens = line.split(SPACE_SEP);
-        if(tokens.length > 0) {
+        if (tokens.length > 0) {
             final String first = tokens[0];
-            if(POSITION_LINE_FLAG.equals(first)) {
+            if (POSITION_LINE_FLAG.equals(first)) {
                 this.parsePosition(tokens);
-            } else if(TEXTURE_LINE_FLAG.equals(first)) {
+            } else if (TEXTURE_LINE_FLAG.equals(first)) {
                 this.parseTextureCoords(tokens);
-            } else if(NORMAL_LINE_FLAG.equals(first)) {
+            } else if (NORMAL_LINE_FLAG.equals(first)) {
                 this.parseNormal(tokens);
-            } else if(FACE_LINE_FLAG.equals(first)) {
+            } else if (FACE_LINE_FLAG.equals(first)) {
                 this.parseFace(tokens);
-            } else if(OBJECT_LINE_FLAG.equals(first)) {
+            } else if (OBJECT_LINE_FLAG.equals(first)) {
                 this.parseNewObject(tokens);
-            }else if(MTL_LIB_FLAG.equals(first)) {
+            } else if (MTL_LIB_FLAG.equals(first)) {
                 this.parseMtlLib(tokens);
-            } else if(USE_MTL_FLAG.equals(first)) {
+            } else if (USE_MTL_FLAG.equals(first)) {
                 this.parseUseMtl(tokens);
             } else {
-                log.warn("Found line flag '{}' at line {}. This line will be ignored.",  first, this.currentLine);
+                log.warn("Found line flag '{}' at line {}. This line will be ignored.", first, this.currentLine);
             }
         }
     }
 
     private void parsePosition(String[] tokens) {
-        if(tokens.length >= 4) {
+        if (tokens.length >= 4) {
             final float x = Float.parseFloat(tokens[1]);
             final float y = Float.parseFloat(tokens[2]);
-            final  float z = Float.parseFloat(tokens[3]);
+            final float z = Float.parseFloat(tokens[3]);
             MeshBuilder.positions.add(new Vector3(x, y, z));
         } else {
-            this.handleParseError("Found position with less than 3 components at line " +  this.currentLine + ".");
+            this.handleParseError("Found position with less than 3 components at line " + this.currentLine + ".");
         }
     }
 
     private void parseTextureCoords(String[] tokens) {
-        if(tokens.length >= 3) {
+        if (tokens.length >= 3) {
             final float u = Float.parseFloat(tokens[1]);
             final float v = Float.parseFloat(tokens[2]);
             MeshBuilder.coordinates.add(new Vector2(u, v));
@@ -127,7 +127,7 @@ public class ObjParser implements ModelParser {
     }
 
     private void parseNormal(String[] tokens) {
-        if(tokens.length >= 4) {
+        if (tokens.length >= 4) {
             final float x = Float.parseFloat(tokens[1]);
             final float y = Float.parseFloat(tokens[2]);
             final float z = Float.parseFloat(tokens[3]);
@@ -138,9 +138,9 @@ public class ObjParser implements ModelParser {
     }
 
     private void parseFace(String[] tokens) {
-        if(tokens.length > 3) {
+        if (tokens.length > 3) {
             final int vertexCount = tokens.length - 1;
-            for(int i = 0; i < vertexCount - 2; i++) {
+            for (int i = 0; i < vertexCount - 2; i++) {
                 this.parseFaceVertex(tokens[1]);
                 this.parseFaceVertex(tokens[i + 2]);
                 this.parseFaceVertex(tokens[i + 3]);
@@ -152,9 +152,9 @@ public class ObjParser implements ModelParser {
 
     private void parseFaceVertex(String faceVertex) {
         final String[] tokens = faceVertex.split("/");
-        if(tokens.length >= 3 && StringUtils.isNotBlank(tokens[0]) && StringUtils.isNotBlank(tokens[2])) {
+        if (tokens.length >= 3 && StringUtils.isNotBlank(tokens[0]) && StringUtils.isNotBlank(tokens[2])) {
             final int positionIndex = Integer.parseInt(tokens[0]) - 1;
-            final int textCoordIndex = StringUtils.isNotBlank(tokens[1]) ?Integer.parseInt(tokens[1]) - 1 : -1;
+            final int textCoordIndex = StringUtils.isNotBlank(tokens[1]) ? Integer.parseInt(tokens[1]) - 1 : -1;
             final int normalIndex = Integer.parseInt(tokens[2]) - 1;
             final Face face = new Face(positionIndex, normalIndex, textCoordIndex);
 
@@ -171,7 +171,7 @@ public class ObjParser implements ModelParser {
     }
 
     private void parseNewObject(String[] tokens) {
-        if(tokens.length > 1) {
+        if (tokens.length > 1) {
             this.builders.put(this.currentBuilder.meshName, this.currentBuilder);
             this.currentBuilder = new MeshBuilder(tokens[1]);
         } else {
@@ -180,7 +180,7 @@ public class ObjParser implements ModelParser {
     }
 
     private void parseMtlLib(String[] tokens) {
-        if(tokens.length > 1) {
+        if (tokens.length > 1) {
             final String fileName = this.getContentInBrackets(tokens[1]);
             final String folderPath = Paths.get(this.currentFile).getParent().toString();
             final String mtlPath = folderPath + "/" + fileName;
@@ -193,7 +193,7 @@ public class ObjParser implements ModelParser {
     private void parseUseMtl(String[] tokens) {
         final String mtlName = getContentInBrackets(tokens[1]);
         this.currentBuilder.material = materialLib.get(mtlName);
-        if(Objects.isNull(this.currentBuilder.material)) {
+        if (Objects.isNull(this.currentBuilder.material)) {
             this.handleParseError("Material '" + mtlName + "' at line '" + this.currentLine + " does not exists.");
         }
     }
@@ -232,12 +232,12 @@ public class ObjParser implements ModelParser {
         }
 
         private Mesh build() {
-            if(this.material.hasNormalMap()) {
+            if (this.material.hasNormalMap()) {
                 this.computeTangents();
             }
             final int vertexCount = this.faces.size();
             final Vertex[] vertexArray = new MeshVertex[vertexCount];
-            for(int i = 0; i < vertexCount; i++) {
+            for (int i = 0; i < vertexCount; i++) {
                 final Face face = this.faces.get(i);
                 final Vector3 position = positions.get(face.getPositionIndex());
                 final Vector3 normal = normals.get(face.getNormalIndex());
@@ -248,7 +248,7 @@ public class ObjParser implements ModelParser {
 
             final int indexCount = this.faceIndices.size();
             final int[] indexArray = new int[indexCount];
-            for(int i = 0; i < indexCount; i++) {
+            for (int i = 0; i < indexCount; i++) {
                 indexArray[i] = this.faceIndices.get(i);
             }
 
@@ -261,7 +261,7 @@ public class ObjParser implements ModelParser {
 
             final Vector3[] tangents = new Vector3[this.faces.size()];
 
-            for(int i = 0; i < this.faceIndices.size(); i+=3) {
+            for (int i = 0; i < this.faceIndices.size(); i += 3) {
 
                 final int index0 = this.faceIndices.get(i);
                 final int index1 = this.faceIndices.get(i + 1);
@@ -283,11 +283,11 @@ public class ObjParser implements ModelParser {
                 final Vector2 deltaUVx = Vector2.sub(coordinates1, coordinates0);
                 final Vector2 deltaUVy = Vector2.sub(coordinates2, coordinates0);
 
-                final float f = 1/(deltaUVx.getX()*deltaUVy.getY() - deltaUVy.getX()*deltaUVx.getY());
+                final float f = 1 / (deltaUVx.getX() * deltaUVy.getY() - deltaUVy.getX() * deltaUVx.getY());
 
-                final float x = f*(deltaUVy.getY()*edge1.getX() - deltaUVx.getY()*edge2.getX());
-                final float y = f*(deltaUVy.getY()*edge1.getY() - deltaUVx.getY()*edge2.getY());
-                final float z = f*(deltaUVy.getY()*edge1.getZ() - deltaUVx.getY()*edge2.getZ());
+                final float x = f * (deltaUVy.getY() * edge1.getX() - deltaUVx.getY() * edge2.getX());
+                final float y = f * (deltaUVy.getY() * edge1.getY() - deltaUVx.getY() * edge2.getY());
+                final float z = f * (deltaUVy.getY() * edge1.getZ() - deltaUVx.getY() * edge2.getZ());
                 final Vector3 tangent = new Vector3(x, y, z);
                 tangent.normalise();
 
@@ -302,7 +302,7 @@ public class ObjParser implements ModelParser {
 
         private void setTangentForFace(Vector3[] tangents, int index, Vector3 tangent) {
             Vector3 currentTangent = tangents[index];
-            if(Objects.isNull(currentTangent)) {
+            if (Objects.isNull(currentTangent)) {
                 currentTangent = new Vector3(tangent);
                 tangents[index] = currentTangent;
             } else {

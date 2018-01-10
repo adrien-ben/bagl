@@ -15,6 +15,7 @@ public final class FileUtils {
 
     /**
      * Load the content of a file into a byte buffer.
+     *
      * @param filePath The path of the file to load.
      * @return A {@link ByteBuffer} filled with the file content.
      */
@@ -28,6 +29,7 @@ public final class FileUtils {
 
     /**
      * Gets the absolute path of a resource.
+     *
      * @param resource The name of the resource.
      * @return The absolute path of the resource as a {@link String}.
      */

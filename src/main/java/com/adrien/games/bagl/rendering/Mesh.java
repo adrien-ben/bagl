@@ -15,13 +15,13 @@ public class Mesh {
     }
 
     public void destroy() {
-        if(Objects.nonNull(vertices)) {
+        if (Objects.nonNull(vertices)) {
             vertices.destroy();
         }
-        if(Objects.nonNull(indices)) {
+        if (Objects.nonNull(indices)) {
             indices.destroy();
         }
-        if(Objects.nonNull(material)) {
+        if (Objects.nonNull(material)) {
             material.destroy();
         }
     }

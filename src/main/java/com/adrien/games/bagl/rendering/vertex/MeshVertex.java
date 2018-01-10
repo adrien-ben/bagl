@@ -53,7 +53,7 @@ public class MeshVertex implements Vertex {
     private static VertexDescription createVertexDescription() {
         return new VertexDescription(
                 new VertexElement[]
-                        { new VertexElement(0, 3, 0), new VertexElement(1, 3, 3), new VertexElement(2, 2, 6),
+                        {new VertexElement(0, 3, 0), new VertexElement(1, 3, 3), new VertexElement(2, 2, 6),
                                 new VertexElement(3, 3, 8)});
     }
 

@@ -19,7 +19,7 @@ public final class VertexDescription {
         this.vertexElementCount = 0;
         this.stride = 0;
 
-        for(VertexElement element : vertexElements) {
+        for (VertexElement element : vertexElements) {
             this.vertexElements.add(element);
             this.vertexElementCount++;
             this.stride += element.getSize();

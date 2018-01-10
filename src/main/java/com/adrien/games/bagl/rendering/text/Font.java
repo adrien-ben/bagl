@@ -21,7 +21,6 @@ import java.util.regex.Pattern;
 
 /**
  * Text font used to render text.
- *
  */
 public class Font {
 
@@ -50,12 +49,12 @@ public class Font {
 
     private void load(String filePath) {
         final File file = new File(filePath);
-        if(!file.exists()) {
+        if (!file.exists()) {
             log.error("Font file '{}' does not exists.", filePath);
             throw new EngineException("Font file '" + filePath + "' does not exists.");
         }
 
-        try(final BufferedReader reader = new BufferedReader(new FileReader(file))) {
+        try (final BufferedReader reader = new BufferedReader(new FileReader(file))) {
             this.parseHeader(reader);
             reader.lines().map(CHAR_LINE_PATTERN::matcher).filter(Matcher::matches).forEach(this::parseCharLine);
         } catch (IOException | ParseException e) {
@@ -74,9 +73,9 @@ public class Font {
         reader.readLine();//skip the fourth line
     }
 
-    private Matcher checkMatch(Pattern pattern, String line) throws ParseException{
+    private Matcher checkMatch(Pattern pattern, String line) throws ParseException {
         final Matcher matcher = pattern.matcher(line);
-        if(!matcher.matches()) {
+        if (!matcher.matches()) {
             throw new ParseException("Font file content is not correct");
         }
         return matcher;
@@ -110,31 +109,34 @@ public class Font {
 
     /**
      * Computes the length a text rendered with this font.
+     *
      * @param text The text to compute.
      * @return The length of the text in pixels.
      */
     public float getTextWidth(String text) {
-        return (float)text.chars().boxed().map(i -> (char)i.intValue()).map(this::getGlyph).filter(Objects::nonNull)
+        return (float) text.chars().boxed().map(i -> (char) i.intValue()).map(this::getGlyph).filter(Objects::nonNull)
                 .mapToDouble(c -> c.getXAdvance() + c.getXOffset()).sum();
     }
 
     /**
      * Gets the glyph information for a given character.
+     *
      * @param c The char to look for.
      * @return The glyph information as a {@link Glyph} or null if no glyph is found.
      */
     public Glyph getGlyph(char c) {
-        return this.glyphs.get((int)c);
+        return this.glyphs.get((int) c);
     }
 
     /**
      * Computes the smoothing of the font.
+     *
      * @param height The height of the rendered glyphs in pixels.
      * @return The smoothing factor to use at this given height.
      */
     public float computeSmoothing(float height) {
         final float pixelScaling = height / lineGapInPixels;
-        return SMOOTHING_FACTOR / (FONT_SPREAD*pixelScaling);
+        return SMOOTHING_FACTOR / (FONT_SPREAD * pixelScaling);
     }
 
     public void destroy() {

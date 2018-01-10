@@ -6,7 +6,6 @@ import com.adrien.games.bagl.core.math.Vector3;
 
 /**
  * 3D camera class.
- *
  */
 public class Camera {
 
@@ -60,6 +59,7 @@ public class Camera {
 
     /**
      * Rotates the camera.
+     *
      * @param rotation The rotation quaternion.
      * @return This for chaining.
      */
@@ -78,6 +78,7 @@ public class Camera {
     /**
      * Moves the camera in a direction. This only changes
      * the position of the camera not its orientation.
+     *
      * @param direction The direction to move towards.
      * @return This for chaining.
      */
@@ -90,10 +91,11 @@ public class Camera {
 
     /**
      * Returns the projection matrix.
+     *
      * @return The projection matrix.
      */
     public Matrix4 getProjection() {
-        if(this.dirtyProj) {
+        if (this.dirtyProj) {
             this.projection.setPerspective(this.fov, this.aspectRatio, this.zNear, this.zFar);
             this.dirtyProj = false;
         }
@@ -102,10 +104,11 @@ public class Camera {
 
     /**
      * Returns the view matrix.
+     *
      * @return The view matrix.
      */
     public Matrix4 getView() {
-        if(this.dirtyView) {
+        if (this.dirtyView) {
             this.view.setLookAt(this.position, Vector3.add(this.position, this.direction), this.up);
             this.dirtyView = false;
         }
@@ -115,10 +118,11 @@ public class Camera {
     /**
      * Returns a matrix which is the product of view and projection
      * matrices.
+     *
      * @return The view/projection matrix.
      */
     public Matrix4 getViewProj() {
-        if(this.dirtyViewProj) {
+        if (this.dirtyViewProj) {
             Matrix4.mul(this.getProjection(), this.getView(), this.viewProj);
             this.dirtyViewProj = false;
         }
@@ -126,7 +130,7 @@ public class Camera {
     }
 
     public Matrix4 getViewAtOrigin() {
-        if(this.dirtyViewAtOrigin) {
+        if (this.dirtyViewAtOrigin) {
             this.viewAtOrigin.setLookAt(Vector3.ZERO, this.direction, this.up);
             this.dirtyViewAtOrigin = false;
         }
@@ -136,10 +140,11 @@ public class Camera {
     /**
      * Returns a matrix which is the product of view and projection
      * matrices with the camera positioned at the origin (0, 0, 0).
+     *
      * @return The view/projection matrix at origin.
      */
     public Matrix4 getViewProjAtOrigin() {
-        if(this.dirtyViewProjAtOrigin) {
+        if (this.dirtyViewProjAtOrigin) {
             Matrix4.mul(this.getProjection(), this.getViewAtOrigin(), this.viewProjAtOrigin);
             this.dirtyViewProjAtOrigin = false;
         }

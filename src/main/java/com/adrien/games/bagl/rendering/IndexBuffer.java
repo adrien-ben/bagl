@@ -4,7 +4,7 @@ import org.lwjgl.opengl.GL15;
 
 /**
  * OpenGL index buffer
- *
+ * <p>
  * TODO: remove until figuring out a better and more flexible way
  */
 public final class IndexBuffer {
@@ -15,8 +15,9 @@ public final class IndexBuffer {
 
     /**
      * Creates an index buffer. The memory is allocated but not filled.
+     *
      * @param usage The buffer usage.
-     * @param size The size of the buffer.
+     * @param size  The size of the buffer.
      */
     public IndexBuffer(BufferUsage usage, int size) {
         this.usage = usage;
@@ -27,8 +28,9 @@ public final class IndexBuffer {
 
     /**
      * Creates an index buffer and sets the data.
+     *
      * @param usage The buffer usage.
-     * @param data The index data.
+     * @param data  The index data.
      */
     public IndexBuffer(BufferUsage usage, int[] data) {
         this(usage, data.length);
@@ -43,10 +45,11 @@ public final class IndexBuffer {
 
     /**
      * Sets the buffer data.
+     *
      * @param indices The indices to set.
      */
     public void setData(int[] indices) {
-        if(indices.length > this.size) {
+        if (indices.length > this.size) {
             throw new IllegalArgumentException("Too much indices");
         }
 

@@ -9,7 +9,6 @@ import java.util.function.Consumer;
 
 /**
  * Node of the scene graph.
- *
  */
 public class SceneNode<T> {
 
@@ -51,10 +50,11 @@ public class SceneNode<T> {
      * <p>Adds a child to this node.
      * <p>The child node is removed from its current parent
      * if it has one. This node is set as its new parent.
+     *
      * @param child The child node.
      */
     public void addChild(SceneNode<T> child) {
-        if(Objects.nonNull(child.parent)) {
+        if (Objects.nonNull(child.parent)) {
             child.parent.removeChild(child);
         }
         this.children.add(child);
@@ -63,6 +63,7 @@ public class SceneNode<T> {
 
     /**
      * Removes one of the children from this node.
+     *
      * @param child The child to remove.
      */
     public void removeChild(SceneNode<T> child) {
@@ -73,6 +74,7 @@ public class SceneNode<T> {
     /**
      * Applies a consumer on every node of the tree, starting
      * with this node.
+     *
      * @param consumer The consumer to apply.
      */
     public void apply(Consumer<SceneNode<T>> consumer) {
@@ -83,6 +85,7 @@ public class SceneNode<T> {
     /**
      * <p>Checks whether this node is a root node.
      * <p>A node is a root if it has no parent.
+     *
      * @return <code>true</code> if it is a root node, <code>false</code> otherwise.
      */
     public boolean isRoot() {
@@ -92,6 +95,7 @@ public class SceneNode<T> {
     /**
      * <p>Checks whether this node is empty.
      * <p>An empty node is a node whose data is null.
+     *
      * @return <code>true</code> if empty, <code>false</code> otherwise.
      */
     public boolean isEmpty() {
@@ -104,10 +108,11 @@ public class SceneNode<T> {
      * transformed by the transform of its parent. If
      * this node is a root the the derived transform is
      * equal to the local transform.
+     *
      * @return The derived transform.
      */
     public Transform getTransform() {
-        if(!isRoot()) {
+        if (!isRoot()) {
             final Transform parentTransform = this.parent.getTransform();
             Transform.transform(this.localTransform, parentTransform, this.transform);
         } else {

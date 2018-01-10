@@ -33,7 +33,7 @@ public class GLSLParser {
 
     private void constructSourceSkeleton(String glslSource) {
         StringTokenizer tokenizer = new StringTokenizer(glslSource, " \r\n\t=;{");
-        while(tokenizer.hasMoreTokens()) {
+        while (tokenizer.hasMoreTokens()) {
             final String token = tokenizer.nextToken();
             switch (token) {
                 case "uniform":
@@ -61,10 +61,10 @@ public class GLSLParser {
         String name = tokenizer.nextToken();
         ArrayList<GLSLAttribute> attributes = new ArrayList<>();
         Boolean hasMoreAttributes = true;
-        while(hasMoreAttributes) {
+        while (hasMoreAttributes) {
             String attrType = tokenizer.nextToken();
 
-            if("}".equals(attrType)) {
+            if ("}".equals(attrType)) {
                 hasMoreAttributes = false;
             } else {
                 String attrName = tokenizer.nextToken();
@@ -78,14 +78,14 @@ public class GLSLParser {
         String type = tokenizer.nextToken();
         String name = tokenizer.nextToken();
         String value = tokenizer.nextToken();
-        return new GLSLConstant(type, name, (int)Float.parseFloat(value));
+        return new GLSLConstant(type, name, (int) Float.parseFloat(value));
     }
 
     private void generateUniforms() {
-        for(GLSLAttribute uniform : uniformAttributes) {
+        for (GLSLAttribute uniform : uniformAttributes) {
             GLSLStructure struct = structures.get(uniform.getType());
             String uniformName = uniform.getName();
-            if(struct == null) {
+            if (struct == null) {
                 uniforms.add(uniformName);
             } else {
                 ArrayList<String> nestedUniforms = generateUniformsFormStructure(uniformName, struct);
@@ -100,22 +100,22 @@ public class GLSLParser {
 
         boolean isArray = this.isArray(uniformNameCopy);
         int size = isArray ? this.getArraySize(uniformNameCopy) : 1;
-        if(isArray) {
+        if (isArray) {
             uniformNameCopy = this.getArrayName(uniformNameCopy);
         }
 
-        for(int i = 0; i < size; i++) {
+        for (int i = 0; i < size; i++) {
             String finalUniformName = uniformNameCopy;
-            if(isArray) {
+            if (isArray) {
                 finalUniformName += "[" + i + "]";
             }
-            for(GLSLAttribute attribute : structure.getAttributes()) {
+            for (GLSLAttribute attribute : structure.getAttributes()) {
                 GLSLStructure struct = structures.get(attribute.getType());
-                if(struct == null) {
+                if (struct == null) {
                     structUniforms.add(finalUniformName + "." + attribute.getName());
                 } else { //nested structure
                     ArrayList<String> nestedUniforms = generateUniformsFormStructure(attribute.getName(), struct);
-                    for(String nestedUniform : nestedUniforms) {
+                    for (String nestedUniform : nestedUniforms) {
                         structUniforms.add(finalUniformName + "." + nestedUniform);
                     }
                 }
@@ -132,7 +132,7 @@ public class GLSLParser {
         Matcher matcher = ARRAY_SIZE_PATTERN.matcher(uniformName);
         matcher.matches();
         String size = matcher.group(1);
-        if(size.matches("\\d+")) {
+        if (size.matches("\\d+")) {
             return Integer.parseInt(matcher.group(1));
         } else {
             return getIntegerConstantValue(size);
@@ -141,7 +141,7 @@ public class GLSLParser {
 
     private int getIntegerConstantValue(String name) {
         GLSLConstant constant = constants.get(name);
-        if(Objects.isNull(constant) || !INTEGER_TYPE.equals(constant.getType())) {
+        if (Objects.isNull(constant) || !INTEGER_TYPE.equals(constant.getType())) {
             throw new EngineException("The constant '" + name + "' is not defined or is not an integer");
         } else {
             return constant.getValue();
@@ -159,7 +159,7 @@ public class GLSLParser {
         StringBuilder strBldr = new StringBuilder();
 
         strBldr.append("structures : \n");
-        for(GLSLStructure struct : structures.values()) {
+        for (GLSLStructure struct : structures.values()) {
             strBldr.append("\t");
             strBldr.append(struct.toString());
             strBldr.append("\n");
@@ -167,7 +167,7 @@ public class GLSLParser {
         strBldr.append("\n");
 
         strBldr.append("uniforms : \n");
-        for(GLSLAttribute uniformAttr : uniformAttributes) {
+        for (GLSLAttribute uniformAttr : uniformAttributes) {
             strBldr.append("\t");
             strBldr.append(uniformAttr.toString());
             strBldr.append("\n");
@@ -175,7 +175,7 @@ public class GLSLParser {
         strBldr.append("\n");
 
         strBldr.append("uniform keys : \n");
-        for(String uniform : uniforms) {
+        for (String uniform : uniforms) {
             strBldr.append("\t");
             strBldr.append(uniform);
             strBldr.append("\n");

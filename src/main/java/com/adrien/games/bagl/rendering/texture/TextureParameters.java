@@ -13,12 +13,10 @@ package com.adrien.games.bagl.rendering.texture;
  * <br><br>
  * <p>Texture parameters objects can be created in a fluent way. ex: new TextureParameters().anisotropic(16).mipmaps(true);
  *
+ * @author Adrien
  * @see Format
  * @see Filter
  * @see Wrap
- *
- * @author Adrien
- *
  */
 public class TextureParameters {
 

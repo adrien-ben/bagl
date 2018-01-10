@@ -21,7 +21,7 @@ public class SpotLight extends PointLight {
     }
 
     private static float computeCutOff(float angle) {
-        return (float)Math.cos(Math.toRadians(angle));
+        return (float) Math.cos(Math.toRadians(angle));
     }
 
     private void updateCutOffs() {

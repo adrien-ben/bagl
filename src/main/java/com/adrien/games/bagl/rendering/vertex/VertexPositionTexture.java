@@ -23,8 +23,8 @@ public class VertexPositionTexture implements Vertex {
     @Override
     public float[] getData() {
         return new float[]
-                { position.getX(), position.getY(), position.getZ(), coords.getX(),
-                        coords.getY() };
+                {position.getX(), position.getY(), position.getZ(), coords.getX(),
+                        coords.getY()};
     }
 
     public Vector3 getPosition() {
@@ -38,6 +38,6 @@ public class VertexPositionTexture implements Vertex {
     private static VertexDescription createVertexDescription() {
         return new VertexDescription(
                 new VertexElement[]
-                        { new VertexElement(0, 3, 0), new VertexElement(2, 2, 3) });
+                        {new VertexElement(0, 3, 0), new VertexElement(2, 2, 3)});
     }
 }

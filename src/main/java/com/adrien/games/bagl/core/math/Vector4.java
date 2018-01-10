@@ -42,41 +42,44 @@ public final class Vector4 {
 
     /**
      * Transform the current vector by the Matrix4 matrix.
+     *
      * @param matrix The transformation matrix.
      */
     public void transform(Matrix4 matrix) {
-        float _x = matrix.getM11()*getX() + matrix.getM12()*getY() + matrix.getM13()*getZ() + matrix.getM14()*getW();
-        float _y = matrix.getM21()*getX() + matrix.getM22()*getY() + matrix.getM23()*getZ() + matrix.getM24()*getW();
-        float _z = matrix.getM31()*getX() + matrix.getM32()*getY() + matrix.getM33()*getZ() + matrix.getM34()*getW();
-        float _w = matrix.getM41()*getX() + matrix.getM42()*getY() + matrix.getM43()*getZ() + matrix.getM44()*getW();
+        float _x = matrix.getM11() * getX() + matrix.getM12() * getY() + matrix.getM13() * getZ() + matrix.getM14() * getW();
+        float _y = matrix.getM21() * getX() + matrix.getM22() * getY() + matrix.getM23() * getZ() + matrix.getM24() * getW();
+        float _z = matrix.getM31() * getX() + matrix.getM32() * getY() + matrix.getM33() * getZ() + matrix.getM34() * getW();
+        float _w = matrix.getM41() * getX() + matrix.getM42() * getY() + matrix.getM43() * getZ() + matrix.getM44() * getW();
         setXYZW(_x, _y, _z, _w);
     }
 
     /**
      * Return a vector which is the tranformation of the passed in vector by the passed in Matrix.
+     *
      * @param matrix The transformation matrix.
      * @param vector The vector to be tranformed.
      * @return A new vector.
      */
     public static Vector4 transform(Matrix4 matrix, Vector4 vector) {
-        float _x = matrix.getM11()*vector.getX() + matrix.getM12()*vector.getY() + matrix.getM13()*vector.getZ() + matrix.getM14()*vector.getW();
-        float _y = matrix.getM21()*vector.getX() + matrix.getM22()*vector.getY() + matrix.getM23()*vector.getZ() + matrix.getM24()*vector.getW();
-        float _z = matrix.getM31()*vector.getX() + matrix.getM32()*vector.getY() + matrix.getM33()*vector.getZ() + matrix.getM34()*vector.getW();
-        float _w = matrix.getM41()*vector.getX() + matrix.getM42()*vector.getY() + matrix.getM43()*vector.getZ() + matrix.getM44()*vector.getW();
-        return new Vector4(_x,  _y,  _z,  _w);
+        float _x = matrix.getM11() * vector.getX() + matrix.getM12() * vector.getY() + matrix.getM13() * vector.getZ() + matrix.getM14() * vector.getW();
+        float _y = matrix.getM21() * vector.getX() + matrix.getM22() * vector.getY() + matrix.getM23() * vector.getZ() + matrix.getM24() * vector.getW();
+        float _z = matrix.getM31() * vector.getX() + matrix.getM32() * vector.getY() + matrix.getM33() * vector.getZ() + matrix.getM34() * vector.getW();
+        float _w = matrix.getM41() * vector.getX() + matrix.getM42() * vector.getY() + matrix.getM43() * vector.getZ() + matrix.getM44() * vector.getW();
+        return new Vector4(_x, _y, _z, _w);
     }
 
     /**
      * Return a vector which is the tranformation of the passed in vector by the passed in Matrix.
+     *
      * @param matrix The transformation matrix.
      * @param vector The vector to be tranformed.
      * @param result The vector where to store the result.
      */
     public static void transform(Matrix4 matrix, Vector4 vector, Vector4 result) {
-        float _x = matrix.getM11()*vector.getX() + matrix.getM12()*vector.getY() + matrix.getM13()*vector.getZ() + matrix.getM14()*vector.getW();
-        float _y = matrix.getM21()*vector.getX() + matrix.getM22()*vector.getY() + matrix.getM23()*vector.getZ() + matrix.getM24()*vector.getW();
-        float _z = matrix.getM31()*vector.getX() + matrix.getM32()*vector.getY() + matrix.getM33()*vector.getZ() + matrix.getM34()*vector.getW();
-        float _w = matrix.getM41()*vector.getX() + matrix.getM42()*vector.getY() + matrix.getM43()*vector.getZ() + matrix.getM44()*vector.getW();
+        float _x = matrix.getM11() * vector.getX() + matrix.getM12() * vector.getY() + matrix.getM13() * vector.getZ() + matrix.getM14() * vector.getW();
+        float _y = matrix.getM21() * vector.getX() + matrix.getM22() * vector.getY() + matrix.getM23() * vector.getZ() + matrix.getM24() * vector.getW();
+        float _z = matrix.getM31() * vector.getX() + matrix.getM32() * vector.getY() + matrix.getM33() * vector.getZ() + matrix.getM34() * vector.getW();
+        float _w = matrix.getM41() * vector.getX() + matrix.getM42() * vector.getY() + matrix.getM43() * vector.getZ() + matrix.getM44() * vector.getW();
         result.setXYZW(_x, _y, _z, _w);
     }
 

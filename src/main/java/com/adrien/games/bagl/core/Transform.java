@@ -6,7 +6,6 @@ import com.adrien.games.bagl.core.math.Vector3;
 
 /**
  * A transform represents a translation, rotation and scaling in space.
- *
  */
 public class Transform {
 
@@ -35,6 +34,7 @@ public class Transform {
     /**
      * Transforms this transform relatively to another transform.
      * This transform is 'sent' to the space of the other transform.
+     *
      * @param transform The transform to apply.
      * @return This for chaining.
      */
@@ -51,9 +51,10 @@ public class Transform {
      * Transforms a transform relatively to another transform.
      * The transform <code>toTransform</code> is 'sent' to the
      * space of the other transform.
+     *
      * @param toTransform The transform to apply a transform to. Will not be changed.
-     * @param transform The transform to apply. Will not be changed.
-     * @param result The transform where to store the result.
+     * @param transform   The transform to apply. Will not be changed.
+     * @param result      The transform where to store the result.
      */
     public static void transform(Transform toTransform, Transform transform, Transform result) {
         final Matrix4 tm = transform.getTransformMatrix();
@@ -76,6 +77,7 @@ public class Transform {
 
     /**
      * Copies the values of another transform.
+     *
      * @param other The transform to copy.
      * @return This form chaining.
      */
@@ -92,10 +94,11 @@ public class Transform {
      * <p>This matrix contains the combination of translation,
      * rotation and scaling. The matrix is computed here if
      * needed.
+     *
      * @return A matrix.
      */
     public Matrix4 getTransformMatrix() {
-        if(this.isDirty) {
+        if (this.isDirty) {
             this.computeTransform();
         }
         return this.transform;
@@ -116,6 +119,7 @@ public class Transform {
     /**
      * Sets the translation. Flags the transform as dirty
      * so the transform matrix is recomputed when needed.
+     *
      * @param translation The translation vector to set.
      * @return This for chaining.
      */
@@ -128,6 +132,7 @@ public class Transform {
     /**
      * Sets the rotation. Flags the transform as dirty
      * so the transform matrix is recomputed when needed.
+     *
      * @param rotation The rotation to set.
      * @return This for chaining.
      */
@@ -140,6 +145,7 @@ public class Transform {
     /**
      * Sets the scaling. Flags the transform as dirty
      * so the transform matrix is recomputed when needed.
+     *
      * @param scale The scale vector to set.
      * @return This for chaining.
      */

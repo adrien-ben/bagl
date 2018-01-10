@@ -14,7 +14,7 @@ public class VertexPosition implements Vertex {
 
     @Override
     public float[] getData() {
-        return new float[] { position.getX(), position.getY(), position.getZ() };
+        return new float[]{position.getX(), position.getY(), position.getZ()};
     }
 
     public Vector3 getPosition() {
@@ -24,7 +24,7 @@ public class VertexPosition implements Vertex {
     private static VertexDescription createVertexDescription() {
         return new VertexDescription(
                 new VertexElement[]
-                        { new VertexElement(0, 3, 0) });
+                        {new VertexElement(0, 3, 0)});
     }
 
 }

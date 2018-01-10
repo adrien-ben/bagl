@@ -1,8 +1,7 @@
 package com.adrien.games.bagl.core.math;
 
 /**
- * Tree-dimensional math vector. 
- *
+ * Tree-dimensional math vector.
  */
 public final class Vector3 {
 
@@ -38,22 +37,25 @@ public final class Vector3 {
 
     /**
      * Computes and returns the squared length of the vector.
+     *
      * @return The length of the vector squared.
      */
     public float squareLength() {
-        return x*x + y*y + z*z;
+        return x * x + y * y + z * z;
     }
 
     /**
      * Computes and return the length of the vector.
+     *
      * @return The length of the vector.
      */
     public float length() {
-        return (float)Math.sqrt(x*x + y*y + z*z);
+        return (float) Math.sqrt(x * x + y * y + z * z);
     }
 
     /**
      * Normalizes the current vector.
+     *
      * @return This for chaining.
      */
     public Vector3 normalise() {
@@ -67,15 +69,17 @@ public final class Vector3 {
     /**
      * Normalise the Vector vector and store the result in result.
      * The current vector is not modified.
+     *
      * @param result The vector in which the result will be stored.
      */
     public void normalise(Vector3 result) {
         float length = length();
-        result.setXYZ(this.x/length, this.y/length, this.z/length);
+        result.setXYZ(this.x / length, this.y / length, this.z / length);
     }
 
     /**
      * Adds a Vector3 to the current Vector3.
+     *
      * @param other The vector to add to the current one.
      * @return This for chaining.
      */
@@ -88,7 +92,8 @@ public final class Vector3 {
 
     /**
      * Adds two Vector3 and returns a new Vector3.
-     * @param left The first vector.
+     *
+     * @param left  The first vector.
      * @param right The second vector.
      * @return A new Vector3 which is the addition of left and right.
      */
@@ -98,8 +103,9 @@ public final class Vector3 {
 
     /**
      * Adds two Vector3 and fill an existing Vector3 with the result.
-     * @param left The first vector.
-     * @param right The second vector.
+     *
+     * @param left   The first vector.
+     * @param right  The second vector.
      * @param result The vector in which the result will be stored.
      */
     public static void add(Vector3 left, Vector3 right, Vector3 result) {
@@ -108,6 +114,7 @@ public final class Vector3 {
 
     /**
      * Subs a Vector3 to the current Vector3.
+     *
      * @param other The Vector3 to substract to the current one.
      * @return This for chaining.
      */
@@ -120,7 +127,8 @@ public final class Vector3 {
 
     /**
      * Subs two Vector3 and returns a new Vector3.
-     * @param left The first vector.
+     *
+     * @param left  The first vector.
      * @param right The second vector.
      * @return A new Vector3 which is the substraction of left and right.
      */
@@ -130,8 +138,9 @@ public final class Vector3 {
 
     /**
      * Subs two Vector3 and fill an existing Vector3 with the result.
-     * @param left The first vector.
-     * @param right The second vector.
+     *
+     * @param left   The first vector.
+     * @param right  The second vector.
      * @param result The vector in which the result will be stored
      */
     public static void sub(Vector3 left, Vector3 right, Vector3 result) {
@@ -140,6 +149,7 @@ public final class Vector3 {
 
     /**
      * Multiplies this vector by another one.
+     *
      * @param other The vector to multiply to this one.
      * @return This for chaining.
      */
@@ -152,7 +162,8 @@ public final class Vector3 {
 
     /**
      * Multiplies two vector.
-     * @param left The left vector.
+     *
+     * @param left  The left vector.
      * @param right The right vector.
      * @return A new vector which is the product of two vectors.
      */
@@ -162,8 +173,9 @@ public final class Vector3 {
 
     /**
      * Multiplies two vector and store the result in another one.
-     * @param left The left vector. Will not be changed.
-     * @param right The right vector. Will not be changed.
+     *
+     * @param left   The left vector. Will not be changed.
+     * @param right  The right vector. Will not be changed.
      * @param result The vector where to store the result.
      */
     public static void mul(Vector3 left, Vector3 right, Vector3 result) {
@@ -172,6 +184,7 @@ public final class Vector3 {
 
     /**
      * Multiplies a vector by a scalar.
+     *
      * @param factor The scalar.
      * @return This for chaining.
      */
@@ -185,6 +198,7 @@ public final class Vector3 {
     /**
      * Multiplies a vector by a scalar and stores
      * the result in another vector.
+     *
      * @param factor The scalar.
      * @param result The vector where to store the result.
      */
@@ -194,20 +208,22 @@ public final class Vector3 {
 
     /**
      * Averages this vector with another vector.
+     *
      * @param other The vector to use to average this one.
      * @return This for chaining.
      */
     public Vector3 average(Vector3 other) {
-        this.x = (this.x + other.x)/2;
-        this.y = (this.y + other.y)/2;
-        this.z = (this.z + other.z)/2;
+        this.x = (this.x + other.x) / 2;
+        this.y = (this.y + other.y) / 2;
+        this.z = (this.z + other.z) / 2;
         return this;
     }
 
     /**
      * Averages this vector with another vector and stores the result
      * in another vector.
-     * @param other The vector to use to average this one.
+     *
+     * @param other  The vector to use to average this one.
      * @param result The vector where to store the result.
      */
     public void average(Vector3 other, Vector3 result) {
@@ -216,56 +232,61 @@ public final class Vector3 {
 
     /**
      * Computes the cross product of two vectors.
-     * @param left The left vector.
+     *
+     * @param left  The left vector.
      * @param right The right vector.
      * @return A new vector containing the cross product.
      */
     public static Vector3 cross(Vector3 left, Vector3 right) {
-        float _x = left.getY()*right.getZ() - left.getZ()*right.getY();
-        float _y = left.getZ()*right.getX() - left.getX()*right.getZ();
-        float _z = left.getX()*right.getY() - left.getY()*right.getX();
+        float _x = left.getY() * right.getZ() - left.getZ() * right.getY();
+        float _y = left.getZ() * right.getX() - left.getX() * right.getZ();
+        float _z = left.getX() * right.getY() - left.getY() * right.getX();
         return new Vector3(_x, _y, _z);
     }
 
     /**
      * Computes the cross product of two vectors and
      * stores the result in another vector.
-     * @param left The left vector.
-     * @param right The right vector.
+     *
+     * @param left   The left vector.
+     * @param right  The right vector.
      * @param result The vector where to store the result.
      */
     public static void cross(Vector3 left, Vector3 right, Vector3 result) {
-        float _x = left.getY()*right.getZ() - left.getZ()*right.getY();
-        float _y = left.getZ()*right.getX() - left.getX()*right.getZ();
-        float _z = left.getX()*right.getY() - left.getY()*right.getX();
+        float _x = left.getY() * right.getZ() - left.getZ() * right.getY();
+        float _y = left.getZ() * right.getX() - left.getX() * right.getZ();
+        float _z = left.getX() * right.getY() - left.getY() * right.getX();
         result.setXYZ(_x, _y, _z);
     }
 
     /**
      * Computes the dot product between this vector and another.
+     *
      * @param other The other vector.
      * @return The dot products of the two vectors.
      */
     public float dot(Vector3 other) {
-        return this.x*other.getX() + this.y*other.getY() + this.z*other.getZ();
+        return this.x * other.getX() + this.y * other.getY() + this.z * other.getZ();
     }
 
     /**
      * Transform the current vector by the Matrix4 matrix.
+     *
      * @param matrix The transformation matrix.
      */
     public void transform(Matrix4 matrix, float w) {
-        float _x = matrix.getM11()*getX() + matrix.getM12()*getY() + matrix.getM13()*getZ() + w*matrix.getM14();
-        float _y = matrix.getM21()*getX() + matrix.getM22()*getY() + matrix.getM23()*getZ() + w*matrix.getM24();
-        float _z = matrix.getM31()*getX() + matrix.getM32()*getY() + matrix.getM33()*getZ() + w*matrix.getM34();
+        float _x = matrix.getM11() * getX() + matrix.getM12() * getY() + matrix.getM13() * getZ() + w * matrix.getM14();
+        float _y = matrix.getM21() * getX() + matrix.getM22() * getY() + matrix.getM23() * getZ() + w * matrix.getM24();
+        float _z = matrix.getM31() * getX() + matrix.getM32() * getY() + matrix.getM33() * getZ() + w * matrix.getM34();
         setXYZ(_x, _y, _z);
     }
 
     /**
      * Return a vector which is the tranformation of the passed in vector by the passed in Matrix.
+     *
      * @param matrix The transformation matrix.
      * @param vector The vector to be tranformed.
-     * @param w The homogeneous part of the vector. Should be one or 0. If 0 the translation is ignored.
+     * @param w      The homogeneous part of the vector. Should be one or 0. If 0 the translation is ignored.
      * @return A new vector.
      */
     public static Vector3 transform(Matrix4 matrix, Vector3 vector, float w) {
@@ -276,20 +297,22 @@ public final class Vector3 {
 
     /**
      * Computes the transformation of a vector and sets the result in a passed in vector.
+     *
      * @param matrix The transformation matrix.
      * @param vector The vector to be tranformed.
-     * @param w The homogeneous part of the vector. Should be one or 0. If 0 the translation is ignored.
+     * @param w      The homogeneous part of the vector. Should be one or 0. If 0 the translation is ignored.
      * @param result The vector where to store the result.
      */
     public static void transform(Matrix4 matrix, Vector3 vector, float w, Vector3 result) {
-        float _x = matrix.getM11()*vector.getX() + matrix.getM12()*vector.getY() + matrix.getM13()*vector.getZ() + w*matrix.getM14();
-        float _y = matrix.getM21()*vector.getX() + matrix.getM22()*vector.getY() + matrix.getM23()*vector.getZ() + w*matrix.getM24();
-        float _z = matrix.getM31()*vector.getX() + matrix.getM32()*vector.getY() + matrix.getM33()*vector.getZ() + w*matrix.getM34();
+        float _x = matrix.getM11() * vector.getX() + matrix.getM12() * vector.getY() + matrix.getM13() * vector.getZ() + w * matrix.getM14();
+        float _y = matrix.getM21() * vector.getX() + matrix.getM22() * vector.getY() + matrix.getM23() * vector.getZ() + w * matrix.getM24();
+        float _z = matrix.getM31() * vector.getX() + matrix.getM32() * vector.getY() + matrix.getM33() * vector.getZ() + w * matrix.getM34();
         result.setXYZ(_x, _y, _z);
     }
 
     /**
      * Sets the components of this vector.
+     *
      * @param x The x component.
      * @param y The y component.
      * @param z The z component.
@@ -305,6 +328,7 @@ public final class Vector3 {
     /**
      * Sets the components of this vector by copying
      * those of another vector.
+     *
      * @param other The vector to copy.
      * @return This for chaining.
      */

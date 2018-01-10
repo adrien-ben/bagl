@@ -14,7 +14,7 @@ public class Particle {
     private Color endColor;
     private float ttl;
 
-    private final Color color = new Color(0, 0, 0,0);
+    private final Color color = new Color(0, 0, 0, 0);
     private float timeLeft;
     private boolean alive;
 
@@ -28,14 +28,14 @@ public class Particle {
 
     public void update(Time time) {
         this.alive = this.timeLeft > 0;
-        if(this.alive) {
+        if (this.alive) {
             final float elapsedTime = time.getElapsedTime();
             this.timeLeft -= elapsedTime;
             this.direction.normalise();
-            this.direction.scale(elapsedTime*this.speed);
+            this.direction.scale(elapsedTime * this.speed);
             this.position.add(this.direction);
 
-            final float life = this.timeLeft/this.ttl;
+            final float life = this.timeLeft / this.ttl;
             Color.blend(this.startColor, this.endColor, life, this.color);
         }
     }

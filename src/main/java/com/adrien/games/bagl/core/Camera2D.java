@@ -5,8 +5,8 @@ import com.adrien.games.bagl.core.math.Vector2;
 
 /**
  * Two-dimensional camera. Can be use for 2D rendering like sprite or UI.
- * @author Adrien
  *
+ * @author Adrien
  */
 public class Camera2D {
 
@@ -26,8 +26,8 @@ public class Camera2D {
     }
 
     private void computeOrthographic() {
-        int left = Math.round(position.getX()) - this.width/2;
-        int bottom = Math.round(position.getY()) - this.height/2;
+        int left = Math.round(position.getX()) - this.width / 2;
+        int bottom = Math.round(position.getY()) - this.height / 2;
         this.orthographic.setOrthographic(left, left + this.width, bottom, bottom + this.height);
         this.dirty = false;
     }
@@ -56,7 +56,7 @@ public class Camera2D {
     }
 
     public Matrix4 getOrthographic() {
-        if(this.dirty) {
+        if (this.dirty) {
             this.computeOrthographic();
         }
         return this.orthographic;
