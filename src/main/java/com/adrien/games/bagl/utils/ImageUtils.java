@@ -3,10 +3,13 @@ package com.adrien.games.bagl.utils;
 import com.adrien.games.bagl.core.EngineException;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.stb.STBImage;
+import org.lwjgl.system.MemoryStack;
 
 import java.io.File;
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.Objects;
 
 /**
  * Image utility class
@@ -43,11 +46,47 @@ public final class ImageUtils {
     }
 
     /**
+     * Load an HDR image file
+     * <p>
+     * Image loaded should then be destroyed using {@link ImageUtils#destroy(HDRImage)} to
+     * ensure memory is properly freed
+     *
+     * @param filePath The path of the image file to load
+     * @return An {@link HDRImage}
+     */
+    public static HDRImage loadHDRImage(final String filePath) {
+        if (!new File(filePath).exists()) {
+            throw new EngineException("The image file '" + filePath + "' does not exists");
+        }
+        STBImage.stbi_set_flip_vertically_on_load(true);
+        try (final MemoryStack stack = MemoryStack.stackPush()) {
+            final IntBuffer width = stack.mallocInt(1);
+            final IntBuffer height = stack.mallocInt(1);
+            final IntBuffer channels = stack.mallocInt(1);
+            final FloatBuffer pixels = STBImage.stbi_loadf(filePath, width, height, channels, 0);
+            if (Objects.isNull(pixels)) {
+                throw new EngineException("Failed to load image : '" + filePath + "'");
+            }
+            return new HDRImage(width.get(), height.get(), channels.get(), pixels);
+        }
+
+    }
+
+    /**
      * Free memory allocated when loading an image
      *
      * @param image The image whose memory must be free
      */
     public static void destroy(final Image image) {
+        STBImage.stbi_image_free(image.getData());
+    }
+
+    /**
+     * Free memory allocated when loading an HDR image
+     *
+     * @param image The image whose memory must be free
+     */
+    public static void destroy(final HDRImage image) {
         STBImage.stbi_image_free(image.getData());
     }
 }

@@ -2,19 +2,16 @@ package com.adrien.games.bagl.rendering.environment;
 
 import com.adrien.games.bagl.core.Camera;
 import com.adrien.games.bagl.core.Configuration;
-import com.adrien.games.bagl.core.EngineException;
 import com.adrien.games.bagl.core.math.Vector3;
 import com.adrien.games.bagl.rendering.FrameBuffer;
 import com.adrien.games.bagl.rendering.FrameBufferParameters;
 import com.adrien.games.bagl.rendering.Shader;
 import com.adrien.games.bagl.rendering.texture.*;
-import org.lwjgl.stb.STBImage;
+import com.adrien.games.bagl.utils.HDRImage;
+import com.adrien.games.bagl.utils.ImageUtils;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-import java.util.Objects;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE_CUBE_MAP_POSITIVE_X;
@@ -80,10 +77,13 @@ public class EnvironmentMapGenerator {
      * @return An {@link EnvironmentMap}
      */
     public EnvironmentMap generate(final String filePath) {
-        final Texture equirectangularMap = this.loadHDREnvMap(filePath);
+        final HDRImage hdrImage = ImageUtils.loadHDRImage(filePath);
+        final Texture equirectangularMap = new Texture(hdrImage.getWidth(), hdrImage.getHeight(), hdrImage.getData(),
+                new TextureParameters().format(Format.RGB16F).sWrap(Wrap.CLAMP_TO_EDGE).tWrap(Wrap.CLAMP_TO_EDGE));
         final Cubemap cubemap = this.renderToCubemap(ENVIRONMENT_MAP_RESOLUTION, Format.RGB16F, this.environmentSphericalShader,
                 equirectangularMap::bind, Texture::unbind);
         equirectangularMap.destroy();
+        ImageUtils.destroy(hdrImage);
         return new EnvironmentMap(cubemap);
     }
 
@@ -180,25 +180,6 @@ public class EnvironmentMapGenerator {
         glVertexAttribIPointer(0, 3, GL_BYTE, 3, 0);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
-    }
-
-    private Texture loadHDREnvMap(final String filePath) {
-        STBImage.stbi_set_flip_vertically_on_load(true);
-        try (final MemoryStack stack = MemoryStack.stackPush()) {
-            final IntBuffer width = stack.mallocInt(1);
-            final IntBuffer height = stack.mallocInt(1);
-            final IntBuffer channels = stack.mallocInt(1);
-            final FloatBuffer pixels = STBImage.stbi_loadf(filePath, width, height, channels, 0);
-            if (Objects.isNull(pixels)) {
-                throw new EngineException("Can load HDR environment map");
-            }
-            final TextureParameters parameters = new TextureParameters().format(Format.RGB16F)
-                    .sWrap(Wrap.CLAMP_TO_EDGE)
-                    .tWrap(Wrap.CLAMP_TO_EDGE);
-            final Texture envMap = new Texture(width.get(), height.get(), pixels, parameters);
-            STBImage.stbi_image_free(pixels);
-            return envMap;
-        }
     }
 
     private Camera[] initCameras() {
