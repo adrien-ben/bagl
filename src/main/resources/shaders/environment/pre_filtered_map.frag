@@ -82,7 +82,7 @@ void main() {
             float D = distribution(N, H, roughness);
             float pdf = (D * max(dot(N, H), 0.0) / (4.0 * max(dot(H, V), 0.0))) + 0.0001;
 
-            float resolution = 512.0;
+            float resolution = 1024.0;
             float saTexel = 4.0*PI/(6.0*resolution*resolution);
             float saSample = 1.0/(float(SAMPLE_COUNT) * pdf + 0.0001);
 
