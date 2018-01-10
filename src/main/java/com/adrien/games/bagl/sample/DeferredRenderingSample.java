@@ -101,9 +101,9 @@ public class DeferredRenderingSample {
         }
 
         private void loadMeshes() {
-            this.environmentMap = this.environmentMapGenerator.generate(FileUtils.getResourceAbsolutePath("/envmaps/flat.hdr"));
-//            this.environmentMap = this.environmentMapGenerator.generate("D:/Images/HDRI/lookout.hdr");
-            this.irradianceMap = this.environmentMapGenerator.generateConvolution(this.environmentMap);
+            this.environmentMap = this.environmentMapGenerator.generateEnvironmentMap(FileUtils.getResourceAbsolutePath("/envmaps/flat.hdr"));
+//            this.environmentMap = this.environmentMapGenerator.generateEnvironmentMap("D:/Images/HDRI/lookout.hdr");
+            this.irradianceMap = this.environmentMapGenerator.generateIrradianceMap(this.environmentMap);
             this.preFilteredMap = this.environmentMapGenerator.generatePreFilteredMap(this.environmentMap);
 
             this.scene.setEnvironmentMap(this.environmentMap);

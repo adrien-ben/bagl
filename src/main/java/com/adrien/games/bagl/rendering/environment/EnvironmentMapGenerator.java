@@ -26,7 +26,7 @@ import static org.lwjgl.opengl.GL30.*;
 public class EnvironmentMapGenerator {
 
     private final static int ENVIRONMENT_MAP_RESOLUTION = 1024;
-    private final static int CONVOLUTION_RESOLUTION = 64;
+    private final static int IRRADIANCE_MAP_RESOLUTION = 64;
     private final static int PRE_FILTERED_MAP_RESOLUTION = 256;
     private final static float FIELD_OF_VIEW = (float) Math.toRadians(90);
     private final static float ASPECT_RATIO = 1f;
@@ -41,11 +41,11 @@ public class EnvironmentMapGenerator {
     private final int iboId;
 
     private FrameBuffer environmentFrameBuffer;
-    private FrameBuffer convolutionFrameBuffer;
+    private FrameBuffer irradianceFrameBuffer;
     private FrameBuffer preFilteredMapFrameBuffer;
 
     private Shader environmentSphericalShader;
-    private Shader convolutionShader;
+    private Shader irradianceShader;
     private Shader preFilteredMapShader;
 
     private Camera[] cameras;
@@ -58,16 +58,16 @@ public class EnvironmentMapGenerator {
 
         final FrameBufferParameters frameBufferParameters = new FrameBufferParameters().hasDepth(false);
         this.environmentFrameBuffer = new FrameBuffer(ENVIRONMENT_MAP_RESOLUTION, ENVIRONMENT_MAP_RESOLUTION, frameBufferParameters);
-        this.convolutionFrameBuffer = new FrameBuffer(CONVOLUTION_RESOLUTION, CONVOLUTION_RESOLUTION, frameBufferParameters);
+        this.irradianceFrameBuffer = new FrameBuffer(IRRADIANCE_MAP_RESOLUTION, IRRADIANCE_MAP_RESOLUTION, frameBufferParameters);
         this.preFilteredMapFrameBuffer = new FrameBuffer(PRE_FILTERED_MAP_RESOLUTION, PRE_FILTERED_MAP_RESOLUTION, frameBufferParameters);
 
         this.environmentSphericalShader = new Shader()
                 .addVertexShader("/environment/environment.vert")
                 .addFragmentShader("/environment/environment_spherical_sample.frag")
                 .compile();
-        this.convolutionShader = new Shader()
+        this.irradianceShader = new Shader()
                 .addVertexShader("/environment/environment.vert")
-                .addFragmentShader("/environment/convolution.frag")
+                .addFragmentShader("/environment/irradiance.frag")
                 .compile();
         this.preFilteredMapShader = new Shader()
                 .addVertexShader("/environment/environment.vert")
@@ -85,10 +85,10 @@ public class EnvironmentMapGenerator {
         glDeleteBuffers(this.vboId);
         glDeleteVertexArrays(this.vaoId);
         this.environmentSphericalShader.destroy();
-        this.convolutionShader.destroy();
+        this.irradianceShader.destroy();
         this.preFilteredMapShader.destroy();
         this.environmentFrameBuffer.destroy();
-        this.convolutionFrameBuffer.destroy();
+        this.irradianceFrameBuffer.destroy();
         this.preFilteredMapFrameBuffer.destroy();
     }
 
@@ -98,7 +98,7 @@ public class EnvironmentMapGenerator {
      * @param filePath The path of the HDR image file
      * @return An {@link Cubemap}
      */
-    public Cubemap generate(final String filePath) {
+    public Cubemap generateEnvironmentMap(final String filePath) {
         final HDRImage hdrImage = ImageUtils.loadHDRImage(filePath);
         final Texture equirectangularMap = new Texture(hdrImage.getWidth(), hdrImage.getHeight(), hdrImage.getData(),
                 new TextureParameters().format(Format.RGB16F).sWrap(Wrap.CLAMP_TO_EDGE).tWrap(Wrap.CLAMP_TO_EDGE));
@@ -121,17 +121,17 @@ public class EnvironmentMapGenerator {
     }
 
     /**
-     * Generate an environment map which is the convolution of another environment map
+     * Generate the irradiance map from a cubemap
      *
-     * @param environmentMap The environment map from which to generate the convolution
+     * @param environmentMap The cubemap from which to compute the irradiance map
      * @return An {@link Cubemap}
      */
-    public Cubemap generateConvolution(final Cubemap environmentMap) {
-        final Cubemap cubemap = new Cubemap(CONVOLUTION_RESOLUTION, CONVOLUTION_RESOLUTION,
+    public Cubemap generateIrradianceMap(final Cubemap environmentMap) {
+        final Cubemap cubemap = new Cubemap(IRRADIANCE_MAP_RESOLUTION, IRRADIANCE_MAP_RESOLUTION,
                 new TextureParameters().format(Format.RGB16F));
         environmentMap.bind();
-        this.convolutionShader.bind();
-        this.renderToCubemap(cubemap, 0, this.convolutionShader, this.convolutionFrameBuffer);
+        this.irradianceShader.bind();
+        this.renderToCubemap(cubemap, 0, this.irradianceShader, this.irradianceFrameBuffer);
         Cubemap.unbind();
         Shader.unbind();
         return cubemap;
