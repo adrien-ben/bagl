@@ -4,22 +4,23 @@ import com.adrien.games.bagl.core.Camera;
 import com.adrien.games.bagl.core.Configuration;
 import com.adrien.games.bagl.core.EngineException;
 import com.adrien.games.bagl.core.math.Vector3;
-import com.adrien.games.bagl.rendering.*;
+import com.adrien.games.bagl.rendering.FrameBuffer;
+import com.adrien.games.bagl.rendering.FrameBufferParameters;
+import com.adrien.games.bagl.rendering.Shader;
 import com.adrien.games.bagl.rendering.texture.*;
-import com.adrien.games.bagl.rendering.vertex.Vertex;
-import com.adrien.games.bagl.rendering.vertex.VertexPosition;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL13;
-import org.lwjgl.opengl.GL30;
 import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryStack;
 
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.Objects;
 
-import static org.lwjgl.opengl.GL11.glDrawElements;
-import static org.lwjgl.opengl.GL11.glViewport;
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL13.GL_TEXTURE_CUBE_MAP_POSITIVE_X;
+import static org.lwjgl.opengl.GL15.*;
+import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
+import static org.lwjgl.opengl.GL30.*;
 
 /**
  * @author adrien
@@ -28,24 +29,35 @@ public class EnvironmentMapGenerator {
 
     private final static int ENVIRONMENT_MAP_RESOLUTION = 1024;
     private final static int CONVOLUTION_RESOLUTION = 64;
-    private final static float SKYBOX_HALF_SIZE = 0.5f;
     private final static float FIELD_OF_VIEW = (float) Math.toRadians(90);
     private final static float ASPECT_RATIO = 1f;
     private final static float NEAR_PLANE = 0.1f;
     private final static float FAR_PLANE = 10f;
 
-    private VertexBuffer vertexBuffer;
-    private IndexBuffer indexBuffer;
+    private final static byte SKYBOX_POSITIVE_HALF_SIZE = (byte) 1;
+    private final static byte SKYBOX_NEGATIVE_HALF_SIZE = (byte) -1;
+
+    private final int vboId;
+    private final int vaoId;
+    private final int iboId;
+
     private Shader environmentSphericalShader;
     private Shader convolutionShader;
     private Camera[] cameras;
 
     public EnvironmentMapGenerator() {
-        this.vertexBuffer = this.initVertices();
-        this.indexBuffer = this.initIndices();
-        this.environmentSphericalShader = new Shader().addVertexShader("/environment/environment.vert")
-                .addFragmentShader("/environment/environment_spherical_sample.frag").compile();
-        this.convolutionShader = new Shader().addVertexShader("/environment/environment.vert").addFragmentShader("/environment/convolution.frag")
+        this.vaoId = glGenVertexArrays();
+        this.vboId = glGenBuffers();
+        this.generateVertexBuffer();
+        this.iboId = this.generateIndexBuffer();
+
+        this.environmentSphericalShader = new Shader()
+                .addVertexShader("/environment/environment.vert")
+                .addFragmentShader("/environment/environment_spherical_sample.frag")
+                .compile();
+        this.convolutionShader = new Shader()
+                .addVertexShader("/environment/environment.vert")
+                .addFragmentShader("/environment/convolution.frag")
                 .compile();
         this.cameras = this.initCameras();
     }
@@ -54,8 +66,9 @@ public class EnvironmentMapGenerator {
      * Destroy resources
      */
     public void destroy() {
-        this.vertexBuffer.destroy();
-        this.indexBuffer.destroy();
+        glDeleteBuffers(this.iboId);
+        glDeleteBuffers(this.vboId);
+        glDeleteVertexArrays(this.vaoId);
         this.environmentSphericalShader.destroy();
         this.convolutionShader.destroy();
     }
@@ -104,56 +117,69 @@ public class EnvironmentMapGenerator {
         frameBuffer.bind();
         frameBuffer.enableColorOutputs(0);
 
-        this.vertexBuffer.bind();
-        this.indexBuffer.bind();
+        glBindVertexArray(this.vaoId);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this.iboId);
         shader.bind();
         preRender.run();
 
         glViewport(0, 0, cubemapResolution, cubemapResolution);
         for (int i = 0; i < 6; i++) {
-            GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0, GL13.GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
                     cubemap.getHandle(), 0);
             frameBuffer.clear();
 
             shader.setUniform("viewProj", this.cameras[i].getViewProjAtOrigin());
 
-            glDrawElements(GL11.GL_TRIANGLES, this.indexBuffer.getSize(), GL11.GL_UNSIGNED_INT, 0);
+            glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_BYTE, 0);
         }
         glViewport(0, 0, Configuration.getInstance().getXResolution(), Configuration.getInstance().getYResolution());
 
         postRender.run();
         Shader.unbind();
-        IndexBuffer.unbind();
-        VertexBuffer.unbind();
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
         frameBuffer.destroy();
 
         return cubemap;
     }
 
-    private IndexBuffer initIndices() {
-        final int[] indices = new int[]{
-                1, 0, 3, 3, 0, 2,
-                5, 1, 7, 7, 1, 3,
-                4, 5, 6, 6, 5, 7,
-                0, 4, 2, 2, 4, 6,
-                6, 7, 2, 2, 7, 3,
-                0, 1, 4, 4, 1, 5
-        };
-        return new IndexBuffer(BufferUsage.STATIC_DRAW, indices);
+    private int generateIndexBuffer() {
+        final int iboId = glGenBuffers();
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboId);
+        try (final MemoryStack stack = MemoryStack.stackPush()) {
+            final ByteBuffer indices = stack.bytes(
+                    (byte) 1, (byte) 0, (byte) 3, (byte) 3, (byte) 0, (byte) 2,
+                    (byte) 5, (byte) 1, (byte) 7, (byte) 7, (byte) 1, (byte) 3,
+                    (byte) 4, (byte) 5, (byte) 6, (byte) 6, (byte) 5, (byte) 7,
+                    (byte) 0, (byte) 4, (byte) 2, (byte) 2, (byte) 4, (byte) 6,
+                    (byte) 6, (byte) 7, (byte) 2, (byte) 2, (byte) 7, (byte) 3,
+                    (byte) 0, (byte) 1, (byte) 4, (byte) 4, (byte) 1, (byte) 5
+            );
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices, GL_STATIC_DRAW);
+        }
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        return iboId;
     }
 
-    private VertexBuffer initVertices() {
-        final Vertex[] vertices = new VertexPosition[]{
-                new VertexPosition(new Vector3(-SKYBOX_HALF_SIZE, -SKYBOX_HALF_SIZE, SKYBOX_HALF_SIZE)),
-                new VertexPosition(new Vector3(SKYBOX_HALF_SIZE, -SKYBOX_HALF_SIZE, SKYBOX_HALF_SIZE)),
-                new VertexPosition(new Vector3(-SKYBOX_HALF_SIZE, SKYBOX_HALF_SIZE, SKYBOX_HALF_SIZE)),
-                new VertexPosition(new Vector3(SKYBOX_HALF_SIZE, SKYBOX_HALF_SIZE, SKYBOX_HALF_SIZE)),
-                new VertexPosition(new Vector3(-SKYBOX_HALF_SIZE, -SKYBOX_HALF_SIZE, -SKYBOX_HALF_SIZE)),
-                new VertexPosition(new Vector3(SKYBOX_HALF_SIZE, -SKYBOX_HALF_SIZE, -SKYBOX_HALF_SIZE)),
-                new VertexPosition(new Vector3(-SKYBOX_HALF_SIZE, SKYBOX_HALF_SIZE, -SKYBOX_HALF_SIZE)),
-                new VertexPosition(new Vector3(SKYBOX_HALF_SIZE, SKYBOX_HALF_SIZE, -SKYBOX_HALF_SIZE))
-        };
-        return new VertexBuffer(VertexPosition.DESCRIPTION, BufferUsage.STATIC_DRAW, vertices);
+    private void generateVertexBuffer() {
+        glBindVertexArray(this.vaoId);
+        glBindBuffer(GL_ARRAY_BUFFER, this.vboId);
+        try (final MemoryStack stack = MemoryStack.stackPush()) {
+            final ByteBuffer vertices = stack.bytes(
+                    SKYBOX_NEGATIVE_HALF_SIZE, SKYBOX_NEGATIVE_HALF_SIZE, SKYBOX_POSITIVE_HALF_SIZE,
+                    SKYBOX_POSITIVE_HALF_SIZE, SKYBOX_NEGATIVE_HALF_SIZE, SKYBOX_POSITIVE_HALF_SIZE,
+                    SKYBOX_NEGATIVE_HALF_SIZE, SKYBOX_POSITIVE_HALF_SIZE, SKYBOX_POSITIVE_HALF_SIZE,
+                    SKYBOX_POSITIVE_HALF_SIZE, SKYBOX_POSITIVE_HALF_SIZE, SKYBOX_POSITIVE_HALF_SIZE,
+                    SKYBOX_NEGATIVE_HALF_SIZE, SKYBOX_NEGATIVE_HALF_SIZE, SKYBOX_NEGATIVE_HALF_SIZE,
+                    SKYBOX_POSITIVE_HALF_SIZE, SKYBOX_NEGATIVE_HALF_SIZE, SKYBOX_NEGATIVE_HALF_SIZE,
+                    SKYBOX_NEGATIVE_HALF_SIZE, SKYBOX_POSITIVE_HALF_SIZE, SKYBOX_NEGATIVE_HALF_SIZE,
+                    SKYBOX_POSITIVE_HALF_SIZE, SKYBOX_POSITIVE_HALF_SIZE, SKYBOX_NEGATIVE_HALF_SIZE);
+            glBufferData(GL_ARRAY_BUFFER, vertices, GL_STATIC_DRAW);
+        }
+        glEnableVertexAttribArray(0);
+        glVertexAttribIPointer(0, 3, GL_BYTE, 3, 0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
     }
 
     private Texture loadHDREnvMap(final String filePath) {
