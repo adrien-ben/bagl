@@ -52,6 +52,7 @@ public final class Texture {
         this.format = this.getFormat(image.getChannelCount());
         parameters.format(this.format);
         this.handle = this.generateGlTexture(this.width, this.height, parameters, image.getData());
+        ImageUtils.destroy(image);
     }
 
     /**
