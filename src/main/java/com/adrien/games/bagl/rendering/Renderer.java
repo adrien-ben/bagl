@@ -232,7 +232,6 @@ public class Renderer {
      * @param camera The camera view the scene.
      */
     public void render(final Scene scene, final Camera camera) {
-        // FIXME : nothing get renderer when there is no environment map to render ... (check depth test)
         scene.getEnvironmentMap().ifPresent(map -> this.renderSkybox(map, camera));
         this.renderShadowMap(scene);
         this.renderScene(scene.getRoot(), camera);
@@ -340,6 +339,9 @@ public class Renderer {
         final List<SpotLight> spots = scene.getSpots();
 
         this.finalBuffer.bind();
+        if (!scene.getEnvironmentMap().isPresent()) {
+            this.finalBuffer.clear();
+        }
 
         this.gBuffer.getColorTexture(0).bind(0);
         this.gBuffer.getColorTexture(1).bind(1);
