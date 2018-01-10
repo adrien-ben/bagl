@@ -101,7 +101,8 @@ public class DeferredRenderingSample {
         }
 
         private void loadMeshes() {
-            this.environmentMap = this.environmentMapGenerator.generate(FileUtils.getResourceAbsolutePath("/envmaps/beach.hdr"));
+            this.environmentMap = this.environmentMapGenerator.generate(FileUtils.getResourceAbsolutePath("/envmaps/flat.hdr"));
+//            this.environmentMap = this.environmentMapGenerator.generate("D:/Images/HDRI/lookout.hdr");
             this.irradianceMap = this.environmentMapGenerator.generateConvolution(this.environmentMap);
             this.preFilteredMap = this.environmentMapGenerator.generatePreFilteredMap(this.environmentMap);
 
@@ -111,7 +112,7 @@ public class DeferredRenderingSample {
 
             this.floor = MeshFactory.fromResourceFile("/models/floor/floor.obj");
             this.cube = MeshFactory.fromResourceFile("/models/cube/cube.obj");
-            //            this.cube = MeshFactory.fromFile("D:/Documents/3D Models/sponza/sponza.obj");
+//            this.cube = MeshFactory.fromFile("D:/Documents/3D Models/pbr_test/pbr_test.obj");
             this.tree = MeshFactory.fromResourceFile("/models/tree/tree.obj");
         }
 
