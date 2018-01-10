@@ -2,11 +2,11 @@ package com.adrien.games.bagl.rendering.scene;
 
 import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.rendering.Model;
-import com.adrien.games.bagl.rendering.environment.EnvironmentMap;
 import com.adrien.games.bagl.rendering.light.DirectionalLight;
 import com.adrien.games.bagl.rendering.light.Light;
 import com.adrien.games.bagl.rendering.light.PointLight;
 import com.adrien.games.bagl.rendering.light.SpotLight;
+import com.adrien.games.bagl.rendering.texture.Cubemap;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,9 +21,9 @@ public class Scene {
 
     private final SceneNode<Model> root;
 
-    private EnvironmentMap environmentMap;
-    private EnvironmentMap irradianceMap;
-    private EnvironmentMap preFilteredMap;
+    private Cubemap environmentMap;
+    private Cubemap irradianceMap;
+    private Cubemap preFilteredMap;
 
     private Light ambient;
     private final List<DirectionalLight> directionals;
@@ -40,27 +40,27 @@ public class Scene {
         this.spots = new ArrayList<>();
     }
 
-    public Optional<EnvironmentMap> getEnvironmentMap() {
+    public Optional<Cubemap> getEnvironmentMap() {
         return Optional.ofNullable(this.environmentMap);
     }
 
-    public void setEnvironmentMap(final EnvironmentMap environmentMap) {
+    public void setEnvironmentMap(final Cubemap environmentMap) {
         this.environmentMap = environmentMap;
     }
 
-    public Optional<EnvironmentMap> getIrradianceMap() {
+    public Optional<Cubemap> getIrradianceMap() {
         return Optional.ofNullable(this.irradianceMap);
     }
 
-    public void setIrradianceMap(final EnvironmentMap irradianceMap) {
+    public void setIrradianceMap(final Cubemap irradianceMap) {
         this.irradianceMap = irradianceMap;
     }
 
-    public Optional<EnvironmentMap> getPreFilteredMap() {
+    public Optional<Cubemap> getPreFilteredMap() {
         return Optional.ofNullable(this.preFilteredMap);
     }
 
-    public void setPreFilteredMap(final EnvironmentMap preFilteredMap) {
+    public void setPreFilteredMap(final Cubemap preFilteredMap) {
         this.preFilteredMap = preFilteredMap;
     }
 

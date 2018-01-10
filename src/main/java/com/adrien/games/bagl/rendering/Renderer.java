@@ -3,9 +3,7 @@ package com.adrien.games.bagl.rendering;
 import com.adrien.games.bagl.core.Camera;
 import com.adrien.games.bagl.core.Configuration;
 import com.adrien.games.bagl.core.math.Matrix4;
-import com.adrien.games.bagl.core.math.Vector2;
 import com.adrien.games.bagl.core.math.Vector3;
-import com.adrien.games.bagl.rendering.environment.EnvironmentMap;
 import com.adrien.games.bagl.rendering.light.DirectionalLight;
 import com.adrien.games.bagl.rendering.light.Light;
 import com.adrien.games.bagl.rendering.light.PointLight;
@@ -16,16 +14,18 @@ import com.adrien.games.bagl.rendering.scene.SceneNode;
 import com.adrien.games.bagl.rendering.texture.Cubemap;
 import com.adrien.games.bagl.rendering.texture.Format;
 import com.adrien.games.bagl.rendering.texture.Texture;
-import com.adrien.games.bagl.rendering.vertex.Vertex;
-import com.adrien.games.bagl.rendering.vertex.VertexPositionTexture;
+import org.lwjgl.system.MemoryStack;
 
+import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 import java.util.List;
 import java.util.Optional;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL15.GL_ELEMENT_ARRAY_BUFFER;
-import static org.lwjgl.opengl.GL15.glBindBuffer;
-import static org.lwjgl.opengl.GL30.glBindVertexArray;
+import static org.lwjgl.opengl.GL15.*;
+import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
+import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
+import static org.lwjgl.opengl.GL30.*;
 
 /**
  * Deferred renderer
@@ -40,7 +40,10 @@ import static org.lwjgl.opengl.GL30.glBindVertexArray;
  */
 public class Renderer {
 
+
     private static final int BRDF_RESOLUTION = 512;
+    private final static byte UNIT_CUBE_POS_HALF_SIZE = (byte) 1;
+    private final static byte UNIT_CUBE_NEG_HALF_SIZE = (byte) -1;
 
     private final int xResolution;
     private final int yResolution;
@@ -49,7 +52,12 @@ public class Renderer {
     private final Matrix4 wvpBuffer;
     private final Matrix4 lightViewProj;
 
-    private VertexBuffer vertexBuffer;
+    private int quadVboId;
+    private int quadVaoId;
+
+    private int cubeVboId;
+    private int cubeVaoId;
+    private int cubeIboId;
 
     private boolean renderShadow;
 
@@ -79,11 +87,9 @@ public class Renderer {
         this.lightViewProj = Matrix4.createZero();
 
         this.initFullScreenQuad();
-
+        this.initUnitCube();
         this.initFrameBuffers();
-
         this.initShaders();
-
         this.bakeBRDFIntegration();
 
         this.postProcessor = new PostProcessor(this.xResolution, this.yResolution);
@@ -102,17 +108,73 @@ public class Renderer {
         this.shadowBuffer.destroy();
         this.finalBuffer.destroy();
         this.brdfBuffer.destroy();
-        this.vertexBuffer.destroy();
+        glDeleteBuffers(this.quadVboId);
+        glDeleteVertexArrays(this.quadVaoId);
+        glDeleteBuffers(this.cubeIboId);
+        glDeleteBuffers(this.cubeVboId);
+        glDeleteVertexArrays(this.cubeVaoId);
         this.postProcessor.destroy();
     }
 
     private void initFullScreenQuad() {
-        final Vertex[] vertices = new Vertex[4];
-        vertices[0] = new VertexPositionTexture(new Vector3(-1, -1, 0), new Vector2(0, 0));
-        vertices[1] = new VertexPositionTexture(new Vector3(1, -1, 0), new Vector2(1, 0));
-        vertices[2] = new VertexPositionTexture(new Vector3(-1, 1, 0), new Vector2(0, 1));
-        vertices[3] = new VertexPositionTexture(new Vector3(1, 1, 0), new Vector2(1, 1));
-        this.vertexBuffer = new VertexBuffer(VertexPositionTexture.DESCRIPTION, BufferUsage.STATIC_DRAW, vertices);
+        this.quadVaoId = glGenVertexArrays();
+        this.quadVboId = glGenBuffers();
+        glBindVertexArray(this.quadVaoId);
+        glBindBuffer(GL_ARRAY_BUFFER, this.quadVboId);
+        try (final MemoryStack stack = MemoryStack.stackPush()) {
+            final FloatBuffer vertices = stack.floats(
+                    -1, -1, 0, 0, 0,
+                    1, -1, 0, 1, 0,
+                    -1, 1, 0, 0, 1,
+                    1, 1, 0, 1, 1);
+            glBufferData(GL_ARRAY_BUFFER, vertices, GL_STATIC_DRAW);
+        }
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, false, 5 * Float.SIZE / 8, 0);
+
+        glEnableVertexAttribArray(2);
+        glVertexAttribPointer(2, 2, GL_FLOAT, false, 5 * Float.SIZE / 8, 3 * Float.SIZE / 8);
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+    }
+
+    private void initUnitCube() {
+        this.cubeIboId = glGenBuffers();
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeIboId);
+        try (final MemoryStack stack = MemoryStack.stackPush()) {
+            final ByteBuffer indices = stack.bytes(
+                    (byte) 1, (byte) 0, (byte) 3, (byte) 3, (byte) 0, (byte) 2,
+                    (byte) 5, (byte) 1, (byte) 7, (byte) 7, (byte) 1, (byte) 3,
+                    (byte) 4, (byte) 5, (byte) 6, (byte) 6, (byte) 5, (byte) 7,
+                    (byte) 0, (byte) 4, (byte) 2, (byte) 2, (byte) 4, (byte) 6,
+                    (byte) 6, (byte) 7, (byte) 2, (byte) 2, (byte) 7, (byte) 3,
+                    (byte) 0, (byte) 1, (byte) 4, (byte) 4, (byte) 1, (byte) 5
+            );
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices, GL_STATIC_DRAW);
+        }
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+        this.cubeVaoId = glGenVertexArrays();
+        this.cubeVboId = glGenBuffers();
+        glBindVertexArray(this.cubeVaoId);
+        glBindBuffer(GL_ARRAY_BUFFER, this.cubeVboId);
+        try (final MemoryStack stack = MemoryStack.stackPush()) {
+            final ByteBuffer vertices = stack.bytes(
+                    UNIT_CUBE_NEG_HALF_SIZE, UNIT_CUBE_NEG_HALF_SIZE, UNIT_CUBE_POS_HALF_SIZE,
+                    UNIT_CUBE_POS_HALF_SIZE, UNIT_CUBE_NEG_HALF_SIZE, UNIT_CUBE_POS_HALF_SIZE,
+                    UNIT_CUBE_NEG_HALF_SIZE, UNIT_CUBE_POS_HALF_SIZE, UNIT_CUBE_POS_HALF_SIZE,
+                    UNIT_CUBE_POS_HALF_SIZE, UNIT_CUBE_POS_HALF_SIZE, UNIT_CUBE_POS_HALF_SIZE,
+                    UNIT_CUBE_NEG_HALF_SIZE, UNIT_CUBE_NEG_HALF_SIZE, UNIT_CUBE_NEG_HALF_SIZE,
+                    UNIT_CUBE_POS_HALF_SIZE, UNIT_CUBE_NEG_HALF_SIZE, UNIT_CUBE_NEG_HALF_SIZE,
+                    UNIT_CUBE_NEG_HALF_SIZE, UNIT_CUBE_POS_HALF_SIZE, UNIT_CUBE_NEG_HALF_SIZE,
+                    UNIT_CUBE_POS_HALF_SIZE, UNIT_CUBE_POS_HALF_SIZE, UNIT_CUBE_NEG_HALF_SIZE);
+            glBufferData(GL_ARRAY_BUFFER, vertices, GL_STATIC_DRAW);
+        }
+        glEnableVertexAttribArray(0);
+        glVertexAttribIPointer(0, 3, GL_BYTE, 3, 0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
     }
 
     private void initFrameBuffers() {
@@ -147,15 +209,15 @@ public class Renderer {
 
     private void bakeBRDFIntegration() {
         this.brdfBuffer.bind();
-        this.vertexBuffer.bind();
+        glBindVertexArray(this.quadVaoId);
         this.brdfShader.bind();
 
         glViewport(0, 0, BRDF_RESOLUTION, BRDF_RESOLUTION);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, vertexBuffer.getVertexCount());
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         glViewport(0, 0, this.xResolution, this.yResolution);
 
         Shader.unbind();
-        VertexBuffer.unbind();
+        glBindVertexArray(0);
         this.brdfBuffer.unbind();
     }
 
@@ -170,6 +232,7 @@ public class Renderer {
      * @param camera The camera view the scene.
      */
     public void render(final Scene scene, final Camera camera) {
+        // FIXME : nothing get renderer when there is no environment map to render ... (check depth test)
         scene.getEnvironmentMap().ifPresent(map -> this.renderSkybox(map, camera));
         this.renderShadowMap(scene);
         this.renderScene(scene.getRoot(), camera);
@@ -177,18 +240,18 @@ public class Renderer {
         this.postProcessor.process(this.finalBuffer.getColorTexture(0));
     }
 
-    private void renderSkybox(final EnvironmentMap skybox, final Camera camera) {
+    private void renderSkybox(final Cubemap skybox, final Camera camera) {
         this.finalBuffer.bind();
         this.finalBuffer.clear();
-        glBindVertexArray(skybox.getVaoId());
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, skybox.getIboId());
-        skybox.getCubemap().bind();
+        glBindVertexArray(this.cubeVaoId);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this.cubeIboId);
+        skybox.bind();
         this.skyboxShader.bind();
         this.skyboxShader.setUniform("viewProj", camera.getViewProjAtOrigin());
 
-        glDisable(GL_DEPTH_TEST);
+        glDepthMask(false);
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_BYTE, 0);
-        glEnable(GL_DEPTH_TEST);
+        glDepthMask(true);
 
         Shader.unbind();
         Cubemap.unbind();
@@ -269,8 +332,8 @@ public class Renderer {
     }
 
     private void renderDeferred(final Scene scene, final Camera camera) {
-        final Optional<EnvironmentMap> irradiance = scene.getIrradianceMap();
-        final Optional<EnvironmentMap> preFilteredMap = scene.getPreFilteredMap();
+        final Optional<Cubemap> irradiance = scene.getIrradianceMap();
+        final Optional<Cubemap> preFilteredMap = scene.getPreFilteredMap();
         final Light ambient = scene.getAmbient();
         final List<DirectionalLight> directionals = scene.getDirectionals();
         final List<PointLight> points = scene.getPoints();
@@ -282,16 +345,16 @@ public class Renderer {
         this.gBuffer.getColorTexture(1).bind(1);
         this.gBuffer.getDepthTexture().bind(2);
 
-        this.vertexBuffer.bind();
+        glBindVertexArray(this.quadVaoId);
         this.deferredShader.bind();
         this.deferredShader.setUniform("uCamera.vp", camera.getViewProj());
         this.deferredShader.setUniform("uCamera.position", camera.getPosition());
         irradiance.ifPresent(map -> {
-            map.getCubemap().bind(4);
+            map.bind(4);
             this.deferredShader.setUniform("uLights.irradiance", 4);
         });
         preFilteredMap.ifPresent(map -> {
-            map.getCubemap().bind(5);
+            map.bind(5);
             this.deferredShader.setUniform("uLights.preFilteredMap", 5);
         });
         this.getBrdfBuffer().getColorTexture(0).bind(6);
@@ -324,10 +387,10 @@ public class Renderer {
         this.deferredShader.setUniform("uGBuffer.normals", 1);
         this.deferredShader.setUniform("uGBuffer.depth", 2);
 
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, this.vertexBuffer.getVertexCount());
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
         Shader.unbind();
-        VertexBuffer.unbind();
+        glBindVertexArray(0);
         Cubemap.unbind(4);
         Texture.unbind(0);
         Texture.unbind(1);

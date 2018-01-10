@@ -8,7 +8,6 @@ import com.adrien.games.bagl.core.math.Vector3;
 import com.adrien.games.bagl.rendering.Model;
 import com.adrien.games.bagl.rendering.Renderer;
 import com.adrien.games.bagl.rendering.Spritebatch;
-import com.adrien.games.bagl.rendering.environment.EnvironmentMap;
 import com.adrien.games.bagl.rendering.environment.EnvironmentMapGenerator;
 import com.adrien.games.bagl.rendering.light.DirectionalLight;
 import com.adrien.games.bagl.rendering.light.Light;
@@ -18,6 +17,7 @@ import com.adrien.games.bagl.rendering.scene.Scene;
 import com.adrien.games.bagl.rendering.scene.SceneNode;
 import com.adrien.games.bagl.rendering.text.Font;
 import com.adrien.games.bagl.rendering.text.TextRenderer;
+import com.adrien.games.bagl.rendering.texture.Cubemap;
 import com.adrien.games.bagl.utils.FileUtils;
 import com.adrien.games.bagl.utils.MeshFactory;
 import org.lwjgl.glfw.GLFW;
@@ -30,8 +30,10 @@ public class DeferredRenderingSample {
 
         private static final String TITLE = "Deferred Rendering";
 
-        private static final String INSTRUCTIONS = "Display debug infos : G\n" +
-                "Move camera : Z, Q, S, D, LCTRL, SPACE\nAdvance time: 1, 2";
+        private static final String INSTRUCTIONS = "Display debug infos : G\n"
+                + "Switch Camera Mode : TAB\n"
+                + "Move camera : Z, Q, S, D, LCTRL, SPACE\n"
+                + "Advance time: 1, 2";
 
         private int width;
         private int height;
@@ -43,9 +45,9 @@ public class DeferredRenderingSample {
         private Font font;
 
         private Scene scene;
-        private EnvironmentMap environmentMap;
-        private EnvironmentMap irradianceMap;
-        private EnvironmentMap preFilteredMap;
+        private Cubemap environmentMap;
+        private Cubemap irradianceMap;
+        private Cubemap preFilteredMap;
         private Model floor;
         private Model cube;
         private Model tree;
@@ -55,8 +57,8 @@ public class DeferredRenderingSample {
 
         private Spritebatch spritebatch;
 
-        private boolean isKeyPressed = false;
         private boolean displayGBuffer = false;
+        private boolean fpsCamera = false;
 
         @Override
         public void init() {
@@ -73,8 +75,6 @@ public class DeferredRenderingSample {
             this.loadMeshes();
             this.initSceneGraph();
             this.setUpLights();
-
-            Input.setMouseMode(MouseMode.DISABLED);
 
             this.camera = new Camera(new Vector3(5f, 4f, 6f), new Vector3(-5f, -4f, -6f), new Vector3(Vector3.UP),
                     (float) Math.toRadians(60f), (float) this.width / (float) this.height, 0.1f, 1000);
@@ -101,7 +101,7 @@ public class DeferredRenderingSample {
         }
 
         private void loadMeshes() {
-            this.environmentMap = this.environmentMapGenerator.generate(FileUtils.getResourceAbsolutePath("/envmaps/flat.hdr"));
+            this.environmentMap = this.environmentMapGenerator.generate(FileUtils.getResourceAbsolutePath("/envmaps/beach.hdr"));
             this.irradianceMap = this.environmentMapGenerator.generateConvolution(this.environmentMap);
             this.preFilteredMap = this.environmentMapGenerator.generatePreFilteredMap(this.environmentMap);
 
@@ -153,15 +153,21 @@ public class DeferredRenderingSample {
                         (float) Math.toRadians(speed * time.getElapsedTime()), new Vector3(1f, 1f, 0f).normalise())), 0);
             }
 
-            if (Input.isKeyPressed(GLFW.GLFW_KEY_G) && !this.isKeyPressed) {
+            if (Input.wasKeyPressed(GLFW.GLFW_KEY_G)) {
                 this.displayGBuffer = !this.displayGBuffer;
-                this.isKeyPressed = true;
             }
-            if (!Input.isKeyPressed(GLFW.GLFW_KEY_G) && this.isKeyPressed) {
-                this.isKeyPressed = false;
+            if (Input.wasKeyPressed(GLFW.GLFW_KEY_TAB)) {
+                this.fpsCamera = !this.fpsCamera;
+                if (this.fpsCamera) {
+                    Input.setMouseMode(MouseMode.DISABLED);
+                } else {
+                    Input.setMouseMode(MouseMode.NORMAL);
+                }
             }
 
-            this.cameraController.update(time);
+            if (this.fpsCamera) {
+                this.cameraController.update(time);
+            }
         }
 
         @Override
@@ -184,7 +190,7 @@ public class DeferredRenderingSample {
                         new Vector2(0, 0), this.width / 5, this.height / 5);
                 this.spritebatch.end();
             }
-            this.textRenderer.render(INSTRUCTIONS, this.font, new Vector2(0.01f, 0.97f), 0.03f, Color.RED);
+            this.textRenderer.render(INSTRUCTIONS, this.font, new Vector2(0.01f, 0.97f), 0.03f, Color.BLACK);
         }
 
     }

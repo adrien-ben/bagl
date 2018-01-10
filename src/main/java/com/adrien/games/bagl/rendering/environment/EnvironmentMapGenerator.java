@@ -96,9 +96,9 @@ public class EnvironmentMapGenerator {
      * Generate an environment map from a HDR equirectangular image
      *
      * @param filePath The path of the HDR image file
-     * @return An {@link EnvironmentMap}
+     * @return An {@link Cubemap}
      */
-    public EnvironmentMap generate(final String filePath) {
+    public Cubemap generate(final String filePath) {
         final HDRImage hdrImage = ImageUtils.loadHDRImage(filePath);
         final Texture equirectangularMap = new Texture(hdrImage.getWidth(), hdrImage.getHeight(), hdrImage.getData(),
                 new TextureParameters().format(Format.RGB16F).sWrap(Wrap.CLAMP_TO_EDGE).tWrap(Wrap.CLAMP_TO_EDGE));
@@ -114,30 +114,30 @@ public class EnvironmentMapGenerator {
 
         equirectangularMap.destroy();
         ImageUtils.free(hdrImage);
-        return new EnvironmentMap(cubemap);
+        return cubemap;
     }
 
     /**
      * Generate an environment map which is the convolution of another environment map
      *
      * @param environmentMap The environment map from which to generate the convolution
-     * @return An {@link EnvironmentMap}
+     * @return An {@link Cubemap}
      */
-    public EnvironmentMap generateConvolution(final EnvironmentMap environmentMap) {
+    public Cubemap generateConvolution(final Cubemap environmentMap) {
         final Cubemap cubemap = new Cubemap(CONVOLUTION_RESOLUTION, CONVOLUTION_RESOLUTION,
                 new TextureParameters().format(Format.RGB16F));
-        this.renderToCubemap(cubemap, 0, this.convolutionShader, this.convolutionFrameBuffer, environmentMap.getCubemap()::bind,
+        this.renderToCubemap(cubemap, 0, this.convolutionShader, this.convolutionFrameBuffer, environmentMap::bind,
                 Cubemap::unbind);
-        return new EnvironmentMap(cubemap);
+        return cubemap;
     }
 
     /**
      * Generate a pre-filtered map from another environment map
      *
      * @param environmentMap The environment map from which to generate the pre-filtered map
-     * @return An {@link EnvironmentMap}
+     * @return An {@link Cubemap}
      */
-    public EnvironmentMap generatePreFilteredMap(final EnvironmentMap environmentMap) {
+    public Cubemap generatePreFilteredMap(final Cubemap environmentMap) {
         final Cubemap cubemap = new Cubemap(PRE_FILTERED_MAP_RESOLUTION, PRE_FILTERED_MAP_RESOLUTION, new TextureParameters()
                 .format(Format.RGB16F).mipmaps(true).minFilter(Filter.MIPMAP_LINEAR_LINEAR));
 
@@ -146,12 +146,12 @@ public class EnvironmentMapGenerator {
             final float roughness = (float) lod / (float) (maxLod - 1);
             this.renderToCubemap(cubemap, lod, this.preFilteredMapShader, this.preFilteredMapFrameBuffer,
                     () -> {
-                        environmentMap.getCubemap().bind();
+                        environmentMap.bind();
                         this.preFilteredMapShader.setUniform("roughness", roughness);
                     }, Cubemap::unbind);
         }
 
-        return new EnvironmentMap(cubemap);
+        return cubemap;
     }
 
     /**
