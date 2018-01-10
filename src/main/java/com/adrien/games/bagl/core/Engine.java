@@ -7,6 +7,9 @@ import org.lwjgl.opengl.GL11;
 
 import java.util.Objects;
 
+import static org.lwjgl.opengl.GL11.glEnable;
+import static org.lwjgl.opengl.GL32.GL_TEXTURE_CUBE_MAP_SEAMLESS;
+
 public final class Engine {
 
     private static final Logger log = LogManager.getLogger(Engine.class);
@@ -28,9 +31,14 @@ public final class Engine {
                 configuration.getYResolution(),
                 configuration.getVsync(),
                 configuration.getFullscreen());
+        this.initGlState();
         this.time = new Time();
         this.isRunning = false;
         this.game.init();
+    }
+
+    private void initGlState() {
+        glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
     }
 
     public void start() {
