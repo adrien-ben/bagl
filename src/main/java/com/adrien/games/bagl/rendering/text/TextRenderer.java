@@ -4,96 +4,150 @@ import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.core.Configuration;
 import com.adrien.games.bagl.core.Engine;
 import com.adrien.games.bagl.core.math.Vector2;
-import com.adrien.games.bagl.rendering.*;
+import com.adrien.games.bagl.rendering.BlendMode;
+import com.adrien.games.bagl.rendering.Shader;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.texture.TextureRegion;
-import com.adrien.games.bagl.rendering.vertex.Vertex;
-import com.adrien.games.bagl.rendering.vertex.VertexDescription;
-import com.adrien.games.bagl.rendering.vertex.VertexElement;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL15;
+import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GL30;
+import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.MemoryUtil;
 
+import java.nio.FloatBuffer;
+import java.nio.ShortBuffer;
 import java.util.Objects;
 
 /**
- * Text renderer.
+ * Text renderer
+ *
+ * @author adrien
  */
 public class TextRenderer {
 
     private static final int MAX_TEXT_LENGTH = 1000;
-    private static final int VERTEX_PER_CHAR = 4;
-    private static final int INDEX_PER_CHAR = 6;
     private static final float HALF_SCREEN_SIZE = 1f;
+    private static final int FLOAT_SIZE_IN_BYTES = Float.SIZE / 8;
 
-    private final TextVertex[] buffer;
-    private int bufferedChar;
-    private final VertexBuffer vertexBuffer;
-    private final IndexBuffer indexBuffer;
+    private static final int VERTICES_PER_CHAR = 4;
+    private static final int INDICES_PER_CHAR = 6;
+    private static final int ELEMENTS_PER_VERTEX = 8;
+    private static final int VERTEX_STRIDE = ELEMENTS_PER_VERTEX * FLOAT_SIZE_IN_BYTES;
+    private static final int POSITION_INDEX = 0;
+    private static final int POSITION_OFFSET = 0;
+    private static final int ELEMENTS_PER_POSITION = 2;
+    private static final int COORDINATES_INDEX = 1;
+    private static final int COORDINATES_OFFSET = 2 * FLOAT_SIZE_IN_BYTES;
+    private static final int ELEMENTS_PER_COORDINATES = 2;
+    private static final int COLOR_INDEX = 2;
+    private static final int COLOR_OFFSET = 4 * FLOAT_SIZE_IN_BYTES;
+    private static final int ELEMENTS_PER_COLOR = 4;
+
+    private final FloatBuffer vertices;
+    private final int vaoId;
+    private final int vboId;
+    private final int iboId;
 
     private final Configuration configuration;
     private final Shader shader;
 
+    private int bufferedChar;
+
+    /**
+     * Constructs the text renderer
+     */
     public TextRenderer() {
-        this.buffer = initVertices();
-        this.bufferedChar = 0;
-        this.vertexBuffer = initVertexBuffer();
-        this.indexBuffer = initIndexBuffer();
+        this.vertices = MemoryUtil.memAllocFloat(MAX_TEXT_LENGTH * VERTICES_PER_CHAR * ELEMENTS_PER_VERTEX);
+        this.vaoId = GL30.glGenVertexArrays();
+        this.vboId = GL15.glGenBuffers();
+        this.initVertices();
+
+        this.iboId = GL15.glGenBuffers();
+        this.initIndices();
 
         this.configuration = Configuration.getInstance();
-        this.shader = new Shader().addVertexShader("/ui/text.vert").addFragmentShader("/ui/text.frag").compile();
-    }
+        this.shader = new Shader()
+                .addVertexShader("/ui/text.vert")
+                .addFragmentShader("/ui/text.frag")
+                .compile();
 
-    private static TextVertex[] initVertices() {
-        final TextVertex[] vertices = new TextVertex[MAX_TEXT_LENGTH * VERTEX_PER_CHAR];
-        for (int i = 0; i < MAX_TEXT_LENGTH * VERTEX_PER_CHAR; i++) {
-            vertices[i] = new TextVertex(new Vector2(), new Vector2(), new Color(1, 1, 1));
-        }
-        return vertices;
-    }
-
-    private static VertexBuffer initVertexBuffer() {
-        return new VertexBuffer(TextVertex.VERTEX_DESCRIPTION, BufferUsage.DYNAMIC_DRAW,
-                MAX_TEXT_LENGTH * VERTEX_PER_CHAR);
-    }
-
-    private static IndexBuffer initIndexBuffer() {
-        final int[] indices = new int[MAX_TEXT_LENGTH * INDEX_PER_CHAR];
-        for (int i = 0; i < MAX_TEXT_LENGTH; i++) {
-            int indicesIndex = i * INDEX_PER_CHAR;
-            indices[indicesIndex++] = i * VERTEX_PER_CHAR;
-            indices[indicesIndex++] = i * VERTEX_PER_CHAR + 1;
-            indices[indicesIndex++] = i * VERTEX_PER_CHAR + 2;
-            indices[indicesIndex++] = i * VERTEX_PER_CHAR + 2;
-            indices[indicesIndex++] = i * VERTEX_PER_CHAR + 1;
-            indices[indicesIndex] = i * VERTEX_PER_CHAR + 3;
-        }
-        return new IndexBuffer(BufferUsage.DYNAMIC_DRAW, indices);
+        this.bufferedChar = 0;
     }
 
     /**
-     * Release resources.
+     * Initialize indices
+     */
+    private void initIndices() {
+        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, this.iboId);
+        try (final MemoryStack stack = MemoryStack.stackPush()) {
+            final ShortBuffer indices = stack.mallocShort(MAX_TEXT_LENGTH * INDICES_PER_CHAR);
+            for (int i = 0; i < MAX_TEXT_LENGTH; i++) {
+                final int offset = i * INDICES_PER_CHAR;
+                final int firstIndex = i * VERTICES_PER_CHAR;
+                indices.put(offset, (short) firstIndex);
+                indices.put(offset + 1, (short) (firstIndex + 1));
+                indices.put(offset + 2, (short) (firstIndex + 2));
+                indices.put(offset + 3, (short) (firstIndex + 2));
+                indices.put(offset + 4, (short) (firstIndex + 1));
+                indices.put(offset + 5, (short) (firstIndex + 3));
+            }
+            GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, indices, GL15.GL_STATIC_DRAW);
+        }
+        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
+
+    /**
+     * Initialize vertices
+     */
+    private void initVertices() {
+        GL30.glBindVertexArray(this.vaoId);
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, this.vboId);
+
+        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, this.vertices, GL15.GL_DYNAMIC_DRAW);
+
+        GL20.glEnableVertexAttribArray(POSITION_INDEX);
+        GL20.glVertexAttribPointer(POSITION_INDEX, ELEMENTS_PER_POSITION, GL11.GL_FLOAT, false, VERTEX_STRIDE, POSITION_OFFSET);
+
+        GL20.glEnableVertexAttribArray(COORDINATES_INDEX);
+        GL20.glVertexAttribPointer(COORDINATES_INDEX, ELEMENTS_PER_COORDINATES, GL11.GL_FLOAT, false, VERTEX_STRIDE, COORDINATES_OFFSET);
+
+        GL20.glEnableVertexAttribArray(COLOR_INDEX);
+        GL20.glVertexAttribPointer(COLOR_INDEX, ELEMENTS_PER_COLOR, GL11.GL_FLOAT, false, VERTEX_STRIDE, COLOR_OFFSET);
+
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+        GL30.glBindVertexArray(0);
+    }
+
+    /**
+     * Release resources
      */
     public void destroy() {
         this.shader.destroy();
-        this.vertexBuffer.destroy();
-        this.indexBuffer.destroy();
+        MemoryUtil.memFree(this.vertices);
+        GL15.glDeleteBuffers(this.iboId);
+        GL15.glDeleteBuffers(this.vboId);
+        GL30.glDeleteVertexArrays(this.vaoId);
     }
 
     /**
-     * <p>Renders a {@link String} on screen.
-     * <p>The text is renderer at a given position with a given font, color and size.
+     * Render a {@link String} on screen
+     * <p>
+     * The text is renderer at a given position with a given font, color and size.
      * The position and scale must be expressed in screen space values ranging from
      * 0 to 1. This allows text position and size to be consistent when resolution
-     * changes. The origin is the bottom-left corner.
-     * <p>For example, to render a text from the bottom left corner, with an height
-     * equals to the height of the viewport. Position must be (0, 0) and scale = 1.
+     * changes. The origin is the bottom-left corner
+     * <p>
+     * For example, to render a text from the bottom left corner, with an height
+     * equals to the height of the viewport. Position must be (0, 0) and scale = 1
      *
-     * @param text     The text to render.
-     * @param font     The font to use to render the text.
-     * @param position The position of the text.
-     * @param scale    The scale of the text.
-     * @param color    The color of the text.
+     * @param text     The text to render
+     * @param font     The font to use to render the text
+     * @param position The position of the text
+     * @param scale    The scale of the text
+     * @param color    The color of the text
      */
-    public void render(String text, Font font, Vector2 position, float scale, Color color) {
+    public void render(final String text, final Font font, final Vector2 position, final float scale, final Color color) {
         final float aspectRatio = (float) this.configuration.getXResolution() / this.configuration.getYResolution();
         final float vScale = scale / font.getLineGap() * 2;
         final float hScale = vScale / aspectRatio;
@@ -103,7 +157,6 @@ public class TextRenderer {
 
         final int textLength = text.length();
         for (int i = 0; i < textLength; i++) {
-
             final char c = text.charAt(i);
             if (c == '\n' || c == '\r') {
                 caret.nextLine();
@@ -117,7 +170,16 @@ public class TextRenderer {
         this.renderText(font, scale);
     }
 
-    private void generateGlyphVertices(Glyph glyph, Caret caret, float hScale, float vScale, Color color) {
+    /**
+     * Generate the vertices for on glyph
+     *
+     * @param glyph  The glyph for which to generate the vertices
+     * @param caret  The caret
+     * @param hScale The horizontal scale
+     * @param vScale The vertical scale
+     * @param color  The color of the text
+     */
+    private void generateGlyphVertices(final Glyph glyph, final Caret caret, final float hScale, final float vScale, final Color color) {
         final TextureRegion region = glyph.getRegion();
 
         final float left = caret.isNewLine() ? caret.getX() : glyph.getXOffset() * hScale + caret.getX();
@@ -125,77 +187,67 @@ public class TextRenderer {
         final float bottom = caret.getY() + glyph.getYOffset() * vScale;
         final float top = bottom + (region.getTop() - region.getBottom()) * vScale;
 
-        final TextVertex v0 = this.buffer[this.bufferedChar * VERTEX_PER_CHAR];
-        final TextVertex v1 = this.buffer[this.bufferedChar * VERTEX_PER_CHAR + 1];
-        final TextVertex v2 = this.buffer[this.bufferedChar * VERTEX_PER_CHAR + 2];
-        final TextVertex v3 = this.buffer[this.bufferedChar * VERTEX_PER_CHAR + 3];
-
-        this.fillTextVertex(v0, left, bottom, region.getLeft(), region.getBottom(), color);
-        this.fillTextVertex(v1, right, bottom, region.getRight(), region.getBottom(), color);
-        this.fillTextVertex(v2, left, top, region.getLeft(), region.getTop(), color);
-        this.fillTextVertex(v3, right, top, region.getRight(), region.getTop(), color);
+        final int vertexIndex = this.bufferedChar * VERTICES_PER_CHAR;
+        this.updateVertex(vertexIndex, left, bottom, region.getLeft(), region.getBottom(), color);
+        this.updateVertex(vertexIndex + 1, right, bottom, region.getRight(), region.getBottom(), color);
+        this.updateVertex(vertexIndex + 2, left, top, region.getLeft(), region.getTop(), color);
+        this.updateVertex(vertexIndex + 3, right, top, region.getRight(), region.getTop(), color);
 
         caret.advance(glyph.getXAdvance() * hScale);
         this.bufferedChar++;
     }
 
-    private void fillTextVertex(TextVertex vertex, float x, float y, float u, float v, Color color) {
-        vertex.position.setX(x);
-        vertex.position.setY(y);
-        vertex.coordinates.setX(u);
-        vertex.coordinates.setY(v);
-        vertex.color.set(color);
+    /**
+     * Update the data of one vertex
+     *
+     * @param vertexIndex The index of the vertex to update
+     * @param x           The x position of the vertex
+     * @param y           The y position of the vertex
+     * @param u           The u coordinate of the vertex
+     * @param v           The v coordinate of the vertex
+     * @param color       The color of the vertex
+     */
+    private void updateVertex(final int vertexIndex, final float x, final float y, final float u, final float v, final Color color) {
+        final int index = vertexIndex * ELEMENTS_PER_VERTEX;
+        this.vertices.put(index, x);
+        this.vertices.put(index + 1, y);
+        this.vertices.put(index + 2, u);
+        this.vertices.put(index + 3, v);
+        this.vertices.put(index + 4, color.getRed());
+        this.vertices.put(index + 5, color.getGreen());
+        this.vertices.put(index + 6, color.getBlue());
+        this.vertices.put(index + 7, color.getAlpha());
     }
 
-    private void renderText(Font font, float scale) {
-        this.vertexBuffer.setData(this.buffer, this.bufferedChar * VERTEX_PER_CHAR);
+    /**
+     * Render the buffered text
+     *
+     * @param font  The font to use
+     * @param scale The scale of the text
+     */
+    private void renderText(final Font font, final float scale) {
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, this.vboId);
+        GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, this.vertices);
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
 
         font.getBitmap().bind();
         this.shader.bind();
         this.shader.setUniform("thickness", 0.5f);
         this.shader.setUniform("smoothing", font.computeSmoothing(this.configuration.getYResolution() * scale));
-        this.vertexBuffer.bind();
-        this.indexBuffer.bind();
+        GL30.glBindVertexArray(this.vaoId);
+        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, this.iboId);
 
         GL11.glDisable(GL11.GL_DEPTH_TEST);
         Engine.setBlendMode(BlendMode.TRANSPARENCY);
-        GL11.glDrawElements(GL11.GL_TRIANGLES, this.bufferedChar * INDEX_PER_CHAR, GL11.GL_UNSIGNED_INT, 0);
+        GL11.glDrawElements(GL11.GL_TRIANGLES, this.bufferedChar * INDICES_PER_CHAR, GL11.GL_UNSIGNED_SHORT, 0);
         Engine.setBlendMode(BlendMode.NONE);
         GL11.glEnable(GL11.GL_DEPTH_TEST);
 
         Shader.unbind();
-        IndexBuffer.unbind();
-        VertexBuffer.unbind();
+        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
+        GL30.glBindVertexArray(0);
         Texture.unbind();
 
         this.bufferedChar = 0;
     }
-
-    /**
-     * Text vertex.
-     */
-    private static class TextVertex implements Vertex {
-
-        private static final VertexDescription VERTEX_DESCRIPTION = new VertexDescription(new VertexElement[]{
-                new VertexElement(0, 2, 0), new VertexElement(1, 2, 2),
-                new VertexElement(2, 4, 4)});
-
-        private final Vector2 position;
-        private final Vector2 coordinates;
-        private final Color color;
-
-        private TextVertex(Vector2 position, Vector2 coordinates, Color color) {
-            this.position = position;
-            this.coordinates = coordinates;
-            this.color = color;
-        }
-
-        @Override
-        public float[] getData() {
-            return new float[]{this.position.getX(), this.position.getY(), this.coordinates.getX(), this.coordinates.getY(),
-                    this.color.getRed(), this.color.getGreen(), this.color.getBlue(), this.color.getAlpha()};
-        }
-
-    }
-
 }
