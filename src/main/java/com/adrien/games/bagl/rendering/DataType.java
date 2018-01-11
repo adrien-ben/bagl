@@ -23,6 +23,15 @@ public enum DataType {
         this.size = size;
     }
 
+    /**
+     * Is this value a type representing a whole number
+     *
+     * @return true if one of the whole number data type
+     */
+    public boolean isWholeType() {
+        return this == INT || this == SHORT || this == BYTE;
+    }
+
     public int getGlCode() {
         return this.glCode;
     }
