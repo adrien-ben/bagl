@@ -53,18 +53,18 @@ public class PostProcessor {
         glBindBuffer(GL_ARRAY_BUFFER, this.quadVboId);
         try (final MemoryStack stack = MemoryStack.stackPush()) {
             final ByteBuffer positions = stack.bytes(
-                    (byte) -1, (byte) -1, (byte) 0, (byte) 0, (byte) 0,
-                    (byte) 1, (byte) -1, (byte) 0, Byte.MAX_VALUE, (byte) 0,
-                    (byte) -1, (byte) 1, (byte) 0, (byte) 0, Byte.MAX_VALUE,
-                    (byte) 1, (byte) 1, (byte) 0, Byte.MAX_VALUE, Byte.MAX_VALUE);
+                    (byte) -1, (byte) -1, (byte) 0, (byte) 0,
+                    (byte) 1, (byte) -1, Byte.MAX_VALUE, (byte) 0,
+                    (byte) -1, (byte) 1, (byte) 0, Byte.MAX_VALUE,
+                    (byte) 1, (byte) 1, Byte.MAX_VALUE, Byte.MAX_VALUE);
             glBufferData(GL_ARRAY_BUFFER, positions, GL_STATIC_DRAW);
         }
 
         glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_BYTE, false, 5, 0);
+        glVertexAttribPointer(0, 2, GL_BYTE, false, 4, 0);
 
         glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 2, GL_BYTE, true, 5, 3);
+        glVertexAttribPointer(2, 2, GL_BYTE, true, 4, 2);
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
