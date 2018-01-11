@@ -1,16 +1,20 @@
 package com.adrien.games.bagl.rendering.postprocess;
 
-import com.adrien.games.bagl.core.math.Vector2;
-import com.adrien.games.bagl.core.math.Vector3;
-import com.adrien.games.bagl.rendering.*;
+import com.adrien.games.bagl.rendering.FrameBuffer;
+import com.adrien.games.bagl.rendering.FrameBufferParameters;
+import com.adrien.games.bagl.rendering.Shader;
 import com.adrien.games.bagl.rendering.texture.Format;
 import com.adrien.games.bagl.rendering.texture.Texture;
-import com.adrien.games.bagl.rendering.vertex.Vertex;
-import com.adrien.games.bagl.rendering.vertex.VertexPositionTexture;
 import com.adrien.games.bagl.utils.DoubleBuffer;
+import org.lwjgl.system.MemoryStack;
 
-import static org.lwjgl.opengl.GL11.GL_TRIANGLE_STRIP;
-import static org.lwjgl.opengl.GL11.glDrawArrays;
+import java.nio.ByteBuffer;
+
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL15.*;
+import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
+import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
+import static org.lwjgl.opengl.GL30.*;
 
 /**
  * Image post processor
@@ -28,7 +32,8 @@ public class PostProcessor {
     private final Shader blurShader;
     private final Shader lastStageShader;
 
-    private final VertexBuffer vertexBuffer;
+    private int quadVboId;
+    private int quadVaoId;
 
     public PostProcessor(final int xResolution, final int yResolution) {
         final FrameBufferParameters parameters = new FrameBufferParameters().hasDepth(false).addColorOutput(Format.RGB16F);
@@ -38,16 +43,31 @@ public class PostProcessor {
         this.bloomShader = new Shader().addVertexShader(POST_PROCESS_VERTEX_SHADER_FILE).addFragmentShader("/post/bloom.frag").compile();
         this.blurShader = new Shader().addVertexShader(POST_PROCESS_VERTEX_SHADER_FILE).addFragmentShader("/post/blur.frag").compile();
         this.lastStageShader = new Shader().addVertexShader(POST_PROCESS_VERTEX_SHADER_FILE).addFragmentShader("/post/post_process.frag").compile();
-        this.vertexBuffer = this.initQuad();
+        this.initFullScreenQuad();
     }
 
-    private VertexBuffer initQuad() {
-        final Vertex[] vertices = new Vertex[4];
-        vertices[0] = new VertexPositionTexture(new Vector3(-1, -1, 0), new Vector2(0, 0));
-        vertices[1] = new VertexPositionTexture(new Vector3(1, -1, 0), new Vector2(1, 0));
-        vertices[2] = new VertexPositionTexture(new Vector3(-1, 1, 0), new Vector2(0, 1));
-        vertices[3] = new VertexPositionTexture(new Vector3(1, 1, 0), new Vector2(1, 1));
-        return new VertexBuffer(VertexPositionTexture.DESCRIPTION, BufferUsage.STATIC_DRAW, vertices);
+    private void initFullScreenQuad() {
+        this.quadVaoId = glGenVertexArrays();
+        this.quadVboId = glGenBuffers();
+        glBindVertexArray(this.quadVaoId);
+        glBindBuffer(GL_ARRAY_BUFFER, this.quadVboId);
+        try (final MemoryStack stack = MemoryStack.stackPush()) {
+            final ByteBuffer positions = stack.bytes(
+                    (byte) -1, (byte) -1, (byte) 0, (byte) 0, (byte) 0,
+                    (byte) 1, (byte) -1, (byte) 0, Byte.MAX_VALUE, (byte) 0,
+                    (byte) -1, (byte) 1, (byte) 0, (byte) 0, Byte.MAX_VALUE,
+                    (byte) 1, (byte) 1, (byte) 0, Byte.MAX_VALUE, Byte.MAX_VALUE);
+            glBufferData(GL_ARRAY_BUFFER, positions, GL_STATIC_DRAW);
+        }
+
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_BYTE, false, 5, 0);
+
+        glEnableVertexAttribArray(2);
+        glVertexAttribPointer(2, 2, GL_BYTE, true, 5, 3);
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
     }
 
     /**
@@ -59,7 +79,8 @@ public class PostProcessor {
         this.bloomShader.destroy();
         this.blurShader.destroy();
         this.lastStageShader.destroy();
-        this.vertexBuffer.destroy();
+        glDeleteBuffers(this.quadVboId);
+        glDeleteVertexArrays(this.quadVaoId);
     }
 
     /**
@@ -70,11 +91,11 @@ public class PostProcessor {
      * @param image The image to apply post processing to
      */
     public void process(final Texture image) {
-        this.vertexBuffer.bind();
+        glBindVertexArray(this.quadVaoId);
         this.performBloomPass(image);
         this.performGaussianBlur(this.bloomBuffer.getColorTexture(0));
         this.performFinalPass(image);
-        VertexBuffer.unbind();
+        glBindVertexArray(0);
     }
 
     private void performBloomPass(final Texture image) {
@@ -84,7 +105,7 @@ public class PostProcessor {
         this.bloomShader.bind();
         image.bind();
 
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, this.vertexBuffer.getVertexCount());
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         this.bloomBuffer.unbind();
     }
 
@@ -103,7 +124,7 @@ public class PostProcessor {
                 this.blurBuffer.getReadBuffer().getColorTexture(0).bind();
             }
 
-            glDrawArrays(GL_TRIANGLE_STRIP, 0, this.vertexBuffer.getVertexCount());
+            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
             this.blurBuffer.swap();
         }
@@ -119,7 +140,7 @@ public class PostProcessor {
         baseImage.bind(0);
         this.blurBuffer.getReadBuffer().getColorTexture(0).bind(1);
 
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, this.vertexBuffer.getVertexCount());
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
         Texture.unbind(1);
         Texture.unbind(0);

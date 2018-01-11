@@ -17,7 +17,6 @@ import com.adrien.games.bagl.rendering.texture.Texture;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,7 +38,6 @@ import static org.lwjgl.opengl.GL30.*;
  * @author adrien
  */
 public class Renderer {
-
 
     private static final int BRDF_RESOLUTION = 512;
     private final static byte UNIT_CUBE_POS_HALF_SIZE = (byte) 1;
@@ -122,18 +120,19 @@ public class Renderer {
         glBindVertexArray(this.quadVaoId);
         glBindBuffer(GL_ARRAY_BUFFER, this.quadVboId);
         try (final MemoryStack stack = MemoryStack.stackPush()) {
-            final FloatBuffer vertices = stack.floats(
-                    -1, -1, 0, 0, 0,
-                    1, -1, 0, 1, 0,
-                    -1, 1, 0, 0, 1,
-                    1, 1, 0, 1, 1);
-            glBufferData(GL_ARRAY_BUFFER, vertices, GL_STATIC_DRAW);
+            final ByteBuffer positions = stack.bytes(
+                    (byte) -1, (byte) -1, (byte) 0, (byte) 0, (byte) 0,
+                    (byte) 1, (byte) -1, (byte) 0, Byte.MAX_VALUE, (byte) 0,
+                    (byte) -1, (byte) 1, (byte) 0, (byte) 0, Byte.MAX_VALUE,
+                    (byte) 1, (byte) 1, (byte) 0, Byte.MAX_VALUE, Byte.MAX_VALUE);
+            glBufferData(GL_ARRAY_BUFFER, positions, GL_STATIC_DRAW);
         }
+
         glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, false, 5 * Float.SIZE / 8, 0);
+        glVertexAttribPointer(0, 3, GL_BYTE, false, 5, 0);
 
         glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 2, GL_FLOAT, false, 5 * Float.SIZE / 8, 3 * Float.SIZE / 8);
+        glVertexAttribPointer(2, 2, GL_BYTE, true, 5, 3);
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
