@@ -37,14 +37,14 @@ public class Spritebatch {
     private static final int INDICES_PER_SPRITE = 6;
     private static final int VERTICES_PER_SPRITE = 4;
     private static final int ELEMENTS_PER_VERTICES = 8;
-    private static final int VERTICES_STRIDE = 8 * FLOAT_SIZE_IN_BYTES;
-    private static final int POSITIONS_POSITION = 0;
+    private static final int VERTICES_STRIDE = ELEMENTS_PER_VERTICES * FLOAT_SIZE_IN_BYTES;
+    private static final int POSITION_INDEX = 0;
     private static final int ELEMENTS_PER_POSITION = 3;
     private static final int POSITION_OFFSET = 0;
-    private static final int COLORS_POSITION = 1;
+    private static final int COLOR_INDEX = 1;
     private static final int ELEMENTS_PER_COLOR = 3;
     private static final int COLOR_OFFSET = 3 * FLOAT_SIZE_IN_BYTES;
-    private static final int COORDINATES_POSITION = 2;
+    private static final int COORDINATES_INDEX = 2;
     private static final int ELEMENTS_PER_COORDINATES = 2;
     private static final int COORDINATES_OFFSET = 6 * FLOAT_SIZE_IN_BYTES;
 
@@ -104,14 +104,14 @@ public class Spritebatch {
 
         GL15.glBufferData(GL15.GL_ARRAY_BUFFER, this.vertices, GL15.GL_DYNAMIC_DRAW);
 
-        GL20.glEnableVertexAttribArray(POSITIONS_POSITION);
-        GL20.glVertexAttribPointer(POSITIONS_POSITION, ELEMENTS_PER_POSITION, GL11.GL_FLOAT, false, VERTICES_STRIDE, POSITION_OFFSET);
+        GL20.glEnableVertexAttribArray(POSITION_INDEX);
+        GL20.glVertexAttribPointer(POSITION_INDEX, ELEMENTS_PER_POSITION, GL11.GL_FLOAT, false, VERTICES_STRIDE, POSITION_OFFSET);
 
-        GL20.glEnableVertexAttribArray(COLORS_POSITION);
-        GL20.glVertexAttribPointer(COLORS_POSITION, ELEMENTS_PER_COLOR, GL11.GL_FLOAT, false, VERTICES_STRIDE, COLOR_OFFSET);
+        GL20.glEnableVertexAttribArray(COLOR_INDEX);
+        GL20.glVertexAttribPointer(COLOR_INDEX, ELEMENTS_PER_COLOR, GL11.GL_FLOAT, false, VERTICES_STRIDE, COLOR_OFFSET);
 
-        GL20.glEnableVertexAttribArray(COORDINATES_POSITION);
-        GL20.glVertexAttribPointer(COORDINATES_POSITION, ELEMENTS_PER_COORDINATES, GL11.GL_FLOAT, false, VERTICES_STRIDE, COORDINATES_OFFSET);
+        GL20.glEnableVertexAttribArray(COORDINATES_INDEX);
+        GL20.glVertexAttribPointer(COORDINATES_INDEX, ELEMENTS_PER_COORDINATES, GL11.GL_FLOAT, false, VERTICES_STRIDE, COORDINATES_OFFSET);
 
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
         GL30.glBindVertexArray(0);
@@ -124,7 +124,7 @@ public class Spritebatch {
         GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, this.iboId);
         try (final MemoryStack stack = MemoryStack.stackPush()) {
             final ShortBuffer indices = stack.mallocShort(this.size * INDICES_PER_SPRITE);
-            for (int i = 0; i < size; i++) {
+            for (int i = 0; i < this.size; i++) {
                 final int offset = i * INDICES_PER_SPRITE;
                 final int firstIndex = i * VERTICES_PER_SPRITE;
                 indices.put(offset, (short) firstIndex);

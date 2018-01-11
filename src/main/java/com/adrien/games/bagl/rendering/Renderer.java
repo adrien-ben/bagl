@@ -177,7 +177,8 @@ public class Renderer {
     }
 
     private void initFrameBuffers() {
-        this.gBuffer = new FrameBuffer(this.xResolution, this.yResolution, new FrameBufferParameters().addColorOutput(Format.RGBA8).addColorOutput(Format.RGBA16F));
+        this.gBuffer = new FrameBuffer(this.xResolution, this.yResolution,
+                new FrameBufferParameters().addColorOutput(Format.RGBA8).addColorOutput(Format.RGBA16F));
         this.shadowBuffer = new FrameBuffer(this.shadowMapResolution, this.shadowMapResolution);
         this.finalBuffer = new FrameBuffer(this.xResolution, this.yResolution, new FrameBufferParameters().addColorOutput(Format.RGBA32F));
         this.brdfBuffer = new FrameBuffer(BRDF_RESOLUTION, BRDF_RESOLUTION, new FrameBufferParameters().hasDepth(false).addColorOutput(Format.RG16F));
@@ -322,11 +323,11 @@ public class Renderer {
     }
 
     private void renderMesh(final Mesh mesh) {
-        mesh.getVertices().bind();
-        mesh.getIndices().bind();
-        glDrawElements(GL_TRIANGLES, mesh.getIndices().getSize(), GL_UNSIGNED_INT, 0);
-        IndexBuffer.unbind();
-        VertexBuffer.unbind();
+        glBindVertexArray(mesh.getVaoId());
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.getIboId());
+        glDrawElements(GL_TRIANGLES, mesh.getIndexCount(), GL_UNSIGNED_INT, 0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
     }
 
     private void renderDeferred(final Scene scene, final Camera camera) {

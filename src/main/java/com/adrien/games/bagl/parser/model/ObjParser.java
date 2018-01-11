@@ -3,21 +3,28 @@ package com.adrien.games.bagl.parser.model;
 import com.adrien.games.bagl.core.EngineException;
 import com.adrien.games.bagl.core.math.Vector2;
 import com.adrien.games.bagl.core.math.Vector3;
-import com.adrien.games.bagl.rendering.*;
-import com.adrien.games.bagl.rendering.vertex.MeshVertex;
-import com.adrien.games.bagl.rendering.vertex.Vertex;
+import com.adrien.games.bagl.rendering.Material;
+import com.adrien.games.bagl.rendering.Mesh;
+import com.adrien.games.bagl.rendering.Model;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL15;
+import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GL30;
+import org.lwjgl.system.MemoryStack;
 
 import java.io.IOException;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Stream;
 
 /**
- * This class parses Wavefront's .obj model files and create a {@link Mesh} from it.
+ * This class parses Wavefront's .obj model files and create a {@link Mesh} from it
  *
  * @author Adrien
  */
@@ -208,7 +215,7 @@ public class ObjParser implements ModelParser {
     }
 
     /**
-     * Internal mesh builder.
+     * Internal mesh builder
      */
     private static class MeshBuilder {
 
@@ -235,32 +242,80 @@ public class ObjParser implements ModelParser {
             if (this.material.hasNormalMap()) {
                 this.computeTangents();
             }
+
             final int vertexCount = this.faces.size();
-            final Vertex[] vertexArray = new MeshVertex[vertexCount];
-            for (int i = 0; i < vertexCount; i++) {
-                final Face face = this.faces.get(i);
-                final Vector3 position = positions.get(face.getPositionIndex());
-                final Vector3 normal = normals.get(face.getNormalIndex());
-                final Vector2 coordinate = face.getCoordsIndex() > -1 ? coordinates.get(face.getCoordsIndex()) : new Vector2();
-                final Vector3 tangent = this.tangents.isEmpty() ? new Vector3() : this.tangents.get(i);
-                vertexArray[i] = new MeshVertex(position, normal, coordinate, tangent);
-            }
+            final int vaoId = GL30.glGenVertexArrays();
+            final int vboId = GL15.glGenBuffers();
+            this.initializeVertexBuffer(vertexCount, vaoId, vboId);
 
             final int indexCount = this.faceIndices.size();
-            final int[] indexArray = new int[indexCount];
-            for (int i = 0; i < indexCount; i++) {
-                indexArray[i] = this.faceIndices.get(i);
+            final int iboId = GL15.glGenBuffers();
+            this.generateIndexBuffer(indexCount, iboId);
+
+            return new Mesh(vaoId, vboId, vertexCount, iboId, indexCount, this.material);
+        }
+
+        private void generateIndexBuffer(final int indexCount, final int iboId) {
+            GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, iboId);
+            try (final MemoryStack stack = MemoryStack.stackPush()) {
+                final IntBuffer indices = stack.mallocInt(indexCount);
+                for (int i = 0; i < indexCount; i++) {
+                    indices.put(i, this.faceIndices.get(i));
+                }
+                GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, indices, GL15.GL_STATIC_DRAW);
+            }
+            GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
+        }
+
+        private void initializeVertexBuffer(final int vertexCount, final int vaoId, final int vboId) {
+            GL30.glBindVertexArray(vaoId);
+            GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vboId);
+
+            try (final MemoryStack memoryStack = MemoryStack.stackPush()) {
+                final FloatBuffer vertices = memoryStack.mallocFloat(vertexCount * Mesh.ELEMENTS_PER_VERTEX);
+                for (int i = 0; i < vertexCount; i++) {
+                    final Face face = this.faces.get(i);
+                    final Vector3 position = positions.get(face.getPositionIndex());
+                    final Vector3 normal = normals.get(face.getNormalIndex());
+                    final Vector2 coordinates = face.getCoordsIndex() > -1 ? MeshBuilder.coordinates.get(face.getCoordsIndex()) : new Vector2();
+                    final Vector3 tangent = this.tangents.isEmpty() ? new Vector3() : this.tangents.get(i);
+
+                    final int index = i * Mesh.ELEMENTS_PER_VERTEX;
+                    vertices.put(index, position.getX());
+                    vertices.put(index + 1, position.getY());
+                    vertices.put(index + 2, position.getZ());
+                    vertices.put(index + 3, normal.getX());
+                    vertices.put(index + 4, normal.getY());
+                    vertices.put(index + 5, normal.getZ());
+                    vertices.put(index + 6, coordinates.getX());
+                    vertices.put(index + 7, coordinates.getY());
+                    vertices.put(index + 8, tangent.getX());
+                    vertices.put(index + 9, tangent.getY());
+                    vertices.put(index + 10, tangent.getZ());
+                }
+                GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vertices, GL15.GL_STATIC_DRAW);
             }
 
-            final VertexBuffer vertexBuffer = new VertexBuffer(MeshVertex.DESCRIPTION, BufferUsage.STATIC_DRAW, vertexArray);
-            final IndexBuffer indexBuffer = new IndexBuffer(BufferUsage.STATIC_DRAW, indexArray);
-            return new Mesh(vertexBuffer, indexBuffer, this.material);
+            GL20.glEnableVertexAttribArray(Mesh.POSITION_INDEX);
+            GL20.glVertexAttribPointer(Mesh.POSITION_INDEX, Mesh.ELEMENTS_PER_POSITION, GL11.GL_FLOAT, false, Mesh.VERTEX_STRIDE,
+                    Mesh.POSITION_OFFSET);
+
+            GL20.glEnableVertexAttribArray(Mesh.NORMAL_INDEX);
+            GL20.glVertexAttribPointer(Mesh.NORMAL_INDEX, Mesh.ELEMENTS_PER_NORMAL, GL11.GL_FLOAT, false, Mesh.VERTEX_STRIDE, Mesh.NORMAL_OFFSET);
+
+            GL20.glEnableVertexAttribArray(Mesh.COORDINATES_INDEX);
+            GL20.glVertexAttribPointer(Mesh.COORDINATES_INDEX, Mesh.ELEMENTS_PER_COORDINATES, GL11.GL_FLOAT, false, Mesh.VERTEX_STRIDE,
+                    Mesh.COORDINATES_OFFSET);
+
+            GL20.glEnableVertexAttribArray(Mesh.TANGENT_INDEX);
+            GL20.glVertexAttribPointer(Mesh.TANGENT_INDEX, Mesh.ELEMENTS_PER_TANGENT, GL11.GL_FLOAT, false, Mesh.VERTEX_STRIDE, Mesh.TANGENT_OFFSET);
+
+            GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+            GL30.glBindVertexArray(0);
         }
 
         private void computeTangents() {
-
             final Vector3[] tangents = new Vector3[this.faces.size()];
-
             for (int i = 0; i < this.faceIndices.size(); i += 3) {
 
                 final int index0 = this.faceIndices.get(i);
@@ -295,9 +350,7 @@ public class ObjParser implements ModelParser {
                 this.setTangentForFace(tangents, index1, tangent);
                 this.setTangentForFace(tangents, index2, tangent);
             }
-
             Collections.addAll(this.tangents, tangents);
-
         }
 
         private void setTangentForFace(Vector3[] tangents, int index, Vector3 tangent) {
@@ -315,7 +368,5 @@ public class ObjParser implements ModelParser {
             coordinates.clear();
             normals.clear();
         }
-
     }
-
 }
