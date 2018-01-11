@@ -2,21 +2,28 @@ package com.adrien.games.bagl.rendering;
 
 import com.adrien.games.bagl.core.Camera2D;
 import com.adrien.games.bagl.core.Color;
+import com.adrien.games.bagl.core.EngineException;
 import com.adrien.games.bagl.core.math.Vector2;
-import com.adrien.games.bagl.core.math.Vector3;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.texture.TextureRegion;
-import com.adrien.games.bagl.rendering.vertex.VertexPositionColorTexture;
-import com.adrien.games.bagl.rendering.vertex.VertexPositionTexture;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL15;
+import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GL30;
+import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.MemoryUtil;
+
+import java.nio.FloatBuffer;
+import java.nio.ShortBuffer;
 
 /**
- * Class allowing to render sprites in batch.
- * <p>The purpose of this class is to limit the number of draw calls made when rendering sprites. A batch is rendered when :
+ * Class allowing to render sprites in batch
+ * <p>
+ * The purpose of this class is to limit the number of draw calls made when rendering sprites. A batch is rendered when :
  * <ul>
  * <li>The Spritebatch::end is called (generally before the end of the frame)
- * <li>The batch max size is reached.
- * <li>The current texture changes. (it means spritebatch works better if sprites are grouped
+ * <li>The batch max size is reached
+ * <li>The current texture changes (it means spritebatch works better if sprites are grouped
  * by texture or with texture atlases)
  *
  * @author Adrien
@@ -24,108 +31,149 @@ import org.lwjgl.opengl.GL11;
 public class Spritebatch {
 
     private static final int MAX_SIZE = 4096;
-    private static final int VERTICES_PER_SPRITE = 4;
-    private static final int INDICES_PER_SPRITE = 6;
     private static final float HALF_PIXEL_SIZE = 0.5f;
+    private static final int FLOAT_SIZE_IN_BYTES = Float.SIZE / 8;
+
+    private static final int INDICES_PER_SPRITE = 6;
+    private static final int VERTICES_PER_SPRITE = 4;
+    private static final int ELEMENTS_PER_VERTICES = 8;
+    private static final int VERTICES_STRIDE = 8 * FLOAT_SIZE_IN_BYTES;
+    private static final int POSITIONS_POSITION = 0;
+    private static final int ELEMENTS_PER_POSITION = 3;
+    private static final int POSITION_OFFSET = 0;
+    private static final int COLORS_POSITION = 1;
+    private static final int ELEMENTS_PER_COLOR = 3;
+    private static final int COLOR_OFFSET = 3 * FLOAT_SIZE_IN_BYTES;
+    private static final int COORDINATES_POSITION = 2;
+    private static final int ELEMENTS_PER_COORDINATES = 2;
+    private static final int COORDINATES_OFFSET = 6 * FLOAT_SIZE_IN_BYTES;
 
     private final Camera2D camera;
     private final Shader spriteShader;
     private Shader currentShader;
     private final int size;
-    private final VertexBuffer vertexBuffer;
-    private final IndexBuffer indexBuffer;
-    private final VertexPositionColorTexture[] vertices;
+
+    private final FloatBuffer vertices;
+    private final int vaoId;
+    private final int vboId;
+    private final int iboId;
+
     private int drawnSprites;
     private boolean started;
     private Texture currentTexture;
 
     /**
-     * Instantiates and initializes the spritebatch.
-     * <p>Default camera and shader are created.
+     * Instantiates and initializes the spritebatch
+     * <p>
+     * Default camera and shader are created
      *
-     * @param size   The size of the spritebatch. Will be overridden if over {@value #MAX_SIZE}.
-     * @param width  The width of the viewport.
-     * @param height The height of the viewport.
+     * @param size   The size of the spritebatch. Will be overridden if over {@value #MAX_SIZE}
+     * @param width  The width of the viewport
+     * @param height The height of the viewport
      */
     public Spritebatch(final int size, final int width, final int height) {
+        if (size > MAX_SIZE) {
+            throw new EngineException("Maximum size for Spritebatch is " + MAX_SIZE);
+        }
+        this.size = size;
+
         this.camera = new Camera2D(new Vector2(width / 2, height / 2), width, height);
-        this.spriteShader = new Shader().addVertexShader("/sprite/sprite.vert").addFragmentShader("/sprite/sprite.frag").compile();
-        this.size = size < MAX_SIZE ? size : MAX_SIZE;
-        this.vertexBuffer = new VertexBuffer(VertexPositionColorTexture.DESCRIPTION, BufferUsage.DYNAMIC_DRAW, this.size * VERTICES_PER_SPRITE);
-        this.vertices = this.initVertices(this.size);
-        this.indexBuffer = this.initIndexBuffer(this.size);
+        this.spriteShader = new Shader()
+                .addVertexShader("/sprite/sprite.vert")
+                .addFragmentShader("/sprite/sprite.frag")
+                .compile();
+
+        this.vertices = MemoryUtil.memAllocFloat(this.size * VERTICES_PER_SPRITE * ELEMENTS_PER_VERTICES);
+        this.vaoId = GL30.glGenVertexArrays();
+        this.vboId = GL15.glGenBuffers();
+        this.initVertices();
+
+        this.iboId = GL15.glGenBuffers();
+        this.initIndices();
+
         this.drawnSprites = 0;
         this.started = false;
     }
 
     /**
-     * Initializes the index buffer.
-     *
-     * @param size The size of the spritebatch.
-     * @return The initialized {@link IndexBuffer}.
+     * Initialize the vertex array and buffer
      */
-    private IndexBuffer initIndexBuffer(final int size) {
-        final int[] indices = new int[size * INDICES_PER_SPRITE];
-        for (int i = 0; i < size; i++) {
-            final int offset = i * INDICES_PER_SPRITE;
-            final int firstIndex = i * VERTICES_PER_SPRITE;
-            indices[offset] = firstIndex;
-            indices[offset + 1] = firstIndex + 1;
-            indices[offset + 2] = firstIndex + 2;
-            indices[offset + 3] = firstIndex + 2;
-            indices[offset + 4] = firstIndex + 1;
-            indices[offset + 5] = firstIndex + 3;
-        }
-        return new IndexBuffer(BufferUsage.STATIC_DRAW, indices);
+    private void initVertices() {
+        GL30.glBindVertexArray(this.vaoId);
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, this.vboId);
+
+        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, this.vertices, GL15.GL_DYNAMIC_DRAW);
+
+        GL20.glEnableVertexAttribArray(POSITIONS_POSITION);
+        GL20.glVertexAttribPointer(POSITIONS_POSITION, ELEMENTS_PER_POSITION, GL11.GL_FLOAT, false, VERTICES_STRIDE, POSITION_OFFSET);
+
+        GL20.glEnableVertexAttribArray(COLORS_POSITION);
+        GL20.glVertexAttribPointer(COLORS_POSITION, ELEMENTS_PER_COLOR, GL11.GL_FLOAT, false, VERTICES_STRIDE, COLOR_OFFSET);
+
+        GL20.glEnableVertexAttribArray(COORDINATES_POSITION);
+        GL20.glVertexAttribPointer(COORDINATES_POSITION, ELEMENTS_PER_COORDINATES, GL11.GL_FLOAT, false, VERTICES_STRIDE, COORDINATES_OFFSET);
+
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+        GL30.glBindVertexArray(0);
     }
 
     /**
-     * Initializes the vertex pool.
-     *
-     * @param size The size of the spritebatch.
-     * @return An initialized array of {@link VertexPositionTexture}.
+     * Initialize the index buffer
      */
-    private VertexPositionColorTexture[] initVertices(final int size) {
-        final VertexPositionColorTexture[] vertices = new VertexPositionColorTexture[size * VERTICES_PER_SPRITE];
-        for (int i = 0; i < vertices.length; i++) {
-            vertices[i] = new VertexPositionColorTexture(new Vector3(), new Color(1, 1, 1, 1), new Vector2());
+    private void initIndices() {
+        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, this.iboId);
+        try (final MemoryStack stack = MemoryStack.stackPush()) {
+            final ShortBuffer indices = stack.mallocShort(this.size * INDICES_PER_SPRITE);
+            for (int i = 0; i < size; i++) {
+                final int offset = i * INDICES_PER_SPRITE;
+                final int firstIndex = i * VERTICES_PER_SPRITE;
+                indices.put(offset, (short) firstIndex);
+                indices.put(offset + 1, (short) (firstIndex + 1));
+                indices.put(offset + 2, (short) (firstIndex + 2));
+                indices.put(offset + 3, (short) (firstIndex + 2));
+                indices.put(offset + 4, (short) (firstIndex + 1));
+                indices.put(offset + 5, (short) (firstIndex + 3));
+            }
+            GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, indices, GL15.GL_STATIC_DRAW);
         }
-        return vertices;
+        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
     /**
-     * Releases owned resources.
+     * Release owned resources
      */
     public void destroy() {
         this.spriteShader.destroy();
-        this.vertexBuffer.destroy();
-        this.indexBuffer.destroy();
+        MemoryUtil.memFree(this.vertices);
+        GL15.glDeleteBuffers(this.iboId);
+        GL15.glDeleteBuffers(this.vboId);
+        GL30.glDeleteVertexArrays(this.vaoId);
     }
 
     /**
-     * Starts the spritebatching.
+     * Start the spritebatching
      * <p>
      * This method re-initializes the state of the spritebatch.
-     * Can only be called once before Spritebatch::end is called.
-     * This uses the default sprite shader.
+     * It can only be called once before Spritebatch::end is called.
+     * This uses the default sprite shader
      */
     public void start() {
         this.start(this.spriteShader);
     }
 
     /**
-     * Starts the spritebatching.
+     * Start the spritebatching
      * <p>
      * This method re-initializes the state of the spritebatch.
-     * Can only be called once before Spritebatch::end is called.
+     * Can only be called once before Spritebatch::end is called
      * <p>
      * The passed in shader MUST accept a uniform called uCamera, this uniform
      * MUST be filled with a {@link com.adrien.games.bagl.core.math.Matrix4}.
      * The shader must accept 3 vertex attributes, the first channel (0) is for
      * position (two floats), the second for color (four floats) and the third
-     * for texture coordinates (2 floats).
+     * for texture coordinates (2 floats)
      *
-     * @param shader The shader to use to render the new batch.
+     * @param shader The shader to use to render the new batch
      */
     public void start(final Shader shader) {
         if (started) {
@@ -137,7 +185,7 @@ public class Spritebatch {
     }
 
     /**
-     * Checks that the spritebatch is started before it is used.
+     * Check that the spritebatch is started before it is used
      */
     private void checkStarted() {
         if (!started) {
@@ -146,9 +194,10 @@ public class Spritebatch {
     }
 
     /**
-     * Ends the spritebatching.
-     * <p>Spritebatch::start must have been called before this one is called.
-     * When called this methods renders the current batch.
+     * End the spritebatching
+     * <p>
+     * Spritebatch::start must have been called before this one is called.
+     * When called this methods renders the current batch
      */
     public void end() {
         this.checkStarted();
@@ -161,49 +210,49 @@ public class Spritebatch {
     }
 
     /**
-     * Renders a sprite at a given position.
+     * Render a sprite at a given position
      *
-     * @param texture  The texture to render.
-     * @param position The position where to render the sprite.
+     * @param texture  The texture to render
+     * @param position The position where to render the sprite
      */
     public void draw(final Texture texture, final Vector2 position) {
         this.draw(texture, position, texture.getWidth(), texture.getHeight(), 0, 0, 1, 1, 0, Color.WHITE);
     }
 
     /**
-     * Renders a sprite at a given position and with a given size.
+     * Render a sprite at a given position and with a given size
      *
-     * @param texture  The texture to render.
-     * @param position The position where to render the sprite.
-     * @param width    The width of the sprite to render.
-     * @param height   The height of the sprite to render.
+     * @param texture  The texture to render
+     * @param position The position where to render the sprite
+     * @param width    The width of the sprite to render
+     * @param height   The height of the sprite to render
      */
     public void draw(final Texture texture, final Vector2 position, final float width, final float height) {
         this.draw(texture, position, width, height, 0, 0, 1, 1, 0, Color.WHITE);
     }
 
     /**
-     * Renders a sprite at a given position, with a given size and a given rotation.
+     * Render a sprite at a given position, with a given size and a given rotation
      *
-     * @param texture  The texture to render.
-     * @param position The position where to render the sprite.
-     * @param width    The width of the sprite to render.
-     * @param height   The height of the sprite to render.
-     * @param rotation The rotation of the sprite.
+     * @param texture  The texture to render
+     * @param position The position where to render the sprite
+     * @param width    The width of the sprite to render
+     * @param height   The height of the sprite to render
+     * @param rotation The rotation of the sprite
      */
     public void draw(final Texture texture, final Vector2 position, final float width, final float height, final float rotation) {
         this.draw(texture, position, width, height, 0, 0, 1, 1, rotation, Color.WHITE);
     }
 
     /**
-     * Renders a sprite at a given position, with a given size, a given rotation and a color.
+     * Render a sprite at a given position, with a given size, a given rotation and a color
      *
-     * @param texture  The texture to render.
-     * @param position The position where to render the sprite.
-     * @param width    The width of the sprite to render.
-     * @param height   The height of the sprite to render.
-     * @param rotation The rotation of the sprite.
-     * @param color    The tint of the sprite.
+     * @param texture  The texture to render
+     * @param position The position where to render the sprite
+     * @param width    The width of the sprite to render
+     * @param height   The height of the sprite to render
+     * @param rotation The rotation of the sprite
+     * @param color    The tint of the sprite
      */
     public void draw(final Texture texture, final Vector2 position, final float width, final float height, final float rotation,
                      final Color color) {
@@ -211,12 +260,12 @@ public class Spritebatch {
     }
 
     /**
-     * Renders a texture region at a given position.
+     * Render a texture region at a given position
      *
-     * @param region   The region to draw.
-     * @param position The position where to draw the sprite.
-     * @param width    The width of the sprite to render.
-     * @param height   The height of the sprite to render.
+     * @param region   The region to draw
+     * @param position The position where to draw the sprite
+     * @param width    The width of the sprite to render
+     * @param height   The height of the sprite to render
      */
     public void draw(final TextureRegion region, final Vector2 position, final float width, final float height) {
         this.draw(region.getTexture(), position, width, height, region.getLeft(), region.getBottom(),
@@ -224,14 +273,14 @@ public class Spritebatch {
     }
 
     /**
-     * Renders a sprite at a given position, with a given size, a given rotation and a color.
+     * Render a sprite at a given position, with a given size, a given rotation and a color
      *
-     * @param texture  The texture to render.
-     * @param position The position where to render the sprite.
-     * @param width    The width of the sprite to render.
-     * @param height   The height of the sprite to render.
-     * @param rotation The rotation of the sprite.
-     * @param color    The tint of the sprite.
+     * @param texture  The texture to render
+     * @param position The position where to render the sprite
+     * @param width    The width of the sprite to render
+     * @param height   The height of the sprite to render
+     * @param rotation The rotation of the sprite
+     * @param color    The tint of the sprite
      */
     public void draw(final Texture texture, final Vector2 position, final float width, final float height,
                      final float texRegionLeft, final float texRegionBottom, final float texRegionRight,
@@ -268,16 +317,16 @@ public class Spritebatch {
     }
 
     /**
-     * Compute the final position of a vertex.
+     * Compute the final position of a vertex
      *
-     * @param index    The index of the vertex.
-     * @param x        The initial x position of the vertex.
-     * @param y        The initial y position of the vertex.
-     * @param xCoord   The x texture coordinate.
-     * @param yCoord   The y texture coordinate.
-     * @param rotation The rotation of the vertex.
-     * @param xCenter  The x component of the rotation center.
-     * @param yCenter  The y component of the rotation center.
+     * @param index    The index of the vertex
+     * @param x        The initial x position of the vertex
+     * @param y        The initial y position of the vertex
+     * @param xCoord   The x texture coordinate
+     * @param yCoord   The y texture coordinate
+     * @param rotation The rotation of the vertex
+     * @param xCenter  The x component of the rotation center
+     * @param yCenter  The y component of the rotation center
      */
     private void computeVertex(final int index, final float x, final float y, final float xCoord, final float yCoord,
                                final float rotation, final float xCenter, final float yCenter, final Color color) {
@@ -299,23 +348,26 @@ public class Spritebatch {
             finalY = (float) _y + yCenter;
         }
 
-        this.vertices[index].getPosition().setX(finalX);
-        this.vertices[index].getPosition().setY(finalY);
-        this.vertices[index].getColor().setRed(color.getRed());
-        this.vertices[index].getColor().setGreen(color.getGreen());
-        this.vertices[index].getColor().setBlue(color.getBlue());
-        this.vertices[index].getCoords().setX(xCoord);
-        this.vertices[index].getCoords().setY(yCoord);
+        this.vertices.put(index * ELEMENTS_PER_VERTICES, finalX);
+        this.vertices.put(index * ELEMENTS_PER_VERTICES + 1, finalY);
+        this.vertices.put(index * ELEMENTS_PER_VERTICES + 2, 0);
+
+        this.vertices.put(index * ELEMENTS_PER_VERTICES + 3, color.getRed());
+        this.vertices.put(index * ELEMENTS_PER_VERTICES + 4, color.getGreen());
+        this.vertices.put(index * ELEMENTS_PER_VERTICES + 5, color.getBlue());
+
+        this.vertices.put(index * ELEMENTS_PER_VERTICES + 6, xCoord);
+        this.vertices.put(index * ELEMENTS_PER_VERTICES + 7, yCoord);
     }
 
     /**
-     * Renders the current batch.
+     * Render the current batch :
      * <ul>
-     * <li>Binds the shader and texture.
-     * <li>Updates the vertex buffer data.
-     * <li>Binds the vertex and index buffers.
-     * <li>Performs the draw call.
-     * <li>Unbinds everything.
+     * <li>Binds the shader and texture
+     * <li>Updates the vertex buffer data
+     * <li>Binds the vertex and index buffers
+     * <li>Performs the draw call
+     * <li>Unbinds everything
      */
     private void renderBatch() {
         if (this.drawnSprites > 0) {
@@ -323,21 +375,23 @@ public class Spritebatch {
             this.currentShader.setUniform("uCamera", this.camera.getOrthographic());
             this.currentTexture.bind();
 
-            this.vertexBuffer.setData(this.vertices, this.drawnSprites * VERTICES_PER_SPRITE);
-            this.vertexBuffer.bind();
-            this.indexBuffer.bind();
+            GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, this.vboId);
+            GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, this.vertices);
+            GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+
+            GL30.glBindVertexArray(this.vaoId);
+            GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, this.iboId);
 
             GL11.glDisable(GL11.GL_DEPTH_TEST);
-            GL11.glDrawElements(GL11.GL_TRIANGLES, this.drawnSprites * INDICES_PER_SPRITE, GL11.GL_UNSIGNED_INT, 0);
+            GL11.glDrawElements(GL11.GL_TRIANGLES, this.drawnSprites * INDICES_PER_SPRITE, GL11.GL_UNSIGNED_SHORT, 0);
             GL11.glEnable(GL11.GL_DEPTH_TEST);
 
             this.drawnSprites = 0;
 
-            IndexBuffer.unbind();
-            VertexBuffer.unbind();
+            GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
+            GL30.glBindVertexArray(0);
             Texture.unbind();
             Shader.unbind();
         }
     }
-
 }
