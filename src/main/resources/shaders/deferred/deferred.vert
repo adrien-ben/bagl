@@ -1,6 +1,6 @@
 #version 330
 
-layout(location = 0) in vec4 vPosition;
+layout(location = 0) in ivec4 vPosition;
 layout(location = 2) in vec2 vCoords;
 
 out vec2 passCoords;

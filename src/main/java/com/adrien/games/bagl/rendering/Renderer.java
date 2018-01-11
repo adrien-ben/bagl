@@ -129,7 +129,7 @@ public class Renderer {
         }
 
         glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 2, GL_BYTE, false, 4, 0);
+        glVertexAttribIPointer(0, 2, GL_BYTE, 4, 0);
 
         glEnableVertexAttribArray(2);
         glVertexAttribPointer(2, 2, GL_BYTE, true, 4, 2);
