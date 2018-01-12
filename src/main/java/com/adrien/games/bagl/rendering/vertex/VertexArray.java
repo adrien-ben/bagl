@@ -57,7 +57,7 @@ public class VertexArray {
 
         buffer.bind();
         elements.forEach(element -> {
-            final int elementSize = params.isInterlaced() ? element.getSize() : element.getSize() * buffer.getVertexCount();
+            final int elementSize = params.isInterleaved() ? element.getSize() : element.getSize() * buffer.getVertexCount();
             final int byteOffset = offset.getAndAdd(elementSize) * dataType.getSize();
             this.enableVertexElement(element, dataType, buffer.getStride(), byteOffset);
         });

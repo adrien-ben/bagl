@@ -14,13 +14,13 @@ import java.util.List;
  * <p>
  * The available parameters are :
  * <ul>
- * <li>interlaced (boolean) : default = true
+ * <li>interleaved (boolean) : default = true
  * <li>dataType ({@link DataType} : default = {@link DataType#FLOAT}
  * <li>usage {@link BufferUsage} : default {@link BufferUsage#STATIC_DRAW}
  * <li>elements (list of {@link VertexElement} : empty
  * </ul>
  * <p>
- * The interlaced flag relates to the layout of vertex element in gpu memory.
+ * The interleaved flag relates to the layout of vertex element in gpu memory.
  * <br>For example lets take a buffer with positions and normals data with both
  * position and normal containing a x and a y float values. If the
  * flag is set to true then elements will be laid out as follows :
@@ -34,7 +34,7 @@ import java.util.List;
  * <pre>
  * <code>
  * final VertexBufferParams params = new VertexBufferParams()
- *     .interlaced(true)
+ *     .interleaved(true)
  *     .dataType(DataType.FLOAT)
  *     .usage(BufferUsage.STATIC_DRAW)
  *     .element(new VertexElement(0, 2, false))
@@ -47,18 +47,18 @@ import java.util.List;
  */
 public class VertexBufferParams {
 
-    private boolean interlaced = true;
+    private boolean interleaved = true;
     private DataType dataType = DataType.FLOAT;
     private BufferUsage usage = BufferUsage.STATIC_DRAW;
     private List<VertexElement> elements = new ArrayList<>();
 
-    public VertexBufferParams interlaced(final boolean interlaced) {
-        this.interlaced = interlaced;
+    public VertexBufferParams interleaved(final boolean interleaved) {
+        this.interleaved = interleaved;
         return this;
     }
 
-    public boolean isInterlaced() {
-        return this.interlaced;
+    public boolean isInterleaved() {
+        return this.interleaved;
     }
 
     public VertexBufferParams dataType(final DataType dataType) {

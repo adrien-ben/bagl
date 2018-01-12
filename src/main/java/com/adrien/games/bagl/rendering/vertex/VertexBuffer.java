@@ -143,7 +143,7 @@ public class VertexBuffer {
      * @return The stride of the buffer
      */
     private int computeStride(final VertexBufferParams params) {
-        return params.isInterlaced()
+        return params.isInterleaved()
                 ? params.getElements().stream().mapToInt(VertexElement::getSize).sum() * params.getDataType().getSize()
                 : 0;
     }
