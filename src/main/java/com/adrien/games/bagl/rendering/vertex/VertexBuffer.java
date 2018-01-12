@@ -18,6 +18,7 @@ public class VertexBuffer {
     private final int vboId;
     private final int vertexCount;
     private final int bufferSize;
+    private final int stride;
     private final VertexBufferParams params;
 
     /**
@@ -33,6 +34,7 @@ public class VertexBuffer {
 
         this.vertexCount = this.checkBufferConsistenceWithParams(buffer, params);
         this.bufferSize = buffer.capacity();
+        this.stride = this.computeStride(params);
         this.params = params;
 
         this.vboId = GL15.glGenBuffers();
@@ -54,6 +56,7 @@ public class VertexBuffer {
 
         this.vertexCount = this.checkBufferConsistenceWithParams(buffer, params);
         this.bufferSize = buffer.capacity();
+        this.stride = this.computeStride(params);
         this.params = params;
 
         this.vboId = GL15.glGenBuffers();
@@ -75,6 +78,7 @@ public class VertexBuffer {
 
         this.vertexCount = this.checkBufferConsistenceWithParams(buffer, params);
         this.bufferSize = buffer.capacity();
+        this.stride = this.computeStride(params);
         this.params = params;
 
         this.vboId = GL15.glGenBuffers();
@@ -96,6 +100,7 @@ public class VertexBuffer {
 
         this.vertexCount = this.checkBufferConsistenceWithParams(buffer, params);
         this.bufferSize = buffer.capacity();
+        this.stride = this.computeStride(params);
         this.params = params;
 
         this.vboId = GL15.glGenBuffers();
@@ -117,12 +122,30 @@ public class VertexBuffer {
 
         this.vertexCount = this.checkBufferConsistenceWithParams(buffer, params);
         this.bufferSize = buffer.capacity();
+        this.stride = this.computeStride(params);
         this.params = params;
 
         this.vboId = GL15.glGenBuffers();
         this.bind(this.vboId);
         GL15.glBufferData(GL15.GL_ARRAY_BUFFER, buffer, params.getUsage().getGlCode());
         this.bind(0);
+    }
+
+    /**
+     * Compute buffer stride
+     * <p>
+     * The stride is the number of bytes between the start of two
+     * elements (positions for example) in the buffer. If vertex
+     * elements are packed the stride is 0. Otherwise it it the
+     * sum of the sizes of the {@link VertexElement} of the buffer.
+     *
+     * @param params The parameters of the buffer
+     * @return The stride of the buffer
+     */
+    private int computeStride(final VertexBufferParams params) {
+        return params.isInterlaced()
+                ? params.getElements().stream().mapToInt(VertexElement::getSize).sum() * params.getDataType().getSize()
+                : 0;
     }
 
     /**
@@ -301,6 +324,10 @@ public class VertexBuffer {
 
     public int getVertexCount() {
         return this.vertexCount;
+    }
+
+    public int getStride() {
+        return this.stride;
     }
 
     public VertexBufferParams getParams() {

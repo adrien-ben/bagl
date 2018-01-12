@@ -51,38 +51,33 @@ public class VertexArray {
         this.checkIsBound("You cannot attach a vertex buffer to a vertex array which is not bound");
 
         final VertexBufferParams params = buffer.getParams();
-
-        if (!params.isInterlaced()) {
-            // TODO: implement
-            throw new EngineException("Not interlaced buffer are not implemented yet");
-        }
-
         final DataType dataType = params.getDataType();
-        final List<VertexElement> elements = params.getElements();
-        final int stride = elements.stream().mapToInt(VertexElement::getSize).sum() * dataType.getSize();
-
         final AtomicInteger offset = new AtomicInteger(0);
+        final List<VertexElement> elements = params.getElements();
+
         buffer.bind();
-        elements.forEach(element -> this.enableVertexAttributePointer(element, dataType, stride, offset));
+        elements.forEach(element -> {
+            final int elementSize = params.isInterlaced() ? element.getSize() : element.getSize() * buffer.getVertexCount();
+            final int byteOffset = offset.getAndAdd(elementSize) * dataType.getSize();
+            this.enableVertexElement(element, dataType, buffer.getStride(), byteOffset);
+        });
         buffer.unbind();
     }
 
     /**
-     * Enable OpenGL vertex attribute array for one element of the buffer
+     * Enable OpenGL vertex attribute array for one element of an buffer containing interleaved data
      *
      * @param element  The element for which to enable the array
      * @param dataType The data type of the element
      * @param stride   The stride of the buffer
      * @param offset   The current offset of the array
      */
-    private void enableVertexAttributePointer(final VertexElement element, final DataType dataType, final int stride, final AtomicInteger offset) {
-        final int dataTypeSize = dataType.getSize();
-        final int byteOffset = offset.getAndAdd(element.getSize()) * dataTypeSize;
+    private void enableVertexElement(final VertexElement element, final DataType dataType, final int stride, final int offset) {
         GL20.glEnableVertexAttribArray(element.getPosition());
         if (dataType.isWholeType() && !element.isNormalized()) {
-            GL30.glVertexAttribIPointer(element.getPosition(), element.getSize(), dataType.getGlCode(), stride, byteOffset);
+            GL30.glVertexAttribIPointer(element.getPosition(), element.getSize(), dataType.getGlCode(), stride, offset);
         } else {
-            GL20.glVertexAttribPointer(element.getPosition(), element.getSize(), dataType.getGlCode(), element.isNormalized(), stride, byteOffset);
+            GL20.glVertexAttribPointer(element.getPosition(), element.getSize(), dataType.getGlCode(), element.isNormalized(), stride, offset);
         }
     }
 

@@ -43,7 +43,7 @@ import java.util.List;
  * </code>
  * </pre>
  *
- * @author EX477
+ * @author adrien
  */
 public class VertexBufferParams {
 
