@@ -14,6 +14,7 @@ import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.MemoryUtil;
 
 import java.io.IOException;
 import java.nio.FloatBuffer;
@@ -271,30 +272,29 @@ public class ObjParser implements ModelParser {
             GL30.glBindVertexArray(vaoId);
             GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vboId);
 
-            try (final MemoryStack memoryStack = MemoryStack.stackPush()) {
-                final FloatBuffer vertices = memoryStack.mallocFloat(vertexCount * Mesh.ELEMENTS_PER_VERTEX);
-                for (int i = 0; i < vertexCount; i++) {
-                    final Face face = this.faces.get(i);
-                    final Vector3 position = positions.get(face.getPositionIndex());
-                    final Vector3 normal = normals.get(face.getNormalIndex());
-                    final Vector2 coordinates = face.getCoordsIndex() > -1 ? MeshBuilder.coordinates.get(face.getCoordsIndex()) : new Vector2();
-                    final Vector3 tangent = this.tangents.isEmpty() ? new Vector3() : this.tangents.get(i);
+            final FloatBuffer vertices = MemoryUtil.memAllocFloat(vertexCount * Mesh.ELEMENTS_PER_VERTEX);
+            for (int i = 0; i < vertexCount; i++) {
+                final Face face = this.faces.get(i);
+                final Vector3 position = positions.get(face.getPositionIndex());
+                final Vector3 normal = normals.get(face.getNormalIndex());
+                final Vector2 coordinates = face.getCoordsIndex() > -1 ? MeshBuilder.coordinates.get(face.getCoordsIndex()) : new Vector2();
+                final Vector3 tangent = this.tangents.isEmpty() ? new Vector3() : this.tangents.get(i);
 
-                    final int index = i * Mesh.ELEMENTS_PER_VERTEX;
-                    vertices.put(index, position.getX());
-                    vertices.put(index + 1, position.getY());
-                    vertices.put(index + 2, position.getZ());
-                    vertices.put(index + 3, normal.getX());
-                    vertices.put(index + 4, normal.getY());
-                    vertices.put(index + 5, normal.getZ());
-                    vertices.put(index + 6, coordinates.getX());
-                    vertices.put(index + 7, coordinates.getY());
-                    vertices.put(index + 8, tangent.getX());
-                    vertices.put(index + 9, tangent.getY());
-                    vertices.put(index + 10, tangent.getZ());
-                }
-                GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vertices, GL15.GL_STATIC_DRAW);
+                final int index = i * Mesh.ELEMENTS_PER_VERTEX;
+                vertices.put(index, position.getX());
+                vertices.put(index + 1, position.getY());
+                vertices.put(index + 2, position.getZ());
+                vertices.put(index + 3, normal.getX());
+                vertices.put(index + 4, normal.getY());
+                vertices.put(index + 5, normal.getZ());
+                vertices.put(index + 6, coordinates.getX());
+                vertices.put(index + 7, coordinates.getY());
+                vertices.put(index + 8, tangent.getX());
+                vertices.put(index + 9, tangent.getY());
+                vertices.put(index + 10, tangent.getZ());
             }
+            GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vertices, GL15.GL_STATIC_DRAW);
+            MemoryUtil.memFree(vertices);
 
             GL20.glEnableVertexAttribArray(Mesh.POSITION_INDEX);
             GL20.glVertexAttribPointer(Mesh.POSITION_INDEX, Mesh.ELEMENTS_PER_POSITION, GL11.GL_FLOAT, false, Mesh.VERTEX_STRIDE,
