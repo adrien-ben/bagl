@@ -38,7 +38,8 @@ import java.util.List;
  *     .dataType(DataType.FLOAT)
  *     .usage(BufferUsage.STATIC_DRAW)
  *     .element(new VertexElement(0, 2, false))
- *     .element(new VertexElement(1, 2, true));
+ *     .element(new VertexElement(1, 2, true))
+ *     .element(new VertexElement(2, 1));
  * </code>
  * </pre>
  *

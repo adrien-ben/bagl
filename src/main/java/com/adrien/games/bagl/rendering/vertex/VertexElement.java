@@ -23,6 +23,18 @@ public class VertexElement {
 
     /**
      * Construct a vertex element
+     * <p>
+     * Normalized flag is set to false
+     *
+     * @param position The position of the vertex in the buffer
+     * @param size     The number of attributes of the element
+     */
+    public VertexElement(final int position, final int size) {
+        this(position, size, false);
+    }
+
+    /**
+     * Construct a vertex element
      *
      * @param position   The position of the vertex in the buffer
      * @param size       The number of attributes of the element
