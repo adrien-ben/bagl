@@ -2,10 +2,13 @@ package com.adrien.games.bagl.rendering.shape;
 
 import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.rendering.Shader;
+import com.adrien.games.bagl.rendering.vertex.VertexArray;
+import com.adrien.games.bagl.rendering.vertex.VertexBuffer;
+import com.adrien.games.bagl.rendering.vertex.VertexBufferParams;
+import com.adrien.games.bagl.rendering.vertex.VertexElement;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
-import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL30;
+import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
@@ -20,55 +23,46 @@ public class UIRenderer {
     private static final int VERTICES_PER_SHAPE = 4;
     private static final int ELEMENT_PER_VERTEX = 6;
     private static final int INDICES_PER_SHAPE = 6;
-    private static final int VERTEX_STRIDE = ELEMENT_PER_VERTEX * Float.SIZE / 8;
 
     private boolean started;
     private int bufferedCount;
 
-    private final FloatBuffer vertexBuffer;
-    private final IntBuffer indexBuffer;
+    private final FloatBuffer vertices;
     private final Shader shader;
 
-    private final int vao;
-    private final int vbo;
+    private final VertexArray vArray;
+    private final VertexBuffer vBuffer;
     private final int ibo;
 
     public UIRenderer() {
         this.started = false;
         this.bufferedCount = 0;
-        this.vertexBuffer = MemoryUtil.memAllocFloat(BUFFER_SIZE * VERTICES_PER_SHAPE * ELEMENT_PER_VERTEX);
-        this.indexBuffer = MemoryUtil.memAllocInt(BUFFER_SIZE * INDICES_PER_SHAPE);
+        this.vertices = MemoryUtil.memAllocFloat(BUFFER_SIZE * VERTICES_PER_SHAPE * ELEMENT_PER_VERTEX);
         this.shader = new Shader().addVertexShader("/ui/shape.vert").addFragmentShader("/ui/shape.frag").compile();
 
-        this.vao = GL30.glGenVertexArrays();
-        GL30.glBindVertexArray(this.vao);
+        this.vBuffer = new VertexBuffer(this.vertices, new VertexBufferParams()
+                .element(new VertexElement(0, 2))
+                .element(new VertexElement(1, 4)));
 
-        this.vbo = GL15.glGenBuffers();
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, this.vbo);
-        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, this.vertexBuffer, GL15.GL_DYNAMIC_DRAW);
-
-        GL20.glEnableVertexAttribArray(0);
-        GL20.glVertexAttribPointer(0, 2, GL11.GL_FLOAT, false, VERTEX_STRIDE, 0);
-
-        GL20.glEnableVertexAttribArray(1);
-        GL20.glVertexAttribPointer(1, 4, GL11.GL_FLOAT, false, VERTEX_STRIDE, 2 * Float.SIZE / 8);
-
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
-        GL30.glBindVertexArray(0);
-
-        for (int i = 0; i < BUFFER_SIZE; i++) {
-            this.indexBuffer.put(i * VERTICES_PER_SHAPE);
-            this.indexBuffer.put(i * VERTICES_PER_SHAPE + 1);
-            this.indexBuffer.put(i * VERTICES_PER_SHAPE + 2);
-            this.indexBuffer.put(i * VERTICES_PER_SHAPE + 2);
-            this.indexBuffer.put(i * VERTICES_PER_SHAPE + 3);
-            this.indexBuffer.put(i * VERTICES_PER_SHAPE);
-        }
-        this.indexBuffer.flip();
+        this.vArray = new VertexArray();
+        this.vArray.bind();
+        this.vArray.attachVertexBuffer(this.vBuffer);
+        this.vArray.unbind();
 
         this.ibo = GL15.glGenBuffers();
         GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, this.ibo);
-        GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, this.indexBuffer, GL15.GL_STATIC_DRAW);
+        try (final MemoryStack stack = MemoryStack.stackPush()) {
+            final IntBuffer indices = stack.mallocInt(BUFFER_SIZE * INDICES_PER_SHAPE);
+            for (int i = 0; i < BUFFER_SIZE; i++) {
+                indices.put(i * INDICES_PER_SHAPE, i * VERTICES_PER_SHAPE);
+                indices.put(i * INDICES_PER_SHAPE + 1, i * VERTICES_PER_SHAPE + 1);
+                indices.put(i * INDICES_PER_SHAPE + 2, i * VERTICES_PER_SHAPE + 2);
+                indices.put(i * INDICES_PER_SHAPE + 3, i * VERTICES_PER_SHAPE + 2);
+                indices.put(i * INDICES_PER_SHAPE + 4, i * VERTICES_PER_SHAPE + 3);
+                indices.put(i * INDICES_PER_SHAPE + 5, i * VERTICES_PER_SHAPE);
+            }
+            GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, indices, GL15.GL_STATIC_DRAW);
+        }
         GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
@@ -99,40 +93,34 @@ public class UIRenderer {
     }
 
     /**
-     * Renders the currently buffered batch of shapes.
+     * Renders the currently buffered batch of shapes
      */
     private void flush() {
-        this.vertexBuffer.flip();
-        this.indexBuffer.flip();
-
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, this.vbo);
-        GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, this.vertexBuffer);
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+        this.vBuffer.bind();
+        this.vBuffer.update(this.vertices);
+        this.vBuffer.unbind();
 
         this.shader.bind();
-        GL30.glBindVertexArray(this.vao);
+        this.vArray.bind();
         GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, this.ibo);
 
         GL11.glDrawElements(GL11.GL_TRIANGLES, this.bufferedCount * INDICES_PER_SHAPE, GL11.GL_UNSIGNED_INT, 0);
 
         GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
-        GL30.glBindVertexArray(0);
+        this.vArray.unbind();
         Shader.unbind();
 
-        this.vertexBuffer.clear();
-        this.indexBuffer.clear();
         this.bufferedCount = 0;
     }
 
     /**
-     * Destroys the shape renderer.
+     * Destroys the shape renderer
      */
     public void destroy() {
         this.shader.destroy();
-        MemoryUtil.memFree(this.vertexBuffer);
-        MemoryUtil.memFree(this.indexBuffer);
-        GL30.glDeleteVertexArrays(this.vao);
-        GL15.glDeleteBuffers(this.vbo);
+        MemoryUtil.memFree(this.vertices);
+        this.vBuffer.destroy();
+        this.vArray.destroy();
         GL15.glDeleteBuffers(this.ibo);
     }
 
@@ -153,33 +141,11 @@ public class UIRenderer {
             throw new IllegalStateException("ShaderRenderer#renderBox has already been called before ShaderRenderer#start.");
         }
 
-        this.vertexBuffer.put(x);
-        this.vertexBuffer.put(y);
-        this.vertexBuffer.put(color.getRed());
-        this.vertexBuffer.put(color.getGreen());
-        this.vertexBuffer.put(color.getBlue());
-        this.vertexBuffer.put(color.getAlpha());
-
-        this.vertexBuffer.put(x + width);
-        this.vertexBuffer.put(y);
-        this.vertexBuffer.put(color.getRed());
-        this.vertexBuffer.put(color.getGreen());
-        this.vertexBuffer.put(color.getBlue());
-        this.vertexBuffer.put(color.getAlpha());
-
-        this.vertexBuffer.put(x + width);
-        this.vertexBuffer.put(y + height);
-        this.vertexBuffer.put(color.getRed());
-        this.vertexBuffer.put(color.getGreen());
-        this.vertexBuffer.put(color.getBlue());
-        this.vertexBuffer.put(color.getAlpha());
-
-        this.vertexBuffer.put(x);
-        this.vertexBuffer.put(y + height);
-        this.vertexBuffer.put(color.getRed());
-        this.vertexBuffer.put(color.getGreen());
-        this.vertexBuffer.put(color.getBlue());
-        this.vertexBuffer.put(color.getAlpha());
+        final int bufferIndex = this.bufferedCount * VERTICES_PER_SHAPE;
+        this.setVertexData(bufferIndex, x, y, color);
+        this.setVertexData(bufferIndex + 1, x + width, y, color);
+        this.setVertexData(bufferIndex + 2, x + width, y + height, color);
+        this.setVertexData(bufferIndex + 3, x, y + height, color);
 
         this.bufferedCount++;
         if (this.bufferedCount == BUFFER_SIZE) {
@@ -187,4 +153,12 @@ public class UIRenderer {
         }
     }
 
+    private void setVertexData(final int index, final float x, final float y, final Color color) {
+        this.vertices.put(index * ELEMENT_PER_VERTEX, x);
+        this.vertices.put(index * ELEMENT_PER_VERTEX + 1, y);
+        this.vertices.put(index * ELEMENT_PER_VERTEX + 2, color.getRed());
+        this.vertices.put(index * ELEMENT_PER_VERTEX + 3, color.getGreen());
+        this.vertices.put(index * ELEMENT_PER_VERTEX + 4, color.getBlue());
+        this.vertices.put(index * ELEMENT_PER_VERTEX + 5, color.getAlpha());
+    }
 }

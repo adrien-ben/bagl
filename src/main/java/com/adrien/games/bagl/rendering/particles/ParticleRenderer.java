@@ -5,14 +5,16 @@ import com.adrien.games.bagl.core.Engine;
 import com.adrien.games.bagl.core.Time;
 import com.adrien.games.bagl.core.math.Vector3;
 import com.adrien.games.bagl.rendering.BlendMode;
+import com.adrien.games.bagl.rendering.BufferUsage;
 import com.adrien.games.bagl.rendering.Shader;
 import com.adrien.games.bagl.rendering.texture.Texture;
+import com.adrien.games.bagl.rendering.vertex.VertexArray;
+import com.adrien.games.bagl.rendering.vertex.VertexBuffer;
+import com.adrien.games.bagl.rendering.vertex.VertexBufferParams;
+import com.adrien.games.bagl.rendering.vertex.VertexElement;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL15;
-import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
@@ -26,25 +28,20 @@ import java.util.*;
 public class ParticleRenderer {
 
     private static final ParticleComparator COMPARATOR = new ParticleComparator();
-    private static final int FLOAT_SIZE_IN_BYTES = Float.SIZE / 8;
     private static final int ELEMENTS_PER_VERTEX = 8;
-    private static final int VERTEX_STRIDE = ELEMENTS_PER_VERTEX * FLOAT_SIZE_IN_BYTES;
     private static final int POSITION_INDEX = 0;
-    private static final int POSITION_OFFSET = 0;
     private static final int ELEMENTS_PER_POSITION = 3;
     private static final int COLOR_INDEX = 1;
-    private static final int COLOR_OFFSET = 3 * FLOAT_SIZE_IN_BYTES;
     private static final int ELEMENTS_PER_COLOR = 4;
     private static final int SIZE_INDEX = 2;
-    private static final int SIZE_OFFSET = 7 * FLOAT_SIZE_IN_BYTES;
     private static final int ELEMENTS_PER_SIZE = 1;
 
     private static Logger log = LogManager.getLogger(ParticleRenderer.class);
 
     private final Shader shader;
     private final FloatBuffer vertices;
-    private final int vaoId;
-    private final int vboId;
+    private VertexBuffer vBuffer;
+    private VertexArray vArray;
     private final List<Particle> particlesToRender;
     private final Time timer;
 
@@ -59,23 +56,16 @@ public class ParticleRenderer {
                 .compile();
 
         this.vertices = MemoryUtil.memAllocFloat(ParticleEmitter.MAX_PARTICLE_COUNT * ELEMENTS_PER_VERTEX);
-        this.vaoId = GL30.glGenVertexArrays();
-        this.vboId = GL15.glGenBuffers();
-        GL30.glBindVertexArray(this.vaoId);
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, this.vboId);
-        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vertices, GL15.GL_STREAM_DRAW);
+        this.vBuffer = new VertexBuffer(this.vertices, new VertexBufferParams()
+                .usage(BufferUsage.STREAM_DRAW)
+                .element(new VertexElement(POSITION_INDEX, ELEMENTS_PER_POSITION))
+                .element(new VertexElement(COLOR_INDEX, ELEMENTS_PER_COLOR))
+                .element(new VertexElement(SIZE_INDEX, ELEMENTS_PER_SIZE)));
 
-        GL20.glEnableVertexAttribArray(POSITION_INDEX);
-        GL20.glVertexAttribPointer(POSITION_INDEX, ELEMENTS_PER_POSITION, GL11.GL_FLOAT, false, VERTEX_STRIDE, POSITION_OFFSET);
-
-        GL20.glEnableVertexAttribArray(COLOR_INDEX);
-        GL20.glVertexAttribPointer(COLOR_INDEX, ELEMENTS_PER_COLOR, GL11.GL_FLOAT, false, VERTEX_STRIDE, COLOR_OFFSET);
-
-        GL20.glEnableVertexAttribArray(SIZE_INDEX);
-        GL20.glVertexAttribPointer(SIZE_INDEX, ELEMENTS_PER_SIZE, GL11.GL_FLOAT, false, VERTEX_STRIDE, SIZE_OFFSET);
-
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
-        GL30.glBindVertexArray(0);
+        this.vArray = new VertexArray();
+        this.vArray.bind();
+        this.vArray.attachVertexBuffer(this.vBuffer);
+        this.vArray.unbind();
 
         this.particlesToRender = new ArrayList<>();
         this.timer = new Time();
@@ -87,8 +77,8 @@ public class ParticleRenderer {
     public void destroy() {
         this.shader.destroy();
         MemoryUtil.memFree(this.vertices);
-        GL15.glDeleteBuffers(this.vboId);
-        GL30.glDeleteVertexArrays(this.vaoId);
+        this.vBuffer.destroy();
+        this.vArray.destroy();
     }
 
     /**
@@ -138,13 +128,14 @@ public class ParticleRenderer {
         this.shader.setUniform("hasTexture", hasTexture);
         this.shader.setUniform("camera.view", camera.getView());
         this.shader.setUniform("camera.viewProj", camera.getViewProj());
-        GL30.glBindVertexArray(this.vaoId);
 
         this.timer.update();
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, this.vboId);
-        GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, this.vertices);
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+        this.vBuffer.bind();
+        this.vBuffer.update(this.vertices);
+        this.vBuffer.unbind();
         log.debug("Copying data to gpu : {}", this.timer.getElapsedTime());
+
+        this.vArray.bind();
 
         Engine.setBlendMode(emitter.getBlendMode());
         GL11.glDepthMask(false);
@@ -156,7 +147,7 @@ public class ParticleRenderer {
         GL11.glDepthMask(true);
         Engine.setBlendMode(BlendMode.NONE);
 
-        GL30.glBindVertexArray(0);
+        this.vArray.unbind();
         Shader.unbind();
         Texture.unbind();
     }

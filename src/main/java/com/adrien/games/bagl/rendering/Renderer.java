@@ -26,7 +26,6 @@ import java.util.Optional;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
-import static org.lwjgl.opengl.GL30.glBindVertexArray;
 
 /**
  * Deferred renderer
@@ -319,11 +318,11 @@ public class Renderer {
     }
 
     private void renderMesh(final Mesh mesh) {
-        glBindVertexArray(mesh.getVaoId());
+        mesh.getVertexArray().bind();
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.getIboId());
         glDrawElements(GL_TRIANGLES, mesh.getIndexCount(), GL_UNSIGNED_INT, 0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
+        mesh.getVertexArray().unbind();
     }
 
     private void renderDeferred(final Scene scene, final Camera camera) {

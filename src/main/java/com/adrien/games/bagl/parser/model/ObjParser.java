@@ -6,13 +6,14 @@ import com.adrien.games.bagl.core.math.Vector3;
 import com.adrien.games.bagl.rendering.Material;
 import com.adrien.games.bagl.rendering.Mesh;
 import com.adrien.games.bagl.rendering.Model;
+import com.adrien.games.bagl.rendering.vertex.VertexArray;
+import com.adrien.games.bagl.rendering.vertex.VertexBuffer;
+import com.adrien.games.bagl.rendering.vertex.VertexBufferParams;
+import com.adrien.games.bagl.rendering.vertex.VertexElement;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
-import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
@@ -244,16 +245,17 @@ public class ObjParser implements ModelParser {
                 this.computeTangents();
             }
 
-            final int vertexCount = this.faces.size();
-            final int vaoId = GL30.glGenVertexArrays();
-            final int vboId = GL15.glGenBuffers();
-            this.initializeVertexBuffer(vertexCount, vaoId, vboId);
+            final VertexBuffer vBuffer = this.generateVertexBuffer();
+            final VertexArray vArray = new VertexArray();
+            vArray.bind();
+            vArray.attachVertexBuffer(vBuffer);
+            vArray.unbind();
 
             final int indexCount = this.faceIndices.size();
             final int iboId = GL15.glGenBuffers();
             this.generateIndexBuffer(indexCount, iboId);
 
-            return new Mesh(vaoId, vboId, vertexCount, iboId, indexCount, this.material);
+            return new Mesh(vBuffer, vArray, iboId, indexCount, this.material);
         }
 
         private void generateIndexBuffer(final int indexCount, final int iboId) {
@@ -268,10 +270,8 @@ public class ObjParser implements ModelParser {
             GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
         }
 
-        private void initializeVertexBuffer(final int vertexCount, final int vaoId, final int vboId) {
-            GL30.glBindVertexArray(vaoId);
-            GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vboId);
-
+        private VertexBuffer generateVertexBuffer() {
+            final int vertexCount = this.faces.size();
             final FloatBuffer vertices = MemoryUtil.memAllocFloat(vertexCount * Mesh.ELEMENTS_PER_VERTEX);
             for (int i = 0; i < vertexCount; i++) {
                 final Face face = this.faces.get(i);
@@ -293,25 +293,13 @@ public class ObjParser implements ModelParser {
                 vertices.put(index + 9, tangent.getY());
                 vertices.put(index + 10, tangent.getZ());
             }
-            GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vertices, GL15.GL_STATIC_DRAW);
+            final VertexBuffer vBuffer = new VertexBuffer(vertices, new VertexBufferParams()
+                    .element(new VertexElement(Mesh.POSITION_INDEX, Mesh.ELEMENTS_PER_POSITION))
+                    .element(new VertexElement(Mesh.NORMAL_INDEX, Mesh.ELEMENTS_PER_NORMAL))
+                    .element(new VertexElement(Mesh.COORDINATES_INDEX, Mesh.ELEMENTS_PER_COORDINATES))
+                    .element(new VertexElement(Mesh.TANGENT_INDEX, Mesh.ELEMENTS_PER_TANGENT)));
             MemoryUtil.memFree(vertices);
-
-            GL20.glEnableVertexAttribArray(Mesh.POSITION_INDEX);
-            GL20.glVertexAttribPointer(Mesh.POSITION_INDEX, Mesh.ELEMENTS_PER_POSITION, GL11.GL_FLOAT, false, Mesh.VERTEX_STRIDE,
-                    Mesh.POSITION_OFFSET);
-
-            GL20.glEnableVertexAttribArray(Mesh.NORMAL_INDEX);
-            GL20.glVertexAttribPointer(Mesh.NORMAL_INDEX, Mesh.ELEMENTS_PER_NORMAL, GL11.GL_FLOAT, false, Mesh.VERTEX_STRIDE, Mesh.NORMAL_OFFSET);
-
-            GL20.glEnableVertexAttribArray(Mesh.COORDINATES_INDEX);
-            GL20.glVertexAttribPointer(Mesh.COORDINATES_INDEX, Mesh.ELEMENTS_PER_COORDINATES, GL11.GL_FLOAT, false, Mesh.VERTEX_STRIDE,
-                    Mesh.COORDINATES_OFFSET);
-
-            GL20.glEnableVertexAttribArray(Mesh.TANGENT_INDEX);
-            GL20.glVertexAttribPointer(Mesh.TANGENT_INDEX, Mesh.ELEMENTS_PER_TANGENT, GL11.GL_FLOAT, false, Mesh.VERTEX_STRIDE, Mesh.TANGENT_OFFSET);
-
-            GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
-            GL30.glBindVertexArray(0);
+            return vBuffer;
         }
 
         private void computeTangents() {

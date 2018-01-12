@@ -5,13 +5,16 @@ import com.adrien.games.bagl.core.Configuration;
 import com.adrien.games.bagl.core.Engine;
 import com.adrien.games.bagl.core.math.Vector2;
 import com.adrien.games.bagl.rendering.BlendMode;
+import com.adrien.games.bagl.rendering.BufferUsage;
 import com.adrien.games.bagl.rendering.Shader;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.texture.TextureRegion;
+import com.adrien.games.bagl.rendering.vertex.VertexArray;
+import com.adrien.games.bagl.rendering.vertex.VertexBuffer;
+import com.adrien.games.bagl.rendering.vertex.VertexBufferParams;
+import com.adrien.games.bagl.rendering.vertex.VertexElement;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
-import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
@@ -28,25 +31,20 @@ public class TextRenderer {
 
     private static final int MAX_TEXT_LENGTH = 1000;
     private static final float HALF_SCREEN_SIZE = 1f;
-    private static final int FLOAT_SIZE_IN_BYTES = Float.SIZE / 8;
 
     private static final int VERTICES_PER_CHAR = 4;
     private static final int INDICES_PER_CHAR = 6;
     private static final int ELEMENTS_PER_VERTEX = 8;
-    private static final int VERTEX_STRIDE = ELEMENTS_PER_VERTEX * FLOAT_SIZE_IN_BYTES;
     private static final int POSITION_INDEX = 0;
-    private static final int POSITION_OFFSET = 0;
     private static final int ELEMENTS_PER_POSITION = 2;
     private static final int COORDINATES_INDEX = 1;
-    private static final int COORDINATES_OFFSET = 2 * FLOAT_SIZE_IN_BYTES;
     private static final int ELEMENTS_PER_COORDINATES = 2;
     private static final int COLOR_INDEX = 2;
-    private static final int COLOR_OFFSET = 4 * FLOAT_SIZE_IN_BYTES;
     private static final int ELEMENTS_PER_COLOR = 4;
 
     private final FloatBuffer vertices;
-    private final int vaoId;
-    private final int vboId;
+    private VertexBuffer vBuffer;
+    private VertexArray vArray;
     private final int iboId;
 
     private final Configuration configuration;
@@ -59,8 +57,6 @@ public class TextRenderer {
      */
     public TextRenderer() {
         this.vertices = MemoryUtil.memAllocFloat(MAX_TEXT_LENGTH * VERTICES_PER_CHAR * ELEMENTS_PER_VERTEX);
-        this.vaoId = GL30.glGenVertexArrays();
-        this.vboId = GL15.glGenBuffers();
         this.initVertices();
 
         this.iboId = GL15.glGenBuffers();
@@ -101,22 +97,15 @@ public class TextRenderer {
      * Initialize vertices
      */
     private void initVertices() {
-        GL30.glBindVertexArray(this.vaoId);
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, this.vboId);
-
-        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, this.vertices, GL15.GL_DYNAMIC_DRAW);
-
-        GL20.glEnableVertexAttribArray(POSITION_INDEX);
-        GL20.glVertexAttribPointer(POSITION_INDEX, ELEMENTS_PER_POSITION, GL11.GL_FLOAT, false, VERTEX_STRIDE, POSITION_OFFSET);
-
-        GL20.glEnableVertexAttribArray(COORDINATES_INDEX);
-        GL20.glVertexAttribPointer(COORDINATES_INDEX, ELEMENTS_PER_COORDINATES, GL11.GL_FLOAT, false, VERTEX_STRIDE, COORDINATES_OFFSET);
-
-        GL20.glEnableVertexAttribArray(COLOR_INDEX);
-        GL20.glVertexAttribPointer(COLOR_INDEX, ELEMENTS_PER_COLOR, GL11.GL_FLOAT, false, VERTEX_STRIDE, COLOR_OFFSET);
-
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
-        GL30.glBindVertexArray(0);
+        this.vBuffer = new VertexBuffer(this.vertices, new VertexBufferParams()
+                .usage(BufferUsage.DYNAMIC_DRAW)
+                .element(new VertexElement(POSITION_INDEX, ELEMENTS_PER_POSITION))
+                .element(new VertexElement(COORDINATES_INDEX, ELEMENTS_PER_COORDINATES))
+                .element(new VertexElement(COLOR_INDEX, ELEMENTS_PER_COLOR)));
+        this.vArray = new VertexArray();
+        this.vArray.bind();
+        this.vArray.attachVertexBuffer(this.vBuffer);
+        this.vArray.unbind();
     }
 
     /**
@@ -126,8 +115,8 @@ public class TextRenderer {
         this.shader.destroy();
         MemoryUtil.memFree(this.vertices);
         GL15.glDeleteBuffers(this.iboId);
-        GL15.glDeleteBuffers(this.vboId);
-        GL30.glDeleteVertexArrays(this.vaoId);
+        this.vBuffer.destroy();
+        this.vArray.destroy();
     }
 
     /**
@@ -226,15 +215,15 @@ public class TextRenderer {
      * @param scale The scale of the text
      */
     private void renderText(final Font font, final float scale) {
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, this.vboId);
-        GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, this.vertices);
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+        this.vBuffer.bind();
+        this.vBuffer.update(this.vertices);
+        this.vBuffer.unbind();
 
         font.getBitmap().bind();
         this.shader.bind();
         this.shader.setUniform("thickness", 0.5f);
         this.shader.setUniform("smoothing", font.computeSmoothing(this.configuration.getYResolution() * scale));
-        GL30.glBindVertexArray(this.vaoId);
+        this.vArray.bind();
         GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, this.iboId);
 
         GL11.glDisable(GL11.GL_DEPTH_TEST);
@@ -245,7 +234,7 @@ public class TextRenderer {
 
         Shader.unbind();
         GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
-        GL30.glBindVertexArray(0);
+        this.vArray.unbind();
         Texture.unbind();
 
         this.bufferedChar = 0;
