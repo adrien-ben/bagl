@@ -9,12 +9,8 @@ import com.adrien.games.bagl.rendering.BufferUsage;
 import com.adrien.games.bagl.rendering.Shader;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.texture.TextureRegion;
-import com.adrien.games.bagl.rendering.vertex.VertexArray;
-import com.adrien.games.bagl.rendering.vertex.VertexBuffer;
-import com.adrien.games.bagl.rendering.vertex.VertexBufferParams;
-import com.adrien.games.bagl.rendering.vertex.VertexElement;
+import com.adrien.games.bagl.rendering.vertex.*;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL15;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
@@ -45,7 +41,7 @@ public class TextRenderer {
     private final FloatBuffer vertices;
     private VertexBuffer vBuffer;
     private VertexArray vArray;
-    private final int iboId;
+    private final IndexBuffer iBuffer;
 
     private final Configuration configuration;
     private final Shader shader;
@@ -59,8 +55,7 @@ public class TextRenderer {
         this.vertices = MemoryUtil.memAllocFloat(MAX_TEXT_LENGTH * VERTICES_PER_CHAR * ELEMENTS_PER_VERTEX);
         this.initVertices();
 
-        this.iboId = GL15.glGenBuffers();
-        this.initIndices();
+        this.iBuffer = this.initIndices();
 
         this.configuration = Configuration.getInstance();
         this.shader = new Shader()
@@ -74,8 +69,7 @@ public class TextRenderer {
     /**
      * Initialize indices
      */
-    private void initIndices() {
-        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, this.iboId);
+    private IndexBuffer initIndices() {
         try (final MemoryStack stack = MemoryStack.stackPush()) {
             final ShortBuffer indices = stack.mallocShort(MAX_TEXT_LENGTH * INDICES_PER_CHAR);
             for (int i = 0; i < MAX_TEXT_LENGTH; i++) {
@@ -88,9 +82,8 @@ public class TextRenderer {
                 indices.put(offset + 4, (short) (firstIndex + 1));
                 indices.put(offset + 5, (short) (firstIndex + 3));
             }
-            GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, indices, GL15.GL_STATIC_DRAW);
+            return new IndexBuffer(indices, BufferUsage.STATIC_DRAW);
         }
-        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
     /**
@@ -114,7 +107,7 @@ public class TextRenderer {
     public void destroy() {
         this.shader.destroy();
         MemoryUtil.memFree(this.vertices);
-        GL15.glDeleteBuffers(this.iboId);
+        this.iBuffer.destroy();
         this.vBuffer.destroy();
         this.vArray.destroy();
     }
@@ -224,16 +217,16 @@ public class TextRenderer {
         this.shader.setUniform("thickness", 0.5f);
         this.shader.setUniform("smoothing", font.computeSmoothing(this.configuration.getYResolution() * scale));
         this.vArray.bind();
-        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, this.iboId);
+        this.iBuffer.bind();
 
         GL11.glDisable(GL11.GL_DEPTH_TEST);
         Engine.setBlendMode(BlendMode.TRANSPARENCY);
-        GL11.glDrawElements(GL11.GL_TRIANGLES, this.bufferedChar * INDICES_PER_CHAR, GL11.GL_UNSIGNED_SHORT, 0);
+        GL11.glDrawElements(GL11.GL_TRIANGLES, this.bufferedChar * INDICES_PER_CHAR, this.iBuffer.getDataType().getGlCode(), 0);
         Engine.setBlendMode(BlendMode.NONE);
         GL11.glEnable(GL11.GL_DEPTH_TEST);
 
         Shader.unbind();
-        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
+        this.iBuffer.unbind();
         this.vArray.unbind();
         Texture.unbind();
 

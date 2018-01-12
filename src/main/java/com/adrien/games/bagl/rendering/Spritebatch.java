@@ -6,12 +6,8 @@ import com.adrien.games.bagl.core.EngineException;
 import com.adrien.games.bagl.core.math.Vector2;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.texture.TextureRegion;
-import com.adrien.games.bagl.rendering.vertex.VertexArray;
-import com.adrien.games.bagl.rendering.vertex.VertexBuffer;
-import com.adrien.games.bagl.rendering.vertex.VertexBufferParams;
-import com.adrien.games.bagl.rendering.vertex.VertexElement;
+import com.adrien.games.bagl.rendering.vertex.*;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL15;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
@@ -53,7 +49,7 @@ public class Spritebatch {
     private final FloatBuffer vertices;
     private VertexBuffer vBuffer;
     private VertexArray vArray;
-    private final int iboId;
+    private IndexBuffer iBuffer;
 
     private int drawnSprites;
     private boolean started;
@@ -83,8 +79,7 @@ public class Spritebatch {
         this.vertices = MemoryUtil.memAllocFloat(this.size * VERTICES_PER_SPRITE * ELEMENTS_PER_VERTICES);
         this.initVertices();
 
-        this.iboId = GL15.glGenBuffers();
-        this.initIndices();
+        this.iBuffer = this.initIndices();
 
         this.drawnSprites = 0;
         this.started = false;
@@ -108,8 +103,7 @@ public class Spritebatch {
     /**
      * Initialize the index buffer
      */
-    private void initIndices() {
-        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, this.iboId);
+    private IndexBuffer initIndices() {
         try (final MemoryStack stack = MemoryStack.stackPush()) {
             final ShortBuffer indices = stack.mallocShort(this.size * INDICES_PER_SPRITE);
             for (int i = 0; i < this.size; i++) {
@@ -122,9 +116,8 @@ public class Spritebatch {
                 indices.put(offset + 4, (short) (firstIndex + 1));
                 indices.put(offset + 5, (short) (firstIndex + 3));
             }
-            GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, indices, GL15.GL_STATIC_DRAW);
+            return new IndexBuffer(indices, BufferUsage.STATIC_DRAW);
         }
-        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
     /**
@@ -133,7 +126,7 @@ public class Spritebatch {
     public void destroy() {
         this.spriteShader.destroy();
         MemoryUtil.memFree(this.vertices);
-        GL15.glDeleteBuffers(this.iboId);
+        this.iBuffer.destroy();
         this.vBuffer.destroy();
         this.vArray.destroy();
     }
@@ -368,15 +361,15 @@ public class Spritebatch {
             this.vBuffer.unbind();
 
             this.vArray.bind();
-            GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, this.iboId);
+            this.iBuffer.bind();
 
             GL11.glDisable(GL11.GL_DEPTH_TEST);
-            GL11.glDrawElements(GL11.GL_TRIANGLES, this.drawnSprites * INDICES_PER_SPRITE, GL11.GL_UNSIGNED_SHORT, 0);
+            GL11.glDrawElements(GL11.GL_TRIANGLES, this.drawnSprites * INDICES_PER_SPRITE, this.iBuffer.getDataType().getGlCode(), 0);
             GL11.glEnable(GL11.GL_DEPTH_TEST);
 
             this.drawnSprites = 0;
 
-            GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
+            this.iBuffer.unbind();
             this.vArray.unbind();
             Texture.unbind();
             Shader.unbind();

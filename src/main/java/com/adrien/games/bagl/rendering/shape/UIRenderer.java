@@ -1,13 +1,10 @@
 package com.adrien.games.bagl.rendering.shape;
 
 import com.adrien.games.bagl.core.Color;
+import com.adrien.games.bagl.rendering.BufferUsage;
 import com.adrien.games.bagl.rendering.Shader;
-import com.adrien.games.bagl.rendering.vertex.VertexArray;
-import com.adrien.games.bagl.rendering.vertex.VertexBuffer;
-import com.adrien.games.bagl.rendering.vertex.VertexBufferParams;
-import com.adrien.games.bagl.rendering.vertex.VertexElement;
+import com.adrien.games.bagl.rendering.vertex.*;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL15;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
@@ -32,7 +29,7 @@ public class UIRenderer {
 
     private final VertexArray vArray;
     private final VertexBuffer vBuffer;
-    private final int ibo;
+    private final IndexBuffer iBuffer;
 
     public UIRenderer() {
         this.started = false;
@@ -49,8 +46,6 @@ public class UIRenderer {
         this.vArray.attachVertexBuffer(this.vBuffer);
         this.vArray.unbind();
 
-        this.ibo = GL15.glGenBuffers();
-        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, this.ibo);
         try (final MemoryStack stack = MemoryStack.stackPush()) {
             final IntBuffer indices = stack.mallocInt(BUFFER_SIZE * INDICES_PER_SHAPE);
             for (int i = 0; i < BUFFER_SIZE; i++) {
@@ -61,9 +56,8 @@ public class UIRenderer {
                 indices.put(i * INDICES_PER_SHAPE + 4, i * VERTICES_PER_SHAPE + 3);
                 indices.put(i * INDICES_PER_SHAPE + 5, i * VERTICES_PER_SHAPE);
             }
-            GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, indices, GL15.GL_STATIC_DRAW);
+            this.iBuffer = new IndexBuffer(indices, BufferUsage.STATIC_DRAW);
         }
-        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
     /**
@@ -102,11 +96,11 @@ public class UIRenderer {
 
         this.shader.bind();
         this.vArray.bind();
-        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, this.ibo);
+        this.iBuffer.bind();
 
-        GL11.glDrawElements(GL11.GL_TRIANGLES, this.bufferedCount * INDICES_PER_SHAPE, GL11.GL_UNSIGNED_INT, 0);
+        GL11.glDrawElements(GL11.GL_TRIANGLES, this.bufferedCount * INDICES_PER_SHAPE, this.iBuffer.getDataType().getGlCode(), 0);
 
-        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
+        this.iBuffer.unbind();
         this.vArray.unbind();
         Shader.unbind();
 
@@ -121,7 +115,7 @@ public class UIRenderer {
         MemoryUtil.memFree(this.vertices);
         this.vBuffer.destroy();
         this.vArray.destroy();
-        GL15.glDeleteBuffers(this.ibo);
+        this.iBuffer.destroy();
     }
 
     /**

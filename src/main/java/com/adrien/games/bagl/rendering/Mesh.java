@@ -1,8 +1,8 @@
 package com.adrien.games.bagl.rendering;
 
+import com.adrien.games.bagl.rendering.vertex.IndexBuffer;
 import com.adrien.games.bagl.rendering.vertex.VertexArray;
 import com.adrien.games.bagl.rendering.vertex.VertexBuffer;
-import org.lwjgl.opengl.GL15;
 
 import java.util.Objects;
 
@@ -25,24 +25,21 @@ public class Mesh {
 
     private final VertexBuffer vBuffer;
     private final VertexArray vArray;
-    private final int iboId;
-    private final int indexCount;
+    private final IndexBuffer iBuffer;
     private final Material material;
 
     /**
      * Construct a mesh
      *
-     * @param vBuffer    The vertex buffer
-     * @param vArray     The vertex array
-     * @param iboId      The if of the index buffer
-     * @param indexCount The number of indices
-     * @param material   The material of the mesh
+     * @param vBuffer  The vertex buffer
+     * @param vArray   The vertex array
+     * @param iBuffer  The index buffer
+     * @param material The material of the mesh
      */
-    public Mesh(final VertexBuffer vBuffer, final VertexArray vArray, final int iboId, final int indexCount, final Material material) {
+    public Mesh(final VertexBuffer vBuffer, final VertexArray vArray, final IndexBuffer iBuffer, final Material material) {
         this.vBuffer = vBuffer;
         this.vArray = vArray;
-        this.iboId = iboId;
-        this.indexCount = indexCount;
+        this.iBuffer = iBuffer;
         this.material = material;
     }
 
@@ -56,11 +53,11 @@ public class Mesh {
         if (Objects.nonNull(this.vArray)) {
             this.vArray.destroy();
         }
-        if (this.iboId >= 0) {
-            GL15.glDeleteBuffers(this.iboId);
+        if (Objects.nonNull(this.iBuffer)) {
+            this.iBuffer.destroy();
         }
         if (Objects.nonNull(material)) {
-            material.destroy();
+            this.material.destroy();
         }
     }
 
@@ -68,12 +65,8 @@ public class Mesh {
         return this.vArray;
     }
 
-    public int getIboId() {
-        return this.iboId;
-    }
-
-    public int getIndexCount() {
-        return this.indexCount;
+    public IndexBuffer getIndexBuffer() {
+        return this.iBuffer;
     }
 
     public Material getMaterial() {

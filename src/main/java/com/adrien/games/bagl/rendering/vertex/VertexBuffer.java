@@ -36,9 +36,9 @@ public class VertexBuffer {
         this.params = params;
 
         this.vboId = GL15.glGenBuffers();
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, this.vboId);
+        this.bind(this.vboId);
         GL15.glBufferData(GL15.GL_ARRAY_BUFFER, buffer, params.getUsage().getGlCode());
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+        this.bind(0);
     }
 
     /**
@@ -57,9 +57,9 @@ public class VertexBuffer {
         this.params = params;
 
         this.vboId = GL15.glGenBuffers();
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, this.vboId);
+        this.bind(this.vboId);
         GL15.glBufferData(GL15.GL_ARRAY_BUFFER, buffer, params.getUsage().getGlCode());
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+        this.bind(0);
     }
 
     /**
@@ -78,9 +78,9 @@ public class VertexBuffer {
         this.params = params;
 
         this.vboId = GL15.glGenBuffers();
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, this.vboId);
+        this.bind(this.vboId);
         GL15.glBufferData(GL15.GL_ARRAY_BUFFER, buffer, params.getUsage().getGlCode());
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+        this.bind(0);
     }
 
     /**
@@ -99,9 +99,9 @@ public class VertexBuffer {
         this.params = params;
 
         this.vboId = GL15.glGenBuffers();
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, this.vboId);
+        this.bind(this.vboId);
         GL15.glBufferData(GL15.GL_ARRAY_BUFFER, buffer, params.getUsage().getGlCode());
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+        this.bind(0);
     }
 
     /**
@@ -120,9 +120,9 @@ public class VertexBuffer {
         this.params = params;
 
         this.vboId = GL15.glGenBuffers();
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, this.vboId);
+        this.bind(this.vboId);
         GL15.glBufferData(GL15.GL_ARRAY_BUFFER, buffer, params.getUsage().getGlCode());
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+        this.bind(0);
     }
 
     /**
@@ -299,8 +299,8 @@ public class VertexBuffer {
         }
     }
 
-    public int getVboId() {
-        return this.vboId;
+    public int getVertexCount() {
+        return this.vertexCount;
     }
 
     public VertexBufferParams getParams() {

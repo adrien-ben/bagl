@@ -35,7 +35,7 @@ public class PostProcessor {
     private final Shader lastStageShader;
 
     private VertexArray vertexArray;
-    private VertexBuffer vertexBuffer;
+    private VertexBuffer vBuffer;
 
     public PostProcessor(final int xResolution, final int yResolution) {
         final FrameBufferParameters parameters = new FrameBufferParameters().hasDepth(false).addColorOutput(Format.RGB16F);
@@ -55,7 +55,7 @@ public class PostProcessor {
                     (byte) 1, (byte) -1, Byte.MAX_VALUE, (byte) 0,
                     (byte) -1, (byte) 1, (byte) 0, Byte.MAX_VALUE,
                     (byte) 1, (byte) 1, Byte.MAX_VALUE, Byte.MAX_VALUE);
-            this.vertexBuffer = new VertexBuffer(positions, new VertexBufferParams()
+            this.vBuffer = new VertexBuffer(positions, new VertexBufferParams()
                     .dataType(DataType.BYTE)
                     .element(new VertexElement(0, 2))
                     .element(new VertexElement(2, 2, true)));
@@ -63,7 +63,7 @@ public class PostProcessor {
 
         this.vertexArray = new VertexArray();
         this.vertexArray.bind();
-        this.vertexArray.attachVertexBuffer(this.vertexBuffer);
+        this.vertexArray.attachVertexBuffer(this.vBuffer);
         this.vertexArray.unbind();
     }
 
@@ -76,7 +76,7 @@ public class PostProcessor {
         this.bloomShader.destroy();
         this.blurShader.destroy();
         this.lastStageShader.destroy();
-        this.vertexBuffer.destroy();
+        this.vBuffer.destroy();
         this.vertexArray.destroy();
     }
 
@@ -102,7 +102,7 @@ public class PostProcessor {
         this.bloomShader.bind();
         image.bind();
 
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, this.vBuffer.getVertexCount());
         this.bloomBuffer.unbind();
     }
 
@@ -121,7 +121,7 @@ public class PostProcessor {
                 this.blurBuffer.getReadBuffer().getColorTexture(0).bind();
             }
 
-            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+            glDrawArrays(GL_TRIANGLE_STRIP, 0, this.vBuffer.getVertexCount());
 
             this.blurBuffer.swap();
         }
@@ -137,7 +137,7 @@ public class PostProcessor {
         baseImage.bind(0);
         this.blurBuffer.getReadBuffer().getColorTexture(0).bind(1);
 
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, this.vBuffer.getVertexCount());
 
         Texture.unbind(1);
         Texture.unbind(0);

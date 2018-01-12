@@ -3,17 +3,14 @@ package com.adrien.games.bagl.parser.model;
 import com.adrien.games.bagl.core.EngineException;
 import com.adrien.games.bagl.core.math.Vector2;
 import com.adrien.games.bagl.core.math.Vector3;
+import com.adrien.games.bagl.rendering.BufferUsage;
 import com.adrien.games.bagl.rendering.Material;
 import com.adrien.games.bagl.rendering.Mesh;
 import com.adrien.games.bagl.rendering.Model;
-import com.adrien.games.bagl.rendering.vertex.VertexArray;
-import com.adrien.games.bagl.rendering.vertex.VertexBuffer;
-import com.adrien.games.bagl.rendering.vertex.VertexBufferParams;
-import com.adrien.games.bagl.rendering.vertex.VertexElement;
+import com.adrien.games.bagl.rendering.vertex.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.lwjgl.opengl.GL15;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
@@ -251,23 +248,20 @@ public class ObjParser implements ModelParser {
             vArray.attachVertexBuffer(vBuffer);
             vArray.unbind();
 
-            final int indexCount = this.faceIndices.size();
-            final int iboId = GL15.glGenBuffers();
-            this.generateIndexBuffer(indexCount, iboId);
+            final IndexBuffer indexBuffer = this.generateIndexBuffer();
 
-            return new Mesh(vBuffer, vArray, iboId, indexCount, this.material);
+            return new Mesh(vBuffer, vArray, indexBuffer, this.material);
         }
 
-        private void generateIndexBuffer(final int indexCount, final int iboId) {
-            GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, iboId);
+        private IndexBuffer generateIndexBuffer() {
             try (final MemoryStack stack = MemoryStack.stackPush()) {
+                final int indexCount = this.faceIndices.size();
                 final IntBuffer indices = stack.mallocInt(indexCount);
                 for (int i = 0; i < indexCount; i++) {
                     indices.put(i, this.faceIndices.get(i));
                 }
-                GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, indices, GL15.GL_STATIC_DRAW);
+                return new IndexBuffer(indices, BufferUsage.STATIC_DRAW);
             }
-            GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
         }
 
         private VertexBuffer generateVertexBuffer() {

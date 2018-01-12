@@ -3,15 +3,9 @@ package com.adrien.games.bagl.rendering.environment;
 import com.adrien.games.bagl.core.Camera;
 import com.adrien.games.bagl.core.Configuration;
 import com.adrien.games.bagl.core.math.Vector3;
-import com.adrien.games.bagl.rendering.DataType;
-import com.adrien.games.bagl.rendering.FrameBuffer;
-import com.adrien.games.bagl.rendering.FrameBufferParameters;
-import com.adrien.games.bagl.rendering.Shader;
+import com.adrien.games.bagl.rendering.*;
 import com.adrien.games.bagl.rendering.texture.*;
-import com.adrien.games.bagl.rendering.vertex.VertexArray;
-import com.adrien.games.bagl.rendering.vertex.VertexBuffer;
-import com.adrien.games.bagl.rendering.vertex.VertexBufferParams;
-import com.adrien.games.bagl.rendering.vertex.VertexElement;
+import com.adrien.games.bagl.rendering.vertex.*;
 import com.adrien.games.bagl.utils.HDRImage;
 import com.adrien.games.bagl.utils.ImageUtils;
 import org.lwjgl.system.MemoryStack;
@@ -21,7 +15,6 @@ import java.nio.ByteBuffer;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE_CUBE_MAP;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE_CUBE_MAP_POSITIVE_X;
-import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL30.*;
 
 /**
@@ -42,8 +35,7 @@ public class EnvironmentMapGenerator {
 
     private VertexArray vArray;
     private VertexBuffer vBuffer;
-
-    private final int iboId;
+    private IndexBuffer iBuffer;
 
     private FrameBuffer environmentFrameBuffer;
     private FrameBuffer irradianceFrameBuffer;
@@ -57,7 +49,7 @@ public class EnvironmentMapGenerator {
 
     public EnvironmentMapGenerator() {
         this.generateVertexBuffer();
-        this.iboId = this.generateIndexBuffer();
+        this.iBuffer = this.generateIndexBuffer();
 
         final FrameBufferParameters frameBufferParameters = new FrameBufferParameters().hasDepth(false);
         this.environmentFrameBuffer = new FrameBuffer(ENVIRONMENT_MAP_RESOLUTION, ENVIRONMENT_MAP_RESOLUTION, frameBufferParameters);
@@ -84,7 +76,7 @@ public class EnvironmentMapGenerator {
      * Destroy resources
      */
     public void destroy() {
-        glDeleteBuffers(this.iboId);
+        this.iBuffer.destroy();
         this.vBuffer.destroy();
         this.vArray.destroy();
         this.environmentSphericalShader.destroy();
@@ -177,7 +169,7 @@ public class EnvironmentMapGenerator {
         frameBuffer.enableColorOutputs(0);
 
         this.vArray.bind();
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this.iboId);
+        this.iBuffer.bind();
 
         final float mipFactor = 1f / (float) Math.pow(2, mipLevel);
         glViewport(0, 0, (int) (target.getWidth() * mipFactor), (int) (target.getHeight() * mipFactor));
@@ -187,18 +179,16 @@ public class EnvironmentMapGenerator {
 
             shader.setUniform("viewProj", this.cameras[i].getViewProjAtOrigin());
 
-            glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_BYTE, 0);
+            glDrawElements(GL_TRIANGLES, this.iBuffer.getSize(), this.iBuffer.getDataType().getGlCode(), 0);
         }
         glViewport(0, 0, Configuration.getInstance().getXResolution(), Configuration.getInstance().getYResolution());
 
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        this.iBuffer.unbind();
         this.vArray.unbind();
         frameBuffer.unbind();
     }
 
-    private int generateIndexBuffer() {
-        final int iboId = glGenBuffers();
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboId);
+    private IndexBuffer generateIndexBuffer() {
         try (final MemoryStack stack = MemoryStack.stackPush()) {
             final ByteBuffer indices = stack.bytes(
                     (byte) 1, (byte) 0, (byte) 3, (byte) 3, (byte) 0, (byte) 2,
@@ -208,10 +198,8 @@ public class EnvironmentMapGenerator {
                     (byte) 6, (byte) 7, (byte) 2, (byte) 2, (byte) 7, (byte) 3,
                     (byte) 0, (byte) 1, (byte) 4, (byte) 4, (byte) 1, (byte) 5
             );
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices, GL_STATIC_DRAW);
+            return new IndexBuffer(indices, BufferUsage.STATIC_DRAW);
         }
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        return iboId;
     }
 
     private void generateVertexBuffer() {

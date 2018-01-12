@@ -14,10 +14,7 @@ import com.adrien.games.bagl.rendering.scene.SceneNode;
 import com.adrien.games.bagl.rendering.texture.Cubemap;
 import com.adrien.games.bagl.rendering.texture.Format;
 import com.adrien.games.bagl.rendering.texture.Texture;
-import com.adrien.games.bagl.rendering.vertex.VertexArray;
-import com.adrien.games.bagl.rendering.vertex.VertexBuffer;
-import com.adrien.games.bagl.rendering.vertex.VertexBufferParams;
-import com.adrien.games.bagl.rendering.vertex.VertexElement;
+import com.adrien.games.bagl.rendering.vertex.*;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
@@ -25,7 +22,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL15.*;
 
 /**
  * Deferred renderer
@@ -56,7 +52,7 @@ public class Renderer {
 
     private VertexArray cubeVArray;
     private VertexBuffer cubeVBuffer;
-    private int cubeIboId;
+    private IndexBuffer iBuffer;
 
     private boolean renderShadow;
 
@@ -109,7 +105,7 @@ public class Renderer {
         this.brdfBuffer.destroy();
         this.quadVBuffer.destroy();
         this.quadVArray.destroy();
-        glDeleteBuffers(this.cubeIboId);
+        this.iBuffer.destroy();
         this.cubeVBuffer.destroy();
         this.cubeVArray.destroy();
         this.postProcessor.destroy();
@@ -135,8 +131,6 @@ public class Renderer {
     }
 
     private void initUnitCube() {
-        this.cubeIboId = glGenBuffers();
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeIboId);
         try (final MemoryStack stack = MemoryStack.stackPush()) {
             final ByteBuffer indices = stack.bytes(
                     (byte) 1, (byte) 0, (byte) 3, (byte) 3, (byte) 0, (byte) 2,
@@ -146,9 +140,8 @@ public class Renderer {
                     (byte) 6, (byte) 7, (byte) 2, (byte) 2, (byte) 7, (byte) 3,
                     (byte) 0, (byte) 1, (byte) 4, (byte) 4, (byte) 1, (byte) 5
             );
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices, GL_STATIC_DRAW);
+            this.iBuffer = new IndexBuffer(indices, BufferUsage.STATIC_DRAW);
         }
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
         try (final MemoryStack stack = MemoryStack.stackPush()) {
             final ByteBuffer vertices = stack.bytes(
@@ -208,7 +201,7 @@ public class Renderer {
         this.brdfShader.bind();
 
         glViewport(0, 0, BRDF_RESOLUTION, BRDF_RESOLUTION);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, this.quadVBuffer.getVertexCount());
         glViewport(0, 0, this.xResolution, this.yResolution);
 
         Shader.unbind();
@@ -238,18 +231,18 @@ public class Renderer {
         this.finalBuffer.bind();
         this.finalBuffer.clear();
         this.cubeVArray.bind();
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this.cubeIboId);
+        this.iBuffer.bind();
         skybox.bind();
         this.skyboxShader.bind();
         this.skyboxShader.setUniform("viewProj", camera.getViewProjAtOrigin());
 
         glDepthMask(false);
-        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_BYTE, 0);
+        glDrawElements(GL_TRIANGLES, this.iBuffer.getSize(), this.iBuffer.getDataType().getGlCode(), 0);
         glDepthMask(true);
 
         Shader.unbind();
         Cubemap.unbind();
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        this.iBuffer.unbind();
         this.cubeVArray.unbind();
         this.finalBuffer.unbind();
     }
@@ -319,9 +312,9 @@ public class Renderer {
 
     private void renderMesh(final Mesh mesh) {
         mesh.getVertexArray().bind();
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.getIboId());
-        glDrawElements(GL_TRIANGLES, mesh.getIndexCount(), GL_UNSIGNED_INT, 0);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        mesh.getIndexBuffer().bind();
+        glDrawElements(GL_TRIANGLES, mesh.getIndexBuffer().getSize(), mesh.getIndexBuffer().getDataType().getGlCode(), 0);
+        mesh.getIndexBuffer().unbind();
         mesh.getVertexArray().unbind();
     }
 
@@ -384,7 +377,7 @@ public class Renderer {
         this.deferredShader.setUniform("uGBuffer.normals", 1);
         this.deferredShader.setUniform("uGBuffer.depth", 2);
 
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, this.quadVBuffer.getVertexCount());
 
         Shader.unbind();
         this.quadVArray.unbind();
