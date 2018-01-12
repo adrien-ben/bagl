@@ -176,7 +176,7 @@ public class VertexBuffer {
      * @throws EngineException if the buffer is not bound
      */
     public void update(final DoubleBuffer buffer) {
-        this.checkIsBound();
+        this.checkIsBound("You cannot update a vertex buffer which is not bound");
         this.checkType(params.getDataType(), DataType.DOUBLE, "DoubleBuffer is only compatible with DataType.DOUBLE. Current data type is "
                 + this.params.getDataType());
         this.checkUpdateBufferSize(buffer);
@@ -192,7 +192,7 @@ public class VertexBuffer {
      * @throws EngineException if the buffer is not bound
      */
     public void update(final FloatBuffer buffer) {
-        this.checkIsBound();
+        this.checkIsBound("You cannot update a vertex buffer which is not bound");
         this.checkType(params.getDataType(), DataType.FLOAT, "FloatBuffer is only compatible with DataType.FLOAT. Current data type is "
                 + this.params.getDataType());
         this.checkUpdateBufferSize(buffer);
@@ -208,7 +208,7 @@ public class VertexBuffer {
      * @throws EngineException if the buffer is not bound
      */
     public void update(final IntBuffer buffer) {
-        this.checkIsBound();
+        this.checkIsBound("You cannot update a vertex buffer which is not bound");
         this.checkType(params.getDataType(), DataType.INT, "IntBuffer is only compatible with DataType.INT. Current data type is "
                 + this.params.getDataType());
         this.checkUpdateBufferSize(buffer);
@@ -224,7 +224,7 @@ public class VertexBuffer {
      * @throws EngineException if the buffer is not bound
      */
     public void update(final ShortBuffer buffer) {
-        this.checkIsBound();
+        this.checkIsBound("You cannot update a vertex buffer which is not bound");
         this.checkType(params.getDataType(), DataType.SHORT, "ShortBuffer is only compatible with DataType.SHORT. Current data type is "
                 + this.params.getDataType());
         this.checkUpdateBufferSize(buffer);
@@ -240,7 +240,7 @@ public class VertexBuffer {
      * @throws EngineException if the buffer is not bound
      */
     public void update(final ByteBuffer buffer) {
-        this.checkIsBound();
+        this.checkIsBound("You cannot update a vertex buffer which is not bound");
         this.checkType(params.getDataType(), DataType.BYTE, "ByteBuffer is only compatible with DataType.BYTE. Current data type is "
                 + this.params.getDataType());
         this.checkUpdateBufferSize(buffer);
@@ -274,7 +274,7 @@ public class VertexBuffer {
      * @throws EngineException if the buffer is not bound
      */
     public void unbind() {
-        this.checkIsBound();
+        this.checkIsBound("You cannot unbind a vertex buffer which is not bound");
         this.bind(0);
     }
 
@@ -293,9 +293,9 @@ public class VertexBuffer {
      *
      * @throws EngineException if the buffer is not bound
      */
-    private void checkIsBound() {
+    private void checkIsBound(final String message) {
         if (VertexBuffer.boundBuffer != this.vboId) {
-            throw new EngineException("You cannot unbind a vertex buffer which is not bound");
+            throw new EngineException(message);
         }
     }
 
