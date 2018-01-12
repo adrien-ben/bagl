@@ -51,6 +51,12 @@ public class VertexArray {
         this.checkIsBound("You cannot attach a vertex buffer to a vertex array which is not bound");
 
         final VertexBufferParams params = buffer.getParams();
+
+        if (!params.isInterlaced()) {
+            // TODO: implement
+            throw new EngineException("Not interlaced buffer are not implemented yet");
+        }
+
         final DataType dataType = params.getDataType();
         final List<VertexElement> elements = params.getElements();
         final int stride = elements.stream().mapToInt(VertexElement::getSize).sum() * dataType.getSize();
