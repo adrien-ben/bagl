@@ -14,6 +14,10 @@ import com.adrien.games.bagl.rendering.scene.SceneNode;
 import com.adrien.games.bagl.rendering.texture.Cubemap;
 import com.adrien.games.bagl.rendering.texture.Format;
 import com.adrien.games.bagl.rendering.texture.Texture;
+import com.adrien.games.bagl.rendering.vertex.VertexArray;
+import com.adrien.games.bagl.rendering.vertex.VertexBuffer;
+import com.adrien.games.bagl.rendering.vertex.VertexBufferParams;
+import com.adrien.games.bagl.rendering.vertex.VertexElement;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
@@ -22,18 +26,16 @@ import java.util.Optional;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
-import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
-import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
-import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.opengl.GL30.glBindVertexArray;
 
 /**
  * Deferred renderer
  * <p>
  * This renderer supports :
- * <li>one or no skybox</li>
- * <li>one shadow map for one directional light</li>
- * <li>pbr rendering (no IBL yet)</li>
- * <li>small post processing pass (bloom/gamma correction/tone mapping from HDR to SDR</li>
+ * <li>HDR Skybox</li>
+ * <li>Shadow mappping for one directional light</li>
+ * <li>PBR rendering with IBL</li>
+ * <li>Post processing pass (bloom/gamma correction/tone mapping from HDR to SDR</li>
  *
  * @author adrien
  */
@@ -50,11 +52,11 @@ public class Renderer {
     private final Matrix4 wvpBuffer;
     private final Matrix4 lightViewProj;
 
-    private int quadVboId;
-    private int quadVaoId;
+    private VertexArray quadVArray;
+    private VertexBuffer quadVBuffer;
 
-    private int cubeVboId;
-    private int cubeVaoId;
+    private VertexArray cubeVArray;
+    private VertexBuffer cubeVBuffer;
     private int cubeIboId;
 
     private boolean renderShadow;
@@ -106,36 +108,31 @@ public class Renderer {
         this.shadowBuffer.destroy();
         this.finalBuffer.destroy();
         this.brdfBuffer.destroy();
-        glDeleteBuffers(this.quadVboId);
-        glDeleteVertexArrays(this.quadVaoId);
+        this.quadVBuffer.destroy();
+        this.quadVArray.destroy();
         glDeleteBuffers(this.cubeIboId);
-        glDeleteBuffers(this.cubeVboId);
-        glDeleteVertexArrays(this.cubeVaoId);
+        this.cubeVBuffer.destroy();
+        this.cubeVArray.destroy();
         this.postProcessor.destroy();
     }
 
     private void initFullScreenQuad() {
-        this.quadVaoId = glGenVertexArrays();
-        this.quadVboId = glGenBuffers();
-        glBindVertexArray(this.quadVaoId);
-        glBindBuffer(GL_ARRAY_BUFFER, this.quadVboId);
         try (final MemoryStack stack = MemoryStack.stackPush()) {
             final ByteBuffer positions = stack.bytes(
                     (byte) -1, (byte) -1, (byte) 0, (byte) 0,
                     (byte) 1, (byte) -1, Byte.MAX_VALUE, (byte) 0,
                     (byte) -1, (byte) 1, (byte) 0, Byte.MAX_VALUE,
                     (byte) 1, (byte) 1, Byte.MAX_VALUE, Byte.MAX_VALUE);
-            glBufferData(GL_ARRAY_BUFFER, positions, GL_STATIC_DRAW);
+            this.quadVBuffer = new VertexBuffer(positions, new VertexBufferParams()
+                    .dataType(DataType.BYTE)
+                    .element(new VertexElement(0, 2))
+                    .element(new VertexElement(2, 2, true)));
         }
 
-        glEnableVertexAttribArray(0);
-        glVertexAttribIPointer(0, 2, GL_BYTE, 4, 0);
-
-        glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 2, GL_BYTE, true, 4, 2);
-
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
+        this.quadVArray = new VertexArray();
+        this.quadVArray.bind();
+        this.quadVArray.attachVertexBuffer(this.quadVBuffer);
+        this.quadVArray.unbind();
     }
 
     private void initUnitCube() {
@@ -154,10 +151,6 @@ public class Renderer {
         }
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-        this.cubeVaoId = glGenVertexArrays();
-        this.cubeVboId = glGenBuffers();
-        glBindVertexArray(this.cubeVaoId);
-        glBindBuffer(GL_ARRAY_BUFFER, this.cubeVboId);
         try (final MemoryStack stack = MemoryStack.stackPush()) {
             final ByteBuffer vertices = stack.bytes(
                     UNIT_CUBE_NEG_HALF_SIZE, UNIT_CUBE_NEG_HALF_SIZE, UNIT_CUBE_POS_HALF_SIZE,
@@ -168,12 +161,15 @@ public class Renderer {
                     UNIT_CUBE_POS_HALF_SIZE, UNIT_CUBE_NEG_HALF_SIZE, UNIT_CUBE_NEG_HALF_SIZE,
                     UNIT_CUBE_NEG_HALF_SIZE, UNIT_CUBE_POS_HALF_SIZE, UNIT_CUBE_NEG_HALF_SIZE,
                     UNIT_CUBE_POS_HALF_SIZE, UNIT_CUBE_POS_HALF_SIZE, UNIT_CUBE_NEG_HALF_SIZE);
-            glBufferData(GL_ARRAY_BUFFER, vertices, GL_STATIC_DRAW);
+            this.cubeVBuffer = new VertexBuffer(vertices, new VertexBufferParams()
+                    .dataType(DataType.BYTE)
+                    .element(new VertexElement(0, 3)));
         }
-        glEnableVertexAttribArray(0);
-        glVertexAttribIPointer(0, 3, GL_BYTE, 3, 0);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
+
+        this.cubeVArray = new VertexArray();
+        this.cubeVArray.bind();
+        this.cubeVArray.attachVertexBuffer(this.cubeVBuffer);
+        this.cubeVArray.unbind();
     }
 
     private void initFrameBuffers() {
@@ -209,7 +205,7 @@ public class Renderer {
 
     private void bakeBRDFIntegration() {
         this.brdfBuffer.bind();
-        glBindVertexArray(this.quadVaoId);
+        this.quadVArray.bind();
         this.brdfShader.bind();
 
         glViewport(0, 0, BRDF_RESOLUTION, BRDF_RESOLUTION);
@@ -217,7 +213,7 @@ public class Renderer {
         glViewport(0, 0, this.xResolution, this.yResolution);
 
         Shader.unbind();
-        glBindVertexArray(0);
+        this.quadVArray.unbind();
         this.brdfBuffer.unbind();
     }
 
@@ -242,7 +238,7 @@ public class Renderer {
     private void renderSkybox(final Cubemap skybox, final Camera camera) {
         this.finalBuffer.bind();
         this.finalBuffer.clear();
-        glBindVertexArray(this.cubeVaoId);
+        this.cubeVArray.bind();
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this.cubeIboId);
         skybox.bind();
         this.skyboxShader.bind();
@@ -255,7 +251,7 @@ public class Renderer {
         Shader.unbind();
         Cubemap.unbind();
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
+        this.cubeVArray.unbind();
         this.finalBuffer.unbind();
     }
 
@@ -347,7 +343,7 @@ public class Renderer {
         this.gBuffer.getColorTexture(1).bind(1);
         this.gBuffer.getDepthTexture().bind(2);
 
-        glBindVertexArray(this.quadVaoId);
+        this.quadVArray.bind();
         this.deferredShader.bind();
         this.deferredShader.setUniform("uCamera.vp", camera.getViewProj());
         this.deferredShader.setUniform("uCamera.position", camera.getPosition());
@@ -392,7 +388,7 @@ public class Renderer {
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
         Shader.unbind();
-        glBindVertexArray(0);
+        this.quadVArray.unbind();
         Cubemap.unbind(4);
         Texture.unbind(0);
         Texture.unbind(1);

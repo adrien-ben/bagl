@@ -3,10 +3,15 @@ package com.adrien.games.bagl.rendering.environment;
 import com.adrien.games.bagl.core.Camera;
 import com.adrien.games.bagl.core.Configuration;
 import com.adrien.games.bagl.core.math.Vector3;
+import com.adrien.games.bagl.rendering.DataType;
 import com.adrien.games.bagl.rendering.FrameBuffer;
 import com.adrien.games.bagl.rendering.FrameBufferParameters;
 import com.adrien.games.bagl.rendering.Shader;
 import com.adrien.games.bagl.rendering.texture.*;
+import com.adrien.games.bagl.rendering.vertex.VertexArray;
+import com.adrien.games.bagl.rendering.vertex.VertexBuffer;
+import com.adrien.games.bagl.rendering.vertex.VertexBufferParams;
+import com.adrien.games.bagl.rendering.vertex.VertexElement;
 import com.adrien.games.bagl.utils.HDRImage;
 import com.adrien.games.bagl.utils.ImageUtils;
 import org.lwjgl.system.MemoryStack;
@@ -17,7 +22,6 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE_CUBE_MAP;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE_CUBE_MAP_POSITIVE_X;
 import static org.lwjgl.opengl.GL15.*;
-import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
 import static org.lwjgl.opengl.GL30.*;
 
 /**
@@ -36,8 +40,9 @@ public class EnvironmentMapGenerator {
     private final static byte SKYBOX_POSITIVE_HALF_SIZE = (byte) 1;
     private final static byte SKYBOX_NEGATIVE_HALF_SIZE = (byte) -1;
 
-    private final int vboId;
-    private final int vaoId;
+    private VertexArray vArray;
+    private VertexBuffer vBuffer;
+
     private final int iboId;
 
     private FrameBuffer environmentFrameBuffer;
@@ -51,8 +56,6 @@ public class EnvironmentMapGenerator {
     private Camera[] cameras;
 
     public EnvironmentMapGenerator() {
-        this.vaoId = glGenVertexArrays();
-        this.vboId = glGenBuffers();
         this.generateVertexBuffer();
         this.iboId = this.generateIndexBuffer();
 
@@ -82,8 +85,8 @@ public class EnvironmentMapGenerator {
      */
     public void destroy() {
         glDeleteBuffers(this.iboId);
-        glDeleteBuffers(this.vboId);
-        glDeleteVertexArrays(this.vaoId);
+        this.vBuffer.destroy();
+        this.vArray.destroy();
         this.environmentSphericalShader.destroy();
         this.irradianceShader.destroy();
         this.preFilteredMapShader.destroy();
@@ -173,7 +176,7 @@ public class EnvironmentMapGenerator {
         frameBuffer.bind();
         frameBuffer.enableColorOutputs(0);
 
-        glBindVertexArray(this.vaoId);
+        this.vArray.bind();
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this.iboId);
 
         final float mipFactor = 1f / (float) Math.pow(2, mipLevel);
@@ -189,7 +192,7 @@ public class EnvironmentMapGenerator {
         glViewport(0, 0, Configuration.getInstance().getXResolution(), Configuration.getInstance().getYResolution());
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
+        this.vArray.unbind();
         frameBuffer.unbind();
     }
 
@@ -212,8 +215,6 @@ public class EnvironmentMapGenerator {
     }
 
     private void generateVertexBuffer() {
-        glBindVertexArray(this.vaoId);
-        glBindBuffer(GL_ARRAY_BUFFER, this.vboId);
         try (final MemoryStack stack = MemoryStack.stackPush()) {
             final ByteBuffer vertices = stack.bytes(
                     SKYBOX_NEGATIVE_HALF_SIZE, SKYBOX_NEGATIVE_HALF_SIZE, SKYBOX_POSITIVE_HALF_SIZE,
@@ -224,12 +225,14 @@ public class EnvironmentMapGenerator {
                     SKYBOX_POSITIVE_HALF_SIZE, SKYBOX_NEGATIVE_HALF_SIZE, SKYBOX_NEGATIVE_HALF_SIZE,
                     SKYBOX_NEGATIVE_HALF_SIZE, SKYBOX_POSITIVE_HALF_SIZE, SKYBOX_NEGATIVE_HALF_SIZE,
                     SKYBOX_POSITIVE_HALF_SIZE, SKYBOX_POSITIVE_HALF_SIZE, SKYBOX_NEGATIVE_HALF_SIZE);
-            glBufferData(GL_ARRAY_BUFFER, vertices, GL_STATIC_DRAW);
+            this.vBuffer = new VertexBuffer(vertices, new VertexBufferParams()
+                    .dataType(DataType.BYTE)
+                    .element(new VertexElement(0, 3)));
         }
-        glEnableVertexAttribArray(0);
-        glVertexAttribIPointer(0, 3, GL_BYTE, 3, 0);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
+        this.vArray = new VertexArray();
+        this.vArray.bind();
+        this.vArray.attachVertexBuffer(this.vBuffer);
+        this.vArray.unbind();
     }
 
     private Camera[] initCameras() {

@@ -57,7 +57,7 @@ public class PostProcessor {
                     (byte) 1, (byte) 1, Byte.MAX_VALUE, Byte.MAX_VALUE);
             this.vertexBuffer = new VertexBuffer(positions, new VertexBufferParams()
                     .dataType(DataType.BYTE)
-                    .element(new VertexElement(0, 2, false))
+                    .element(new VertexElement(0, 2))
                     .element(new VertexElement(2, 2, true)));
         }
 
