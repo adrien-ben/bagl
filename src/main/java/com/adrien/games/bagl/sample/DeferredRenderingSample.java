@@ -10,7 +10,6 @@ import com.adrien.games.bagl.rendering.Renderer;
 import com.adrien.games.bagl.rendering.Spritebatch;
 import com.adrien.games.bagl.rendering.environment.EnvironmentMapGenerator;
 import com.adrien.games.bagl.rendering.light.DirectionalLight;
-import com.adrien.games.bagl.rendering.light.Light;
 import com.adrien.games.bagl.rendering.light.PointLight;
 import com.adrien.games.bagl.rendering.light.SpotLight;
 import com.adrien.games.bagl.rendering.scene.Scene;
@@ -30,7 +29,12 @@ public class DeferredRenderingSample {
 
         private static final String TITLE = "Deferred Rendering";
 
-        private static final String INSTRUCTIONS = "Display debug infos : G\n"
+        private static final String INSTRUCTIONS = "Display scene : F2\n"
+                + "Display Albedo : F3\n"
+                + "Display Normals : F4\n"
+                + "Display Depth : F5\n"
+                + "Display Shadow Map : F6\n"
+                + "Display Scene before post process : F7\n"
                 + "Switch Camera Mode : TAB\n"
                 + "Move camera : Z, Q, S, D, LCTRL, SPACE\n"
                 + "Advance time: 1, 2";
@@ -50,14 +54,15 @@ public class DeferredRenderingSample {
         private Cubemap preFilteredMap;
         private Model floor;
         private Model cube;
-        private Model tree;
 
         private Camera camera;
         private CameraController cameraController;
 
         private Spritebatch spritebatch;
 
-        private boolean displayGBuffer = false;
+        private DisplayMode displayMode = DisplayMode.SCENE;
+
+        private boolean displayInstructions = false;
         private boolean fpsCamera = false;
 
         @Override
@@ -76,7 +81,7 @@ public class DeferredRenderingSample {
             this.initSceneGraph();
             this.setUpLights();
 
-            this.camera = new Camera(new Vector3(5f, 4f, 6f), new Vector3(-5f, -4f, -6f), new Vector3(Vector3.UP),
+            this.camera = new Camera(new Vector3(2.5f, 2.5f, 3f), new Vector3(-5f, -2.5f, -6f), new Vector3(Vector3.UP),
                     (float) Math.toRadians(60f), (float) this.width / (float) this.height, 0.1f, 1000);
             this.cameraController = new CameraController(this.camera);
 
@@ -97,7 +102,6 @@ public class DeferredRenderingSample {
             this.preFilteredMap.destroy();
             this.floor.destroy();
             this.cube.destroy();
-            this.tree.destroy();
         }
 
         private void loadMeshes() {
@@ -112,28 +116,21 @@ public class DeferredRenderingSample {
 
             this.floor = MeshFactory.fromResourceFile("/models/floor/floor.obj");
             this.cube = MeshFactory.fromResourceFile("/models/cube/cube.obj");
-//            this.cube = MeshFactory.fromFile("D:/Documents/3D Models/pbr_test/pbr_test.obj");
-            this.tree = MeshFactory.fromResourceFile("/models/tree/tree.obj");
+//            this.cube = MeshFactory.fromFile("D:/Documents/3D Models/sphere/sphere.obj");
         }
 
         private void initSceneGraph() {
             this.scene.getRoot().set(this.floor);
             final SceneNode<Model> cubeNode = new SceneNode<>(this.cube);
-            cubeNode.getLocalTransform().setTranslation(new Vector3(0, 1f, 0)).setScale(new Vector3(0.5f, 0.5f, 0.5f));
-            final SceneNode<Model> treeNode = new SceneNode<>(this.tree);
-            treeNode.getLocalTransform().setTranslation(new Vector3(2f, 0f, 0));
-            this.scene.getRoot().addChild(treeNode);
+            cubeNode.getLocalTransform().setTranslation(new Vector3(0, 0.5f, 0));
             this.scene.getRoot().addChild(cubeNode);
         }
 
         private void setUpLights() {
-            this.scene.setAmbient(new Light(0.01f));
             this.scene.getDirectionals().add(new DirectionalLight(0.8f, Color.WHITE, new Vector3(3f, -2, 4)));
-            this.scene.getDirectionals().add(new DirectionalLight(0.3f, Color.ORANGE, new Vector3(0.5f, -2, 4)));
             this.scene.getPoints().add(new PointLight(10f, Color.GREEN, new Vector3(4f, 0.5f, 2f), 2f));
             this.scene.getPoints().add(new PointLight(10f, Color.YELLOW, new Vector3(-4f, 0.2f, 2f), 3f));
             this.scene.getPoints().add(new PointLight(10f, Color.BLUE, new Vector3(0f, 0.5f, 3f), 2f));
-            this.scene.getPoints().add(new PointLight(10f, Color.PURPLE, new Vector3(0f, 3f, 0f), 2f));
             this.scene.getPoints().add(new PointLight(10f, Color.TURQUOISE, new Vector3(-1f, 0.1f, 1f), 2f));
             this.scene.getPoints().add(new PointLight(10f, Color.CYAN, new Vector3(3f, 0.6f, -3f), 2f));
             this.scene.getSpots().add(new SpotLight(10f, Color.RED, new Vector3(-2f, 0.5f, -3f), 20f,
@@ -144,19 +141,32 @@ public class DeferredRenderingSample {
 
         @Override
         public void update(final Time time) {
-            this.scene.getRoot().getChildren().forEach(meshSceneNode ->
-                    meshSceneNode.getLocalTransform().getRotation().mul(Quaternion.fromAngleAndVector(
-                            (float) Math.toRadians(10 * time.getElapsedTime()), Vector3.UP)));
-
             if (Input.isKeyPressed(GLFW.GLFW_KEY_1) || Input.isKeyPressed(GLFW.GLFW_KEY_2)) {
                 float speed = Input.isKeyPressed(GLFW.GLFW_KEY_1) ? 20 : -20;
-                this.scene.getDirectionals().get(0).getDirection().transform(Matrix4.createRotation(Quaternion.fromAngleAndVector(
-                        (float) Math.toRadians(speed * time.getElapsedTime()), new Vector3(1f, 1f, 0f).normalise())), 0);
+                if (!this.scene.getDirectionals().isEmpty()) {
+                    this.scene.getDirectionals().get(0).getDirection().transform(Matrix4.createRotation(Quaternion.fromAngleAndVector(
+                            (float) Math.toRadians(speed * time.getElapsedTime()), new Vector3(1f, 1f, 0f).normalise())), 0);
+                }
             }
 
-            if (Input.wasKeyPressed(GLFW.GLFW_KEY_G)) {
-                this.displayGBuffer = !this.displayGBuffer;
+            if (Input.wasKeyPressed(GLFW.GLFW_KEY_F1)) {
+                this.displayInstructions = !this.displayInstructions;
             }
+
+            if (Input.wasKeyPressed(GLFW.GLFW_KEY_F2)) {
+                displayMode = DisplayMode.SCENE;
+            } else if (Input.wasKeyPressed(GLFW.GLFW_KEY_F3)) {
+                this.displayMode = DisplayMode.ALBEDO;
+            } else if (Input.wasKeyPressed(GLFW.GLFW_KEY_F4)) {
+                this.displayMode = DisplayMode.NORMALS;
+            } else if (Input.wasKeyPressed(GLFW.GLFW_KEY_F5)) {
+                this.displayMode = DisplayMode.DEPTH;
+            } else if (Input.wasKeyPressed(GLFW.GLFW_KEY_F6)) {
+                this.displayMode = DisplayMode.SHADOW;
+            } else if (Input.wasKeyPressed(GLFW.GLFW_KEY_F7)) {
+                this.displayMode = DisplayMode.UNPROCESSED;
+            }
+
             if (Input.wasKeyPressed(GLFW.GLFW_KEY_TAB)) {
                 this.fpsCamera = !this.fpsCamera;
                 if (this.fpsCamera) {
@@ -174,30 +184,33 @@ public class DeferredRenderingSample {
         @Override
         public void render() {
             this.renderer.render(this.scene, this.camera);
-            if (this.displayGBuffer) {
-                this.spritebatch.start();
-                this.spritebatch.draw(this.renderer.getGBuffer().getDepthTexture(),
-                        new Vector2(4 * this.width / 5, 2 * this.height / 5), this.width / 5, this.height / 5);
-                this.spritebatch.draw(this.renderer.getGBuffer().getColorTexture(0),
-                        new Vector2(4 * this.width / 5, 0), this.width / 5, this.height / 5);
-                this.spritebatch.draw(this.renderer.getGBuffer().getColorTexture(1),
-                        new Vector2(4 * this.width / 5, this.height / 5), this.width / 5, this.height / 5);
-                this.spritebatch.draw(this.renderer.getShadowBuffer().getDepthTexture(),
-                        new Vector2(4 * this.width / 5, 3 * this.height / 5), this.width / 5, this.width / 5);
 
-                this.spritebatch.draw(this.renderer.getFinalBuffer().getColorTexture(0),
-                        new Vector2(0, this.height / 5), this.width / 5, this.height / 5);
-                this.spritebatch.draw(this.renderer.getBrdfBuffer().getColorTexture(0),
-                        new Vector2(0, 0), this.width / 5, this.height / 5);
-                this.spritebatch.end();
+            this.spritebatch.start();
+            if (this.displayMode == DisplayMode.ALBEDO) {
+                this.spritebatch.draw(this.renderer.getGBuffer().getColorTexture(0), Vector2.ZERO);
+            } else if (this.displayMode == DisplayMode.NORMALS) {
+                this.spritebatch.draw(this.renderer.getGBuffer().getColorTexture(1), Vector2.ZERO);
+            } else if (this.displayMode == DisplayMode.DEPTH) {
+                this.spritebatch.draw(this.renderer.getGBuffer().getDepthTexture(), Vector2.ZERO);
+            } else if (this.displayMode == DisplayMode.SHADOW) {
+                this.spritebatch.draw(this.renderer.getShadowBuffer().getDepthTexture(), Vector2.ZERO);
+            } else if (this.displayMode == DisplayMode.UNPROCESSED) {
+                this.spritebatch.draw(this.renderer.getFinalBuffer().getColorTexture(0), Vector2.ZERO);
             }
-            this.textRenderer.render(INSTRUCTIONS, this.font, new Vector2(0.01f, 0.97f), 0.03f, Color.BLACK);
-        }
+            this.spritebatch.end();
 
+            this.textRenderer.render("Toggle instructions : F1", this.font, new Vector2(0.01f, 0.97f), 0.03f, Color.BLACK);
+            if (this.displayInstructions) {
+                this.textRenderer.render(INSTRUCTIONS, this.font, new Vector2(0.01f, 0.94f), 0.03f, Color.BLACK);
+            }
+        }
+    }
+
+    private enum DisplayMode {
+        SCENE, ALBEDO, NORMALS, DEPTH, SHADOW, UNPROCESSED
     }
 
     public static void main(String[] args) {
         new Engine(new TestGame(), TestGame.TITLE).start();
     }
-
 }
