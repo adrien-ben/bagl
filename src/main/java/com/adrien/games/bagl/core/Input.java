@@ -1,6 +1,8 @@
 package com.adrien.games.bagl.core;
 
 import com.adrien.games.bagl.core.math.Vector2;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -22,6 +24,8 @@ import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
  * more related to the origin of the screen. It can be use to represents infinite movement
  */
 public final class Input {
+
+    private static Logger log = LogManager.getLogger(Input.class);
 
     private static final int KEY_COUNT = 350;
     private static final int MOUSE_BUTTON_COUNT = 10;
@@ -87,10 +91,14 @@ public final class Input {
      * @param mods     Modifiers applied.
      */
     static void handleKeyboard(long window, int key, int scanCode, int action, int mods) {
-        if (action == GLFW_PRESS) {
-            KEY_STATES[key] = true;
-        } else if (action == GLFW_RELEASE) {
-            KEY_STATES[key] = false;
+        // TODO : handle modifiers
+        if (key >= 0 && key < KEY_COUNT) {
+            if (action == GLFW_PRESS) {
+                log.debug("Key {}({}) pressed with modifier {}", key, scanCode, mods);
+                KEY_STATES[key] = true;
+            } else if (action == GLFW_RELEASE) {
+                KEY_STATES[key] = false;
+            }
         }
     }
 
@@ -103,10 +111,12 @@ public final class Input {
      * @param mods   Modifiers applied.
      */
     static void handleMouseButton(long window, int button, int action, int mods) {
-        if (action == GLFW_PRESS) {
-            MOUSE_BUTTON_STATES[button] = true;
-        } else if (action == GLFW_RELEASE) {
-            MOUSE_BUTTON_STATES[button] = false;
+        if (button >= 0 && button < MOUSE_BUTTON_COUNT) {
+            if (action == GLFW_PRESS) {
+                MOUSE_BUTTON_STATES[button] = true;
+            } else if (action == GLFW_RELEASE) {
+                MOUSE_BUTTON_STATES[button] = false;
+            }
         }
     }
 
