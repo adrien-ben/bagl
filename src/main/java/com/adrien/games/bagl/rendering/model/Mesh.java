@@ -1,5 +1,6 @@
-package com.adrien.games.bagl.rendering;
+package com.adrien.games.bagl.rendering.model;
 
+import com.adrien.games.bagl.rendering.Material;
 import com.adrien.games.bagl.rendering.vertex.IndexBuffer;
 import com.adrien.games.bagl.rendering.vertex.VertexArray;
 import com.adrien.games.bagl.rendering.vertex.VertexBuffer;

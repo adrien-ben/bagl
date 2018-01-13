@@ -5,20 +5,20 @@ import com.adrien.games.bagl.core.math.Matrix4;
 import com.adrien.games.bagl.core.math.Quaternion;
 import com.adrien.games.bagl.core.math.Vector2;
 import com.adrien.games.bagl.core.math.Vector3;
-import com.adrien.games.bagl.rendering.Model;
 import com.adrien.games.bagl.rendering.Renderer;
 import com.adrien.games.bagl.rendering.Spritebatch;
 import com.adrien.games.bagl.rendering.environment.EnvironmentMapGenerator;
 import com.adrien.games.bagl.rendering.light.DirectionalLight;
 import com.adrien.games.bagl.rendering.light.PointLight;
 import com.adrien.games.bagl.rendering.light.SpotLight;
+import com.adrien.games.bagl.rendering.model.Model;
+import com.adrien.games.bagl.rendering.model.ModelFactory;
 import com.adrien.games.bagl.rendering.scene.Scene;
 import com.adrien.games.bagl.rendering.scene.SceneNode;
 import com.adrien.games.bagl.rendering.text.Font;
 import com.adrien.games.bagl.rendering.text.TextRenderer;
 import com.adrien.games.bagl.rendering.texture.Cubemap;
 import com.adrien.games.bagl.utils.FileUtils;
-import com.adrien.games.bagl.utils.MeshFactory;
 import org.lwjgl.glfw.GLFW;
 
 import static org.lwjgl.opengl.GL11.*;
@@ -114,9 +114,9 @@ public class DeferredRenderingSample {
             this.scene.setIrradianceMap(this.irradianceMap);
             this.scene.setPreFilteredMap(this.preFilteredMap);
 
-            this.floor = MeshFactory.fromResourceFile("/models/floor/floor.obj");
-            this.cube = MeshFactory.fromResourceFile("/models/cube/cube.obj");
-//            this.cube = MeshFactory.fromFile("D:/Documents/3D Models/sphere/sphere.obj");
+            this.floor = ModelFactory.fromFile(FileUtils.getResourceAbsolutePath("/models/floor/floor.obj"));
+            this.cube = ModelFactory.fromFile(FileUtils.getResourceAbsolutePath("/models/cube/cube.obj"));
+//            this.cube = ModelFactory.fromFile("D:/Documents/3D Models/sphere/sphere.obj");
         }
 
         private void initSceneGraph() {

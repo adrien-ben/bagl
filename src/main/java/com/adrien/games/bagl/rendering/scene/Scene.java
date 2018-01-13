@@ -1,9 +1,9 @@
 package com.adrien.games.bagl.rendering.scene;
 
-import com.adrien.games.bagl.rendering.Model;
 import com.adrien.games.bagl.rendering.light.DirectionalLight;
 import com.adrien.games.bagl.rendering.light.PointLight;
 import com.adrien.games.bagl.rendering.light.SpotLight;
+import com.adrien.games.bagl.rendering.model.Model;
 import com.adrien.games.bagl.rendering.texture.Cubemap;
 
 import java.util.ArrayList;

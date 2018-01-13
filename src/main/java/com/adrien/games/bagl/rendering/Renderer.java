@@ -7,6 +7,8 @@ import com.adrien.games.bagl.core.math.Vector3;
 import com.adrien.games.bagl.rendering.light.DirectionalLight;
 import com.adrien.games.bagl.rendering.light.PointLight;
 import com.adrien.games.bagl.rendering.light.SpotLight;
+import com.adrien.games.bagl.rendering.model.Mesh;
+import com.adrien.games.bagl.rendering.model.Model;
 import com.adrien.games.bagl.rendering.postprocess.PostProcessor;
 import com.adrien.games.bagl.rendering.scene.Scene;
 import com.adrien.games.bagl.rendering.scene.SceneNode;

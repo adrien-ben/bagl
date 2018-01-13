@@ -1,6 +1,6 @@
 package com.adrien.games.bagl.parser.model;
 
-import com.adrien.games.bagl.rendering.Model;
+import com.adrien.games.bagl.rendering.model.Model;
 
 public interface ModelParser {
 
