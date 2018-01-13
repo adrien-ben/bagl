@@ -5,7 +5,6 @@ import com.adrien.games.bagl.core.Configuration;
 import com.adrien.games.bagl.core.math.Matrix4;
 import com.adrien.games.bagl.core.math.Vector3;
 import com.adrien.games.bagl.rendering.light.DirectionalLight;
-import com.adrien.games.bagl.rendering.light.Light;
 import com.adrien.games.bagl.rendering.light.PointLight;
 import com.adrien.games.bagl.rendering.light.SpotLight;
 import com.adrien.games.bagl.rendering.postprocess.PostProcessor;
@@ -321,7 +320,6 @@ public class Renderer {
     private void renderDeferred(final Scene scene, final Camera camera) {
         final Optional<Cubemap> irradiance = scene.getIrradianceMap();
         final Optional<Cubemap> preFilteredMap = scene.getPreFilteredMap();
-        final Light ambient = scene.getAmbient();
         final List<DirectionalLight> directionals = scene.getDirectionals();
         final List<PointLight> points = scene.getPoints();
         final List<SpotLight> spots = scene.getSpots();
@@ -347,10 +345,8 @@ public class Renderer {
             map.bind(5);
             this.deferredShader.setUniform("uLights.preFilteredMap", 5);
         });
-        this.getBrdfBuffer().getColorTexture(0).bind(6);
+        this.brdfBuffer.getColorTexture(0).bind(6);
         this.deferredShader.setUniform("uLights.brdf", 6);
-        this.deferredShader.setUniform("uLights.ambient.intensity", ambient.getIntensity());
-        this.deferredShader.setUniform("uLights.ambient.color", ambient.getColor());
         this.deferredShader.setUniform("uShadow.hasShadow", this.renderShadow);
         if (this.renderShadow) {
             this.deferredShader.setUniform("uShadow.lightViewProj", this.lightViewProj);
@@ -422,9 +418,5 @@ public class Renderer {
 
     public FrameBuffer getFinalBuffer() {
         return this.finalBuffer;
-    }
-
-    public FrameBuffer getBrdfBuffer() {
-        return this.brdfBuffer;
     }
 }

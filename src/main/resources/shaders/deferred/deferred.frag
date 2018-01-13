@@ -52,7 +52,6 @@ struct Lights {
     samplerCube irradiance;
     samplerCube preFilteredMap;
     sampler2D brdf;
-    Light ambient;
     DirectionalLight directionals[MAX_DIR_LIGHTS];
     int directionalCount;
     PointLight points[MAX_POINT_LIGHTS];

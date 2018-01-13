@@ -1,9 +1,7 @@
 package com.adrien.games.bagl.rendering.scene;
 
-import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.rendering.Model;
 import com.adrien.games.bagl.rendering.light.DirectionalLight;
-import com.adrien.games.bagl.rendering.light.Light;
 import com.adrien.games.bagl.rendering.light.PointLight;
 import com.adrien.games.bagl.rendering.light.SpotLight;
 import com.adrien.games.bagl.rendering.texture.Cubemap;
@@ -25,7 +23,6 @@ public class Scene {
     private Cubemap irradianceMap;
     private Cubemap preFilteredMap;
 
-    private Light ambient;
     private final List<DirectionalLight> directionals;
     private final List<PointLight> points;
     private final List<SpotLight> spots;
@@ -34,7 +31,6 @@ public class Scene {
         this.root = new SceneNode<>();
         this.environmentMap = null;
         this.irradianceMap = null;
-        this.ambient = new Light(1f, Color.WHITE);
         this.directionals = new ArrayList<>();
         this.points = new ArrayList<>();
         this.spots = new ArrayList<>();
@@ -62,14 +58,6 @@ public class Scene {
 
     public void setPreFilteredMap(final Cubemap preFilteredMap) {
         this.preFilteredMap = preFilteredMap;
-    }
-
-    public Light getAmbient() {
-        return ambient;
-    }
-
-    public void setAmbient(final Light ambient) {
-        this.ambient = ambient;
     }
 
     public SceneNode<Model> getRoot() {

@@ -9,7 +9,7 @@ baGL is an OpenGL framework that I use for educational purpose. It uses [LWJGL 3
 - IBL
 - Shadow mapping
 - Post processing (bloom, gamma correction and tone mapping)
-- Lights (ambient lights, directional lights, point lights and spot lights)
+- Lights (directional lights, point lights and spot lights)
 - HDR environment maps (from .hdr equirectangular images)
 - Simple .obj and .mtl loaders
 - 3D Particles using Geometry Shader
@@ -21,7 +21,7 @@ baGL is an OpenGL framework that I use for educational purpose. It uses [LWJGL 3
 
 This framework uses a deferred renderer. Geometry and material data is first rendered into a frame buffer called the GBuffer (Geometry Buffer).
 Then in a second pass the GBuffer is used to perform lighting calculations. The renderer uses physically based rendering with IBL.
-The renderer supports ambient, directional, point, and spot lights.
+The renderer supports directional, point, and spot lights.
 The renderer performs a post processing pass to apply bloom on bright spots, gamma correction and tone map from HDR to SDR.
 
 ### GBuffer breakdown
@@ -51,7 +51,7 @@ We use the roughness/metallic workflow. The materials are described as follows :
 
 ### Lights
 
-The renderer supports ambient, directional, point, and spot lights. Some area lights will be implemented (sphere and tube).
+The renderer supports directional, point, and spot lights. Some area lights will be implemented (sphere and tube).
 The lights attenuation in computed using inverse square function as described in Epic's paper on their PBR implementation.
 
 ### Shadows
