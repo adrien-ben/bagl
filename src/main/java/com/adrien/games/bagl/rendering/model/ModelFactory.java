@@ -7,6 +7,7 @@ import com.adrien.games.bagl.rendering.BufferUsage;
 import com.adrien.games.bagl.rendering.Material;
 import com.adrien.games.bagl.rendering.vertex.*;
 import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -28,19 +29,19 @@ public class ModelFactory {
     /**
      * Create a cube model
      * <p>
-     * The cube center is (0, 0, 0), it has normals, but no tangents
+     * The cube's center is (0, 0, 0), it has normals, but no tangents
      * nor texture coordinates
      *
      * @param size       The size of the cube
      * @param color      The color of the cube
      * @param isMetallic Is the cube metallic
      * @param roughness  The roughness of the cube
-     * @return
+     * @return A {@link Model}
      */
     public static Model createCube(final float size, final Color color, final boolean isMetallic, final float roughness) {
         final float halfSize = size * 0.5f;
 
-        IndexBuffer iBuffer;
+        final IndexBuffer iBuffer;
         try (final MemoryStack stack = MemoryStack.stackPush()) {
             final IntBuffer indices = stack.ints(
                     0, 1, 2, 2, 3, 0, // back face
@@ -53,7 +54,7 @@ public class ModelFactory {
             iBuffer = new IndexBuffer(indices, BufferUsage.STATIC_DRAW);
         }
 
-        VertexBuffer vBuffer;
+        final VertexBuffer vBuffer;
         try (final MemoryStack stack = MemoryStack.stackPush()) {
             final FloatBuffer vertices = stack.floats(
                     // back face
@@ -107,8 +108,113 @@ public class ModelFactory {
         material.setMetallic(isMetallic ? 1 : 0);
         material.setRoughness(roughness);
 
-        final Mesh mesh = new Mesh(vBuffer, vArray, iBuffer, material);
-        return new Model().addMesh(mesh);
+        return new Model().addMesh(new Mesh(vBuffer, vArray, iBuffer, material));
+    }
+
+    /**
+     * Create a sphere model
+     * <p>
+     * The sphere's center is (0, 0, 0), it has normals, but no tangents
+     * nor texture coordinates
+     *
+     * @param radius     The radius of the sphere
+     * @param rings      The number of horizontal subdivisions
+     * @param segments   The number of horizontal subdivisions
+     * @param color      The color of the sphere
+     * @param isMetallic Is the sphere metallic ?
+     * @param roughness  The roughness of the sphere
+     * @return A {@link Model}
+     */
+    public static Model createSphere(final float radius, final int rings, final int segments, final Color color, final boolean isMetallic,
+                                     final float roughness) {
+
+        final IntBuffer indices = MemoryUtil.memAllocInt(segments * (rings - 1) * 6 + 6 * segments);
+        int bufferIt = 0;
+        for (int i = 0; i < rings - 1; i++) {
+            for (int j = 0; j < segments; j++) {
+                final int index0 = rings * i + j;
+                final int index1 = rings * (i + 1) + j;
+                final int index2 = rings * (i + 1) + (j + 1) % segments;
+                final int index3 = rings * i + (j + 1) % segments;
+
+                indices.put(bufferIt++, index0);
+                indices.put(bufferIt++, index1);
+                indices.put(bufferIt++, index2);
+                indices.put(bufferIt++, index2);
+                indices.put(bufferIt++, index3);
+                indices.put(bufferIt++, index0);
+            }
+        }
+
+        final int topVertexIndex = rings * segments;
+        final int bottomVertexIndex = rings * segments + 1;
+        for (int i = 0; i < segments; i++) {
+            indices.put(bufferIt++, topVertexIndex);
+            indices.put(bufferIt++, i);
+            indices.put(bufferIt++, (i + 1) % segments);
+
+            indices.put(bufferIt++, rings * (segments - 1) + i);
+            indices.put(bufferIt++, bottomVertexIndex);
+            indices.put(bufferIt++, rings * (segments - 1) + (i + 1) % segments);
+        }
+
+        final IndexBuffer iBuffer = new IndexBuffer(indices, BufferUsage.STATIC_DRAW);
+        MemoryUtil.memFree(indices);
+
+        final FloatBuffer vertices = MemoryUtil.memAllocFloat((rings * segments + 2) * 6);
+        bufferIt = 0;
+        for (int i = 1; i <= rings; i++) {
+            for (int j = 0; j < segments; j++) {
+                final float theta = (float) Math.PI * i / (rings + 1);
+                final float phi = (float) Math.PI * 2 * j / segments;
+
+                System.out.println("ring " + i + " - segment " + j + " - phi " + phi + " - theta " + theta);
+
+                final float x = (float) Math.sin(theta) * (float) Math.sin(phi);
+                final float y = (float) Math.cos(theta);
+                final float z = (float) Math.sin(theta) * (float) Math.cos(phi);
+
+                System.out.println("x " + x + " - y " + y + " - z " + z);
+
+                vertices.put(bufferIt++, radius * x);
+                vertices.put(bufferIt++, radius * y);
+                vertices.put(bufferIt++, radius * z);
+                vertices.put(bufferIt++, x);
+                vertices.put(bufferIt++, y);
+                vertices.put(bufferIt++, z);
+
+            }
+        }
+
+        vertices.put(bufferIt++, 0);
+        vertices.put(bufferIt++, radius);
+        vertices.put(bufferIt++, 0);
+        vertices.put(bufferIt++, 0);
+        vertices.put(bufferIt++, 1);
+        vertices.put(bufferIt++, 0);
+        vertices.put(bufferIt++, 0);
+        vertices.put(bufferIt++, -radius);
+        vertices.put(bufferIt++, 0);
+        vertices.put(bufferIt++, 0);
+        vertices.put(bufferIt++, -1);
+        vertices.put(bufferIt, 0);
+
+        final VertexBuffer vBuffer = new VertexBuffer(vertices, new VertexBufferParams()
+                .element(new VertexElement(Mesh.POSITION_INDEX, Mesh.ELEMENTS_PER_POSITION))
+                .element(new VertexElement(Mesh.NORMAL_INDEX, Mesh.ELEMENTS_PER_NORMAL)));
+        MemoryUtil.memFree(vertices);
+
+        final VertexArray vArray = new VertexArray();
+        vArray.bind();
+        vArray.attachVertexBuffer(vBuffer);
+        vArray.unbind();
+
+        final Material material = new Material();
+        material.setDiffuseColor(color);
+        material.setMetallic(isMetallic ? 1 : 0);
+        material.setRoughness(roughness);
+
+        return new Model().addMesh(new Mesh(vBuffer, vArray, iBuffer, material));
     }
 
 }
