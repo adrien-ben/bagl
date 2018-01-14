@@ -128,41 +128,8 @@ public class ModelFactory {
     public static Model createSphere(final float radius, final int rings, final int segments, final Color color, final boolean isMetallic,
                                      final float roughness) {
 
-        final IntBuffer indices = MemoryUtil.memAllocInt(segments * (rings - 1) * 6 + 6 * segments);
-        int bufferIt = 0;
-        for (int i = 0; i < rings - 1; i++) {
-            for (int j = 0; j < segments; j++) {
-                final int index0 = rings * i + j;
-                final int index1 = rings * (i + 1) + j;
-                final int index2 = rings * (i + 1) + (j + 1) % segments;
-                final int index3 = rings * i + (j + 1) % segments;
-
-                indices.put(bufferIt++, index0);
-                indices.put(bufferIt++, index1);
-                indices.put(bufferIt++, index2);
-                indices.put(bufferIt++, index2);
-                indices.put(bufferIt++, index3);
-                indices.put(bufferIt++, index0);
-            }
-        }
-
-        final int topVertexIndex = rings * segments;
-        final int bottomVertexIndex = rings * segments + 1;
-        for (int i = 0; i < segments; i++) {
-            indices.put(bufferIt++, topVertexIndex);
-            indices.put(bufferIt++, i);
-            indices.put(bufferIt++, (i + 1) % segments);
-
-            indices.put(bufferIt++, rings * (segments - 1) + i);
-            indices.put(bufferIt++, bottomVertexIndex);
-            indices.put(bufferIt++, rings * (segments - 1) + (i + 1) % segments);
-        }
-
-        final IndexBuffer iBuffer = new IndexBuffer(indices, BufferUsage.STATIC_DRAW);
-        MemoryUtil.memFree(indices);
-
         final FloatBuffer vertices = MemoryUtil.memAllocFloat((rings * segments + 2) * 6);
-        bufferIt = 0;
+        int bufferIt = 0;
         for (int i = 1; i <= rings; i++) {
             for (int j = 0; j < segments; j++) {
                 final float theta = (float) Math.PI * i / (rings + 1);
@@ -182,12 +149,15 @@ public class ModelFactory {
             }
         }
 
+        // top vertex
         vertices.put(bufferIt++, 0);
         vertices.put(bufferIt++, radius);
         vertices.put(bufferIt++, 0);
         vertices.put(bufferIt++, 0);
         vertices.put(bufferIt++, 1);
         vertices.put(bufferIt++, 0);
+
+        // bottom vertex
         vertices.put(bufferIt++, 0);
         vertices.put(bufferIt++, -radius);
         vertices.put(bufferIt++, 0);
@@ -204,6 +174,41 @@ public class ModelFactory {
         vArray.bind();
         vArray.attachVertexBuffer(vBuffer);
         vArray.unbind();
+
+        final IntBuffer indices = MemoryUtil.memAllocInt(segments * (rings - 1) * 6 + 6 * segments);
+        bufferIt = 0;
+        for (int i = 0; i < rings - 1; i++) {
+            for (int j = 0; j < segments; j++) {
+                final int index0 = rings * i + j;
+                final int index1 = rings * (i + 1) + j;
+                final int index2 = rings * (i + 1) + (j + 1) % segments;
+                final int index3 = rings * i + (j + 1) % segments;
+
+                indices.put(bufferIt++, index0);
+                indices.put(bufferIt++, index1);
+                indices.put(bufferIt++, index2);
+                indices.put(bufferIt++, index2);
+                indices.put(bufferIt++, index3);
+                indices.put(bufferIt++, index0);
+            }
+        }
+
+        final int topVertexIndex = rings * segments;
+        final int bottomVertexIndex = rings * segments + 1;
+        for (int i = 0; i < segments; i++) {
+            // top faces
+            indices.put(bufferIt++, topVertexIndex);
+            indices.put(bufferIt++, i);
+            indices.put(bufferIt++, (i + 1) % segments);
+
+            // bottom faces
+            indices.put(bufferIt++, rings * (segments - 1) + i);
+            indices.put(bufferIt++, bottomVertexIndex);
+            indices.put(bufferIt++, rings * (segments - 1) + (i + 1) % segments);
+        }
+
+        final IndexBuffer iBuffer = new IndexBuffer(indices, BufferUsage.STATIC_DRAW);
+        MemoryUtil.memFree(indices);
 
         final Material material = new Material();
         material.setDiffuseColor(color);
