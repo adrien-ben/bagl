@@ -335,9 +335,6 @@ public class Renderer {
     private void renderDeferred(final Scene scene, final Camera camera) {
         final Optional<Cubemap> irradiance = scene.getIrradianceMap();
         final Optional<Cubemap> preFilteredMap = scene.getPreFilteredMap();
-//        final List<DirectionalLight> directionals = scene.getDirectionals();
-//        final List<PointLight> points = scene.getPoints();
-//        final List<SpotLight> spots = scene.getSpots();
 
         this.finalBuffer.bind();
         if (!scene.getEnvironmentMap().isPresent()) {
