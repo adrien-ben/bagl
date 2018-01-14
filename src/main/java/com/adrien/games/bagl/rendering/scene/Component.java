@@ -57,7 +57,7 @@ public abstract class Component {
     public abstract void visit(final Renderer renderer);
 
     /**
-     * Add a child component the this component
+     * Add a child component to this component
      * <p>
      * The parent of the child become the component to which
      * it is added as child
@@ -81,7 +81,7 @@ public abstract class Component {
     }
 
     /**
-     * Computes the derived transform of this component
+     * Compute the derived transform of this component
      * <p>
      * If this component is a root then its derived transform is equal
      * to its local transform. If it is not a root, its transform is
