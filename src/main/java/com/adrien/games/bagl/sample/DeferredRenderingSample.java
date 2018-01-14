@@ -55,6 +55,7 @@ public class DeferredRenderingSample {
         private Cubemap preFilteredMap;
         private Model floor;
         private Model cube;
+        private Model sphere;
 
         private Spritebatch spritebatch;
 
@@ -74,7 +75,7 @@ public class DeferredRenderingSample {
 
             this.font = new Font(FileUtils.getResourceAbsolutePath("/fonts/segoe/segoe.fnt"));
 
-            this.camera = new Camera(new Vector3(2.5f, 2.5f, 3f), new Vector3(-5f, -2.5f, -6f), new Vector3(Vector3.UP),
+            this.camera = new Camera(new Vector3(4f, 2.5f, 3f), new Vector3(-5f, -2.5f, -6f), new Vector3(Vector3.UP),
                     (float) Math.toRadians(60f), (float) this.width / (float) this.height, 0.1f, 1000);
             this.cameraController = new CameraController(this.camera);
 
@@ -100,6 +101,7 @@ public class DeferredRenderingSample {
             this.preFilteredMap.destroy();
             this.floor.destroy();
             this.cube.destroy();
+            this.sphere.destroy();
         }
 
         private void loadMeshes() {
@@ -115,17 +117,23 @@ public class DeferredRenderingSample {
             this.floor = ModelFactory.fromFile(FileUtils.getResourceAbsolutePath("/models/floor/floor.obj"));
             this.cube = ModelFactory.fromFile(FileUtils.getResourceAbsolutePath("/models/cube/cube.obj"));
 //            this.cube = ModelFactory.fromFile("D:/Documents/3D Models/sphere/sphere.obj");
+            this.sphere = ModelFactory.createSphere(0.5f, 25, 25, Color.YELLOW, true, 0.15f);
         }
 
         private void initSceneGraph() {
             this.scene.getRoot().addChild(new CameraComponent(this.camera));
 
             final ModelComponent floorComponent = new ModelComponent(this.floor);
+            floorComponent.getLocalTransform().setScale(new Vector3(2f, 2f, 2f));
             this.scene.getRoot().addChild(floorComponent);
 
             final ModelComponent cubeComponent = new ModelComponent(this.cube);
             cubeComponent.getLocalTransform().setTranslation(new Vector3(0f, 0.5f, 0f));
             floorComponent.addChild(cubeComponent);
+
+            final ModelComponent sphereComponent = new ModelComponent(this.sphere);
+            sphereComponent.getLocalTransform().setTranslation(new Vector3(1.5f, 0.6f, 0f));
+            floorComponent.addChild(sphereComponent);
         }
 
         private void setUpLights() {
