@@ -168,13 +168,9 @@ public class ModelFactory {
                 final float theta = (float) Math.PI * i / (rings + 1);
                 final float phi = (float) Math.PI * 2 * j / segments;
 
-                System.out.println("ring " + i + " - segment " + j + " - phi " + phi + " - theta " + theta);
-
                 final float x = (float) Math.sin(theta) * (float) Math.sin(phi);
                 final float y = (float) Math.cos(theta);
                 final float z = (float) Math.sin(theta) * (float) Math.cos(phi);
-
-                System.out.println("x " + x + " - y " + y + " - z " + z);
 
                 vertices.put(bufferIt++, radius * x);
                 vertices.put(bufferIt++, radius * y);
