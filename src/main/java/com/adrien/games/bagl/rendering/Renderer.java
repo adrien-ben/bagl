@@ -2,6 +2,7 @@ package com.adrien.games.bagl.rendering;
 
 import com.adrien.games.bagl.core.Camera;
 import com.adrien.games.bagl.core.Configuration;
+import com.adrien.games.bagl.core.EngineException;
 import com.adrien.games.bagl.core.math.Matrix4;
 import com.adrien.games.bagl.core.math.Vector3;
 import com.adrien.games.bagl.rendering.light.DirectionalLight;
@@ -11,7 +12,6 @@ import com.adrien.games.bagl.rendering.model.Mesh;
 import com.adrien.games.bagl.rendering.model.Model;
 import com.adrien.games.bagl.rendering.postprocess.PostProcessor;
 import com.adrien.games.bagl.rendering.scene.Scene;
-import com.adrien.games.bagl.rendering.scene.SceneNode;
 import com.adrien.games.bagl.rendering.texture.Cubemap;
 import com.adrien.games.bagl.rendering.texture.Format;
 import com.adrien.games.bagl.rendering.texture.Texture;
@@ -19,8 +19,7 @@ import com.adrien.games.bagl.rendering.vertex.*;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.lwjgl.opengl.GL11.*;
 
@@ -29,7 +28,7 @@ import static org.lwjgl.opengl.GL11.*;
  * <p>
  * This renderer supports :
  * <li>HDR Skybox</li>
- * <li>Shadow mappping for one directional light</li>
+ * <li>Shadow mapping for one directional light</li>
  * <li>PBR rendering with IBL</li>
  * <li>Post processing pass (bloom/gamma correction/tone mapping from HDR to SDR</li>
  *
@@ -44,6 +43,12 @@ public class Renderer {
     private final int xResolution;
     private final int yResolution;
     private final int shadowMapResolution;
+
+    private Camera camera;
+    private final List<DirectionalLight> directionalLights;
+    private final List<PointLight> pointLights;
+    private final List<SpotLight> spotLights;
+    private final Map<Model, Matrix4> models;
 
     private final Matrix4 wvpBuffer;
     private final Matrix4 lightViewProj;
@@ -78,6 +83,12 @@ public class Renderer {
         this.xResolution = config.getXResolution();
         this.yResolution = config.getYResolution();
         this.shadowMapResolution = config.getShadowMapResolution();
+
+        this.camera = null;
+        this.directionalLights = new ArrayList<>();
+        this.pointLights = new ArrayList<>();
+        this.spotLights = new ArrayList<>();
+        this.models = new LinkedHashMap<>();
 
         this.wvpBuffer = Matrix4.createZero();
         this.lightViewProj = Matrix4.createZero();
@@ -211,20 +222,31 @@ public class Renderer {
     }
 
     /**
-     * <p>Renders a scene from the camera point of view.
-     * <p>First, if a skybox is present it is renderer to the default frame buffer.
+     * Renders a scene from the camera point of view
+     * <p>
+     * First, if a skybox is present it is renderer to the default frame buffer.
      * Then, the shadow map is generated for the first available directional light
      * of the scene. After that, the scene is rendered to the gBuffer and finally,
-     * the final scene is renderer.
+     * the final scene is renderer
      *
-     * @param scene  The scene to render.
-     * @param camera The camera view the scene.
+     * @param scene The scene to render
      */
-    public void render(final Scene scene, final Camera camera) {
-        scene.getEnvironmentMap().ifPresent(map -> this.renderSkybox(map, camera));
-        this.renderShadowMap(scene);
-        this.renderScene(scene.getRoot(), camera);
-        this.renderDeferred(scene, camera);
+    public void render(final Scene scene) {
+        this.camera = null;
+        this.directionalLights.clear();
+        this.pointLights.clear();
+        this.spotLights.clear();
+        this.models.clear();
+
+        scene.getRoot().traverse(this);
+
+        if (Objects.isNull(this.camera)) {
+            throw new EngineException("Impossible to render a scene if no camera is set up");
+        }
+        scene.getEnvironmentMap().ifPresent(map -> this.renderSkybox(map, this.camera));
+        this.renderShadowMap();
+        this.renderScene(this.camera);
+        this.renderDeferred(scene, this.camera);
         this.postProcessor.process(this.finalBuffer.getColorTexture(0));
     }
 
@@ -248,10 +270,10 @@ public class Renderer {
         this.finalBuffer.unbind();
     }
 
-    private void renderShadowMap(final Scene scene) {
-        this.renderShadow = !scene.getDirectionals().isEmpty();
+    private void renderShadowMap() {
+        this.renderShadow = !this.directionalLights.isEmpty();
         if (this.renderShadow) {
-            final Vector3 position = new Vector3(scene.getDirectionals().get(0).getDirection()).scale(-1);
+            final Vector3 position = new Vector3(this.directionalLights.get(0).getDirection()).scale(-1);
             Matrix4.mul(Matrix4.createOrthographic(-10, 10, -10, 10, 0.1f, 20),
                     Matrix4.createLookAt(position, new Vector3(), Vector3.UP), this.lightViewProj);
 
@@ -260,7 +282,7 @@ public class Renderer {
             this.shadowBuffer.clear();
             this.shadowShader.bind();
 
-            scene.getRoot().apply(node -> this.renderNodeShadow(node, this.lightViewProj));
+            this.models.forEach((model, transform) -> this.renderNodeShadow(model, transform, this.lightViewProj));
 
             Shader.unbind();
             this.shadowBuffer.unbind();
@@ -268,36 +290,27 @@ public class Renderer {
         }
     }
 
-    private void renderNodeShadow(final SceneNode<Model> node, final Matrix4 lightViewProj) {
-        final Model model = node.get();
-        final Matrix4 world = node.getTransform().getTransformMatrix();
-
-        Matrix4.mul(lightViewProj, world, this.wvpBuffer);
+    private void renderNodeShadow(final Model model, final Matrix4 transform, final Matrix4 lightViewProj) {
+        Matrix4.mul(lightViewProj, transform, this.wvpBuffer);
         this.shadowShader.setUniform("wvp", this.wvpBuffer);
-
         model.getMeshes().forEach(this::renderMesh);
     }
 
-    private void renderScene(final SceneNode<Model> scene, final Camera camera) {
+    private void renderScene(final Camera camera) {
         this.gBuffer.bind();
         this.gBuffer.clear();
         this.gBufferShader.bind();
-        scene.apply(node -> this.renderSceneNode(node, camera));
+
+        this.models.forEach((model, transform) -> this.renderSceneNode(model, transform, camera));
+
         Shader.unbind();
         this.gBuffer.unbind();
     }
 
-    private void renderSceneNode(final SceneNode<Model> node, final Camera camera) {
-        if (node.isEmpty()) {
-            return;
-        }
+    private void renderSceneNode(final Model model, final Matrix4 transform, final Camera camera) {
+        Matrix4.mul(camera.getViewProj(), transform, this.wvpBuffer);
 
-        final Matrix4 world = node.getTransform().getTransformMatrix();
-        final Model model = node.get();
-
-        Matrix4.mul(camera.getViewProj(), world, this.wvpBuffer);
-
-        this.gBufferShader.setUniform("uMatrices.world", world);
+        this.gBufferShader.setUniform("uMatrices.world", transform);
         this.gBufferShader.setUniform("uMatrices.wvp", this.wvpBuffer);
 
         model.getMeshes().forEach(this::renderMeshToGBuffer);
@@ -322,9 +335,9 @@ public class Renderer {
     private void renderDeferred(final Scene scene, final Camera camera) {
         final Optional<Cubemap> irradiance = scene.getIrradianceMap();
         final Optional<Cubemap> preFilteredMap = scene.getPreFilteredMap();
-        final List<DirectionalLight> directionals = scene.getDirectionals();
-        final List<PointLight> points = scene.getPoints();
-        final List<SpotLight> spots = scene.getSpots();
+//        final List<DirectionalLight> directionals = scene.getDirectionals();
+//        final List<PointLight> points = scene.getPoints();
+//        final List<SpotLight> spots = scene.getSpots();
 
         this.finalBuffer.bind();
         if (!scene.getEnvironmentMap().isPresent()) {
@@ -356,19 +369,19 @@ public class Renderer {
             this.deferredShader.setUniform("uShadow.shadowMap", 3);
         }
 
-        this.deferredShader.setUniform("uLights.directionalCount", directionals.size());
-        for (int i = 0; i < directionals.size(); i++) {
-            this.setDirectionalLight(this.deferredShader, i, directionals.get(i));
+        this.deferredShader.setUniform("uLights.directionalCount", this.directionalLights.size());
+        for (int i = 0; i < this.directionalLights.size(); i++) {
+            this.setDirectionalLight(this.deferredShader, i, this.directionalLights.get(i));
         }
 
-        this.deferredShader.setUniform("uLights.pointCount", points.size());
-        for (int i = 0; i < points.size(); i++) {
-            this.setPointLight(this.deferredShader, i, points.get(i));
+        this.deferredShader.setUniform("uLights.pointCount", this.pointLights.size());
+        for (int i = 0; i < this.pointLights.size(); i++) {
+            this.setPointLight(this.deferredShader, i, this.pointLights.get(i));
         }
 
-        this.deferredShader.setUniform("uLights.spotCount", spots.size());
-        for (int i = 0; i < spots.size(); i++) {
-            this.setSpotLight(this.deferredShader, i, spots.get(i));
+        this.deferredShader.setUniform("uLights.spotCount", this.spotLights.size());
+        for (int i = 0; i < this.spotLights.size(); i++) {
+            this.setSpotLight(this.deferredShader, i, this.spotLights.get(i));
         }
 
         this.deferredShader.setUniform("uGBuffer.colors", 0);
@@ -410,6 +423,22 @@ public class Renderer {
         shader.setUniform("uLights.spots[" + index + "].outerCutOff", light.getOuterCutOff());
     }
 
+    public void addDirectionalLight(final DirectionalLight light) {
+        this.directionalLights.add(light);
+    }
+
+    public void addPointLight(final PointLight light) {
+        this.pointLights.add(light);
+    }
+
+    public void addSpotLight(final SpotLight light) {
+        this.spotLights.add(light);
+    }
+
+    public void addModel(final Matrix4 transform, final Model model) {
+        this.models.put(model, transform);
+    }
+
     public FrameBuffer getShadowBuffer() {
         return this.shadowBuffer;
     }
@@ -420,5 +449,9 @@ public class Renderer {
 
     public FrameBuffer getFinalBuffer() {
         return this.finalBuffer;
+    }
+
+    public void setCamera(final Camera camera) {
+        this.camera = camera;
     }
 }

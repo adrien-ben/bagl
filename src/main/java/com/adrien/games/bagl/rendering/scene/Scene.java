@@ -1,39 +1,40 @@
 package com.adrien.games.bagl.rendering.scene;
 
-import com.adrien.games.bagl.rendering.light.DirectionalLight;
-import com.adrien.games.bagl.rendering.light.PointLight;
-import com.adrien.games.bagl.rendering.light.SpotLight;
-import com.adrien.games.bagl.rendering.model.Model;
+import com.adrien.games.bagl.rendering.Renderer;
 import com.adrien.games.bagl.rendering.texture.Cubemap;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 /**
  * 3D scene
+ * <p>
+ * Contains a {@link Component}'s graph. You can add components as follows:
+ * <pre>
+ * final Scene scene = new Scene();
+ * scene.getRoot().addChild(...);
+ * </pre>
  *
  * @author adrien
  */
 public class Scene {
 
-    private final SceneNode<Model> root;
-
+    private final Component root;
     private Cubemap environmentMap;
     private Cubemap irradianceMap;
     private Cubemap preFilteredMap;
 
-    private final List<DirectionalLight> directionals;
-    private final List<PointLight> points;
-    private final List<SpotLight> spots;
-
+    /**
+     * Construct an empty scene with a empty root component
+     */
     public Scene() {
-        this.root = new SceneNode<>();
+        this.root = new Component() {
+            @Override
+            public void visit(final Renderer renderer) {
+            }
+        };
         this.environmentMap = null;
         this.irradianceMap = null;
-        this.directionals = new ArrayList<>();
-        this.points = new ArrayList<>();
-        this.spots = new ArrayList<>();
+        this.preFilteredMap = null;
     }
 
     public Optional<Cubemap> getEnvironmentMap() {
@@ -60,19 +61,7 @@ public class Scene {
         this.preFilteredMap = preFilteredMap;
     }
 
-    public SceneNode<Model> getRoot() {
-        return root;
-    }
-
-    public List<DirectionalLight> getDirectionals() {
-        return directionals;
-    }
-
-    public List<PointLight> getPoints() {
-        return points;
-    }
-
-    public List<SpotLight> getSpots() {
-        return spots;
+    public Component getRoot() {
+        return this.root;
     }
 }

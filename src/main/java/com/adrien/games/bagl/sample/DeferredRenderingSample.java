@@ -1,8 +1,6 @@
 package com.adrien.games.bagl.sample;
 
 import com.adrien.games.bagl.core.*;
-import com.adrien.games.bagl.core.math.Matrix4;
-import com.adrien.games.bagl.core.math.Quaternion;
 import com.adrien.games.bagl.core.math.Vector2;
 import com.adrien.games.bagl.core.math.Vector3;
 import com.adrien.games.bagl.rendering.Renderer;
@@ -14,7 +12,7 @@ import com.adrien.games.bagl.rendering.light.SpotLight;
 import com.adrien.games.bagl.rendering.model.Model;
 import com.adrien.games.bagl.rendering.model.ModelFactory;
 import com.adrien.games.bagl.rendering.scene.Scene;
-import com.adrien.games.bagl.rendering.scene.SceneNode;
+import com.adrien.games.bagl.rendering.scene.components.*;
 import com.adrien.games.bagl.rendering.text.Font;
 import com.adrien.games.bagl.rendering.text.TextRenderer;
 import com.adrien.games.bagl.rendering.texture.Cubemap;
@@ -48,15 +46,15 @@ public class DeferredRenderingSample {
 
         private Font font;
 
+        private Camera camera;
+        private CameraController cameraController;
+
         private Scene scene;
         private Cubemap environmentMap;
         private Cubemap irradianceMap;
         private Cubemap preFilteredMap;
         private Model floor;
         private Model cube;
-
-        private Camera camera;
-        private CameraController cameraController;
 
         private Spritebatch spritebatch;
 
@@ -76,14 +74,14 @@ public class DeferredRenderingSample {
 
             this.font = new Font(FileUtils.getResourceAbsolutePath("/fonts/segoe/segoe.fnt"));
 
+            this.camera = new Camera(new Vector3(2.5f, 2.5f, 3f), new Vector3(-5f, -2.5f, -6f), new Vector3(Vector3.UP),
+                    (float) Math.toRadians(60f), (float) this.width / (float) this.height, 0.1f, 1000);
+            this.cameraController = new CameraController(this.camera);
+
             this.scene = new Scene();
             this.loadMeshes();
             this.initSceneGraph();
             this.setUpLights();
-
-            this.camera = new Camera(new Vector3(2.5f, 2.5f, 3f), new Vector3(-5f, -2.5f, -6f), new Vector3(Vector3.UP),
-                    (float) Math.toRadians(60f), (float) this.width / (float) this.height, 0.1f, 1000);
-            this.cameraController = new CameraController(this.camera);
 
             this.spritebatch = new Spritebatch(1024, this.width, this.height);
 
@@ -120,33 +118,37 @@ public class DeferredRenderingSample {
         }
 
         private void initSceneGraph() {
-            this.scene.getRoot().set(this.floor);
-            final SceneNode<Model> cubeNode = new SceneNode<>(this.cube);
-            cubeNode.getLocalTransform().setTranslation(new Vector3(0, 0.5f, 0));
-            this.scene.getRoot().addChild(cubeNode);
+            this.scene.getRoot().addChild(new CameraComponent(this.camera));
+
+            final ModelComponent floorComponent = new ModelComponent(this.floor);
+            this.scene.getRoot().addChild(floorComponent);
+
+            final ModelComponent cubeComponent = new ModelComponent(this.cube);
+            cubeComponent.getLocalTransform().setTranslation(new Vector3(0f, 0.5f, 0f));
+            floorComponent.addChild(cubeComponent);
         }
 
         private void setUpLights() {
-            this.scene.getDirectionals().add(new DirectionalLight(0.8f, Color.WHITE, new Vector3(3f, -2, 4)));
-            this.scene.getPoints().add(new PointLight(10f, Color.GREEN, new Vector3(4f, 0.5f, 2f), 2f));
-            this.scene.getPoints().add(new PointLight(10f, Color.YELLOW, new Vector3(-4f, 0.2f, 2f), 3f));
-            this.scene.getPoints().add(new PointLight(10f, Color.BLUE, new Vector3(0f, 0.5f, 3f), 2f));
-            this.scene.getPoints().add(new PointLight(10f, Color.TURQUOISE, new Vector3(-1f, 0.1f, 1f), 2f));
-            this.scene.getPoints().add(new PointLight(10f, Color.CYAN, new Vector3(3f, 0.6f, -3f), 2f));
-            this.scene.getSpots().add(new SpotLight(10f, Color.RED, new Vector3(-2f, 0.5f, -3f), 20f,
-                    new Vector3(0f, -1f, 1.2f), 20f, 5f));
-            this.scene.getSpots().add(new SpotLight(2f, Color.WHITE, new Vector3(2f, 2f, 2f), 7f,
-                    new Vector3(0f, -1f, -0f), 10f, 5f));
+            this.scene.getRoot().addChild(new DirectionalLightComponent(new DirectionalLight(0.8f, Color.WHITE, new Vector3(3f, -2, 4))));
+            this.scene.getRoot().addChild(new PointLightComponent(new PointLight(10f, Color.GREEN, new Vector3(4f, 0.5f, 2f), 2f)));
+            this.scene.getRoot().addChild(new PointLightComponent(new PointLight(10f, Color.YELLOW, new Vector3(-4f, 0.2f, 2f), 3f)));
+            this.scene.getRoot().addChild(new PointLightComponent(new PointLight(10f, Color.BLUE, new Vector3(0f, 0.5f, 3f), 2f)));
+            this.scene.getRoot().addChild(new PointLightComponent(new PointLight(10f, Color.TURQUOISE, new Vector3(-1f, 0.1f, 1f), 2f)));
+            this.scene.getRoot().addChild(new PointLightComponent(new PointLight(10f, Color.CYAN, new Vector3(3f, 0.6f, -3f), 2f)));
+            this.scene.getRoot().addChild(new SpotLightComponent(new SpotLight(10f, Color.RED, new Vector3(-2f, 0.5f, -3f), 20f,
+                    new Vector3(0f, -1f, 1.2f), 20f, 5f)));
+            this.scene.getRoot().addChild(new SpotLightComponent(new SpotLight(2f, Color.WHITE, new Vector3(2f, 2f, 2f), 7f,
+                    new Vector3(0f, -1f, -0f), 10f, 5f)));
         }
 
         @Override
         public void update(final Time time) {
             if (Input.isKeyPressed(GLFW.GLFW_KEY_1) || Input.isKeyPressed(GLFW.GLFW_KEY_2)) {
                 float speed = Input.isKeyPressed(GLFW.GLFW_KEY_1) ? 20 : -20;
-                if (!this.scene.getDirectionals().isEmpty()) {
-                    this.scene.getDirectionals().get(0).getDirection().transform(Matrix4.createRotation(Quaternion.fromAngleAndVector(
-                            (float) Math.toRadians(speed * time.getElapsedTime()), new Vector3(1f, 1f, 0f).normalise())), 0);
-                }
+//                if (!this.scene.getDirectionals().isEmpty()) {
+//                    this.scene.getDirectionals().get(0).getDirection().transform(Matrix4.createRotation(Quaternion.fromAngleAndVector(
+//                            (float) Math.toRadians(speed * time.getElapsedTime()), new Vector3(1f, 1f, 0f).normalise())), 0);
+//                }
             }
 
             if (Input.wasKeyPressed(GLFW.GLFW_KEY_F1)) {
@@ -183,7 +185,7 @@ public class DeferredRenderingSample {
 
         @Override
         public void render() {
-            this.renderer.render(this.scene, this.camera);
+            this.renderer.render(this.scene);
 
             this.spritebatch.start();
             if (this.displayMode == DisplayMode.ALBEDO) {
