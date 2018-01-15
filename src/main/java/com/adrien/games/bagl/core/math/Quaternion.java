@@ -1,7 +1,9 @@
 package com.adrien.games.bagl.core.math;
 
 /**
- * Simple quaternion class.
+ * Quaternion class
+ *
+ * @author adrien
  */
 public class Quaternion {
 
@@ -14,7 +16,7 @@ public class Quaternion {
         this(0, 0, 0, 0);
     }
 
-    public Quaternion(float a, float i, float j, float k) {
+    public Quaternion(final float a, final float i, final float j, final float k) {
         this.a = a;
         this.i = i;
         this.j = j;
@@ -22,12 +24,12 @@ public class Quaternion {
     }
 
     /**
-     * Create a quaternion from a angle and a rotation angle.
+     * Create a quaternion from a angle and a rotation angle
      *
      * @param angle  The rotation angle
-     * @param vector The vector around which the rotation happens.
+     * @param vector The vector around which the rotation happens
      */
-    public static Quaternion fromAngleAndVector(float angle, Vector3 vector) {
+    public static Quaternion fromAngleAndVector(final float angle, final Vector3 vector) {
         float cosa = (float) Math.cos(angle / 2);
         float sina = (float) Math.sin(angle / 2);
         float i = vector.getX() * sina;
@@ -37,13 +39,13 @@ public class Quaternion {
     }
 
     /**
-     * Creates a quaternion from a Euler angle.
+     * Create a quaternion from a Euler angle
      *
      * @param roll  Rotation around the x-axis
      * @param pitch Rotation around the y-axis
      * @param yaw   Rotation around the z-axis
      */
-    public static Quaternion fromEuler(float roll, float pitch, float yaw) {
+    public static Quaternion fromEuler(final float roll, final float pitch, final float yaw) {
         float cosroll = (float) Math.cos(roll / 2);
         float sinroll = (float) Math.sin(roll / 2);
         float cospitch = (float) Math.cos(pitch / 2);
@@ -60,12 +62,12 @@ public class Quaternion {
     }
 
     /**
-     * Multiplies to quaternions in the following order : this*q.
+     * Multiply to quaternions in the following order : this*q
      *
-     * @param q The quaternion to multiply.
-     * @return This quaternion for chaining.
+     * @param q The quaternion to multiply
+     * @return This quaternion for chaining
      */
-    public Quaternion mul(Quaternion q) {
+    public Quaternion mul(final Quaternion q) {
         float newA = this.a * q.getA() - this.i * q.getI() - this.j * q.getJ() - this.k * q.getK();
         float newI = this.a * q.getI() + this.i * q.getA() + this.j * q.getK() - this.k * q.getJ();
         float newJ = this.a * q.getJ() - this.i * q.getK() + this.j * q.getA() + this.k * q.getI();
@@ -74,22 +76,36 @@ public class Quaternion {
         return this;
     }
 
-    public static Quaternion mul(Quaternion left, Quaternion right) {
-        Quaternion result = new Quaternion();
+    /**
+     * Multiply to quaternions
+     *
+     * @param left  The left operand of the product
+     * @param right The right operand of the product
+     * @return A {@link Quaternion}
+     */
+    public static Quaternion mul(final Quaternion left, final Quaternion right) {
+        final Quaternion result = new Quaternion();
         result.set(left);
         result.mul(right);
         return result;
     }
 
-    public static void mul(Quaternion left, Quaternion right, Quaternion result) {
+    /**
+     * Multiply to quaternions and store the result in a passed in quaternion
+     *
+     * @param left   The left operand of the product
+     * @param right  The right operand of the product
+     * @param result The quaternion in which to store the result
+     */
+    public static void mul(final Quaternion left, final Quaternion right, final Quaternion result) {
         result.set(left);
         result.mul(right);
     }
 
     /**
-     * Conjugates the quaternion.
+     * Conjugate the quaternion
      *
-     * @return This for chaining.
+     * @return This for chaining
      */
     public Quaternion conjugate() {
         this.i = -this.i;
@@ -99,35 +115,48 @@ public class Quaternion {
     }
 
     /**
-     * Computes the norm of the quaternion.
+     * Computes the norm of the quaternion
      *
-     * @return The norm.
+     * @return The norm
      */
     public float norm() {
-        return (float) Math.sqrt(a * a + i * i + j * j + k * k);
+        return (float) Math.sqrt(this.a * this.a + this.i * this.i + this.j * this.j + this.k * this.k);
     }
 
     /**
-     * Normalize the quaternion.
+     * Normalize the quaternion
      *
-     * @return This for chaining.
+     * @return This for chaining
      */
     public Quaternion normalize() {
-        float norm = this.norm();
+        final float norm = this.norm();
         this.setAIJK(this.a / norm, this.i / norm, this.j / norm, this.k / norm);
         return this;
     }
 
     /**
-     * Sets the components of the quaternion.
+     * Get the forward vector of the quaternion
      *
-     * @param a A.
-     * @param i I.
-     * @param j J.
-     * @param k K.
-     * @return This for chaining.
+     * @return A {@link Vector3}
      */
-    public Quaternion setAIJK(float a, float i, float j, float k) {
+    public Vector3 getDirection() {
+        return new Vector3(
+                2 * (this.i * this.k + this.a * this.j),
+                2 * (this.j * this.k - this.a * this.i),
+                1 - 2 * (this.i * this.i + this.j * this.j)
+        );
+    }
+
+    /**
+     * Set the components of the quaternion
+     *
+     * @param a A
+     * @param i I
+     * @param j J
+     * @param k K
+     * @return This for chaining
+     */
+    public Quaternion setAIJK(final float a, final float i, final float j, final float k) {
         this.a = a;
         this.i = i;
         this.j = j;
@@ -136,16 +165,16 @@ public class Quaternion {
     }
 
     /**
-     * Copy the values of another quaternion.
+     * Copy the values of another quaternion
      *
-     * @param other The quaternion to copy;
-     * @return This for chaining.
+     * @param other The quaternion to copy
+     * @return This for chaining
      */
-    public Quaternion set(Quaternion other) {
-        this.a = other.getA();
-        this.i = other.getI();
-        this.j = other.getJ();
-        this.k = other.getK();
+    public Quaternion set(final Quaternion other) {
+        this.a = other.a;
+        this.i = other.i;
+        this.j = other.j;
+        this.k = other.k;
         return this;
     }
 
@@ -155,19 +184,19 @@ public class Quaternion {
     }
 
     public float getA() {
-        return a;
+        return this.a;
     }
 
     public float getI() {
-        return i;
+        return this.i;
     }
 
     public float getJ() {
-        return j;
+        return this.j;
     }
 
     public float getK() {
-        return k;
+        return this.k;
     }
 
     public void setA(float a) {
