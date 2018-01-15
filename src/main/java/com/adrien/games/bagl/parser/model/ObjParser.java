@@ -11,7 +11,6 @@ import com.adrien.games.bagl.rendering.vertex.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
 import java.io.IOException;
@@ -254,14 +253,14 @@ public class ObjParser implements ModelParser {
         }
 
         private IndexBuffer generateIndexBuffer() {
-            try (final MemoryStack stack = MemoryStack.stackPush()) {
-                final int indexCount = this.faceIndices.size();
-                final IntBuffer indices = stack.mallocInt(indexCount);
-                for (int i = 0; i < indexCount; i++) {
-                    indices.put(i, this.faceIndices.get(i));
-                }
-                return new IndexBuffer(indices, BufferUsage.STATIC_DRAW);
+            final int indexCount = this.faceIndices.size();
+            final IntBuffer indices = MemoryUtil.memAllocInt(indexCount);
+            for (int i = 0; i < indexCount; i++) {
+                indices.put(i, this.faceIndices.get(i));
             }
+            final IndexBuffer indexBuffer = new IndexBuffer(indices, BufferUsage.STATIC_DRAW);
+            MemoryUtil.memFree(indices);
+            return indexBuffer;
         }
 
         private VertexBuffer generateVertexBuffer() {
