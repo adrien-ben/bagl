@@ -28,6 +28,7 @@ public class DeferredRenderingSample {
     private static final class TestGame implements Game {
 
         private static final String TITLE = "Deferred Rendering";
+        private static final String LIGHT_TAG = "light";
 
         private static final String INSTRUCTIONS = "Display scene : F2\n"
                 + "Display Albedo : F3\n"
@@ -83,7 +84,7 @@ public class DeferredRenderingSample {
 
             this.scene = new Scene();
             this.loadMeshes();
-            this.initSceneGraph();
+            this.initScene();
 
             this.spritebatch = new Spritebatch(1024, this.width, this.height);
 
@@ -107,7 +108,7 @@ public class DeferredRenderingSample {
 
         private void loadMeshes() {
             this.environmentMap = this.environmentMapGenerator.generateEnvironmentMap(FileUtils.getResourceAbsolutePath("/envmaps/flat.hdr"));
-//            this.environmentMap = this.environmentMapGenerator.generateEnvironmentMap("D:/Images/HDRI/lookout.hdr");
+            //            this.environmentMap = this.environmentMapGenerator.generateEnvironmentMap("D:/Images/HDRI/lookout.hdr");
             this.irradianceMap = this.environmentMapGenerator.generateIrradianceMap(this.environmentMap);
             this.preFilteredMap = this.environmentMapGenerator.generatePreFilteredMap(this.environmentMap);
 
@@ -117,22 +118,22 @@ public class DeferredRenderingSample {
 
             this.floor = ModelFactory.fromFile(FileUtils.getResourceAbsolutePath("/models/floor/floor.obj"));
             this.cube = ModelFactory.fromFile(FileUtils.getResourceAbsolutePath("/models/cube/cube.obj"));
-//            this.cube = ModelFactory.fromFile("D:/Documents/3D Models/sphere/sphere.obj");
+            //            this.cube = ModelFactory.fromFile("D:/Documents/3D Models/sphere/sphere.obj");
             this.sphere = ModelFactory.createSphere(0.5f, 25, 25, Color.YELLOW, true, 0.15f);
         }
 
-        private void initSceneGraph() {
-            this.scene.getRoot().addChild(new CameraComponent(this.camera));
+        private void initScene() {
+            this.scene.getRoot().addChild(new CameraComponent(this.camera, "camera"));
 
-            final ModelComponent floorComponent = new ModelComponent(this.floor);
+            final ModelComponent floorComponent = new ModelComponent(this.floor, "floor");
             floorComponent.getLocalTransform().setScale(new Vector3(2f, 2f, 2f));
             this.scene.getRoot().addChild(floorComponent);
 
-            final ModelComponent cubeComponent = new ModelComponent(this.cube);
+            final ModelComponent cubeComponent = new ModelComponent(this.cube, "cube");
             cubeComponent.getLocalTransform().setTranslation(new Vector3(0f, 0.5f, 0f));
             floorComponent.addChild(cubeComponent);
 
-            final ModelComponent sphereComponent = new ModelComponent(this.sphere);
+            final ModelComponent sphereComponent = new ModelComponent(this.sphere, "sphere");
             sphereComponent.getLocalTransform().setTranslation(new Vector3(1.5f, 0.6f, 0f));
             floorComponent.addChild(sphereComponent);
 
@@ -140,36 +141,46 @@ public class DeferredRenderingSample {
         }
 
         private void setUpLights(final Component parent) {
-            final DirectionalLightComponent directionalLight0 = new DirectionalLightComponent(new DirectionalLight(0.8f, Color.WHITE, Vector3.ZERO));
+            final DirectionalLightComponent directionalLight0 = new DirectionalLightComponent(new DirectionalLight(0.8f, Color.WHITE, Vector3.ZERO),
+                    "sun", LIGHT_TAG);
             directionalLight0.getLocalTransform().setRotation(Quaternion.fromEuler((float) Math.toRadians(45.f), 0, (float) Math.toRadians(45.f)));
-            parent.addChild(directionalLight0);
-            
-            final PointLightComponent pointLight0 = new PointLightComponent(new PointLight(10f, Color.GREEN, Vector3.ZERO, 2f));
+            this.scene.getRoot().addChild(directionalLight0);
+
+            final PointLightComponent pointLight0 = new PointLightComponent(new PointLight(10f, Color.GREEN, Vector3.ZERO, 2f), "point_light_0",
+                    LIGHT_TAG);
             pointLight0.getLocalTransform().setTranslation(new Vector3(4f, 0.5f, 2f));
             parent.addChild(pointLight0);
 
-            final PointLightComponent pointLight1 = new PointLightComponent(new PointLight(10f, Color.YELLOW, Vector3.ZERO, 3f));
+            final PointLightComponent pointLight1 = new PointLightComponent(new PointLight(10f, Color.YELLOW, Vector3.ZERO, 3f), "point_light_1",
+                    LIGHT_TAG);
             pointLight1.getLocalTransform().setTranslation(new Vector3(-4f, 0.2f, 2f));
             parent.addChild(pointLight1);
 
-            final PointLightComponent pointLight2 = new PointLightComponent(new PointLight(10f, Color.BLUE, Vector3.ZERO, 2f));
+            final PointLightComponent pointLight2 = new PointLightComponent(new PointLight(10f, Color.BLUE, Vector3.ZERO, 2f), "point_light_2",
+                    LIGHT_TAG);
             pointLight2.getLocalTransform().setTranslation(new Vector3(0f, 0.5f, 3f));
             parent.addChild(pointLight2);
 
-            final PointLightComponent pointLight3 = new PointLightComponent(new PointLight(10f, Color.TURQUOISE, Vector3.ZERO, 2f));
+            final PointLightComponent pointLight3 = new PointLightComponent(new PointLight(10f, Color.TURQUOISE, Vector3.ZERO, 2f), "point_light_3",
+                    LIGHT_TAG);
             pointLight3.getLocalTransform().setTranslation(new Vector3(-1f, 0.1f, 1f));
             parent.addChild(pointLight3);
 
-            final PointLightComponent pointLight4 = new PointLightComponent(new PointLight(10f, Color.CYAN, Vector3.ZERO, 2f));
+            final PointLightComponent pointLight4 = new PointLightComponent(new PointLight(10f, Color.CYAN, Vector3.ZERO, 2f), "point_light_4",
+                    LIGHT_TAG);
             pointLight4.getLocalTransform().setTranslation(new Vector3(3f, 0.6f, -3f));
             parent.addChild(pointLight4);
 
-            final SpotLightComponent spotLight0 = new SpotLightComponent(new SpotLight(10f, Color.RED, Vector3.ZERO, 20f, Vector3.ZERO, 20f, 5f));
-            spotLight0.getLocalTransform().setTranslation(new Vector3(-2f, 0.5f, -3f)).setRotation(Quaternion.fromEuler((float) Math.toRadians(45f), 0, 0));
+            final SpotLightComponent spotLight0 = new SpotLightComponent(new SpotLight(10f, Color.RED, Vector3.ZERO, 20f, Vector3.ZERO, 20f, 5f),
+                    "spot_light_0", LIGHT_TAG);
+            spotLight0.getLocalTransform().setTranslation(new Vector3(-2f, 0.5f, -3f))
+                    .setRotation(Quaternion.fromEuler((float) Math.toRadians(45f), 0, 0));
             parent.addChild(spotLight0);
 
-            final SpotLightComponent spotLight1 = new SpotLightComponent(new SpotLight(2f, Color.WHITE, Vector3.ZERO, 7f, Vector3.ZERO, 10f, 5f));
-            spotLight1.getLocalTransform().setTranslation(new Vector3(2f, 2f, 2f)).setRotation(Quaternion.fromEuler((float) Math.toRadians(90f), 0, 0));
+            final SpotLightComponent spotLight1 = new SpotLightComponent(new SpotLight(2f, Color.WHITE, Vector3.ZERO, 7f, Vector3.ZERO, 10f, 5f),
+                    "spot_light_1", LIGHT_TAG);
+            spotLight1.getLocalTransform().setTranslation(new Vector3(2f, 2f, 2f))
+                    .setRotation(Quaternion.fromEuler((float) Math.toRadians(90f), 0, 0));
             parent.addChild(spotLight1);
         }
 
@@ -177,11 +188,20 @@ public class DeferredRenderingSample {
         public void update(final Time time) {
             if (Input.isKeyPressed(GLFW.GLFW_KEY_1) || Input.isKeyPressed(GLFW.GLFW_KEY_2)) {
                 float speed = Input.isKeyPressed(GLFW.GLFW_KEY_1) ? 20 : -20;
-//                if (!this.scene.getDirectionals().isEmpty()) {
-//                    this.scene.getDirectionals().get(0).getDirection().transform(Matrix4.createRotation(Quaternion.fromAngleAndVector(
-//                            (float) Math.toRadians(speed * time.getElapsedTime()), new Vector3(1f, 1f, 0f).normalise())), 0);
-//                }
+                this.scene.getComponentById("sun").ifPresent(component -> {
+                    final Transform transform = new Transform()
+                            .setRotation(Quaternion.fromAngleAndVector((float) Math.toRadians(speed * time.getElapsedTime()),
+                                    new Vector3(1f, 1f, 0f).normalise()));
+                    component.getLocalTransform().transform(transform);
+                });
             }
+
+            this.scene.getComponentsByType(PointLightComponent.class)
+                    .map(PointLightComponent::getLight)
+                    .forEach(light -> {
+                        final float intensity = (float) Math.sin(time.getTotalTime() * 3f) * 40f + 60f;
+                        light.setIntensity(intensity);
+                    });
 
             if (Input.wasKeyPressed(GLFW.GLFW_KEY_F1)) {
                 this.displayInstructions = !this.displayInstructions;
@@ -237,6 +257,8 @@ public class DeferredRenderingSample {
             if (this.displayInstructions) {
                 this.textRenderer.render(INSTRUCTIONS, this.font, new Vector2(0.01f, 0.94f), 0.03f, Color.BLACK);
             }
+            final long lightCount = this.scene.getComponentsByTag(LIGHT_TAG).count();
+            this.textRenderer.render("Lights: " + lightCount, this.font, new Vector2(0.01f, 0f), 0.03f, Color.BLACK);
         }
     }
 

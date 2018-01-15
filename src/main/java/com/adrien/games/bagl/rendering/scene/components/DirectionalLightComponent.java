@@ -17,8 +17,11 @@ public class DirectionalLightComponent extends Component {
      * Construct a directional light component
      *
      * @param light The light to link to this component
+     * @param id    The id of the component
+     * @param tags  The tags of the component
      */
-    public DirectionalLightComponent(final DirectionalLight light) {
+    public DirectionalLightComponent(final DirectionalLight light, final String id, final String... tags) {
+        super(id, tags);
         this.light = light;
     }
 
@@ -31,5 +34,9 @@ public class DirectionalLightComponent extends Component {
     public void visit(final Renderer renderer) {
         this.light.setDirection(super.transform.getRotation().getDirection());
         renderer.addDirectionalLight(this.light);
+    }
+
+    public DirectionalLight getLight() {
+        return this.light;
     }
 }

@@ -17,8 +17,11 @@ public class SpotLightComponent extends Component {
      * Construct a spot light component
      *
      * @param light The light to link to this component
+     * @param id    The id of the component
+     * @param tags  The tags of the component
      */
-    public SpotLightComponent(final SpotLight light) {
+    public SpotLightComponent(final SpotLight light, final String id, final String... tags) {
+        super(id, tags);
         this.light = light;
     }
 
@@ -32,5 +35,9 @@ public class SpotLightComponent extends Component {
         this.light.setPosition(super.transform.getTranslation());
         this.light.setDirection(super.transform.getRotation().getDirection());
         renderer.addSpotLight(this.light);
+    }
+
+    public SpotLight getLight() {
+        return this.light;
     }
 }

@@ -17,8 +17,11 @@ public class CameraComponent extends Component {
      * Construct a camera component
      *
      * @param camera The camera to link to this component
+     * @param id     The id of the component
+     * @param tags   The tags of the component
      */
-    public CameraComponent(final Camera camera) {
+    public CameraComponent(final Camera camera, final String id, final String... tags) {
+        super(id, tags);
         this.camera = camera;
     }
 
@@ -32,5 +35,9 @@ public class CameraComponent extends Component {
     @Override
     public void visit(final Renderer renderer) {
         renderer.setCamera(this.camera);
+    }
+
+    public Camera getCamera() {
+        return this.camera;
     }
 }

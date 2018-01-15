@@ -17,8 +17,11 @@ public class ModelComponent extends Component {
      * Construct a direction light component
      *
      * @param model The model to link to this component
+     * @param id    The id of the component
+     * @param tags  The tags of the component
      */
-    public ModelComponent(final Model model) {
+    public ModelComponent(final Model model, final String id, final String... tags) {
+        super(id, tags);
         this.model = model;
     }
 
@@ -30,5 +33,9 @@ public class ModelComponent extends Component {
     @Override
     public void visit(final Renderer renderer) {
         renderer.addModel(this.transform.getTransformMatrix(), this.model);
+    }
+
+    public Model getModel() {
+        return this.model;
     }
 }
