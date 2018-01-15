@@ -29,6 +29,7 @@ public class DirectionalLightComponent extends Component {
      */
     @Override
     public void visit(final Renderer renderer) {
+        this.light.setDirection(super.transform.getRotation().getDirection());
         renderer.addDirectionalLight(this.light);
     }
 }

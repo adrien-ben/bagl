@@ -30,6 +30,7 @@ public class SpotLightComponent extends Component {
     @Override
     public void visit(final Renderer renderer) {
         this.light.setPosition(super.transform.getTranslation());
+        this.light.setDirection(super.transform.getRotation().getDirection());
         renderer.addSpotLight(this.light);
     }
 }

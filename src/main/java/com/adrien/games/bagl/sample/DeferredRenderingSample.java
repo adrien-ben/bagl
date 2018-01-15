@@ -1,6 +1,7 @@
 package com.adrien.games.bagl.sample;
 
 import com.adrien.games.bagl.core.*;
+import com.adrien.games.bagl.core.math.Quaternion;
 import com.adrien.games.bagl.core.math.Vector2;
 import com.adrien.games.bagl.core.math.Vector3;
 import com.adrien.games.bagl.rendering.Renderer;
@@ -139,8 +140,10 @@ public class DeferredRenderingSample {
         }
 
         private void setUpLights(final Component parent) {
-            parent.addChild(new DirectionalLightComponent(new DirectionalLight(0.8f, Color.WHITE, new Vector3(3f, -2, 4))));
-
+            final DirectionalLightComponent directionalLight0 = new DirectionalLightComponent(new DirectionalLight(0.8f, Color.WHITE, Vector3.ZERO));
+            directionalLight0.getLocalTransform().setRotation(Quaternion.fromEuler((float) Math.toRadians(45.f), 0, (float) Math.toRadians(45.f)));
+            parent.addChild(directionalLight0);
+            
             final PointLightComponent pointLight0 = new PointLightComponent(new PointLight(10f, Color.GREEN, Vector3.ZERO, 2f));
             pointLight0.getLocalTransform().setTranslation(new Vector3(4f, 0.5f, 2f));
             parent.addChild(pointLight0);
@@ -161,14 +164,12 @@ public class DeferredRenderingSample {
             pointLight4.getLocalTransform().setTranslation(new Vector3(3f, 0.6f, -3f));
             parent.addChild(pointLight4);
 
-            final SpotLightComponent spotLight0 = new SpotLightComponent(new SpotLight(10f, Color.RED, Vector3.ZERO, 20f,
-                    new Vector3(0f, -1f, 1.2f), 20f, 5f));
-            spotLight0.getLocalTransform().setTranslation(new Vector3(-2f, 0.5f, -3f));
+            final SpotLightComponent spotLight0 = new SpotLightComponent(new SpotLight(10f, Color.RED, Vector3.ZERO, 20f, Vector3.ZERO, 20f, 5f));
+            spotLight0.getLocalTransform().setTranslation(new Vector3(-2f, 0.5f, -3f)).setRotation(Quaternion.fromEuler((float) Math.toRadians(45f), 0, 0));
             parent.addChild(spotLight0);
 
-            final SpotLightComponent spotLight1 = new SpotLightComponent(new SpotLight(2f, Color.WHITE, Vector3.ZERO, 7f,
-                    new Vector3(0f, -1f, -0f), 10f, 5f));
-            spotLight1.getLocalTransform().setTranslation(new Vector3(2f, 2f, 2f));
+            final SpotLightComponent spotLight1 = new SpotLightComponent(new SpotLight(2f, Color.WHITE, Vector3.ZERO, 7f, Vector3.ZERO, 10f, 5f));
+            spotLight1.getLocalTransform().setTranslation(new Vector3(2f, 2f, 2f)).setRotation(Quaternion.fromEuler((float) Math.toRadians(90f), 0, 0));
             parent.addChild(spotLight1);
         }
 

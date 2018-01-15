@@ -273,7 +273,7 @@ public class Renderer {
     private void renderShadowMap() {
         this.renderShadow = !this.directionalLights.isEmpty();
         if (this.renderShadow) {
-            final Vector3 position = new Vector3(this.directionalLights.get(0).getDirection()).scale(-1);
+            final Vector3 position = new Vector3(this.directionalLights.get(0).getDirection()).scale(-10f);
             Matrix4.mul(Matrix4.createOrthographic(-10, 10, -10, 10, 0.1f, 20),
                     Matrix4.createLookAt(position, new Vector3(), Vector3.UP), this.lightViewProj);
 
