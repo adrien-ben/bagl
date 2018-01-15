@@ -29,6 +29,7 @@ public class PointLightComponent extends Component {
      */
     @Override
     public void visit(final Renderer renderer) {
+        this.light.setPosition(super.transform.getTranslation());
         renderer.addPointLight(this.light);
     }
 }

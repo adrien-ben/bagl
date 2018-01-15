@@ -11,6 +11,7 @@ import com.adrien.games.bagl.rendering.light.PointLight;
 import com.adrien.games.bagl.rendering.light.SpotLight;
 import com.adrien.games.bagl.rendering.model.Model;
 import com.adrien.games.bagl.rendering.model.ModelFactory;
+import com.adrien.games.bagl.rendering.scene.Component;
 import com.adrien.games.bagl.rendering.scene.Scene;
 import com.adrien.games.bagl.rendering.scene.components.*;
 import com.adrien.games.bagl.rendering.text.Font;
@@ -82,7 +83,6 @@ public class DeferredRenderingSample {
             this.scene = new Scene();
             this.loadMeshes();
             this.initSceneGraph();
-            this.setUpLights();
 
             this.spritebatch = new Spritebatch(1024, this.width, this.height);
 
@@ -134,19 +134,42 @@ public class DeferredRenderingSample {
             final ModelComponent sphereComponent = new ModelComponent(this.sphere);
             sphereComponent.getLocalTransform().setTranslation(new Vector3(1.5f, 0.6f, 0f));
             floorComponent.addChild(sphereComponent);
+
+            this.setUpLights(floorComponent);
         }
 
-        private void setUpLights() {
-            this.scene.getRoot().addChild(new DirectionalLightComponent(new DirectionalLight(0.8f, Color.WHITE, new Vector3(3f, -2, 4))));
-            this.scene.getRoot().addChild(new PointLightComponent(new PointLight(10f, Color.GREEN, new Vector3(4f, 0.5f, 2f), 2f)));
-            this.scene.getRoot().addChild(new PointLightComponent(new PointLight(10f, Color.YELLOW, new Vector3(-4f, 0.2f, 2f), 3f)));
-            this.scene.getRoot().addChild(new PointLightComponent(new PointLight(10f, Color.BLUE, new Vector3(0f, 0.5f, 3f), 2f)));
-            this.scene.getRoot().addChild(new PointLightComponent(new PointLight(10f, Color.TURQUOISE, new Vector3(-1f, 0.1f, 1f), 2f)));
-            this.scene.getRoot().addChild(new PointLightComponent(new PointLight(10f, Color.CYAN, new Vector3(3f, 0.6f, -3f), 2f)));
-            this.scene.getRoot().addChild(new SpotLightComponent(new SpotLight(10f, Color.RED, new Vector3(-2f, 0.5f, -3f), 20f,
-                    new Vector3(0f, -1f, 1.2f), 20f, 5f)));
-            this.scene.getRoot().addChild(new SpotLightComponent(new SpotLight(2f, Color.WHITE, new Vector3(2f, 2f, 2f), 7f,
-                    new Vector3(0f, -1f, -0f), 10f, 5f)));
+        private void setUpLights(final Component parent) {
+            parent.addChild(new DirectionalLightComponent(new DirectionalLight(0.8f, Color.WHITE, new Vector3(3f, -2, 4))));
+
+            final PointLightComponent pointLight0 = new PointLightComponent(new PointLight(10f, Color.GREEN, Vector3.ZERO, 2f));
+            pointLight0.getLocalTransform().setTranslation(new Vector3(4f, 0.5f, 2f));
+            parent.addChild(pointLight0);
+
+            final PointLightComponent pointLight1 = new PointLightComponent(new PointLight(10f, Color.YELLOW, Vector3.ZERO, 3f));
+            pointLight1.getLocalTransform().setTranslation(new Vector3(-4f, 0.2f, 2f));
+            parent.addChild(pointLight1);
+
+            final PointLightComponent pointLight2 = new PointLightComponent(new PointLight(10f, Color.BLUE, Vector3.ZERO, 2f));
+            pointLight2.getLocalTransform().setTranslation(new Vector3(0f, 0.5f, 3f));
+            parent.addChild(pointLight2);
+
+            final PointLightComponent pointLight3 = new PointLightComponent(new PointLight(10f, Color.TURQUOISE, Vector3.ZERO, 2f));
+            pointLight3.getLocalTransform().setTranslation(new Vector3(-1f, 0.1f, 1f));
+            parent.addChild(pointLight3);
+
+            final PointLightComponent pointLight4 = new PointLightComponent(new PointLight(10f, Color.CYAN, Vector3.ZERO, 2f));
+            pointLight4.getLocalTransform().setTranslation(new Vector3(3f, 0.6f, -3f));
+            parent.addChild(pointLight4);
+
+            final SpotLightComponent spotLight0 = new SpotLightComponent(new SpotLight(10f, Color.RED, Vector3.ZERO, 20f,
+                    new Vector3(0f, -1f, 1.2f), 20f, 5f));
+            spotLight0.getLocalTransform().setTranslation(new Vector3(-2f, 0.5f, -3f));
+            parent.addChild(spotLight0);
+
+            final SpotLightComponent spotLight1 = new SpotLightComponent(new SpotLight(2f, Color.WHITE, Vector3.ZERO, 7f,
+                    new Vector3(0f, -1f, -0f), 10f, 5f));
+            spotLight1.getLocalTransform().setTranslation(new Vector3(2f, 2f, 2f));
+            parent.addChild(spotLight1);
         }
 
         @Override
