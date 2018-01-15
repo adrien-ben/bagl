@@ -137,51 +137,42 @@ public class DeferredRenderingSample {
             sphereComponent.getLocalTransform().setTranslation(new Vector3(1.5f, 0.6f, 0f));
             floorComponent.addChild(sphereComponent);
 
-            this.setUpLights(floorComponent);
+            this.setUpLights();
         }
 
-        private void setUpLights(final Component parent) {
-            final DirectionalLightComponent directionalLight0 = new DirectionalLightComponent(new DirectionalLight(0.8f, Color.WHITE, Vector3.ZERO),
-                    "sun", LIGHT_TAG);
+        private void setUpLights() {
+            final DirectionalLight sinLight = new DirectionalLight(0.8f, Color.WHITE, Vector3.ZERO);
+            final DirectionalLightComponent directionalLight0 = new DirectionalLightComponent(sinLight, "sun", LIGHT_TAG);
             directionalLight0.getLocalTransform().setRotation(Quaternion.fromEuler((float) Math.toRadians(45.f), 0, (float) Math.toRadians(45.f)));
             this.scene.getRoot().addChild(directionalLight0);
 
-            final PointLightComponent pointLight0 = new PointLightComponent(new PointLight(10f, Color.GREEN, Vector3.ZERO, 2f), "point_light_0",
-                    LIGHT_TAG);
-            pointLight0.getLocalTransform().setTranslation(new Vector3(4f, 0.5f, 2f));
-            parent.addChild(pointLight0);
+            final Component floor = this.scene.getComponentById("floor").orElseThrow(() -> new EngineException("No component 'floor' in the scene"));
 
-            final PointLightComponent pointLight1 = new PointLightComponent(new PointLight(10f, Color.YELLOW, Vector3.ZERO, 3f), "point_light_1",
-                    LIGHT_TAG);
-            pointLight1.getLocalTransform().setTranslation(new Vector3(-4f, 0.2f, 2f));
-            parent.addChild(pointLight1);
+            this.addPointLight(floor, new Vector3(4f, 0.5f, 2f), 8f, Color.GREEN, 3f, "point_light_0");
+            this.addPointLight(floor, new Vector3(-4f, 0.2f, 2f), 10f, Color.YELLOW, 2f, "point_light_1");
+            this.addPointLight(floor, new Vector3(0f, 0.5f, 3f), 10f, Color.BLUE, 2f, "point_light_2");
+            this.addPointLight(floor, new Vector3(-1f, 0.1f, 1f), 10f, Color.TURQUOISE, 2f, "point_light3");
+            this.addPointLight(floor, new Vector3(3f, 0.6f, -3f), 10f, Color.CYAN, 2f, "point_light_4");
+            this.addSpotLight(floor, new Vector3(-2f, 0.5f, -3f), Quaternion.fromEuler((float) Math.toRadians(45f), 0, 0), 10f, Color.RED,
+                    20f, 20f, 5f, "spot_light_0");
+            this.addSpotLight(floor, new Vector3(2f, 2f, 2f), Quaternion.fromEuler((float) Math.toRadians(90f), 0, 0), 2f, Color.WHITE,
+                    7f, 10f, 4f, "spot_light_1");
+        }
 
-            final PointLightComponent pointLight2 = new PointLightComponent(new PointLight(10f, Color.BLUE, Vector3.ZERO, 2f), "point_light_2",
-                    LIGHT_TAG);
-            pointLight2.getLocalTransform().setTranslation(new Vector3(0f, 0.5f, 3f));
-            parent.addChild(pointLight2);
+        private void addPointLight(final Component parent, final Vector3 position, final float intensity, final Color color, final float radius,
+                                   final String id) {
+            final PointLight light = new PointLight(intensity, color, Vector3.ZERO, radius);
+            final PointLightComponent component = new PointLightComponent(light, id, LIGHT_TAG);
+            component.getLocalTransform().setTranslation(position);
+            parent.addChild(component);
+        }
 
-            final PointLightComponent pointLight3 = new PointLightComponent(new PointLight(10f, Color.TURQUOISE, Vector3.ZERO, 2f), "point_light_3",
-                    LIGHT_TAG);
-            pointLight3.getLocalTransform().setTranslation(new Vector3(-1f, 0.1f, 1f));
-            parent.addChild(pointLight3);
-
-            final PointLightComponent pointLight4 = new PointLightComponent(new PointLight(10f, Color.CYAN, Vector3.ZERO, 2f), "point_light_4",
-                    LIGHT_TAG);
-            pointLight4.getLocalTransform().setTranslation(new Vector3(3f, 0.6f, -3f));
-            parent.addChild(pointLight4);
-
-            final SpotLightComponent spotLight0 = new SpotLightComponent(new SpotLight(10f, Color.RED, Vector3.ZERO, 20f, Vector3.ZERO, 20f, 5f),
-                    "spot_light_0", LIGHT_TAG);
-            spotLight0.getLocalTransform().setTranslation(new Vector3(-2f, 0.5f, -3f))
-                    .setRotation(Quaternion.fromEuler((float) Math.toRadians(45f), 0, 0));
-            parent.addChild(spotLight0);
-
-            final SpotLightComponent spotLight1 = new SpotLightComponent(new SpotLight(2f, Color.WHITE, Vector3.ZERO, 7f, Vector3.ZERO, 10f, 5f),
-                    "spot_light_1", LIGHT_TAG);
-            spotLight1.getLocalTransform().setTranslation(new Vector3(2f, 2f, 2f))
-                    .setRotation(Quaternion.fromEuler((float) Math.toRadians(90f), 0, 0));
-            parent.addChild(spotLight1);
+        private void addSpotLight(final Component parent, final Vector3 position, final Quaternion rotation, final float intensity, final Color color,
+                                  final float radius, final float angle, final float edge, final String id) {
+            final SpotLight light = new SpotLight(intensity, color, Vector3.ZERO, radius, Vector3.ZERO, angle, edge);
+            final SpotLightComponent component = new SpotLightComponent(light, id, LIGHT_TAG);
+            component.getLocalTransform().setTranslation(position).setRotation(rotation);
+            parent.addChild(component);
         }
 
         @Override
