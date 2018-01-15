@@ -9,6 +9,7 @@ import com.adrien.games.bagl.rendering.vertex.*;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
@@ -43,13 +44,13 @@ public class ModelFactory {
 
         final IndexBuffer iBuffer;
         try (final MemoryStack stack = MemoryStack.stackPush()) {
-            final IntBuffer indices = stack.ints(
-                    0, 1, 2, 2, 3, 0, // back face
-                    4, 5, 6, 6, 7, 4, //right face
-                    8, 9, 10, 10, 11, 8, // front face
-                    12, 13, 14, 14, 15, 12, //left face
-                    16, 17, 18, 18, 19, 16, // bottom face
-                    20, 21, 22, 22, 23, 20 // top face
+            final ByteBuffer indices = stack.bytes(
+                    (byte) 0, (byte) 1, (byte) 2, (byte) 2, (byte) 3, (byte) 0, // back face
+                    (byte) 4, (byte) 5, (byte) 6, (byte) 6, (byte) 7, (byte) 4, //right face
+                    (byte) 8, (byte) 9, (byte) 10, (byte) 10, (byte) 11, (byte) 8, // front face
+                    (byte) 12, (byte) 13, (byte) 14, (byte) 14, (byte) 15, (byte) 12, //left face
+                    (byte) 16, (byte) 17, (byte) 18, (byte) 18, (byte) 19, (byte) 16, // bottom face
+                    (byte) 20, (byte) 21, (byte) 22, (byte) 22, (byte) 23, (byte) 20 // top face
             );
             iBuffer = new IndexBuffer(indices, BufferUsage.STATIC_DRAW);
         }
