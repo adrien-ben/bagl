@@ -150,7 +150,7 @@ public class MtlParser {
     private void parseEmissiveMap(final String filePath) {
         this.checkCurrentMaterial();
         this.currentMaterial.setEmissiveMap(this.loadTexture(filePath));
-        this.currentMaterial.setEmissiveIntensity(100f);
+        this.currentMaterial.setEmissiveIntensity(1.0f);
     }
 
     private Texture loadTexture(String name) {
