@@ -2,6 +2,8 @@ package com.adrien.games.bagl.rendering.model;
 
 import com.adrien.games.bagl.core.math.Vector3;
 import com.adrien.games.bagl.rendering.BufferUsage;
+import com.adrien.games.bagl.rendering.DataType;
+import com.adrien.games.bagl.rendering.PrimitiveType;
 import com.adrien.games.bagl.rendering.vertex.*;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
@@ -16,6 +18,57 @@ import java.nio.IntBuffer;
  * @author adrien
  */
 public class MeshFactory {
+
+    /**
+     * Create a plane mesh
+     * <p>
+     * The plane's center is (0, 0, 0), it has normals, but no tangents
+     * nor texture coordinates. The plane is oriented upward
+     *
+     * @param width The width of the plane
+     * @param depth The height of the plane
+     * @return A {@link Mesh}
+     */
+    public static Mesh createPlane(final float width, final float depth) {
+        final float halfWidth = width * 0.5f;
+        final float halfDepth = depth * 0.5f;
+
+        try (final MemoryStack stack = MemoryStack.stackPush()) {
+            final FloatBuffer vertices = stack.floats(-halfWidth, 0, halfDepth, 0, 1, 0,
+                    halfWidth, 0, halfDepth, 0, 1, 0,
+                    -halfWidth, 0, -halfDepth, 0, 1, 0,
+                    halfWidth, 0, -halfDepth, 0, 1, 0);
+
+            final VertexBuffer vBuffer = new VertexBuffer(vertices, new VertexBufferParams()
+                    .element(new VertexElement(Mesh.POSITION_INDEX, Mesh.ELEMENTS_PER_POSITION))
+                    .element(new VertexElement(Mesh.NORMAL_INDEX, Mesh.ELEMENTS_PER_NORMAL)));
+            final VertexArray vArray = new VertexArray();
+            vArray.bind();
+            vArray.attachVertexBuffer(vBuffer);
+            vArray.unbind();
+            return new Mesh(vBuffer, vArray, PrimitiveType.TRIANGLE_STRIP);
+        }
+    }
+
+    public static Mesh createScreenQuad() {
+        try (final MemoryStack stack = MemoryStack.stackPush()) {
+            final ByteBuffer positions = stack.bytes(
+                    (byte) -1, (byte) -1, (byte) 0, (byte) 0,
+                    (byte) 1, (byte) -1, Byte.MAX_VALUE, (byte) 0,
+                    (byte) -1, (byte) 1, (byte) 0, Byte.MAX_VALUE,
+                    (byte) 1, (byte) 1, Byte.MAX_VALUE, Byte.MAX_VALUE);
+            final VertexBuffer vBuffer = new VertexBuffer(positions, new VertexBufferParams()
+                    .dataType(DataType.BYTE)
+                    .element(new VertexElement(0, 2))
+                    .element(new VertexElement(2, 2, true)));
+
+            final VertexArray vArray = new VertexArray();
+            vArray.bind();
+            vArray.attachVertexBuffer(vBuffer);
+            vArray.unbind();
+            return new Mesh(vBuffer, vArray, PrimitiveType.TRIANGLE_STRIP);
+        }
+    }
 
     /**
      * Create a cube mesh
@@ -205,7 +258,7 @@ public class MeshFactory {
      * @return A {@link Mesh}
      */
     public static Mesh createCylinder(final float baseRadius, final float topRadius, final float height, final int segments) {
-        final float halfHeight = height / 2;
+        final float halfHeight = height * 0.5f;
 
         final VertexBuffer vBuffer;
         int bufferIt = 0;

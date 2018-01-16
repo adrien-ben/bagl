@@ -1,10 +1,12 @@
 package com.adrien.games.bagl.rendering.model;
 
+import com.adrien.games.bagl.rendering.PrimitiveType;
 import com.adrien.games.bagl.rendering.vertex.IndexBuffer;
 import com.adrien.games.bagl.rendering.vertex.VertexArray;
 import com.adrien.games.bagl.rendering.vertex.VertexBuffer;
 
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Mesh data
@@ -26,6 +28,7 @@ public class Mesh {
     private final VertexBuffer vBuffer;
     private final VertexArray vArray;
     private final IndexBuffer iBuffer;
+    private final PrimitiveType primitiveType;
 
     /**
      * Construct a mesh
@@ -38,18 +41,29 @@ public class Mesh {
         this.vBuffer = vBuffer;
         this.vArray = vArray;
         this.iBuffer = iBuffer;
+        this.primitiveType = PrimitiveType.TRIANGLES;
+    }
+
+    /**
+     * Construct a mesh
+     *
+     * @param vBuffer       The vertex buffer
+     * @param vArray        The vertex array
+     * @param primitiveType The type of primitives to use when rendering
+     */
+    public Mesh(final VertexBuffer vBuffer, final VertexArray vArray, final PrimitiveType primitiveType) {
+        this.vBuffer = vBuffer;
+        this.vArray = vArray;
+        this.iBuffer = null;
+        this.primitiveType = primitiveType;
     }
 
     /**
      * Release resources
      */
     public void destroy() {
-        if (Objects.nonNull(this.vBuffer)) {
-            this.vBuffer.destroy();
-        }
-        if (Objects.nonNull(this.vArray)) {
-            this.vArray.destroy();
-        }
+        this.vBuffer.destroy();
+        this.vArray.destroy();
         if (Objects.nonNull(this.iBuffer)) {
             this.iBuffer.destroy();
         }
@@ -59,7 +73,15 @@ public class Mesh {
         return this.vArray;
     }
 
-    public IndexBuffer getIndexBuffer() {
-        return this.iBuffer;
+    public Optional<IndexBuffer> getIndexBuffer() {
+        return Optional.ofNullable(this.iBuffer);
+    }
+
+    public PrimitiveType getPrimitiveType() {
+        return this.primitiveType;
+    }
+
+    public int getVertexCount() {
+        return this.vBuffer.getVertexCount();
     }
 }

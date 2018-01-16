@@ -9,6 +9,7 @@ import com.adrien.games.bagl.rendering.light.DirectionalLight;
 import com.adrien.games.bagl.rendering.light.PointLight;
 import com.adrien.games.bagl.rendering.light.SpotLight;
 import com.adrien.games.bagl.rendering.model.Mesh;
+import com.adrien.games.bagl.rendering.model.MeshFactory;
 import com.adrien.games.bagl.rendering.model.Model;
 import com.adrien.games.bagl.rendering.postprocess.PostProcessor;
 import com.adrien.games.bagl.rendering.scene.Scene;
@@ -53,8 +54,7 @@ public class Renderer {
     private final Matrix4 wvpBuffer;
     private final Matrix4 lightViewProj;
 
-    private VertexArray quadVArray;
-    private VertexBuffer quadVBuffer;
+    private Mesh screenQuad;
 
     private VertexArray cubeVArray;
     private VertexBuffer cubeVBuffer;
@@ -93,7 +93,7 @@ public class Renderer {
         this.wvpBuffer = Matrix4.createZero();
         this.lightViewProj = Matrix4.createZero();
 
-        this.initFullScreenQuad();
+        this.screenQuad = MeshFactory.createScreenQuad();
         this.initUnitCube();
         this.initFrameBuffers();
         this.initShaders();
@@ -115,31 +115,11 @@ public class Renderer {
         this.shadowBuffer.destroy();
         this.finalBuffer.destroy();
         this.brdfBuffer.destroy();
-        this.quadVBuffer.destroy();
-        this.quadVArray.destroy();
+        this.screenQuad.destroy();
         this.iBuffer.destroy();
         this.cubeVBuffer.destroy();
         this.cubeVArray.destroy();
         this.postProcessor.destroy();
-    }
-
-    private void initFullScreenQuad() {
-        try (final MemoryStack stack = MemoryStack.stackPush()) {
-            final ByteBuffer positions = stack.bytes(
-                    (byte) -1, (byte) -1, (byte) 0, (byte) 0,
-                    (byte) 1, (byte) -1, Byte.MAX_VALUE, (byte) 0,
-                    (byte) -1, (byte) 1, (byte) 0, Byte.MAX_VALUE,
-                    (byte) 1, (byte) 1, Byte.MAX_VALUE, Byte.MAX_VALUE);
-            this.quadVBuffer = new VertexBuffer(positions, new VertexBufferParams()
-                    .dataType(DataType.BYTE)
-                    .element(new VertexElement(0, 2))
-                    .element(new VertexElement(2, 2, true)));
-        }
-
-        this.quadVArray = new VertexArray();
-        this.quadVArray.bind();
-        this.quadVArray.attachVertexBuffer(this.quadVBuffer);
-        this.quadVArray.unbind();
     }
 
     private void initUnitCube() {
@@ -209,15 +189,13 @@ public class Renderer {
 
     private void bakeBRDFIntegration() {
         this.brdfBuffer.bind();
-        this.quadVArray.bind();
         this.brdfShader.bind();
 
         glViewport(0, 0, BRDF_RESOLUTION, BRDF_RESOLUTION);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, this.quadVBuffer.getVertexCount());
+        this.renderMesh(this.screenQuad);
         glViewport(0, 0, this.xResolution, this.yResolution);
 
         Shader.unbind();
-        this.quadVArray.unbind();
         this.brdfBuffer.unbind();
     }
 
@@ -326,9 +304,15 @@ public class Renderer {
 
     private void renderMesh(final Mesh mesh) {
         mesh.getVertexArray().bind();
-        mesh.getIndexBuffer().bind();
-        glDrawElements(GL_TRIANGLES, mesh.getIndexBuffer().getSize(), mesh.getIndexBuffer().getDataType().getGlCode(), 0);
-        mesh.getIndexBuffer().unbind();
+        final Optional<IndexBuffer> iBufferOpt = mesh.getIndexBuffer();
+        if (iBufferOpt.isPresent()) {
+            final IndexBuffer iBuffer = iBufferOpt.get();
+            iBuffer.bind();
+            glDrawElements(mesh.getPrimitiveType().getGlCode(), iBuffer.getSize(), iBuffer.getDataType().getGlCode(), 0);
+            iBuffer.unbind();
+        } else {
+            glDrawArrays(mesh.getPrimitiveType().getGlCode(), 0, mesh.getVertexCount());
+        }
         mesh.getVertexArray().unbind();
     }
 
@@ -346,7 +330,6 @@ public class Renderer {
         this.gBuffer.getColorTexture(2).bind(2);
         this.gBuffer.getDepthTexture().bind(3);
 
-        this.quadVArray.bind();
         this.deferredShader.bind();
         this.deferredShader.setUniform("uCamera.vp", camera.getViewProj());
         this.deferredShader.setUniform("uCamera.position", camera.getPosition());
@@ -387,10 +370,9 @@ public class Renderer {
         this.deferredShader.setUniform("uGBuffer.emissive", 2);
         this.deferredShader.setUniform("uGBuffer.depth", 3);
 
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, this.quadVBuffer.getVertexCount());
+        this.renderMesh(this.screenQuad);
 
         Shader.unbind();
-        this.quadVArray.unbind();
         Cubemap.unbind(4);
         Texture.unbind(0);
         Texture.unbind(1);
