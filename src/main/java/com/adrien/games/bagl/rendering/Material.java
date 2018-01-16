@@ -7,18 +7,6 @@ import java.util.Objects;
 
 public class Material {
 
-    private static final String DIFFUSE_COLOR_SHADER_UNIFORM = "uMaterial.diffuseColor";
-    private static final String DIFFUSE_MAP_SHADER_UNIFORM = "uMaterial.diffuseMap";
-    private static final String DIFFUSE_MAP_FLAG_SHADER_UNIFORM = "uMaterial.hasDiffuseMap";
-    private static final String ROUGHNESS_SHADER_UNIFORM = "uMaterial.roughness";
-    private static final String ROUGHNESS_MAP_SHADER_UNIFORM = "uMaterial.roughnessMap";
-    private static final String ROUGHNESS_MAP_FLAG_SHADER_UNIFORM = "uMaterial.hasRoughnessMap";
-    private static final String METALLIC_SHADER_UNIFORM = "uMaterial.metallic";
-    private static final String METALLIC_MAP_SHADER_UNIFORM = "uMaterial.metallicMap";
-    private static final String METALLIC_MAP_FLAG_SHADER_UNIFORM = "uMaterial.hasMetallicMap";
-    private static final String NORMAL_MAP_SHADER_UNIFORM = "uMaterial.normalMap";
-    private static final String NORMAL_MAP_FLAG_SHADER_UNIFORM = "uMaterial.hasNormalMap";
-
     private static final int DIFFUSE_MAP_CHANNEL = 0;
     private static final int ROUGHNESS_MAP_CHANNEL = 1;
     private static final int METALLIC_MAP_CHANNEL = 2;
@@ -31,6 +19,8 @@ public class Material {
     private float metallic = 0f;
     private Texture metallicMap = null;
     private Texture normalMap = null;
+    private Color emissiveColor = Color.WHITE;
+    private float emissiveIntensity = 0f;
 
     /**
      * Apply the current material to a shader.
@@ -38,36 +28,39 @@ public class Material {
      * @param shader The shader to apply the material to.
      */
     public void applyTo(Shader shader) {
-        shader.setUniform(DIFFUSE_COLOR_SHADER_UNIFORM, this.diffuseColor);
+        shader.setUniform("uMaterial.diffuseColor", this.diffuseColor);
         final boolean hasDiffuseMap = Objects.nonNull(this.diffuseMap);
-        shader.setUniform(DIFFUSE_MAP_FLAG_SHADER_UNIFORM, hasDiffuseMap);
+        shader.setUniform("uMaterial.hasDiffuseMap", hasDiffuseMap);
         if (hasDiffuseMap) {
-            shader.setUniform(DIFFUSE_MAP_SHADER_UNIFORM, DIFFUSE_MAP_CHANNEL);
+            shader.setUniform("uMaterial.diffuseMap", DIFFUSE_MAP_CHANNEL);
             this.diffuseMap.bind(DIFFUSE_MAP_CHANNEL);
         }
 
-        shader.setUniform(ROUGHNESS_SHADER_UNIFORM, this.roughness);
+        shader.setUniform("uMaterial.roughness", this.roughness);
         final boolean hasRoughnessMap = Objects.nonNull(this.roughnessMap);
-        shader.setUniform(ROUGHNESS_MAP_FLAG_SHADER_UNIFORM, hasRoughnessMap);
+        shader.setUniform("uMaterial.hasRoughnessMap", hasRoughnessMap);
         if (hasRoughnessMap) {
-            shader.setUniform(ROUGHNESS_MAP_SHADER_UNIFORM, ROUGHNESS_MAP_CHANNEL);
+            shader.setUniform("uMaterial.roughnessMap", ROUGHNESS_MAP_CHANNEL);
             this.roughnessMap.bind(ROUGHNESS_MAP_CHANNEL);
         }
 
-        shader.setUniform(METALLIC_SHADER_UNIFORM, this.metallic);
+        shader.setUniform("uMaterial.metallic", this.metallic);
         final boolean hasMetallicMap = Objects.nonNull(this.metallicMap);
-        shader.setUniform(METALLIC_MAP_FLAG_SHADER_UNIFORM, hasMetallicMap);
+        shader.setUniform("uMaterial.hasMetallicMap", hasMetallicMap);
         if (hasMetallicMap) {
-            shader.setUniform(METALLIC_MAP_SHADER_UNIFORM, METALLIC_MAP_CHANNEL);
+            shader.setUniform("uMaterial.metallicMap", METALLIC_MAP_CHANNEL);
             this.metallicMap.bind(METALLIC_MAP_CHANNEL);
         }
 
         final boolean hasNormalMap = Objects.nonNull(this.normalMap);
-        shader.setUniform(NORMAL_MAP_FLAG_SHADER_UNIFORM, hasNormalMap);
+        shader.setUniform("uMaterial.hasNormalMap", hasNormalMap);
         if (hasNormalMap) {
-            shader.setUniform(NORMAL_MAP_SHADER_UNIFORM, NORMAL_MAP_CHANNEL);
+            shader.setUniform("uMaterial.normalMap", NORMAL_MAP_CHANNEL);
             this.normalMap.bind(NORMAL_MAP_CHANNEL);
         }
+
+        shader.setUniform("uMaterial.emissiveColor", this.emissiveColor);
+        shader.setUniform("uMaterial.emissiveIntensity", this.emissiveIntensity);
     }
 
     public void destroy() {
@@ -145,4 +138,19 @@ public class Material {
         this.normalMap = normalMap;
     }
 
+    public Color getEmissiveColor() {
+        return this.emissiveColor;
+    }
+
+    public void setEmissiveColor(final Color emissiveColor) {
+        this.emissiveColor = emissiveColor;
+    }
+
+    public float getEmissiveIntensity() {
+        return this.emissiveIntensity;
+    }
+
+    public void setEmissiveIntensity(final float emissiveIntensity) {
+        this.emissiveIntensity = emissiveIntensity;
+    }
 }

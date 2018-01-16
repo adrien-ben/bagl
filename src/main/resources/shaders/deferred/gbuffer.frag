@@ -12,6 +12,8 @@ struct Material {
 	sampler2D metallicMap;
 	bool hasNormalMap;
     sampler2D normalMap;
+    vec4 emissiveColor;
+    float emissiveIntensity;
 };
 
 in vec2 passCoords;
@@ -20,6 +22,7 @@ in mat3 passTBN;
 
 layout (location = 0) out vec4 colors;
 layout (location = 1) out vec4 normals;
+layout (location = 2) out vec3 emissive;
 
 uniform Material uMaterial;
 
@@ -38,4 +41,6 @@ void main() {
 
 	normals.rgb = normal*0.5 + 0.5;
 	normals.a = uMaterial.hasMetallicMap ? texture2D(uMaterial.metallicMap, passCoords).r : uMaterial.metallic;
+
+	emissive = uMaterial.emissiveColor.rgb*uMaterial.emissiveIntensity;
 }

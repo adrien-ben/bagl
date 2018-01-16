@@ -34,8 +34,9 @@ public class DeferredRenderingSample {
                 + "Display Albedo : F3\n"
                 + "Display Normals : F4\n"
                 + "Display Depth : F5\n"
-                + "Display Shadow Map : F6\n"
-                + "Display Scene before post process : F7\n"
+                + "Display Emissive : F6\n"
+                + "Display Shadow Map : F7\n"
+                + "Display Scene before post process : F8\n"
                 + "Switch Camera Mode : TAB\n"
                 + "Move camera : Z, Q, S, D, LCTRL, SPACE\n"
                 + "Advance time: 1, 2";
@@ -207,8 +208,10 @@ public class DeferredRenderingSample {
             } else if (Input.wasKeyPressed(GLFW.GLFW_KEY_F5)) {
                 this.displayMode = DisplayMode.DEPTH;
             } else if (Input.wasKeyPressed(GLFW.GLFW_KEY_F6)) {
-                this.displayMode = DisplayMode.SHADOW;
+                this.displayMode = DisplayMode.EMISSIVE;
             } else if (Input.wasKeyPressed(GLFW.GLFW_KEY_F7)) {
+                this.displayMode = DisplayMode.SHADOW;
+            } else if (Input.wasKeyPressed(GLFW.GLFW_KEY_F8)) {
                 this.displayMode = DisplayMode.UNPROCESSED;
             }
 
@@ -237,6 +240,8 @@ public class DeferredRenderingSample {
                 this.spritebatch.draw(this.renderer.getGBuffer().getColorTexture(1), Vector2.ZERO);
             } else if (this.displayMode == DisplayMode.DEPTH) {
                 this.spritebatch.draw(this.renderer.getGBuffer().getDepthTexture(), Vector2.ZERO);
+            } else if (this.displayMode == DisplayMode.EMISSIVE) {
+                this.spritebatch.draw(this.renderer.getGBuffer().getColorTexture(2), Vector2.ZERO);
             } else if (this.displayMode == DisplayMode.SHADOW) {
                 this.spritebatch.draw(this.renderer.getShadowBuffer().getDepthTexture(), Vector2.ZERO);
             } else if (this.displayMode == DisplayMode.UNPROCESSED) {
@@ -254,7 +259,7 @@ public class DeferredRenderingSample {
     }
 
     private enum DisplayMode {
-        SCENE, ALBEDO, NORMALS, DEPTH, SHADOW, UNPROCESSED
+        SCENE, ALBEDO, NORMALS, DEPTH, EMISSIVE, SHADOW, UNPROCESSED
     }
 
     public static void main(String[] args) {

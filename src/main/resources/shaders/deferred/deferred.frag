@@ -17,6 +17,7 @@ struct GBuffer {
 	sampler2D colors;
 	sampler2D normals;
 	sampler2D depth;
+	sampler2D emissive;
 };
 
 struct Camera {
@@ -290,6 +291,6 @@ void main() {
 		}
 
 		gl_FragDepth = depthValue;
-		finalColor = vec4(ambient + L0, 1.0);
+		finalColor = vec4((ambient + L0) + texture2D(uGBuffer.emissive, passCoords).rgb, 1.0);
 	} 
 }

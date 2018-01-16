@@ -178,7 +178,7 @@ public class Renderer {
 
     private void initFrameBuffers() {
         this.gBuffer = new FrameBuffer(this.xResolution, this.yResolution,
-                new FrameBufferParameters().addColorOutput(Format.RGBA8).addColorOutput(Format.RGBA16F));
+                new FrameBufferParameters().addColorOutput(Format.RGBA8).addColorOutput(Format.RGBA16F).addColorOutput(Format.RGB16F));
         this.shadowBuffer = new FrameBuffer(this.shadowMapResolution, this.shadowMapResolution);
         this.finalBuffer = new FrameBuffer(this.xResolution, this.yResolution, new FrameBufferParameters().addColorOutput(Format.RGBA32F));
         this.brdfBuffer = new FrameBuffer(BRDF_RESOLUTION, BRDF_RESOLUTION, new FrameBufferParameters().hasDepth(false).addColorOutput(Format.RG16F));
@@ -343,27 +343,28 @@ public class Renderer {
 
         this.gBuffer.getColorTexture(0).bind(0);
         this.gBuffer.getColorTexture(1).bind(1);
-        this.gBuffer.getDepthTexture().bind(2);
+        this.gBuffer.getColorTexture(2).bind(2);
+        this.gBuffer.getDepthTexture().bind(3);
 
         this.quadVArray.bind();
         this.deferredShader.bind();
         this.deferredShader.setUniform("uCamera.vp", camera.getViewProj());
         this.deferredShader.setUniform("uCamera.position", camera.getPosition());
         irradiance.ifPresent(map -> {
-            map.bind(4);
-            this.deferredShader.setUniform("uLights.irradiance", 4);
+            map.bind(5);
+            this.deferredShader.setUniform("uLights.irradiance", 5);
         });
         preFilteredMap.ifPresent(map -> {
-            map.bind(5);
-            this.deferredShader.setUniform("uLights.preFilteredMap", 5);
+            map.bind(6);
+            this.deferredShader.setUniform("uLights.preFilteredMap", 6);
         });
-        this.brdfBuffer.getColorTexture(0).bind(6);
-        this.deferredShader.setUniform("uLights.brdf", 6);
+        this.brdfBuffer.getColorTexture(0).bind(7);
+        this.deferredShader.setUniform("uLights.brdf", 7);
         this.deferredShader.setUniform("uShadow.hasShadow", this.renderShadow);
         if (this.renderShadow) {
             this.deferredShader.setUniform("uShadow.lightViewProj", this.lightViewProj);
-            this.shadowBuffer.getDepthTexture().bind(3);
-            this.deferredShader.setUniform("uShadow.shadowMap", 3);
+            this.shadowBuffer.getDepthTexture().bind(4);
+            this.deferredShader.setUniform("uShadow.shadowMap", 4);
         }
 
         this.deferredShader.setUniform("uLights.directionalCount", this.directionalLights.size());
@@ -383,7 +384,8 @@ public class Renderer {
 
         this.deferredShader.setUniform("uGBuffer.colors", 0);
         this.deferredShader.setUniform("uGBuffer.normals", 1);
-        this.deferredShader.setUniform("uGBuffer.depth", 2);
+        this.deferredShader.setUniform("uGBuffer.emissive", 2);
+        this.deferredShader.setUniform("uGBuffer.depth", 3);
 
         glDrawArrays(GL_TRIANGLE_STRIP, 0, this.quadVBuffer.getVertexCount());
 
