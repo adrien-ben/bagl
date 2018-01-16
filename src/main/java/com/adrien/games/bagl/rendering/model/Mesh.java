@@ -1,6 +1,5 @@
 package com.adrien.games.bagl.rendering.model;
 
-import com.adrien.games.bagl.rendering.Material;
 import com.adrien.games.bagl.rendering.vertex.IndexBuffer;
 import com.adrien.games.bagl.rendering.vertex.VertexArray;
 import com.adrien.games.bagl.rendering.vertex.VertexBuffer;
@@ -27,21 +26,18 @@ public class Mesh {
     private final VertexBuffer vBuffer;
     private final VertexArray vArray;
     private final IndexBuffer iBuffer;
-    private final Material material;
 
     /**
      * Construct a mesh
      *
-     * @param vBuffer  The vertex buffer
-     * @param vArray   The vertex array
-     * @param iBuffer  The index buffer
-     * @param material The material of the mesh
+     * @param vBuffer The vertex buffer
+     * @param vArray  The vertex array
+     * @param iBuffer The index buffer
      */
-    public Mesh(final VertexBuffer vBuffer, final VertexArray vArray, final IndexBuffer iBuffer, final Material material) {
+    public Mesh(final VertexBuffer vBuffer, final VertexArray vArray, final IndexBuffer iBuffer) {
         this.vBuffer = vBuffer;
         this.vArray = vArray;
         this.iBuffer = iBuffer;
-        this.material = material;
     }
 
     /**
@@ -57,9 +53,6 @@ public class Mesh {
         if (Objects.nonNull(this.iBuffer)) {
             this.iBuffer.destroy();
         }
-        if (Objects.nonNull(material)) {
-            this.material.destroy();
-        }
     }
 
     public VertexArray getVertexArray() {
@@ -68,9 +61,5 @@ public class Mesh {
 
     public IndexBuffer getIndexBuffer() {
         return this.iBuffer;
-    }
-
-    public Material getMaterial() {
-        return this.material;
     }
 }

@@ -293,7 +293,7 @@ public class Renderer {
     private void renderNodeShadow(final Model model, final Matrix4 transform, final Matrix4 lightViewProj) {
         Matrix4.mul(lightViewProj, transform, this.wvpBuffer);
         this.shadowShader.setUniform("wvp", this.wvpBuffer);
-        model.getMeshes().forEach(this::renderMesh);
+        model.getMeshes().keySet().forEach(this::renderMesh);
     }
 
     private void renderScene(final Camera camera) {
@@ -316,8 +316,8 @@ public class Renderer {
         model.getMeshes().forEach(this::renderMeshToGBuffer);
     }
 
-    private void renderMeshToGBuffer(final Mesh mesh) {
-        mesh.getMaterial().applyTo(this.gBufferShader);
+    private void renderMeshToGBuffer(final Mesh mesh, final Material material) {
+        material.applyTo(this.gBufferShader);
         this.renderMesh(mesh);
         Texture.unbind();
         Texture.unbind(1);

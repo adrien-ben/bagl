@@ -8,6 +8,7 @@ import com.adrien.games.bagl.rendering.Material;
 import com.adrien.games.bagl.rendering.model.Mesh;
 import com.adrien.games.bagl.rendering.model.Model;
 import com.adrien.games.bagl.rendering.vertex.*;
+import com.adrien.games.bagl.utils.Tuple2;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -72,7 +73,11 @@ public class ObjParser implements ModelParser {
             throw new EngineException("Failed to parse model file", e);
         }
         this.builders.put(this.currentBuilder.meshName, this.currentBuilder);
-        this.builders.values().stream().filter(MeshBuilder::isNotEmpty).map(MeshBuilder::build).forEach(model::addMesh);
+        this.builders.values()
+                .stream()
+                .filter(MeshBuilder::isNotEmpty)
+                .map(MeshBuilder::build)
+                .forEach(tuple -> model.addMesh(tuple.getFirst(), tuple.getSecond()));
         return model;
     }
 
@@ -236,7 +241,7 @@ public class ObjParser implements ModelParser {
             return !this.faces.isEmpty();
         }
 
-        private Mesh build() {
+        private Tuple2<Mesh, Material> build() {
             if (this.material.hasNormalMap()) {
                 this.computeTangents();
             }
@@ -249,7 +254,7 @@ public class ObjParser implements ModelParser {
 
             final IndexBuffer indexBuffer = this.generateIndexBuffer();
 
-            return new Mesh(vBuffer, vArray, indexBuffer, this.material);
+            return new Tuple2<>(new Mesh(vBuffer, vArray, indexBuffer), this.material);
         }
 
         private IndexBuffer generateIndexBuffer() {

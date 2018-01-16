@@ -4,12 +4,15 @@ import com.adrien.games.bagl.core.*;
 import com.adrien.games.bagl.core.math.Quaternion;
 import com.adrien.games.bagl.core.math.Vector2;
 import com.adrien.games.bagl.core.math.Vector3;
+import com.adrien.games.bagl.rendering.Material;
 import com.adrien.games.bagl.rendering.Renderer;
 import com.adrien.games.bagl.rendering.Spritebatch;
 import com.adrien.games.bagl.rendering.environment.EnvironmentMapGenerator;
 import com.adrien.games.bagl.rendering.light.DirectionalLight;
 import com.adrien.games.bagl.rendering.light.PointLight;
 import com.adrien.games.bagl.rendering.light.SpotLight;
+import com.adrien.games.bagl.rendering.model.Mesh;
+import com.adrien.games.bagl.rendering.model.MeshFactory;
 import com.adrien.games.bagl.rendering.model.Model;
 import com.adrien.games.bagl.rendering.model.ModelFactory;
 import com.adrien.games.bagl.rendering.scene.Component;
@@ -20,8 +23,6 @@ import com.adrien.games.bagl.rendering.text.TextRenderer;
 import com.adrien.games.bagl.rendering.texture.Cubemap;
 import com.adrien.games.bagl.utils.FileUtils;
 import org.lwjgl.glfw.GLFW;
-
-import static org.lwjgl.opengl.GL11.*;
 
 public class DeferredRenderingSample {
 
@@ -60,6 +61,7 @@ public class DeferredRenderingSample {
         private Model floor;
         private Model cube;
         private Model sphere;
+        private Mesh buld;
 
         private Spritebatch spritebatch;
 
@@ -88,9 +90,6 @@ public class DeferredRenderingSample {
             this.initScene();
 
             this.spritebatch = new Spritebatch(1024, this.width, this.height);
-
-            glEnable(GL_DEPTH_TEST);
-            glEnable(GL_CULL_FACE);
         }
 
         @Override
@@ -105,6 +104,7 @@ public class DeferredRenderingSample {
             this.floor.destroy();
             this.cube.destroy();
             this.sphere.destroy();
+            this.buld.destroy();
         }
 
         private void loadMeshes() {
@@ -120,7 +120,9 @@ public class DeferredRenderingSample {
             this.floor = ModelFactory.fromFile(FileUtils.getResourceAbsolutePath("/models/floor/floor.obj"));
             this.cube = ModelFactory.fromFile(FileUtils.getResourceAbsolutePath("/models/cube/cube.obj"));
             //            this.cube = ModelFactory.fromFile("D:/Documents/3D Models/sphere/sphere.obj");
-            this.sphere = ModelFactory.createSphere(0.5f, 25, 25, Color.YELLOW, true, 0.15f);
+            final Material gold = new Material().setDiffuseColor(Color.YELLOW).setMetallic(1f).setRoughness(0.1f);
+            this.sphere = ModelFactory.createSphere(0.5f, 25, 25, gold);
+            this.buld = MeshFactory.createSphere(0.1f, 8, 8);
         }
 
         private void initScene() {
@@ -149,31 +151,49 @@ public class DeferredRenderingSample {
 
             final Component floor = this.scene.getComponentById("floor").orElseThrow(() -> new EngineException("No component 'floor' in the scene"));
 
-            this.addPointLight(floor, new Vector3(4f, 0.5f, 2f), 8f, Color.GREEN, 3f, "point_light_0");
-            this.addPointLight(floor, new Vector3(-4f, 0.2f, 2f), 10f, Color.YELLOW, 2f, "point_light_1");
-            this.addPointLight(floor, new Vector3(0f, 0.5f, 3f), 10f, Color.BLUE, 2f, "point_light_2");
-            this.addPointLight(floor, new Vector3(-1f, 0.1f, 1f), 10f, Color.TURQUOISE, 2f, "point_light3");
-            this.addPointLight(floor, new Vector3(3f, 0.6f, -3f), 10f, Color.CYAN, 2f, "point_light_4");
-            this.addSpotLight(floor, new Vector3(-2f, 0.5f, -3f), Quaternion.fromEuler((float) Math.toRadians(45f), 0, 0), 10f, Color.RED,
-                    20f, 20f, 5f, "spot_light_0");
-            this.addSpotLight(floor, new Vector3(2f, 2f, 2f), Quaternion.fromEuler((float) Math.toRadians(90f), 0, 0), 2f, Color.WHITE,
-                    7f, 10f, 4f, "spot_light_1");
+            final PointLight pointLight0 = new PointLight(8f, Color.GREEN, Vector3.ZERO, 3f);
+            this.addPointLight(floor, new Vector3(4f, 0.5f, 2f), pointLight0, 0);
+            final PointLight pointLight1 = new PointLight(10f, Color.YELLOW, Vector3.ZERO, 2f);
+            this.addPointLight(floor, new Vector3(-4f, 0.2f, 2f), pointLight1, 1);
+            final PointLight pointLight2 = new PointLight(10f, Color.BLUE, Vector3.ZERO, 2f);
+            this.addPointLight(floor, new Vector3(0f, 0.5f, 3f), pointLight2, 2);
+            final PointLight pointLight3 = new PointLight(10f, Color.TURQUOISE, Vector3.ZERO, 2f);
+            this.addPointLight(floor, new Vector3(-1f, 0.1f, 1f), pointLight3, 3);
+            final PointLight pointLight4 = new PointLight(10f, Color.CYAN, Vector3.ZERO, 2f);
+            this.addPointLight(floor, new Vector3(3f, 0.6f, -3f), pointLight4, 4);
+
+            final SpotLight spotLight0 = new SpotLight(10f, Color.RED, Vector3.ZERO, 20f, Vector3.ZERO, 20f, 5f);
+            this.addSpotLight(floor, new Vector3(-2f, 0.5f, -3f), Quaternion.fromEuler((float) Math.toRadians(45f), 0, 0), spotLight0, 0);
+            final SpotLight spotLight1 = new SpotLight(2f, Color.WHITE, Vector3.ZERO, 7f, Vector3.ZERO, 10f, 4f);
+            this.addSpotLight(floor, new Vector3(2f, 2f, 2f), Quaternion.fromEuler((float) Math.toRadians(90f), 0, 0), spotLight1, 1);
         }
 
-        private void addPointLight(final Component parent, final Vector3 position, final float intensity, final Color color, final float radius,
-                                   final String id) {
-            final PointLight light = new PointLight(intensity, color, Vector3.ZERO, radius);
-            final PointLightComponent component = new PointLightComponent(light, id, LIGHT_TAG);
-            component.getLocalTransform().setTranslation(position);
-            parent.addChild(component);
+        private void addPointLight(final Component parent, final Vector3 position, final PointLight light, final int id) {
+            final String lightId = "point_light_" + id;
+            final ObjectComponent lightObject = this.createLightObject(parent, position, light.getColor(), lightId);
+            final PointLightComponent lightComponent = new PointLightComponent(light, lightId, LIGHT_TAG);
+            lightObject.addChild(lightComponent);
         }
 
-        private void addSpotLight(final Component parent, final Vector3 position, final Quaternion rotation, final float intensity, final Color color,
-                                  final float radius, final float angle, final float edge, final String id) {
-            final SpotLight light = new SpotLight(intensity, color, Vector3.ZERO, radius, Vector3.ZERO, angle, edge);
-            final SpotLightComponent component = new SpotLightComponent(light, id, LIGHT_TAG);
+        private void addSpotLight(final Component parent, final Vector3 position, final Quaternion rotation, final SpotLight light, final int id) {
+            final String lightId = "spot_light_" + id;
+            final ObjectComponent lightObject = this.createLightObject(parent, position, light.getColor(), lightId);
+            final SpotLightComponent component = new SpotLightComponent(light, lightId, LIGHT_TAG);
             component.getLocalTransform().setTranslation(position).setRotation(rotation);
-            parent.addChild(component);
+            lightObject.addChild(component);
+        }
+
+        private ObjectComponent createLightObject(final Component parent, final Vector3 position, final Color color, final String id) {
+            final ObjectComponent lightObject = new ObjectComponent("object_" + id);
+            lightObject.getLocalTransform().setTranslation(position);
+            parent.addChild(lightObject);
+
+            final Material material = new Material().setEmissiveColor(color).setEmissiveIntensity(10f);
+            final Model bulbModel = new Model().addMesh(this.buld, material);
+            final ModelComponent modelComponent = new ModelComponent(bulbModel, "blub_" + id);
+            lightObject.addChild(modelComponent);
+
+            return lightObject;
         }
 
         @Override

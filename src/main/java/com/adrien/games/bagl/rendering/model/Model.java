@@ -1,7 +1,9 @@
 package com.adrien.games.bagl.rendering.model;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.adrien.games.bagl.rendering.Material;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * A model is a set of {@link Mesh}
@@ -10,25 +12,26 @@ import java.util.List;
  */
 public class Model {
 
-    private final List<Mesh> meshes = new ArrayList<>();
+    private final Map<Mesh, Material> meshes = new LinkedHashMap<>();
 
     /**
      * Add a mesh to the model
      *
-     * @param mesh The mesh to add
+     * @param mesh     The mesh to add
+     * @param material The material of the model
      * @return This for chaining
      */
-    public Model addMesh(final Mesh mesh) {
-        this.meshes.add(mesh);
+    public Model addMesh(final Mesh mesh, final Material material) {
+        this.meshes.put(mesh, material);
         return this;
     }
 
     /**
      * Return all the meshes of the model
      *
-     * @return A list of {@link Mesh}
+     * @return A map of {@link Mesh} coupled with their {@link Material}
      */
-    public List<Mesh> getMeshes() {
+    public Map<Mesh, Material> getMeshes() {
         return this.meshes;
     }
 
@@ -36,7 +39,6 @@ public class Model {
      * Release resources
      */
     public void destroy() {
-        this.meshes.forEach(Mesh::destroy);
+        this.meshes.keySet().forEach(Mesh::destroy);
     }
-
 }

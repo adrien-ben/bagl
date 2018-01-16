@@ -5,6 +5,23 @@ import com.adrien.games.bagl.rendering.texture.Texture;
 
 import java.util.Objects;
 
+/**
+ * Material class
+ * <p>
+ * Represents the material of a mesh. It contains:
+ * <ul>
+ * <li>The diffuse color (default: {@link Color#WHITE}
+ * <li>A diffuse texture (default: null)
+ * <li>A roughness factor (default: 0.5f)
+ * <li>A roughness texture (default: null)
+ * <li>A metalness factor (default: 0f)
+ * <li>A metalness texture (default: null)
+ * <li>An emissive color (default {@link Color#WHITE}
+ * <li>An emissive intensity (default: 0f)
+ * </ul>
+ *
+ * @author adrien
+ */
 public class Material {
 
     private static final int DIFFUSE_MAP_CHANNEL = 0;
@@ -12,7 +29,7 @@ public class Material {
     private static final int METALLIC_MAP_CHANNEL = 2;
     private static final int NORMAL_MAP_CHANNEL = 3;
 
-    private Color diffuseColor = new Color(1, 1, 1);
+    private Color diffuseColor = Color.WHITE;
     private Texture diffuseMap = null;
     private float roughness = 0.5f;
     private Texture roughnessMap = null;
@@ -23,11 +40,11 @@ public class Material {
     private float emissiveIntensity = 0f;
 
     /**
-     * Apply the current material to a shader.
+     * Apply the current material to a shader
      *
-     * @param shader The shader to apply the material to.
+     * @param shader The shader to apply the material to
      */
-    public void applyTo(Shader shader) {
+    public void applyTo(final Shader shader) {
         shader.setUniform("uMaterial.diffuseColor", this.diffuseColor);
         final boolean hasDiffuseMap = Objects.nonNull(this.diffuseMap);
         shader.setUniform("uMaterial.hasDiffuseMap", hasDiffuseMap);
@@ -86,71 +103,80 @@ public class Material {
         return diffuseColor;
     }
 
-    public void setDiffuseColor(Color diffuseColor) {
+    public Material setDiffuseColor(final Color diffuseColor) {
         this.diffuseColor = diffuseColor;
+        return this;
     }
 
     public Texture getDiffuseMap() {
         return diffuseMap;
     }
 
-    public void setDiffuseMap(Texture diffuseMap) {
+    public Material setDiffuseMap(final Texture diffuseMap) {
         this.diffuseMap = diffuseMap;
+        return this;
     }
 
     public float getRoughness() {
         return roughness;
     }
 
-    public void setRoughness(float roughness) {
+    public Material setRoughness(final float roughness) {
         this.roughness = roughness;
+        return this;
     }
 
     public Texture getRoughnessMap() {
         return roughnessMap;
     }
 
-    public void setRoughnessMap(Texture roughnessMap) {
+    public Material setRoughnessMap(final Texture roughnessMap) {
         this.roughnessMap = roughnessMap;
+        return this;
     }
 
     public float getMetallic() {
         return metallic;
     }
 
-    public void setMetallic(float metallic) {
+    public Material setMetallic(final float metallic) {
         this.metallic = metallic;
+        return this;
     }
 
     public Texture getMetallicMap() {
         return metallicMap;
     }
 
-    public void setMetallicMap(Texture metallicMap) {
+    public Material setMetallicMap(final Texture metallicMap) {
         this.metallicMap = metallicMap;
+        return this;
     }
 
     public Texture getNormalMap() {
         return normalMap;
     }
 
-    public void setNormalMap(Texture normalMap) {
+    public Material setNormalMap(final Texture normalMap) {
         this.normalMap = normalMap;
+        return this;
     }
 
     public Color getEmissiveColor() {
         return this.emissiveColor;
     }
 
-    public void setEmissiveColor(final Color emissiveColor) {
+    public Material setEmissiveColor(final Color emissiveColor) {
         this.emissiveColor = emissiveColor;
+        return this;
     }
 
     public float getEmissiveIntensity() {
         return this.emissiveIntensity;
     }
 
-    public void setEmissiveIntensity(final float emissiveIntensity) {
+    public Material setEmissiveIntensity(final float emissiveIntensity) {
         this.emissiveIntensity = emissiveIntensity;
+        return this;
     }
 }

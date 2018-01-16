@@ -1,17 +1,8 @@
 package com.adrien.games.bagl.rendering.model;
 
-import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.parser.model.ModelParser;
 import com.adrien.games.bagl.parser.model.ObjParser;
-import com.adrien.games.bagl.rendering.BufferUsage;
 import com.adrien.games.bagl.rendering.Material;
-import com.adrien.games.bagl.rendering.vertex.*;
-import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.MemoryUtil;
-
-import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 
 public class ModelFactory {
 
@@ -33,83 +24,12 @@ public class ModelFactory {
      * The cube's center is (0, 0, 0), it has normals, but no tangents
      * nor texture coordinates
      *
-     * @param size       The size of the cube
-     * @param color      The color of the cube
-     * @param isMetallic Is the cube metallic
-     * @param roughness  The roughness of the cube
+     * @param size     The size of the cube
+     * @param material The material of the model
      * @return A {@link Model}
      */
-    public static Model createCube(final float size, final Color color, final boolean isMetallic, final float roughness) {
-        final float halfSize = size * 0.5f;
-
-        final IndexBuffer iBuffer;
-        try (final MemoryStack stack = MemoryStack.stackPush()) {
-            final ByteBuffer indices = stack.bytes(
-                    (byte) 0, (byte) 1, (byte) 2, (byte) 2, (byte) 3, (byte) 0, // back face
-                    (byte) 4, (byte) 5, (byte) 6, (byte) 6, (byte) 7, (byte) 4, //right face
-                    (byte) 8, (byte) 9, (byte) 10, (byte) 10, (byte) 11, (byte) 8, // front face
-                    (byte) 12, (byte) 13, (byte) 14, (byte) 14, (byte) 15, (byte) 12, //left face
-                    (byte) 16, (byte) 17, (byte) 18, (byte) 18, (byte) 19, (byte) 16, // bottom face
-                    (byte) 20, (byte) 21, (byte) 22, (byte) 22, (byte) 23, (byte) 20 // top face
-            );
-            iBuffer = new IndexBuffer(indices, BufferUsage.STATIC_DRAW);
-        }
-
-        final VertexBuffer vBuffer;
-        try (final MemoryStack stack = MemoryStack.stackPush()) {
-            final FloatBuffer vertices = stack.floats(
-                    // back face
-                    -halfSize, -halfSize, halfSize, 0, 0, 1,
-                    halfSize, -halfSize, halfSize, 0, 0, 1,
-                    halfSize, halfSize, halfSize, 0, 0, 1,
-                    -halfSize, halfSize, halfSize, 0, 0, 1,
-
-                    // right face
-                    halfSize, -halfSize, halfSize, 1, 0, 0,
-                    halfSize, -halfSize, -halfSize, 1, 0, 0,
-                    halfSize, halfSize, -halfSize, 1, 0, 0,
-                    halfSize, halfSize, halfSize, 1, 0, 0,
-
-                    // front face
-                    halfSize, -halfSize, -halfSize, 0, 0, -1,
-                    -halfSize, -halfSize, -halfSize, 0, 0, -1,
-                    -halfSize, halfSize, -halfSize, 0, 0, -1,
-                    halfSize, halfSize, -halfSize, 0, 0, -1,
-
-                    // left face
-                    -halfSize, -halfSize, -halfSize, -1, 0, 0,
-                    -halfSize, -halfSize, halfSize, -1, 0, 0,
-                    -halfSize, halfSize, halfSize, -1, 0, 0,
-                    -halfSize, halfSize, -halfSize, -1, 0, 0,
-
-                    // bottom face
-                    -halfSize, -halfSize, -halfSize, 0, -1, 0,
-                    halfSize, -halfSize, -halfSize, 0, -1, 0,
-                    halfSize, -halfSize, halfSize, 0, -1, 0,
-                    -halfSize, -halfSize, halfSize, 0, -1, 0,
-
-                    // top face
-                    -halfSize, halfSize, halfSize, 0, 1, 0,
-                    halfSize, halfSize, halfSize, 0, 1, 0,
-                    halfSize, halfSize, -halfSize, 0, 1, 0,
-                    -halfSize, halfSize, -halfSize, 0, 1, 0
-            );
-            vBuffer = new VertexBuffer(vertices, new VertexBufferParams()
-                    .element(new VertexElement(Mesh.POSITION_INDEX, Mesh.ELEMENTS_PER_POSITION))
-                    .element(new VertexElement(Mesh.NORMAL_INDEX, Mesh.ELEMENTS_PER_NORMAL)));
-        }
-
-        final VertexArray vArray = new VertexArray();
-        vArray.bind();
-        vArray.attachVertexBuffer(vBuffer);
-        vArray.unbind();
-
-        final Material material = new Material();
-        material.setDiffuseColor(color);
-        material.setMetallic(isMetallic ? 1 : 0);
-        material.setRoughness(roughness);
-
-        return new Model().addMesh(new Mesh(vBuffer, vArray, iBuffer, material));
+    public static Model createCube(final float size, final Material material) {
+        return new Model().addMesh(MeshFactory.createCube(size), material);
     }
 
     /**
@@ -118,105 +38,13 @@ public class ModelFactory {
      * The sphere's center is (0, 0, 0), it has normals, but no tangents
      * nor texture coordinates
      *
-     * @param radius     The radius of the sphere
-     * @param rings      The number of horizontal subdivisions
-     * @param segments   The number of horizontal subdivisions
-     * @param color      The color of the sphere
-     * @param isMetallic Is the sphere metallic ?
-     * @param roughness  The roughness of the sphere
+     * @param radius   The radius of the sphere
+     * @param rings    The number of horizontal subdivisions
+     * @param segments The number of horizontal subdivisions
+     * @param material The material of the model
      * @return A {@link Model}
      */
-    public static Model createSphere(final float radius, final int rings, final int segments, final Color color, final boolean isMetallic,
-                                     final float roughness) {
-
-        final FloatBuffer vertices = MemoryUtil.memAllocFloat((rings * segments + 2) * 6);
-        int bufferIt = 0;
-        for (int i = 1; i <= rings; i++) {
-            for (int j = 0; j < segments; j++) {
-                final float theta = (float) Math.PI * i / (rings + 1);
-                final float phi = (float) Math.PI * 2 * j / segments;
-
-                final float x = (float) Math.sin(theta) * (float) Math.sin(phi);
-                final float y = (float) Math.cos(theta);
-                final float z = (float) Math.sin(theta) * (float) Math.cos(phi);
-
-                vertices.put(bufferIt++, radius * x);
-                vertices.put(bufferIt++, radius * y);
-                vertices.put(bufferIt++, radius * z);
-                vertices.put(bufferIt++, x);
-                vertices.put(bufferIt++, y);
-                vertices.put(bufferIt++, z);
-
-            }
-        }
-
-        // top vertex
-        vertices.put(bufferIt++, 0);
-        vertices.put(bufferIt++, radius);
-        vertices.put(bufferIt++, 0);
-        vertices.put(bufferIt++, 0);
-        vertices.put(bufferIt++, 1);
-        vertices.put(bufferIt++, 0);
-
-        // bottom vertex
-        vertices.put(bufferIt++, 0);
-        vertices.put(bufferIt++, -radius);
-        vertices.put(bufferIt++, 0);
-        vertices.put(bufferIt++, 0);
-        vertices.put(bufferIt++, -1);
-        vertices.put(bufferIt, 0);
-
-        final VertexBuffer vBuffer = new VertexBuffer(vertices, new VertexBufferParams()
-                .element(new VertexElement(Mesh.POSITION_INDEX, Mesh.ELEMENTS_PER_POSITION))
-                .element(new VertexElement(Mesh.NORMAL_INDEX, Mesh.ELEMENTS_PER_NORMAL)));
-        MemoryUtil.memFree(vertices);
-
-        final VertexArray vArray = new VertexArray();
-        vArray.bind();
-        vArray.attachVertexBuffer(vBuffer);
-        vArray.unbind();
-
-        final IntBuffer indices = MemoryUtil.memAllocInt(segments * (rings - 1) * 6 + 6 * segments);
-        bufferIt = 0;
-        for (int i = 0; i < rings - 1; i++) {
-            for (int j = 0; j < segments; j++) {
-                final int index0 = rings * i + j;
-                final int index1 = rings * (i + 1) + j;
-                final int index2 = rings * (i + 1) + (j + 1) % segments;
-                final int index3 = rings * i + (j + 1) % segments;
-
-                indices.put(bufferIt++, index0);
-                indices.put(bufferIt++, index1);
-                indices.put(bufferIt++, index2);
-                indices.put(bufferIt++, index2);
-                indices.put(bufferIt++, index3);
-                indices.put(bufferIt++, index0);
-            }
-        }
-
-        final int topVertexIndex = rings * segments;
-        final int bottomVertexIndex = rings * segments + 1;
-        for (int i = 0; i < segments; i++) {
-            // top faces
-            indices.put(bufferIt++, topVertexIndex);
-            indices.put(bufferIt++, i);
-            indices.put(bufferIt++, (i + 1) % segments);
-
-            // bottom faces
-            indices.put(bufferIt++, rings * (segments - 1) + i);
-            indices.put(bufferIt++, bottomVertexIndex);
-            indices.put(bufferIt++, rings * (segments - 1) + (i + 1) % segments);
-        }
-
-        final IndexBuffer iBuffer = new IndexBuffer(indices, BufferUsage.STATIC_DRAW);
-        MemoryUtil.memFree(indices);
-
-        final Material material = new Material();
-        material.setDiffuseColor(color);
-        material.setMetallic(isMetallic ? 1 : 0);
-        material.setRoughness(roughness);
-
-        return new Model().addMesh(new Mesh(vBuffer, vArray, iBuffer, material));
+    public static Model createSphere(final float radius, final int rings, final int segments, final Material material) {
+        return new Model().addMesh(MeshFactory.createSphere(radius, rings, segments), material);
     }
-
 }

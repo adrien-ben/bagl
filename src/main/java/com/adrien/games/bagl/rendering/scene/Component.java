@@ -82,6 +82,7 @@ public abstract class Component {
         this.children.add(child);
         child.parent = this;
         child.parentScene = this.parentScene;
+        // FIXME : crash if the current component has no parent scene
         this.parentScene.addComponent(child);
     }
 
