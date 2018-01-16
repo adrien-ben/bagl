@@ -1,12 +1,13 @@
 # floor mtl
 
-newmtl default
-map_Kd stone.png
-map_bump stone_normal.png
-map_roughness stone_roughness.png
-
 newmtl test
 Kd 1 1 1
 metallic 1
 roughness 0.4
+
+newmtl mahogfloor
+map_Kd mahogfloor_basecolor.png
+map_roughness mahogfloor_roughness.png
+map_bump mahogfloor_normal.png
+metallic 0
 

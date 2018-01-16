@@ -1,7 +1,7 @@
 # cube model
 
 mtllib [floor.mtl]
-usemtl [default]
+usemtl [mahogfloor]
 
 v -5 0 5
 v 5 0 5
