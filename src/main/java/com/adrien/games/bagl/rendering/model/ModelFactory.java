@@ -47,4 +47,22 @@ public class ModelFactory {
     public static Model createSphere(final float radius, final int rings, final int segments, final Material material) {
         return new Model().addMesh(MeshFactory.createSphere(radius, rings, segments), material);
     }
+
+    /**
+     * Create a truncated cone model
+     * <p>
+     * The cone's center is (0, 0, 0), it has normals, but no tangents
+     * nor texture coordinates
+     *
+     * @param baseRadius The radius of the base
+     * @param topRadius  The radius of the top
+     * @param height     The height of the cone
+     * @param segments   The number of horizontal subdivisions
+     * @param material   The material of the model
+     * @return A {@link Model}
+     */
+    public static Model createCone(final float baseRadius, final float topRadius, final float height, final int segments,
+                                   final Material material) {
+        return new Model().addMesh(MeshFactory.createCylinder(baseRadius, topRadius, height, segments), material);
+    }
 }

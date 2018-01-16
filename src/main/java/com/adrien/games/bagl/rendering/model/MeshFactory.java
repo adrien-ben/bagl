@@ -1,5 +1,6 @@
 package com.adrien.games.bagl.rendering.model;
 
+import com.adrien.games.bagl.core.math.Vector3;
 import com.adrien.games.bagl.rendering.BufferUsage;
 import com.adrien.games.bagl.rendering.vertex.*;
 import org.lwjgl.system.MemoryStack;
@@ -187,6 +188,156 @@ public class MeshFactory {
 
         final IndexBuffer iBuffer = new IndexBuffer(indices, BufferUsage.STATIC_DRAW);
         MemoryUtil.memFree(indices);
+
+        return new Mesh(vBuffer, vArray, iBuffer);
+    }
+
+    /**
+     * Create a truncated cone mesh
+     * <p>
+     * The cone's center is (0, 0, 0), it has normals, but no tangents
+     * nor texture coordinates
+     *
+     * @param baseRadius The radius of the base
+     * @param topRadius  The radius of the top
+     * @param height     The height of the cone
+     * @param segments   The number of horizontal subdivisions
+     * @return A {@link Mesh}
+     */
+    public static Mesh createCylinder(final float baseRadius, final float topRadius, final float height, final int segments) {
+        final float halfHeight = height / 2;
+
+        final VertexBuffer vBuffer;
+        int bufferIt = 0;
+        try (final MemoryStack stack = MemoryStack.stackPush()) {
+            final FloatBuffer vertices = stack.mallocFloat((segments * 4 + 2) * 6);
+            // base center
+            vertices.put(bufferIt++, 0);
+            vertices.put(bufferIt++, -halfHeight);
+            vertices.put(bufferIt++, 0);
+            vertices.put(bufferIt++, 0);
+            vertices.put(bufferIt++, -1);
+            vertices.put(bufferIt++, 0);
+
+            // top center
+            vertices.put(bufferIt++, 0);
+            vertices.put(bufferIt++, halfHeight);
+            vertices.put(bufferIt++, 0);
+            vertices.put(bufferIt++, 0);
+            vertices.put(bufferIt++, 1);
+            vertices.put(bufferIt++, 0);
+
+            int baseIt = 2 * 6;
+            int topIt = (2 + segments) * 6;
+            for (int i = 0; i < segments; i++) {
+                final float theta = 2 * (float) Math.PI * i / segments;
+                final float x = (float) Math.cos(theta);
+                final float z = -(float) Math.sin(theta);
+
+                // base vertex
+                vertices.put(baseIt++, x * baseRadius);
+                vertices.put(baseIt++, -halfHeight);
+                vertices.put(baseIt++, z * baseRadius);
+                vertices.put(baseIt++, 0);
+                vertices.put(baseIt++, -1);
+                vertices.put(baseIt++, 0);
+
+                // top vertex
+                vertices.put(topIt++, x * topRadius);
+                vertices.put(topIt++, halfHeight);
+                vertices.put(topIt++, z * topRadius);
+                vertices.put(topIt++, 0);
+                vertices.put(topIt++, 1);
+                vertices.put(topIt++, 0);
+
+                bufferIt += 12;
+            }
+
+            final Vector3 tangent = new Vector3();
+            final Vector3 biTangent = new Vector3();
+            final Vector3 normal = new Vector3();
+
+            // side vertices
+            for (int i = 0; i < segments; i++) {
+                final float theta = 2 * (float) Math.PI * i / segments;
+                final float x = (float) Math.cos(theta);
+                final float z = -(float) Math.sin(theta);
+
+                // normal computation
+                final Vector3 top = new Vector3(x * topRadius, halfHeight, z * topRadius);
+                final Vector3 bottom = new Vector3(x * baseRadius, -halfHeight, z * baseRadius);
+                Vector3.sub(top, bottom, tangent);
+                tangent.normalise();
+                Vector3.cross(new Vector3(x, 0, z), tangent, biTangent);
+                biTangent.normalise();
+                Vector3.cross(tangent, biTangent, normal);
+                normal.normalise();
+
+                // top vertex
+                vertices.put(bufferIt++, x * topRadius);
+                vertices.put(bufferIt++, halfHeight);
+                vertices.put(bufferIt++, z * topRadius);
+                vertices.put(bufferIt++, normal.getX());
+                vertices.put(bufferIt++, normal.getY());
+                vertices.put(bufferIt++, normal.getZ());
+
+                // base vertex
+                vertices.put(bufferIt++, x * baseRadius);
+                vertices.put(bufferIt++, -halfHeight);
+                vertices.put(bufferIt++, z * baseRadius);
+                vertices.put(bufferIt++, normal.getX());
+                vertices.put(bufferIt++, normal.getY());
+                vertices.put(bufferIt++, normal.getZ());
+            }
+
+            vBuffer = new VertexBuffer(vertices, new VertexBufferParams()
+                    .element(new VertexElement(Mesh.POSITION_INDEX, Mesh.ELEMENTS_PER_POSITION))
+                    .element(new VertexElement(Mesh.NORMAL_INDEX, Mesh.ELEMENTS_PER_NORMAL)));
+        }
+
+        final IndexBuffer iBuffer;
+        bufferIt = 0;
+        try (final MemoryStack stack = MemoryStack.stackPush()) {
+            final IntBuffer indices = stack.mallocInt(segments * 2 * 3 + segments * 6);
+
+            // base
+            for (int i = 0; i < segments; i++) {
+                final int offset = 2;
+                indices.put(bufferIt++, 0);
+                indices.put(bufferIt++, offset + (i + 1) % segments);
+                indices.put(bufferIt++, offset + i);
+            }
+
+            // top
+            for (int i = 0; i < segments; i++) {
+                final int offset = segments + 2;
+                indices.put(bufferIt++, 1);
+                indices.put(bufferIt++, offset + i);
+                indices.put(bufferIt++, offset + (i + 1) % segments);
+            }
+
+            // side
+            for (int i = 0; i < segments; i++) {
+                final int offset = 2 * (segments + 1);
+                final int index0 = offset + i * 2;
+                final int index1 = offset + i * 2 + 1;
+                final int index2 = offset + (i * 2 + 3) % (2 * segments);
+                final int index3 = offset + (i * 2 + 2) % (2 * segments);
+
+                indices.put(bufferIt++, index0);
+                indices.put(bufferIt++, index1);
+                indices.put(bufferIt++, index2);
+                indices.put(bufferIt++, index2);
+                indices.put(bufferIt++, index3);
+                indices.put(bufferIt++, index0);
+            }
+            iBuffer = new IndexBuffer(indices, BufferUsage.STATIC_DRAW);
+        }
+
+        final VertexArray vArray = new VertexArray();
+        vArray.bind();
+        vArray.attachVertexBuffer(vBuffer);
+        vArray.unbind();
 
         return new Mesh(vBuffer, vArray, iBuffer);
     }

@@ -61,7 +61,8 @@ public class DeferredRenderingSample {
         private Model floor;
         private Model cube;
         private Model sphere;
-        private Mesh buld;
+        private Mesh pointBulb;
+        private Mesh spotBulb;
 
         private Spritebatch spritebatch;
 
@@ -104,7 +105,8 @@ public class DeferredRenderingSample {
             this.floor.destroy();
             this.cube.destroy();
             this.sphere.destroy();
-            this.buld.destroy();
+            this.pointBulb.destroy();
+            this.spotBulb.destroy();
         }
 
         private void loadMeshes() {
@@ -122,7 +124,8 @@ public class DeferredRenderingSample {
             //            this.cube = ModelFactory.fromFile("D:/Documents/3D Models/sphere/sphere.obj");
             final Material gold = new Material().setDiffuseColor(Color.YELLOW).setMetallic(1f).setRoughness(0.1f);
             this.sphere = ModelFactory.createSphere(0.5f, 25, 25, gold);
-            this.buld = MeshFactory.createSphere(0.1f, 8, 8);
+            this.pointBulb = MeshFactory.createSphere(0.1f, 8, 8);
+            this.spotBulb = MeshFactory.createCylinder(0.1f, 0.065f, 0.2f, 12);
         }
 
         private void initScene() {
@@ -170,27 +173,28 @@ public class DeferredRenderingSample {
 
         private void addPointLight(final Component parent, final Vector3 position, final PointLight light, final int id) {
             final String lightId = "point_light_" + id;
-            final ObjectComponent lightObject = this.createLightObject(parent, position, new Quaternion(), light.getColor(), lightId);
+            final ObjectComponent lightObject = this.createLightObject(parent, position, new Quaternion(), light.getColor(), this.pointBulb, lightId);
             final PointLightComponent lightComponent = new PointLightComponent(light, lightId, LIGHT_TAG);
             lightObject.addChild(lightComponent);
         }
 
         private void addSpotLight(final Component parent, final Vector3 position, final Quaternion rotation, final SpotLight light, final int id) {
             final String lightId = "spot_light_" + id;
-            final ObjectComponent lightObject = this.createLightObject(parent, position, rotation, light.getColor(), lightId);
+            final ObjectComponent lightObject = this.createLightObject(parent, position, rotation, light.getColor(), this.spotBulb, lightId);
             final SpotLightComponent component = new SpotLightComponent(light, lightId, LIGHT_TAG);
             lightObject.addChild(component);
         }
 
         private ObjectComponent createLightObject(final Component parent, final Vector3 position, final Quaternion rotation, final Color color,
-                                                  final String id) {
+                                                  final Mesh mesh, final String id) {
             final ObjectComponent lightObject = new ObjectComponent("object_" + id);
             lightObject.getLocalTransform().setTranslation(position).setRotation(rotation);
             parent.addChild(lightObject);
 
             final Material material = new Material().setEmissiveColor(color).setEmissiveIntensity(10f);
-            final Model bulbModel = new Model().addMesh(this.buld, material);
+            final Model bulbModel = new Model().addMesh(mesh, material);
             final ModelComponent modelComponent = new ModelComponent(bulbModel, "blub_" + id);
+            modelComponent.getLocalTransform().setRotation(Quaternion.fromEuler((float) Math.toRadians(-90f), 0, 0));
             lightObject.addChild(modelComponent);
 
             return lightObject;
