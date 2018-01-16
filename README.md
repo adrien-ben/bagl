@@ -31,6 +31,7 @@ The scene data is rendered in three textures :
 - Color(RGB) + Roughness(A) : RGBA8
 - Normals(RGB) + Metalness(A) : RGBA16
 - Depth (32F) : DEPTH_32F
+- Emissive (RBG) : RGB16
 
 ### PBR
 
@@ -48,6 +49,7 @@ We use the roughness/metallic workflow. The materials are described as follows :
 - Roughness ([0.0..1.0] or Texture)
 - Metallic ([0.0..1.0] or Texture)
 - Normal map (Texture, Optional)
+- Emissive color (Color or Texture)
 
 ### Lights
 
@@ -67,7 +69,6 @@ Basic shadow mapping is implemented. It only works for one directional light (Th
     - Sprites in 3D environment (debug icons, ...)
     - Area lights (sphere and tubes)
     - Fixing shadows
-- Review the Model/Mesh/Material model
 - 2D scene
 - Assets management
 - Replace the custom obj loader 
