@@ -18,6 +18,7 @@ import java.util.Objects;
  * <li>A metalness texture (default: null)
  * <li>An emissive color (default {@link Color#WHITE}
  * <li>An emissive intensity (default: 0f)
+ * <li>An emissive texture (default: null)
  * </ul>
  *
  * @author adrien
@@ -28,6 +29,7 @@ public class Material {
     private static final int ROUGHNESS_MAP_CHANNEL = 1;
     private static final int METALLIC_MAP_CHANNEL = 2;
     private static final int NORMAL_MAP_CHANNEL = 3;
+    private static final int EMISSIVE_MAP_CHANNEL = 4;
 
     private Color diffuseColor = Color.WHITE;
     private Texture diffuseMap = null;
@@ -37,6 +39,7 @@ public class Material {
     private Texture metallicMap = null;
     private Texture normalMap = null;
     private Color emissiveColor = Color.WHITE;
+    private Texture emissiveMap = null;
     private float emissiveIntensity = 0f;
 
     /**
@@ -78,8 +81,17 @@ public class Material {
 
         shader.setUniform("uMaterial.emissiveColor", this.emissiveColor);
         shader.setUniform("uMaterial.emissiveIntensity", this.emissiveIntensity);
+        final boolean hasEmissiveMap = Objects.nonNull(this.emissiveMap);
+        shader.setUniform("uMaterial.hasEmissiveMap", hasEmissiveMap);
+        if (hasEmissiveMap) {
+            shader.setUniform("uMaterial.emissiveMap", EMISSIVE_MAP_CHANNEL);
+            this.emissiveMap.bind(EMISSIVE_MAP_CHANNEL);
+        }
     }
 
+    /**
+     * Release resources
+     */
     public void destroy() {
         if (Objects.nonNull(this.diffuseMap)) {
             this.diffuseMap.destroy();
@@ -92,6 +104,9 @@ public class Material {
         }
         if (Objects.nonNull(this.normalMap)) {
             this.normalMap.destroy();
+        }
+        if (Objects.nonNull(this.emissiveMap)) {
+            this.emissiveMap.destroy();
         }
     }
 
@@ -177,6 +192,15 @@ public class Material {
 
     public Material setEmissiveIntensity(final float emissiveIntensity) {
         this.emissiveIntensity = emissiveIntensity;
+        return this;
+    }
+
+    public Texture getEmissiveMap() {
+        return this.emissiveMap;
+    }
+
+    public Material setEmissiveMap(final Texture emissiveMap) {
+        this.emissiveMap = emissiveMap;
         return this;
     }
 }

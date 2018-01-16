@@ -81,7 +81,7 @@ public class DeferredRenderingSample {
 
             this.font = new Font(FileUtils.getResourceAbsolutePath("/fonts/segoe/segoe.fnt"));
 
-            this.camera = new Camera(new Vector3(4f, 2.5f, 3f), new Vector3(-5f, -2.5f, -6f), new Vector3(Vector3.UP),
+            this.camera = new Camera(new Vector3(4f, 2.5f, 3f), new Vector3(-4f, -2.5f, -3f), new Vector3(Vector3.UP),
                     (float) Math.toRadians(60f), (float) this.width / (float) this.height, 0.1f, 1000);
             this.cameraController = new CameraController(this.camera);
 
@@ -163,29 +163,29 @@ public class DeferredRenderingSample {
             this.addPointLight(floor, new Vector3(3f, 0.6f, -3f), pointLight4, 4);
 
             final SpotLight spotLight0 = new SpotLight(10f, Color.RED, Vector3.ZERO, 20f, Vector3.ZERO, 20f, 5f);
-            this.addSpotLight(floor, new Vector3(-2f, 0.5f, -3f), Quaternion.fromEuler((float) Math.toRadians(45f), 0, 0), spotLight0, 0);
+            this.addSpotLight(floor, new Vector3(-3, 1f, -2), Quaternion.fromEuler((float) Math.toRadians(45f), 0, 0), spotLight0, 0);
             final SpotLight spotLight1 = new SpotLight(2f, Color.WHITE, Vector3.ZERO, 7f, Vector3.ZERO, 10f, 4f);
             this.addSpotLight(floor, new Vector3(2f, 2f, 2f), Quaternion.fromEuler((float) Math.toRadians(90f), 0, 0), spotLight1, 1);
         }
 
         private void addPointLight(final Component parent, final Vector3 position, final PointLight light, final int id) {
             final String lightId = "point_light_" + id;
-            final ObjectComponent lightObject = this.createLightObject(parent, position, light.getColor(), lightId);
+            final ObjectComponent lightObject = this.createLightObject(parent, position, new Quaternion(), light.getColor(), lightId);
             final PointLightComponent lightComponent = new PointLightComponent(light, lightId, LIGHT_TAG);
             lightObject.addChild(lightComponent);
         }
 
         private void addSpotLight(final Component parent, final Vector3 position, final Quaternion rotation, final SpotLight light, final int id) {
             final String lightId = "spot_light_" + id;
-            final ObjectComponent lightObject = this.createLightObject(parent, position, light.getColor(), lightId);
+            final ObjectComponent lightObject = this.createLightObject(parent, position, rotation, light.getColor(), lightId);
             final SpotLightComponent component = new SpotLightComponent(light, lightId, LIGHT_TAG);
-            component.getLocalTransform().setTranslation(position).setRotation(rotation);
             lightObject.addChild(component);
         }
 
-        private ObjectComponent createLightObject(final Component parent, final Vector3 position, final Color color, final String id) {
+        private ObjectComponent createLightObject(final Component parent, final Vector3 position, final Quaternion rotation, final Color color,
+                                                  final String id) {
             final ObjectComponent lightObject = new ObjectComponent("object_" + id);
-            lightObject.getLocalTransform().setTranslation(position);
+            lightObject.getLocalTransform().setTranslation(position).setRotation(rotation);
             parent.addChild(lightObject);
 
             final Material material = new Material().setEmissiveColor(color).setEmissiveIntensity(10f);

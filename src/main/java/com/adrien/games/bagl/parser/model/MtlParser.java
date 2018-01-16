@@ -20,79 +20,77 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
- * Super basic Wavefronts's mtl files parser.
- * <p> Only supports :
+ * Custom Wavefront's mtl files parser
+ * <p>
+ * Supports :
  * <ul>
  * <li>diffuse color (Kd R G B)
- * <li>diffuse map (map_Kd RELATIV_FILEPATH)
- * <li>specular color (Ks RGB)
- * <li>specular map (map_Ks RELATIV_FILEPATH)
- * <li>specular exponent (Ns VALUE)
+ * <li>diffuse map (map_Kd RELATIVE_FILE_PATH)
+ * <li>roughness factor (Kr FLOAT)
+ * <li>roughness map (map_Kr RELATIVE_FILE_PATH)
+ * <li>metalness factor (Km FLOAT)
+ * <li>metalness map (map_Km RELATIVE_FILE_PATH)
+ * <li>normal map (bump/map_bump RELATIVE_FILE_PATH)
+ * <li>emissive color (Ke R G B)
+ * </ul>
  *
- * @author Adrien
+ * @author adrien
  */
 public class MtlParser {
 
     private static final Logger log = LogManager.getLogger(MtlParser.class);
-
-    private static final String SPACE_SEP = " ";
-    private static final String NEW_MTL_FLAG = "newmtl";
-    private static final String DIFFUSE_COLOR_FLAG = "Kd";
-    private static final String DIFFUSE_MAP_FLAG = "map_Kd";
-    private static final String BUMP_MAP_FLAG = "bump|map_bump";
-    private static final String ROUGHNESS_FLAG = "roughness";
-    private static final String ROUGHNESS_MAP_FLAG = "map_roughness";
-    private static final String METALLIC_FLAG = "metallic";
-    private static final String METALLIC_MAP_FLAG = "map_metallic";
 
     private String currentFile;
     private final Map<String, Material> materials = new HashMap<>();
     private Material currentMaterial;
 
     /**
-     * Parses a Wavefronts's mtl file.
+     * Parse a Wavefront's mtl file
      *
-     * @param filePath The file to parse.
-     * @return A map with material name as key and a {@link Material} as value.
+     * @param filePath The file to parse
+     * @return A map with material name as key and a {@link Material} as value
      */
-    public Map<String, Material> parse(String filePath) {
-        log.info("Parsing .mtl file '{}'.", filePath);
+    public Map<String, Material> parse(final String filePath) {
+        log.trace("Parsing .mtl file '{}'.", filePath);
         this.reset(filePath);
-        try (Stream<String> stream = Files.lines(Paths.get(filePath))) {
+        try (final Stream<String> stream = Files.lines(Paths.get(filePath))) {
             stream.filter(StringUtils::isNotBlank).forEach(this::parseLine);
-        } catch (IOException e) {
-            log.error("Failed to parse file '{}'.", filePath, e);
+        } catch (final IOException e) {
             throw new EngineException("Failed to parse material file", e);
         }
-        return materials;
+        return this.materials;
     }
 
-    private void reset(String filePath) {
+    private void reset(final String filePath) {
         this.currentFile = filePath;
         this.materials.clear();
         this.currentMaterial = null;
     }
 
-    private void parseLine(String line) {
-        final String[] tokens = line.split(SPACE_SEP);
+    private void parseLine(final String line) {
+        final String[] tokens = line.split(" ");
         if (tokens.length > 0) {
-            String first = tokens[0];
-            if (NEW_MTL_FLAG.equals(first) && tokens.length > 1) {
+            final String first = tokens[0];
+            if ("newmtl".equals(first) && tokens.length > 1) {
                 this.parseNewMaterial(tokens[1]);
-            } else if (DIFFUSE_MAP_FLAG.equals(first) && tokens.length > 1) {
+            } else if ("map_Kd".equals(first) && tokens.length > 1) {
                 this.parseDiffuseMap(tokens[1]);
-            } else if (DIFFUSE_COLOR_FLAG.equals(first) && tokens.length > 3) {
+            } else if ("Kd".equals(first) && tokens.length > 3) {
                 this.parseDiffuseColor(tokens);
-            } else if (first.matches(BUMP_MAP_FLAG) && tokens.length > 1) {
+            } else if (first.matches("bump|map_bump") && tokens.length > 1) {
                 this.parseBumpMap(tokens[1]);
-            } else if (first.matches(ROUGHNESS_FLAG) && tokens.length > 1) {
+            } else if ("Kr".equals(first) && tokens.length > 1) {
                 this.parseRoughness(tokens[1]);
-            } else if (first.matches(ROUGHNESS_MAP_FLAG) && tokens.length > 1) {
+            } else if ("map_Kr".equals(first) && tokens.length > 1) {
                 this.parseRoughnessMap(tokens[1]);
-            } else if (first.matches(METALLIC_FLAG) && tokens.length > 1) {
+            } else if ("Km".equals(first) && tokens.length > 1) {
                 this.parseMetallic(tokens[1]);
-            } else if (first.matches(METALLIC_MAP_FLAG) && tokens.length > 1) {
+            } else if ("map_Km".equals(first) && tokens.length > 1) {
                 this.parseMetallicMap(tokens[1]);
+            } else if ("Ke".equals(first) && tokens.length > 3) {
+                this.parseEmissiveColor(tokens);
+            } else if ("map_Ke".equals(first) && tokens.length > 1) {
+                this.parseEmissiveMap(tokens[1]);
             }
         }
     }
@@ -140,6 +138,21 @@ public class MtlParser {
         this.currentMaterial.setMetallicMap(this.loadTexture(fileName));
     }
 
+    private void parseEmissiveColor(final String[] tokens) {
+        this.checkCurrentMaterial();
+        float r = Float.parseFloat(tokens[1]);
+        float g = Float.parseFloat(tokens[2]);
+        float b = Float.parseFloat(tokens[3]);
+        this.currentMaterial.setEmissiveColor(new Color(r, g, b));
+        this.currentMaterial.setEmissiveIntensity(1.0f);
+    }
+
+    private void parseEmissiveMap(final String filePath) {
+        this.checkCurrentMaterial();
+        this.currentMaterial.setEmissiveMap(this.loadTexture(filePath));
+        this.currentMaterial.setEmissiveIntensity(100f);
+    }
+
     private Texture loadTexture(String name) {
         final String folderPath = Paths.get(this.currentFile).getParent().toString();
         final String texturePath = folderPath + "/" + name;
@@ -150,13 +163,7 @@ public class MtlParser {
 
     private void checkCurrentMaterial() {
         if (Objects.isNull(this.currentMaterial)) {
-            handleParseError("Missing 'newmtl' declaration in '" + this.currentFile + "'.");
+            throw new EngineException("Missing 'newmtl' declaration in '" + this.currentFile + "'.");
         }
     }
-
-    private void handleParseError(String error) {
-        log.error(error);
-        throw new EngineException(error);
-    }
-
 }
