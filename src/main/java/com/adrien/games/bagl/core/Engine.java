@@ -7,7 +7,7 @@ import org.lwjgl.opengl.GL11;
 
 import java.util.Objects;
 
-import static org.lwjgl.opengl.GL11.glEnable;
+import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL32.GL_TEXTURE_CUBE_MAP_SEAMLESS;
 
 public final class Engine {
@@ -39,6 +39,8 @@ public final class Engine {
 
     private void initGlState() {
         glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_CULL_FACE);
     }
 
     public void start() {

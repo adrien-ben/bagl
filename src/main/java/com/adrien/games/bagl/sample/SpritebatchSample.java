@@ -10,9 +10,6 @@ import com.adrien.games.bagl.rendering.texture.TextureParameters;
 import java.io.File;
 import java.util.Random;
 
-import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
-import static org.lwjgl.opengl.GL11.glEnable;
-
 public class SpritebatchSample {
 
     private static final class TestGame implements Game {
@@ -47,7 +44,6 @@ public class SpritebatchSample {
                 this.rotations[i] = r.nextFloat() * 360;
             }
 
-            glEnable(GL_CULL_FACE);
             Engine.setBlendMode(BlendMode.TRANSPARENCY);
             Engine.setClearColor(Color.CORNFLOWER_BLUE);
         }
