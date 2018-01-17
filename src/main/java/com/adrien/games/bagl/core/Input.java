@@ -12,7 +12,7 @@ import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 
 /**
- * Input class.
+ * Input class
  * <p>
  * This class is used to manage input of the application. You can retrieve the state of keyboard
  * keys and mouse buttons.A key or button is either pressed or released. You can also retrieve the
@@ -22,6 +22,8 @@ import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
  * You can change the mouse input mode by using the {@link Input#setMouseMode(MouseMode)}
  * method. Note that if you are using {@link MouseMode#DISABLED} the cursor position is no
  * more related to the origin of the screen. It can be use to represents infinite movement
+ *
+ * @author adrien
  */
 public final class Input {
 
@@ -46,24 +48,29 @@ public final class Input {
         Arrays.fill(MOUSE_BUTTON_PREVIOUS_STATES, false);
     }
 
+    /**
+     * Private constructor to prevent instantiation
+     */
     private Input() {
     }
 
     /**
-     * Sets a callback to call when the mouse mode is updated. INTERNAL STUFF.
+     * Set a callback to call when the mouse mode is updated
+     * <p>
+     * This must not be called by end user
      *
-     * @param callback Callback.
+     * @param callback Callback
      */
-    static void setMouseModeUpdateCallback(final Consumer<MouseMode> callback) {
+    public static void setMouseModeUpdateCallback(final Consumer<MouseMode> callback) {
         MOUSE_MODE_UPDATE_CALLBACK = callback;
     }
 
     /**
-     * This method is used to change mouse input mode.
+     * This method is used to change mouse input mode
      * <p>
      * It does nothing except forwarding the call to a callback if one is defined
      *
-     * @param mouseMode Mouse mode to set.
+     * @param mouseMode Mouse mode to set
      */
     public static void setMouseMode(final MouseMode mouseMode) {
         if (Objects.nonNull(MOUSE_MODE_UPDATE_CALLBACK)) {
@@ -72,10 +79,12 @@ public final class Input {
     }
 
     /**
-     * Copies the current state into the previous state. This method must be called before
-     * handle current frame inputs. INTERNAL.
+     * Copy the current state into the previous state. This method must be called before
+     * handle current frame inputs
+     * <p>
+     * This must not be called by end user
      */
-    static void update() {
+    public static void update() {
         System.arraycopy(KEY_STATES, 0, KEY_PREVIOUS_STATES, 0, KEY_COUNT);
         System.arraycopy(MOUSE_BUTTON_STATES, 0, MOUSE_BUTTON_PREVIOUS_STATES, 0, MOUSE_BUTTON_COUNT);
         MOUSE_PREVIOUS_POSITION.set(MOUSE_POSITION);
@@ -84,15 +93,17 @@ public final class Input {
     }
 
     /**
-     * Keyboard event callback. INTERNAL.
+     * Keyboard event callback
+     * <p>
+     * This must not be called by end user
      *
-     * @param window   Handle of the source window.
-     * @param key      Key related to the event.
-     * @param scanCode Scan code of the key.
-     * @param action   Action of the event.
-     * @param mods     Modifiers applied.
+     * @param window   Handle of the source window
+     * @param key      Key related to the event
+     * @param scanCode Scan code of the key
+     * @param action   Action of the event
+     * @param mods     Modifiers applied
      */
-    static void handleKeyboard(long window, int key, int scanCode, int action, int mods) {
+    public static void handleKeyboard(final long window, final int key, final int scanCode, final int action, final int mods) {
         // TODO : handle modifiers
         if (key >= 0 && key < KEY_COUNT) {
             if (action == GLFW_PRESS) {
@@ -105,14 +116,16 @@ public final class Input {
     }
 
     /**
-     * Mouse buttons event callback. INTERNAL.
+     * Mouse buttons event callback
+     * <p>
+     * This must not be called by end user
      *
-     * @param window Handle of the source window.
-     * @param button Button related to the event.
-     * @param action Action of the event.
-     * @param mods   Modifiers applied.
+     * @param window Handle of the source window
+     * @param button Button related to the event
+     * @param action Action of the event
+     * @param mods   Modifiers applied
      */
-    static void handleMouseButton(long window, int button, int action, int mods) {
+    public static void handleMouseButton(final long window, final int button, final int action, final int mods) {
         if (button >= 0 && button < MOUSE_BUTTON_COUNT) {
             if (action == GLFW_PRESS) {
                 MOUSE_BUTTON_STATES[button] = true;
@@ -123,14 +136,16 @@ public final class Input {
     }
 
     /**
-     * Mouse movement callback. INTERNAL.
+     * Mouse movement callback
+     * <p>
+     * This must not be called by end user
      *
-     * @param window      The handle of the source window.
-     * @param x           Position of the cursor on x axis.
-     * @param y           Position of the cursor on y axis.
+     * @param window      The handle of the source window
+     * @param x           Position of the cursor on x axis
+     * @param y           Position of the cursor on y axis
      * @param updateDelta Should update the mouse position delta ?
      */
-    static void handleMouseMove(long window, double x, double y, boolean updateDelta) {
+    public static void handleMouseMove(final long window, final double x, final double y, final boolean updateDelta) {
         MOUSE_PREVIOUS_POSITION.set(MOUSE_POSITION);
         MOUSE_POSITION.setXY((float) x, (float) y);
         if (updateDelta) {
@@ -138,93 +153,102 @@ public final class Input {
         }
     }
 
-    static void handleScroll(long window, double xOffset, double yOffset) {
+    /**
+     * Mouse wheel callback
+     * <p>
+     * This must not be called by end user
+     *
+     * @param window  The handle of the source window
+     * @param xOffset The horizontal offset of the wheel
+     * @param yOffset The vertical offset of the wheel
+     */
+    public static void handleScroll(final long window, final double xOffset, final double yOffset) {
         log.debug("Scroll update issued. xOffset: {} - yOffset: {}", xOffset, yOffset);
         WHEEL_DELTA.setXY((float) xOffset, (float) yOffset);
     }
 
     /**
-     * Checks if a key is pressed.
+     * Check if a key is pressed
      *
-     * @param key Key to check.
-     * @return true if pressed.
+     * @param key Key to check
+     * @return true if pressed
      */
-    public static boolean isKeyPressed(int key) {
+    public static boolean isKeyPressed(final int key) {
         return KEY_STATES[key];
     }
 
     /**
-     * Checks if a key was just pressed this frame.
+     * Check if a key was just pressed this frame
      *
-     * @param key Key to check.
-     * @return true if it was just pressed.
+     * @param key Key to check
+     * @return true if it was just pressed
      */
-    public static boolean wasKeyPressed(int key) {
+    public static boolean wasKeyPressed(final int key) {
         return KEY_STATES[key] && !KEY_PREVIOUS_STATES[key];
     }
 
     /**
-     * Checks if a key was just released this frame.
+     * Check if a key was just released this frame
      *
-     * @param key Key to check.
-     * @return true if it was just released.
+     * @param key Key to check
+     * @return true if it was just released
      */
-    public static boolean wasKeyReleased(int key) {
+    public static boolean wasKeyReleased(final int key) {
         return !KEY_STATES[key] && KEY_PREVIOUS_STATES[key];
     }
 
     /**
-     * Checks if a mouse button is pressed.
+     * Check if a mouse button is pressed
      *
-     * @param button Button to check.
-     * @return true if pressed.
+     * @param button Button to check
+     * @return true if pressed
      */
-    public static boolean isMouseButtonPressed(int button) {
+    public static boolean isMouseButtonPressed(final int button) {
         return MOUSE_BUTTON_STATES[button];
     }
 
     /**
-     * Checks if a mouse button was just pressed this frame.
+     * Check if a mouse button was just pressed this frame
      *
-     * @param button Button to check.
-     * @return true if it was just pressed.
+     * @param button Button to check
+     * @return true if it was just pressed
      */
-    public static boolean wasMouseButtonPressed(int button) {
+    public static boolean wasMouseButtonPressed(final int button) {
         return MOUSE_BUTTON_STATES[button] && !MOUSE_BUTTON_PREVIOUS_STATES[button];
     }
 
     /**
-     * Checks if a mouse button was just released this frame.
+     * Check if a mouse button was just released this frame
      *
-     * @param button Button to check.
-     * @return true if it was just released.
+     * @param button Button to check
+     * @return true if it was just released
      */
-    public static boolean wasMouseButtonReleased(int button) {
+    public static boolean wasMouseButtonReleased(final int button) {
         return !MOUSE_BUTTON_STATES[button] && MOUSE_BUTTON_PREVIOUS_STATES[button];
     }
 
     /**
-     * Gets the current cursor position on screen. (0, 0) is the bottom left corner of the screen.
+     * Get the current cursor position on screen. (0, 0) is the bottom left corner of the screen
      *
-     * @return The cursor position.
+     * @return The cursor position
      */
     public static Vector2 getMousePosition() {
         return MOUSE_POSITION;
     }
 
     /**
-     * Gets the previous cursor position. (0, 0) is the bottom left corner of the screen.
+     * Get the previous cursor position. (0, 0) is the bottom left corner of the screen
      *
-     * @return The previous cursor position.
+     * @return The previous cursor position
      */
     public static Vector2 getMousePreviousPosition() {
         return MOUSE_PREVIOUS_POSITION;
     }
 
     /**
-     * Gets the displacement of the mouse from the previous frame to the current one.
+     * Get the displacement of the mouse from the previous frame to the current one
      *
-     * @return The displacement of the mouse.
+     * @return The displacement of the mouse
      */
     public static Vector2 getMouseDelta() {
         return MOUSE_DELTA;
