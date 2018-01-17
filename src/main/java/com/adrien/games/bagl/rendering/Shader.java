@@ -4,16 +4,17 @@ import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.core.EngineException;
 import com.adrien.games.bagl.core.math.Matrix4;
 import com.adrien.games.bagl.core.math.Vector3;
-import com.adrien.games.bagl.parser.glsl.GLSLParser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL32;
+import org.lwjgl.system.MemoryStack;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
@@ -32,16 +33,13 @@ public class Shader {
     /** Currently bound shader */
     private static Shader boundShader;
 
-    private final ArrayList<String> uniforms;
     private final HashMap<String, Integer> uniformToLocationMap;
     private final ArrayList<Integer> attachedShaders;
     private final int handle;
 
     public Shader() {
-        this.uniforms = new ArrayList<>();
         this.uniformToLocationMap = new HashMap<>();
         this.attachedShaders = new ArrayList<>();
-        //TODO: error check
         this.handle = GL20.glCreateProgram();
     }
 
@@ -89,10 +87,7 @@ public class Shader {
      */
     private void addShader(final String file, final int type) {
         final String source = this.loadSource(file);
-        //TODO: check
-        this.parseShader(source);
 
-        //TODO: error check
         final int shader = GL20.glCreateShader(type);
         GL20.glShaderSource(shader, source);
         GL20.glCompileShader(shader);
@@ -126,27 +121,6 @@ public class Shader {
             log.error("Error while loading shader source file.", e);
         }
         return sourceBuilder.toString();
-    }
-
-    /**
-     * Parses a glsl source. Finds data structures and add uniforms to the uniform's list
-     *
-     * @param source The glsl source code
-     */
-    private void parseShader(final String source) {
-        final GLSLParser glslParser = new GLSLParser();
-        glslParser.parse(source);
-        this.uniforms.addAll(glslParser.getUniforms());
-    }
-
-    /**
-     * Ask OpenGL for the uniform location and adds it to uniformToLocationMap
-     *
-     * @param name The name of the uniform
-     */
-    private void addUniform(final String name) {
-        final int location = GL20.glGetUniformLocation(handle, name);
-        this.uniformToLocationMap.put(name, location);
     }
 
     /**
@@ -258,14 +232,19 @@ public class Shader {
         if (GL20.glGetProgrami(this.handle, GL20.GL_LINK_STATUS) == GL11.GL_FALSE) {
             final int logLength = GL20.glGetProgrami(this.handle, GL20.GL_INFO_LOG_LENGTH);
             final String message = GL20.glGetProgramInfoLog(this.handle, logLength);
-            log.error("Shader linking error : {}", message);
             throw new EngineException("Shader linking error : " + message);
         }
 
-        for (final String uniform : this.uniforms) {
-            addUniform(uniform);
+        final int uniformCount = GL20.glGetProgrami(this.handle, GL20.GL_ACTIVE_UNIFORMS);
+        final int maxLength = GL20.glGetProgrami(this.handle, GL20.GL_ACTIVE_UNIFORM_MAX_LENGTH);
+        try (final MemoryStack stack = MemoryStack.stackPush()) {
+            final IntBuffer size = stack.mallocInt(1);
+            final IntBuffer type = stack.mallocInt(1);
+            for (int i = 0; i < uniformCount; i++) {
+                final String name = GL20.glGetActiveUniform(this.handle, i, maxLength, size, type);
+                this.uniformToLocationMap.put(name, i);
+            }
         }
-        this.uniforms.clear();
         return this;
     }
 
