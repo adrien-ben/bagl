@@ -36,6 +36,7 @@ public final class Input {
     private static final Vector2 MOUSE_PREVIOUS_POSITION = new Vector2();
     private static final Vector2 MOUSE_POSITION = new Vector2();
     private static final Vector2 MOUSE_DELTA = new Vector2();
+    private static final Vector2 WHEEL_DELTA = new Vector2();
     private static Consumer<MouseMode> MOUSE_MODE_UPDATE_CALLBACK = null;
 
     static {
@@ -79,6 +80,7 @@ public final class Input {
         System.arraycopy(MOUSE_BUTTON_STATES, 0, MOUSE_BUTTON_PREVIOUS_STATES, 0, MOUSE_BUTTON_COUNT);
         MOUSE_PREVIOUS_POSITION.set(MOUSE_POSITION);
         Vector2.sub(MOUSE_POSITION, MOUSE_PREVIOUS_POSITION, MOUSE_DELTA);
+        WHEEL_DELTA.setXY(0f, 0f);
     }
 
     /**
@@ -134,6 +136,11 @@ public final class Input {
         if (updateDelta) {
             Vector2.sub(MOUSE_POSITION, MOUSE_PREVIOUS_POSITION, MOUSE_DELTA);
         }
+    }
+
+    static void handleScroll(long window, double xOffset, double yOffset) {
+        log.debug("Scroll update issued. xOffset: {} - yOffset: {}", xOffset, yOffset);
+        WHEEL_DELTA.setXY((float) xOffset, (float) yOffset);
     }
 
     /**
@@ -221,6 +228,10 @@ public final class Input {
      */
     public static Vector2 getMouseDelta() {
         return MOUSE_DELTA;
+    }
+
+    public static Vector2 getWheelDelta() {
+        return WHEEL_DELTA;
     }
 
 }

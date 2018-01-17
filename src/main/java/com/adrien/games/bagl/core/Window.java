@@ -48,6 +48,7 @@ public final class Window {
 
         GLFW.glfwSetKeyCallback(this.windowHandle, Input::handleKeyboard);
         GLFW.glfwSetMouseButtonCallback(this.windowHandle, Input::handleMouseButton);
+        GLFW.glfwSetScrollCallback(this.windowHandle, Input::handleScroll);
 
         Input.setMouseModeUpdateCallback(this::setMouseMode);
         this.setMouseMode(MouseMode.NORMAL);
