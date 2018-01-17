@@ -3,7 +3,6 @@ package com.adrien.games.bagl.core;
 import com.adrien.games.bagl.rendering.BlendMode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.lwjgl.opengl.GL11;
 
 import java.util.Objects;
 
@@ -69,7 +68,7 @@ public final class Engine {
     }
 
     private void render() {
-        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         this.game.render();
     }
 
@@ -85,7 +84,7 @@ public final class Engine {
      * @param color The clear color.
      */
     public static void setClearColor(final Color color) {
-        GL11.glClearColor(color.getRed(), color.getGreen(), color.getBlue(), 1);
+        glClearColor(color.getRed(), color.getGreen(), color.getBlue(), 1);
     }
 
     /**
@@ -95,10 +94,10 @@ public final class Engine {
      */
     public static void setBlendMode(final BlendMode blendMode) {
         if (blendMode == BlendMode.NONE) {
-            GL11.glDisable(GL11.GL_BLEND);
+            glDisable(GL_BLEND);
         } else {
-            GL11.glEnable(GL11.GL_BLEND);
-            GL11.glBlendFunc(blendMode.getGlSource(), blendMode.getGlDestination());
+            glEnable(GL_BLEND);
+            glBlendFunc(blendMode.getGlSource(), blendMode.getGlDestination());
         }
     }
 

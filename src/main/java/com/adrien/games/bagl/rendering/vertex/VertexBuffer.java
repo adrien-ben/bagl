@@ -156,7 +156,7 @@ public class VertexBuffer {
      * @param message  The error message if they don't match
      */
     private void checkType(final DataType dataType, final DataType expected, final String message) {
-        if (dataType != expected) {
+        if (!dataType.equals(expected)) {
             throw new EngineException(message);
         }
     }

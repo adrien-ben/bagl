@@ -171,31 +171,18 @@ public class MeshFactory {
                 final float y = (float) Math.cos(theta);
                 final float z = (float) Math.sin(theta) * (float) Math.cos(phi);
 
-                vertices.put(bufferIt++, radius * x);
-                vertices.put(bufferIt++, radius * y);
-                vertices.put(bufferIt++, radius * z);
-                vertices.put(bufferIt++, x);
-                vertices.put(bufferIt++, y);
-                vertices.put(bufferIt++, z);
-
+                bufferIt += MeshFactory.insertElement3f(vertices, bufferIt, radius * x, radius * y, radius * z);
+                bufferIt += MeshFactory.insertElement3f(vertices, bufferIt, x, y, z);
             }
         }
 
         // top vertex
-        vertices.put(bufferIt++, 0);
-        vertices.put(bufferIt++, radius);
-        vertices.put(bufferIt++, 0);
-        vertices.put(bufferIt++, 0);
-        vertices.put(bufferIt++, 1);
-        vertices.put(bufferIt++, 0);
+        bufferIt += MeshFactory.insertElement3f(vertices, bufferIt, 0, radius, 0);
+        bufferIt += MeshFactory.insertElement3f(vertices, bufferIt, 0, 1, 0);
 
         // bottom vertex
-        vertices.put(bufferIt++, 0);
-        vertices.put(bufferIt++, -radius);
-        vertices.put(bufferIt++, 0);
-        vertices.put(bufferIt++, 0);
-        vertices.put(bufferIt++, -1);
-        vertices.put(bufferIt, 0);
+        bufferIt += MeshFactory.insertElement3f(vertices, bufferIt, 0, -radius, 0);
+        MeshFactory.insertElement3f(vertices, bufferIt, 0, -1, 0);
 
         final VertexBuffer vBuffer = new VertexBuffer(vertices, new VertexBufferParams()
                 .element(new VertexElement(Mesh.POSITION_INDEX, Mesh.ELEMENTS_PER_POSITION))
@@ -216,12 +203,8 @@ public class MeshFactory {
                 final int index2 = rings * (i + 1) + (j + 1) % segments;
                 final int index3 = rings * i + (j + 1) % segments;
 
-                indices.put(bufferIt++, index0);
-                indices.put(bufferIt++, index1);
-                indices.put(bufferIt++, index2);
-                indices.put(bufferIt++, index2);
-                indices.put(bufferIt++, index3);
-                indices.put(bufferIt++, index0);
+                bufferIt += MeshFactory.insertElement3i(indices, bufferIt, index0, index1, index2);
+                bufferIt += MeshFactory.insertElement3i(indices, bufferIt, index2, index3, index0);
             }
         }
 
@@ -229,14 +212,11 @@ public class MeshFactory {
         final int bottomVertexIndex = rings * segments + 1;
         for (int i = 0; i < segments; i++) {
             // top faces
-            indices.put(bufferIt++, topVertexIndex);
-            indices.put(bufferIt++, i);
-            indices.put(bufferIt++, (i + 1) % segments);
+            bufferIt += MeshFactory.insertElement3i(indices, bufferIt, topVertexIndex, i, (i + 1) % segments);
 
             // bottom faces
-            indices.put(bufferIt++, rings * (segments - 1) + i);
-            indices.put(bufferIt++, bottomVertexIndex);
-            indices.put(bufferIt++, rings * (segments - 1) + (i + 1) % segments);
+            bufferIt += MeshFactory.insertElement3i(indices, bufferIt, rings * (segments - 1) + i,
+                    bottomVertexIndex, rings * (segments - 1) + (i + 1) % segments);
         }
 
         final IndexBuffer iBuffer = new IndexBuffer(indices, BufferUsage.STATIC_DRAW);
@@ -258,27 +238,68 @@ public class MeshFactory {
      * @return A {@link Mesh}
      */
     public static Mesh createCylinder(final float baseRadius, final float topRadius, final float height, final int segments) {
-        final float halfHeight = height * 0.5f;
+        final VertexBuffer vBuffer = MeshFactory.createConeVertices(baseRadius, topRadius, height, segments);
 
-        final VertexBuffer vBuffer;
+        final IndexBuffer iBuffer;
+        int bufferIt = 0;
+        try (final MemoryStack stack = MemoryStack.stackPush()) {
+            final IntBuffer indices = stack.mallocInt(segments * 2 * 3 + segments * 6);
+
+            // base
+            for (int i = 0; i < segments; i++) {
+                final int offset = 2;
+                bufferIt += MeshFactory.insertElement3i(indices, bufferIt, 0, offset + (i + 1) % segments, offset + i);
+            }
+
+            // top
+            for (int i = 0; i < segments; i++) {
+                final int offset = segments + 2;
+                bufferIt += MeshFactory.insertElement3i(indices, bufferIt, 1, offset + i, offset + (i + 1) % segments);
+            }
+
+            // side
+            for (int i = 0; i < segments; i++) {
+                final int offset = 2 * (segments + 1);
+                final int index0 = offset + i * 2;
+                final int index1 = offset + i * 2 + 1;
+                final int index2 = offset + (i * 2 + 3) % (2 * segments);
+                final int index3 = offset + (i * 2 + 2) % (2 * segments);
+
+                bufferIt += MeshFactory.insertElement3i(indices, bufferIt, index0, index1, index2);
+                bufferIt += MeshFactory.insertElement3i(indices, bufferIt, index2, index3, index0);
+            }
+            iBuffer = new IndexBuffer(indices, BufferUsage.STATIC_DRAW);
+        }
+
+        final VertexArray vArray = new VertexArray();
+        vArray.bind();
+        vArray.attachVertexBuffer(vBuffer);
+        vArray.unbind();
+
+        return new Mesh(vBuffer, vArray, iBuffer);
+    }
+
+    /**
+     * Create a vertex buffer containing the vertices of a cone
+     *
+     * @param baseRadius The radius of the base
+     * @param topRadius  The radius of the top
+     * @param height     The height of the cone
+     * @param segments   The number of horizontal subdivisions
+     * @return A {@link VertexBuffer}
+     */
+    private static VertexBuffer createConeVertices(final float baseRadius, final float topRadius, final float height, final int segments) {
+        final float halfHeight = height * 0.5f;
         int bufferIt = 0;
         try (final MemoryStack stack = MemoryStack.stackPush()) {
             final FloatBuffer vertices = stack.mallocFloat((segments * 4 + 2) * 6);
             // base center
-            vertices.put(bufferIt++, 0);
-            vertices.put(bufferIt++, -halfHeight);
-            vertices.put(bufferIt++, 0);
-            vertices.put(bufferIt++, 0);
-            vertices.put(bufferIt++, -1);
-            vertices.put(bufferIt++, 0);
+            bufferIt += MeshFactory.insertElement3f(vertices, bufferIt, 0, -halfHeight, 0);
+            bufferIt += MeshFactory.insertElement3f(vertices, bufferIt, 0, -1, 0);
 
             // top center
-            vertices.put(bufferIt++, 0);
-            vertices.put(bufferIt++, halfHeight);
-            vertices.put(bufferIt++, 0);
-            vertices.put(bufferIt++, 0);
-            vertices.put(bufferIt++, 1);
-            vertices.put(bufferIt++, 0);
+            bufferIt += MeshFactory.insertElement3f(vertices, bufferIt, 0, halfHeight, 0);
+            bufferIt += MeshFactory.insertElement3f(vertices, bufferIt, 0, 1, 0);
 
             int baseIt = 2 * 6;
             int topIt = (2 + segments) * 6;
@@ -288,20 +309,12 @@ public class MeshFactory {
                 final float z = -(float) Math.sin(theta);
 
                 // base vertex
-                vertices.put(baseIt++, x * baseRadius);
-                vertices.put(baseIt++, -halfHeight);
-                vertices.put(baseIt++, z * baseRadius);
-                vertices.put(baseIt++, 0);
-                vertices.put(baseIt++, -1);
-                vertices.put(baseIt++, 0);
+                baseIt += MeshFactory.insertElement3f(vertices, baseIt, x * baseRadius, -halfHeight, z * baseRadius);
+                baseIt += MeshFactory.insertElement3f(vertices, baseIt, 0, -1, 0);
 
                 // top vertex
-                vertices.put(topIt++, x * topRadius);
-                vertices.put(topIt++, halfHeight);
-                vertices.put(topIt++, z * topRadius);
-                vertices.put(topIt++, 0);
-                vertices.put(topIt++, 1);
-                vertices.put(topIt++, 0);
+                topIt += MeshFactory.insertElement3f(vertices, topIt, x * topRadius, halfHeight, z * topRadius);
+                topIt += MeshFactory.insertElement3f(vertices, topIt, 0, 1, 0);
 
                 bufferIt += 12;
             }
@@ -327,71 +340,51 @@ public class MeshFactory {
                 normal.normalise();
 
                 // top vertex
-                vertices.put(bufferIt++, x * topRadius);
-                vertices.put(bufferIt++, halfHeight);
-                vertices.put(bufferIt++, z * topRadius);
-                vertices.put(bufferIt++, normal.getX());
-                vertices.put(bufferIt++, normal.getY());
-                vertices.put(bufferIt++, normal.getZ());
+                bufferIt += MeshFactory.insertElement3f(vertices, bufferIt, x * topRadius, halfHeight, z * topRadius);
+                bufferIt += MeshFactory.insertElement3f(vertices, bufferIt, normal.getX(), normal.getY(), normal.getZ());
 
                 // base vertex
-                vertices.put(bufferIt++, x * baseRadius);
-                vertices.put(bufferIt++, -halfHeight);
-                vertices.put(bufferIt++, z * baseRadius);
-                vertices.put(bufferIt++, normal.getX());
-                vertices.put(bufferIt++, normal.getY());
-                vertices.put(bufferIt++, normal.getZ());
+                bufferIt += MeshFactory.insertElement3f(vertices, bufferIt, x * baseRadius, -halfHeight, z * baseRadius);
+                bufferIt += MeshFactory.insertElement3f(vertices, bufferIt, normal.getX(), normal.getY(), normal.getZ());
             }
 
-            vBuffer = new VertexBuffer(vertices, new VertexBufferParams()
+            return new VertexBuffer(vertices, new VertexBufferParams()
                     .element(new VertexElement(Mesh.POSITION_INDEX, Mesh.ELEMENTS_PER_POSITION))
                     .element(new VertexElement(Mesh.NORMAL_INDEX, Mesh.ELEMENTS_PER_NORMAL)));
         }
+    }
 
-        final IndexBuffer iBuffer;
-        bufferIt = 0;
-        try (final MemoryStack stack = MemoryStack.stackPush()) {
-            final IntBuffer indices = stack.mallocInt(segments * 2 * 3 + segments * 6);
+    /**
+     * Inserts three floats in a float buffer
+     *
+     * @param buffer The buffer to insert data into
+     * @param index  The index where to insert the data
+     * @param f1     The first float to insert
+     * @param f2     The second float to insert
+     * @param f3     The third float to insert
+     * @return The number of inserted elements
+     */
+    private static int insertElement3f(final FloatBuffer buffer, final int index, final float f1, final float f2, final float f3) {
+        buffer.put(index, f1);
+        buffer.put(index + 1, f2);
+        buffer.put(index + 2, f3);
+        return 3;
+    }
 
-            // base
-            for (int i = 0; i < segments; i++) {
-                final int offset = 2;
-                indices.put(bufferIt++, 0);
-                indices.put(bufferIt++, offset + (i + 1) % segments);
-                indices.put(bufferIt++, offset + i);
-            }
-
-            // top
-            for (int i = 0; i < segments; i++) {
-                final int offset = segments + 2;
-                indices.put(bufferIt++, 1);
-                indices.put(bufferIt++, offset + i);
-                indices.put(bufferIt++, offset + (i + 1) % segments);
-            }
-
-            // side
-            for (int i = 0; i < segments; i++) {
-                final int offset = 2 * (segments + 1);
-                final int index0 = offset + i * 2;
-                final int index1 = offset + i * 2 + 1;
-                final int index2 = offset + (i * 2 + 3) % (2 * segments);
-                final int index3 = offset + (i * 2 + 2) % (2 * segments);
-
-                indices.put(bufferIt++, index0);
-                indices.put(bufferIt++, index1);
-                indices.put(bufferIt++, index2);
-                indices.put(bufferIt++, index2);
-                indices.put(bufferIt++, index3);
-                indices.put(bufferIt++, index0);
-            }
-            iBuffer = new IndexBuffer(indices, BufferUsage.STATIC_DRAW);
-        }
-
-        final VertexArray vArray = new VertexArray();
-        vArray.bind();
-        vArray.attachVertexBuffer(vBuffer);
-        vArray.unbind();
-
-        return new Mesh(vBuffer, vArray, iBuffer);
+    /**
+     * Inserts three integers in a float buffer
+     *
+     * @param buffer The buffer to insert data into
+     * @param index  The index where to insert the data
+     * @param i1     The first int to insert
+     * @param i2     The second int to insert
+     * @param i3     The third int to insert
+     * @return The number of inserted elements
+     */
+    private static int insertElement3i(final IntBuffer buffer, final int index, final int i1, final int i2, final int i3) {
+        buffer.put(index, i1);
+        buffer.put(index + 1, i2);
+        buffer.put(index + 2, i3);
+        return 3;
     }
 }

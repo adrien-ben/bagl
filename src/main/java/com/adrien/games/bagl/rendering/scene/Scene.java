@@ -1,7 +1,7 @@
 package com.adrien.games.bagl.rendering.scene;
 
 import com.adrien.games.bagl.core.EngineException;
-import com.adrien.games.bagl.rendering.Renderer;
+import com.adrien.games.bagl.rendering.scene.components.ObjectComponent;
 import com.adrien.games.bagl.rendering.texture.Cubemap;
 
 import java.util.*;
@@ -33,11 +33,7 @@ public class Scene {
      * Construct an empty scene with a empty root component
      */
     public Scene() {
-        this.root = new Component("root", "root") {
-            @Override
-            public void visit(final Renderer renderer) {
-            }
-        };
+        this.root = new ObjectComponent("root", "root");
         this.root.setParentScene(this);
         this.componentsById = new HashMap<>();
         this.componentsByTag = new HashMap<>();

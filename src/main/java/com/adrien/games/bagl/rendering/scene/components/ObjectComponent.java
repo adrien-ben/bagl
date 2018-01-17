@@ -30,5 +30,6 @@ public class ObjectComponent extends Component {
      */
     @Override
     public void visit(final Renderer renderer) {
+        // left empty on purpose
     }
 }
