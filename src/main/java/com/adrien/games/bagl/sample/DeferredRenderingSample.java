@@ -84,7 +84,7 @@ public class DeferredRenderingSample {
 
             this.camera = new Camera(new Vector3(4f, 2.5f, 3f), new Vector3(-4f, -2.5f, -3f), new Vector3(Vector3.UP),
                     (float) Math.toRadians(60f), (float) this.width / (float) this.height, 0.1f, 1000);
-            this.cameraController = new CameraController(this.camera);
+            this.cameraController = new FPSCameraController(this.camera);
 
             this.scene = new Scene();
             this.loadMeshes();
