@@ -4,6 +4,8 @@ import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.core.EngineException;
 import com.adrien.games.bagl.core.math.Matrix4;
 import com.adrien.games.bagl.core.math.Vector3;
+import com.adrien.games.bagl.resource.ShaderLoader;
+import com.adrien.games.bagl.utils.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.GL11;
@@ -11,9 +13,6 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL32;
 import org.lwjgl.system.MemoryStack;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,7 +25,7 @@ import java.util.Objects;
  */
 public class Shader {
 
-    private static final Logger log = LogManager.getLogger(Shader.class);
+    private static final Logger LOG = LogManager.getLogger(Shader.class);
 
     private static final String BASE_SHADER_DIRECTORY = "/shaders/";
 
@@ -86,7 +85,8 @@ public class Shader {
      * @param type The type of shader to load
      */
     private void addShader(final String file, final int type) {
-        final String source = this.loadSource(file);
+        final String resourcePath = BASE_SHADER_DIRECTORY + file.replaceAll("^/*", "");
+        final String source = new ShaderLoader().loadSourceFile(FileUtils.getResourceAbsolutePath(resourcePath));
 
         final int shader = GL20.glCreateShader(type);
         GL20.glShaderSource(shader, source);
@@ -95,7 +95,7 @@ public class Shader {
         if (GL20.glGetShaderi(shader, GL20.GL_COMPILE_STATUS) == GL11.GL_FALSE) {
             final int logLength = GL20.glGetShaderi(shader, GL20.GL_INFO_LOG_LENGTH);
             final String message = GL20.glGetShaderInfoLog(shader, logLength);
-            log.error("Shader compilation error : {}", message);
+            LOG.error("Shader compilation error : {}", message);
             throw new EngineException("Shader compilation error : " + message);
         }
         GL20.glAttachShader(this.handle, shader);
@@ -103,24 +103,31 @@ public class Shader {
     }
 
     /**
-     * Load the shader's source code from a file
+     * Compile the OpenGL program object. If it fails, displays the program's log on the
+     * error output. Adds all the uniforms parsed in the shaders' source
      *
-     * @param name The path to the file containing the source code
-     * @return The shader's source code
+     * @return This for chaining
      */
-    private String loadSource(final String name) {
-        final String resourcePath = BASE_SHADER_DIRECTORY + name.replaceAll("^/*", "");
-        log.trace("Loading shader source : {}", resourcePath);
-        final StringBuilder sourceBuilder = new StringBuilder();
-        try (final BufferedReader sourceReader = new BufferedReader(new InputStreamReader(Shader.class.getResourceAsStream(resourcePath)))) {
-            while (sourceReader.ready()) {
-                sourceBuilder.append(sourceReader.readLine());
-                sourceBuilder.append('\n');
-            }
-        } catch (IOException e) {
-            log.error("Error while loading shader source file.", e);
+    public Shader compile() {
+        LOG.trace("Compiling shader");
+        GL20.glLinkProgram(this.handle);
+        if (GL20.glGetProgrami(this.handle, GL20.GL_LINK_STATUS) == GL11.GL_FALSE) {
+            final int logLength = GL20.glGetProgrami(this.handle, GL20.GL_INFO_LOG_LENGTH);
+            final String message = GL20.glGetProgramInfoLog(this.handle, logLength);
+            throw new EngineException("Shader linking error : " + message);
         }
-        return sourceBuilder.toString();
+
+        final int uniformCount = GL20.glGetProgrami(this.handle, GL20.GL_ACTIVE_UNIFORMS);
+        final int maxLength = GL20.glGetProgrami(this.handle, GL20.GL_ACTIVE_UNIFORM_MAX_LENGTH);
+        try (final MemoryStack stack = MemoryStack.stackPush()) {
+            final IntBuffer size = stack.mallocInt(1);
+            final IntBuffer type = stack.mallocInt(1);
+            for (int i = 0; i < uniformCount; i++) {
+                final String name = GL20.glGetActiveUniform(this.handle, i, maxLength, size, type);
+                this.uniformToLocationMap.put(name, i);
+            }
+        }
+        return this;
     }
 
     /**
@@ -221,34 +228,6 @@ public class Shader {
     }
 
     /**
-     * Compile the OpenGL program object. If it fails, displays the program's log on the
-     * error output. Adds all the uniforms parsed in the shaders' source
-     *
-     * @return This for chaining
-     */
-    public Shader compile() {
-        log.trace("Compiling shader");
-        GL20.glLinkProgram(this.handle);
-        if (GL20.glGetProgrami(this.handle, GL20.GL_LINK_STATUS) == GL11.GL_FALSE) {
-            final int logLength = GL20.glGetProgrami(this.handle, GL20.GL_INFO_LOG_LENGTH);
-            final String message = GL20.glGetProgramInfoLog(this.handle, logLength);
-            throw new EngineException("Shader linking error : " + message);
-        }
-
-        final int uniformCount = GL20.glGetProgrami(this.handle, GL20.GL_ACTIVE_UNIFORMS);
-        final int maxLength = GL20.glGetProgrami(this.handle, GL20.GL_ACTIVE_UNIFORM_MAX_LENGTH);
-        try (final MemoryStack stack = MemoryStack.stackPush()) {
-            final IntBuffer size = stack.mallocInt(1);
-            final IntBuffer type = stack.mallocInt(1);
-            for (int i = 0; i < uniformCount; i++) {
-                final String name = GL20.glGetActiveUniform(this.handle, i, maxLength, size, type);
-                this.uniformToLocationMap.put(name, i);
-            }
-        }
-        return this;
-    }
-
-    /**
      * Bind the OpenGL program object
      *
      * @return This for chaining
@@ -289,5 +268,4 @@ public class Shader {
         }
         GL20.glDeleteProgram(this.handle);
     }
-
 }
