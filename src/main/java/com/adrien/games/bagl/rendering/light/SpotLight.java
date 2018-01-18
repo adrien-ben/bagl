@@ -1,17 +1,17 @@
 package com.adrien.games.bagl.rendering.light;
 
 import com.adrien.games.bagl.core.Color;
-import com.adrien.games.bagl.core.math.Vector3;
+import org.joml.Vector3f;
 
 public class SpotLight extends PointLight {
 
-    private Vector3 direction;
+    private Vector3f direction;
     private float angle;
     private float edge;
     private float cutOff;
     private float outerCutOff;
 
-    public SpotLight(float intensity, Color color, Vector3 position, float radius, Vector3 direction,
+    public SpotLight(float intensity, Color color, Vector3f position, float radius, Vector3f direction,
                      float angle, float edge) {
         super(intensity, color, position, radius);
         this.direction = direction;
@@ -29,11 +29,11 @@ public class SpotLight extends PointLight {
         this.outerCutOff = computeCutOff(this.angle + this.edge);
     }
 
-    public Vector3 getDirection() {
+    public Vector3f getDirection() {
         return direction;
     }
 
-    public void setDirection(Vector3 direction) {
+    public void setDirection(Vector3f direction) {
         this.direction = direction;
     }
 

@@ -1,9 +1,6 @@
 package com.adrien.games.bagl.sample;
 
 import com.adrien.games.bagl.core.*;
-import com.adrien.games.bagl.core.math.Quaternion;
-import com.adrien.games.bagl.core.math.Vector2;
-import com.adrien.games.bagl.core.math.Vector3;
 import com.adrien.games.bagl.rendering.Material;
 import com.adrien.games.bagl.rendering.Renderer;
 import com.adrien.games.bagl.rendering.Spritebatch;
@@ -22,6 +19,9 @@ import com.adrien.games.bagl.rendering.text.Font;
 import com.adrien.games.bagl.rendering.text.TextRenderer;
 import com.adrien.games.bagl.rendering.texture.Cubemap;
 import com.adrien.games.bagl.utils.FileUtils;
+import org.joml.Quaternionf;
+import org.joml.Vector2f;
+import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 
 public class DeferredRenderingSample {
@@ -82,7 +82,7 @@ public class DeferredRenderingSample {
 
             this.font = new Font(FileUtils.getResourceAbsolutePath("/fonts/segoe/segoe.fnt"));
 
-            this.camera = new Camera(new Vector3(4f, 2.5f, 3f), new Vector3(-4f, -2.5f, -3f), new Vector3(Vector3.UP),
+            this.camera = new Camera(new Vector3f(4f, 2.5f, 3f), new Vector3f(-4f, -2.5f, -3f), new Vector3f(0, 1, 0),
                     (float) Math.toRadians(60f), (float) this.width / (float) this.height, 0.1f, 1000);
             this.cameraController = new FPSCameraController(this.camera);
 
@@ -121,7 +121,7 @@ public class DeferredRenderingSample {
 
             this.floor = ModelFactory.fromFile(FileUtils.getResourceAbsolutePath("/models/floor/floor.obj"));
             this.cube = ModelFactory.fromFile(FileUtils.getResourceAbsolutePath("/models/cube/cube.obj"));
-            //            this.cube = ModelFactory.fromFile("D:/Documents/3D Models/sphere/sphere.obj");
+//            this.cube = ModelFactory.fromFile("D:/Documents/3D Models/gun/gun.obj");
             final Material gold = new Material().setDiffuseColor(Color.YELLOW).setMetallic(1f).setRoughness(0.1f);
             this.sphere = ModelFactory.createSphere(0.5f, 25, 25, gold);
             this.pointBulb = MeshFactory.createSphere(0.1f, 8, 8);
@@ -132,60 +132,60 @@ public class DeferredRenderingSample {
             this.scene.getRoot().addChild(new CameraComponent(this.camera, "camera"));
 
             final ModelComponent floorComponent = new ModelComponent(this.floor, "floor");
-            floorComponent.getLocalTransform().setScale(new Vector3(2f, 2f, 2f));
+            floorComponent.getLocalTransform().setScale(new Vector3f(2f, 2f, 2f));
             this.scene.getRoot().addChild(floorComponent);
 
             final ModelComponent cubeComponent = new ModelComponent(this.cube, "cube");
-            cubeComponent.getLocalTransform().setTranslation(new Vector3(0f, 0.5f, 0f));
+            cubeComponent.getLocalTransform().setTranslation(new Vector3f(0f, 0.5f, 0f));
             floorComponent.addChild(cubeComponent);
 
             final ModelComponent sphereComponent = new ModelComponent(this.sphere, "sphere");
-            sphereComponent.getLocalTransform().setTranslation(new Vector3(1.5f, 0.6f, 0f));
+            sphereComponent.getLocalTransform().setTranslation(new Vector3f(1.5f, 0.6f, 0f));
             floorComponent.addChild(sphereComponent);
 
             this.setUpLights();
         }
 
         private void setUpLights() {
-            final DirectionalLight sinLight = new DirectionalLight(0.8f, Color.WHITE, Vector3.ZERO);
+            final DirectionalLight sinLight = new DirectionalLight(0.8f, Color.WHITE, new Vector3f());
             final DirectionalLightComponent directionalLight0 = new DirectionalLightComponent(sinLight, "sun", LIGHT_TAG);
-            directionalLight0.getLocalTransform().setRotation(Quaternion.fromEuler((float) Math.toRadians(45.f), 0, (float) Math.toRadians(45.f)));
+            directionalLight0.getLocalTransform().setRotation(new Quaternionf().rotation((float) Math.toRadians(45f), (float) Math.toRadians(45f), 0));
             this.scene.getRoot().addChild(directionalLight0);
 
             final Component floor = this.scene.getComponentById("floor").orElseThrow(() -> new EngineException("No component 'floor' in the scene"));
 
-            final PointLight pointLight0 = new PointLight(8f, Color.GREEN, Vector3.ZERO, 3f);
-            this.addPointLight(floor, new Vector3(4f, 0.5f, 2f), pointLight0, 0);
-            final PointLight pointLight1 = new PointLight(10f, Color.YELLOW, Vector3.ZERO, 2f);
-            this.addPointLight(floor, new Vector3(-4f, 0.2f, 2f), pointLight1, 1);
-            final PointLight pointLight2 = new PointLight(10f, Color.BLUE, Vector3.ZERO, 2f);
-            this.addPointLight(floor, new Vector3(0f, 0.5f, 3f), pointLight2, 2);
-            final PointLight pointLight3 = new PointLight(10f, Color.TURQUOISE, Vector3.ZERO, 2f);
-            this.addPointLight(floor, new Vector3(-1f, 0.1f, 1f), pointLight3, 3);
-            final PointLight pointLight4 = new PointLight(10f, Color.CYAN, Vector3.ZERO, 2f);
-            this.addPointLight(floor, new Vector3(3f, 0.6f, -3f), pointLight4, 4);
+            final PointLight pointLight0 = new PointLight(8f, Color.GREEN, new Vector3f(), 3f);
+            this.addPointLight(floor, new Vector3f(4f, 0.5f, 2f), pointLight0, 0);
+            final PointLight pointLight1 = new PointLight(10f, Color.YELLOW, new Vector3f(), 2f);
+            this.addPointLight(floor, new Vector3f(-4f, 0.2f, 2f), pointLight1, 1);
+            final PointLight pointLight2 = new PointLight(10f, Color.BLUE, new Vector3f(), 2f);
+            this.addPointLight(floor, new Vector3f(0f, 0.5f, 3f), pointLight2, 2);
+            final PointLight pointLight3 = new PointLight(10f, Color.TURQUOISE, new Vector3f(), 2f);
+            this.addPointLight(floor, new Vector3f(-1f, 0.1f, 1f), pointLight3, 3);
+            final PointLight pointLight4 = new PointLight(10f, Color.CYAN, new Vector3f(), 2f);
+            this.addPointLight(floor, new Vector3f(3f, 0.6f, -3f), pointLight4, 4);
 
-            final SpotLight spotLight0 = new SpotLight(10f, Color.RED, Vector3.ZERO, 20f, Vector3.ZERO, 20f, 5f);
-            this.addSpotLight(floor, new Vector3(-3, 1f, -2), Quaternion.fromEuler((float) Math.toRadians(45f), 0, 0), spotLight0, 0);
-            final SpotLight spotLight1 = new SpotLight(2f, Color.WHITE, Vector3.ZERO, 7f, Vector3.ZERO, 10f, 4f);
-            this.addSpotLight(floor, new Vector3(2f, 2f, 2f), Quaternion.fromEuler((float) Math.toRadians(90f), 0, 0), spotLight1, 1);
+            final SpotLight spotLight0 = new SpotLight(10f, Color.RED, new Vector3f(), 20f, new Vector3f(), 20f, 5f);
+            this.addSpotLight(floor, new Vector3f(-3, 1f, -2), new Quaternionf().rotationX((float) Math.toRadians(45f)), spotLight0, 0);
+            final SpotLight spotLight1 = new SpotLight(2f, Color.WHITE, new Vector3f(), 7f, new Vector3f(), 10f, 4f);
+            this.addSpotLight(floor, new Vector3f(2f, 2f, 2f), new Quaternionf().rotationX((float) Math.toRadians(90f)), spotLight1, 1);
         }
 
-        private void addPointLight(final Component parent, final Vector3 position, final PointLight light, final int id) {
+        private void addPointLight(final Component parent, final Vector3f position, final PointLight light, final int id) {
             final String lightId = "point_light_" + id;
-            final ObjectComponent lightObject = this.createLightObject(parent, position, new Quaternion(), light.getColor(), this.pointBulb, lightId);
+            final ObjectComponent lightObject = this.createLightObject(parent, position, new Quaternionf(), light.getColor(), this.pointBulb, lightId);
             final PointLightComponent lightComponent = new PointLightComponent(light, lightId, LIGHT_TAG);
             lightObject.addChild(lightComponent);
         }
 
-        private void addSpotLight(final Component parent, final Vector3 position, final Quaternion rotation, final SpotLight light, final int id) {
+        private void addSpotLight(final Component parent, final Vector3f position, final Quaternionf rotation, final SpotLight light, final int id) {
             final String lightId = "spot_light_" + id;
             final ObjectComponent lightObject = this.createLightObject(parent, position, rotation, light.getColor(), this.spotBulb, lightId);
             final SpotLightComponent component = new SpotLightComponent(light, lightId, LIGHT_TAG);
             lightObject.addChild(component);
         }
 
-        private ObjectComponent createLightObject(final Component parent, final Vector3 position, final Quaternion rotation, final Color color,
+        private ObjectComponent createLightObject(final Component parent, final Vector3f position, final Quaternionf rotation, final Color color,
                                                   final Mesh mesh, final String id) {
             final ObjectComponent lightObject = new ObjectComponent("object_" + id);
             lightObject.getLocalTransform().setTranslation(position).setRotation(rotation);
@@ -194,7 +194,7 @@ public class DeferredRenderingSample {
             final Material material = new Material().setEmissiveColor(color).setEmissiveIntensity(10f);
             final Model bulbModel = new Model().addMesh(mesh, material);
             final ModelComponent modelComponent = new ModelComponent(bulbModel, "blub_" + id);
-            modelComponent.getLocalTransform().setRotation(Quaternion.fromEuler((float) Math.toRadians(-90f), 0, 0));
+            modelComponent.getLocalTransform().setRotation(new Quaternionf().rotationX((float) Math.toRadians(-90f)));
             lightObject.addChild(modelComponent);
 
             return lightObject;
@@ -206,8 +206,7 @@ public class DeferredRenderingSample {
                 float speed = Input.isKeyPressed(GLFW.GLFW_KEY_1) ? 20 : -20;
                 this.scene.getComponentById("sun").ifPresent(component -> {
                     final Transform transform = new Transform()
-                            .setRotation(Quaternion.fromAngleAndVector((float) Math.toRadians(speed * time.getElapsedTime()),
-                                    new Vector3(1f, 1f, 0f).normalise()));
+                            .setRotation(new Quaternionf().setAngleAxis((float) Math.toRadians(speed * time.getElapsedTime()), 1f, 1f, 0f));
                     component.getLocalTransform().transform(transform);
                 });
             }
@@ -259,26 +258,26 @@ public class DeferredRenderingSample {
 
             this.spritebatch.start();
             if (this.displayMode == DisplayMode.ALBEDO) {
-                this.spritebatch.draw(this.renderer.getGBuffer().getColorTexture(0), Vector2.ZERO);
+                this.spritebatch.draw(this.renderer.getGBuffer().getColorTexture(0), new Vector2f());
             } else if (this.displayMode == DisplayMode.NORMALS) {
-                this.spritebatch.draw(this.renderer.getGBuffer().getColorTexture(1), Vector2.ZERO);
+                this.spritebatch.draw(this.renderer.getGBuffer().getColorTexture(1), new Vector2f());
             } else if (this.displayMode == DisplayMode.DEPTH) {
-                this.spritebatch.draw(this.renderer.getGBuffer().getDepthTexture(), Vector2.ZERO);
+                this.spritebatch.draw(this.renderer.getGBuffer().getDepthTexture(), new Vector2f());
             } else if (this.displayMode == DisplayMode.EMISSIVE) {
-                this.spritebatch.draw(this.renderer.getGBuffer().getColorTexture(2), Vector2.ZERO);
+                this.spritebatch.draw(this.renderer.getGBuffer().getColorTexture(2), new Vector2f());
             } else if (this.displayMode == DisplayMode.SHADOW) {
-                this.spritebatch.draw(this.renderer.getShadowBuffer().getDepthTexture(), Vector2.ZERO);
+                this.spritebatch.draw(this.renderer.getShadowBuffer().getDepthTexture(), new Vector2f());
             } else if (this.displayMode == DisplayMode.UNPROCESSED) {
-                this.spritebatch.draw(this.renderer.getFinalBuffer().getColorTexture(0), Vector2.ZERO);
+                this.spritebatch.draw(this.renderer.getFinalBuffer().getColorTexture(0), new Vector2f());
             }
             this.spritebatch.end();
 
-            this.textRenderer.render("Toggle instructions : F1", this.font, new Vector2(0.01f, 0.97f), 0.03f, Color.BLACK);
+            this.textRenderer.render("Toggle instructions : F1", this.font, new Vector2f(0.01f, 0.97f), 0.03f, Color.BLACK);
             if (this.displayInstructions) {
-                this.textRenderer.render(INSTRUCTIONS, this.font, new Vector2(0.01f, 0.94f), 0.03f, Color.BLACK);
+                this.textRenderer.render(INSTRUCTIONS, this.font, new Vector2f(0.01f, 0.94f), 0.03f, Color.BLACK);
             }
             final long lightCount = this.scene.getComponentsByTag(LIGHT_TAG).count();
-            this.textRenderer.render("Lights: " + lightCount, this.font, new Vector2(0.01f, 0f), 0.03f, Color.BLACK);
+            this.textRenderer.render("Lights: " + lightCount, this.font, new Vector2f(0.01f, 0f), 0.03f, Color.BLACK);
         }
     }
 

@@ -2,17 +2,19 @@ package com.adrien.games.bagl.rendering;
 
 import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.core.EngineException;
-import com.adrien.games.bagl.core.math.Matrix4;
-import com.adrien.games.bagl.core.math.Vector3;
 import com.adrien.games.bagl.resource.ShaderLoader;
 import com.adrien.games.bagl.utils.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL32;
 import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.MemoryUtil;
 
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,14 +34,32 @@ public class Shader {
     /** Currently bound shader */
     private static Shader boundShader;
 
+    private final FloatBuffer matrix4fBuffer;
     private final HashMap<String, Integer> uniformToLocationMap;
     private final ArrayList<Integer> attachedShaders;
     private final int handle;
 
+    /**
+     * Construct a shader
+     * <p>
+     * This create a openGL shader program
+     */
     public Shader() {
+        this.matrix4fBuffer = MemoryUtil.memAllocFloat(16);
         this.uniformToLocationMap = new HashMap<>();
         this.attachedShaders = new ArrayList<>();
         this.handle = GL20.glCreateProgram();
+    }
+
+    /**
+     * Release OpenGL resources
+     */
+    public void destroy() {
+        MemoryUtil.memFree(this.matrix4fBuffer);
+        for (final Integer i : this.attachedShaders) {
+            GL20.glDeleteShader(i);
+        }
+        GL20.glDeleteProgram(this.handle);
     }
 
     /**
@@ -165,10 +185,10 @@ public class Shader {
      * @param matrix The value of the uniform
      * @return This for chaining
      */
-    public Shader setUniform(final String name, final Matrix4 matrix) {
+    public Shader setUniform(final String name, final Matrix4f matrix) {
         this.checkIsShaderBound();
         final int location = this.getLocation(name);
-        GL20.glUniformMatrix4fv(location, false, matrix.get());
+        GL20.glUniformMatrix4fv(location, false, matrix.get(this.matrix4fBuffer));
         return this;
     }
 
@@ -179,10 +199,10 @@ public class Shader {
      * @param vector The value of the uniform
      * @return This for chaining
      */
-    public Shader setUniform(final String name, final Vector3 vector) {
+    public Shader setUniform(final String name, final Vector3f vector) {
         this.checkIsShaderBound();
         final int location = this.getLocation(name);
-        GL20.glUniform3f(location, vector.getX(), vector.getY(), vector.getZ());
+        GL20.glUniform3f(location, vector.x(), vector.y(), vector.z());
         return this;
     }
 
@@ -257,15 +277,5 @@ public class Shader {
     public static void unbind() {
         GL20.glUseProgram(0);
         Shader.boundShader = null;
-    }
-
-    /**
-     * Release OpenGL resources
-     */
-    public void destroy() {
-        for (final Integer i : this.attachedShaders) {
-            GL20.glDeleteShader(i);
-        }
-        GL20.glDeleteProgram(this.handle);
     }
 }

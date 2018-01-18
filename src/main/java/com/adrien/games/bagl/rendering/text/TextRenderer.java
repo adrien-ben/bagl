@@ -3,13 +3,13 @@ package com.adrien.games.bagl.rendering.text;
 import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.core.Configuration;
 import com.adrien.games.bagl.core.Engine;
-import com.adrien.games.bagl.core.math.Vector2;
 import com.adrien.games.bagl.rendering.BlendMode;
 import com.adrien.games.bagl.rendering.BufferUsage;
 import com.adrien.games.bagl.rendering.Shader;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.texture.TextureRegion;
 import com.adrien.games.bagl.rendering.vertex.*;
+import org.joml.Vector2f;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
@@ -129,13 +129,13 @@ public class TextRenderer {
      * @param scale    The scale of the text
      * @param color    The color of the text
      */
-    public void render(final String text, final Font font, final Vector2 position, final float scale, final Color color) {
+    public void render(final String text, final Font font, final Vector2f position, final float scale, final Color color) {
         final float aspectRatio = (float) this.configuration.getXResolution() / this.configuration.getYResolution();
         final float vScale = scale / font.getLineGap() * 2;
         final float hScale = vScale / aspectRatio;
 
-        final Caret caret = new Caret(font.getLineGap() * vScale, position.getX() * 2 - HALF_SCREEN_SIZE,
-                position.getY() * 2 - HALF_SCREEN_SIZE);
+        final Caret caret = new Caret(font.getLineGap() * vScale, position.x() * 2 - HALF_SCREEN_SIZE,
+                position.y() * 2 - HALF_SCREEN_SIZE);
 
         final int textLength = text.length();
         for (int i = 0; i < textLength; i++) {

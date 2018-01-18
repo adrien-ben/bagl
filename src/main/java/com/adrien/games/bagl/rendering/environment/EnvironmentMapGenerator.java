@@ -2,12 +2,12 @@ package com.adrien.games.bagl.rendering.environment;
 
 import com.adrien.games.bagl.core.Camera;
 import com.adrien.games.bagl.core.Configuration;
-import com.adrien.games.bagl.core.math.Vector3;
 import com.adrien.games.bagl.rendering.*;
 import com.adrien.games.bagl.rendering.texture.*;
 import com.adrien.games.bagl.rendering.vertex.*;
 import com.adrien.games.bagl.utils.HDRImage;
 import com.adrien.games.bagl.utils.ImageUtils;
+import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
@@ -225,17 +225,17 @@ public class EnvironmentMapGenerator {
 
     private Camera[] initCameras() {
         final Camera[] cameras = new Camera[6];
-        cameras[0] = this.createCamera(new Vector3(1, 0, 0), new Vector3(0, -1, 0)); // right
-        cameras[1] = this.createCamera(new Vector3(-1, 0, 0), new Vector3(0, -1, 0)); // left
-        cameras[2] = this.createCamera(new Vector3(0, 1, 0), new Vector3(0, 0, 1)); // top
-        cameras[3] = this.createCamera(new Vector3(0, -1, 0), new Vector3(0, 0, -1)); // bottom
-        cameras[4] = this.createCamera(new Vector3(0, 0, 1), new Vector3(0, -1, 0)); // back
-        cameras[5] = this.createCamera(new Vector3(0, 0, -1), new Vector3(0, -1, 0)); // front
+        cameras[0] = this.createCamera(new Vector3f(1, 0, 0), new Vector3f(0, -1, 0)); // right
+        cameras[1] = this.createCamera(new Vector3f(-1, 0, 0), new Vector3f(0, -1, 0)); // left
+        cameras[2] = this.createCamera(new Vector3f(0, 1, 0), new Vector3f(0, 0, 1)); // top
+        cameras[3] = this.createCamera(new Vector3f(0, -1, 0), new Vector3f(0, 0, -1)); // bottom
+        cameras[4] = this.createCamera(new Vector3f(0, 0, 1), new Vector3f(0, -1, 0)); // back
+        cameras[5] = this.createCamera(new Vector3f(0, 0, -1), new Vector3f(0, -1, 0)); // front
         return cameras;
     }
 
-    private Camera createCamera(final Vector3 direction, final Vector3 up) {
-        return new Camera(new Vector3(0, 0, 0), direction, up, FIELD_OF_VIEW, ASPECT_RATIO, NEAR_PLANE, FAR_PLANE);
+    private Camera createCamera(final Vector3f direction, final Vector3f up) {
+        return new Camera(new Vector3f(0, 0, 0), direction, up, FIELD_OF_VIEW, ASPECT_RATIO, NEAR_PLANE, FAR_PLANE);
     }
 
 }

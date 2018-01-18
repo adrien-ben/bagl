@@ -1,8 +1,6 @@
 package com.adrien.games.bagl.parser.model;
 
 import com.adrien.games.bagl.core.EngineException;
-import com.adrien.games.bagl.core.math.Vector2;
-import com.adrien.games.bagl.core.math.Vector3;
 import com.adrien.games.bagl.rendering.BufferUsage;
 import com.adrien.games.bagl.rendering.Material;
 import com.adrien.games.bagl.rendering.model.Mesh;
@@ -12,6 +10,8 @@ import com.adrien.games.bagl.utils.Tuple2;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joml.Vector2f;
+import org.joml.Vector3f;
 import org.lwjgl.system.MemoryUtil;
 
 import java.io.IOException;
@@ -120,7 +120,7 @@ public class ObjParser implements ModelParser {
             final float x = Float.parseFloat(tokens[1]);
             final float y = Float.parseFloat(tokens[2]);
             final float z = Float.parseFloat(tokens[3]);
-            MeshBuilder.positions.add(new Vector3(x, y, z));
+            MeshBuilder.positions.add(new Vector3f(x, y, z));
         } else {
             this.handleParseError("Found position with less than 3 components at line " + this.currentLine + ".");
         }
@@ -130,7 +130,7 @@ public class ObjParser implements ModelParser {
         if (tokens.length >= 3) {
             final float u = Float.parseFloat(tokens[1]);
             final float v = Float.parseFloat(tokens[2]);
-            MeshBuilder.coordinates.add(new Vector2(u, v));
+            MeshBuilder.coordinates.add(new Vector2f(u, v));
         } else {
             this.handleParseError("Found texture coordinates with less than 2 components at line " + this.currentLine + ".");
         }
@@ -141,7 +141,7 @@ public class ObjParser implements ModelParser {
             final float x = Float.parseFloat(tokens[1]);
             final float y = Float.parseFloat(tokens[2]);
             final float z = Float.parseFloat(tokens[3]);
-            MeshBuilder.normals.add(new Vector3(x, y, z));
+            MeshBuilder.normals.add(new Vector3f(x, y, z));
         } else {
             this.handleParseError("Found normal with less than 3 components at line " + this.currentLine + ".");
         }
@@ -222,12 +222,12 @@ public class ObjParser implements ModelParser {
      */
     private static class MeshBuilder {
 
-        private final static List<Vector3> positions = new ArrayList<>();
-        private final static List<Vector2> coordinates = new ArrayList<>();
-        private final static List<Vector3> normals = new ArrayList<>();
+        private final static List<Vector3f> positions = new ArrayList<>();
+        private final static List<Vector2f> coordinates = new ArrayList<>();
+        private final static List<Vector3f> normals = new ArrayList<>();
 
         private final String meshName;
-        private final List<Vector3> tangents = new ArrayList<>();
+        private final List<Vector3f> tangents = new ArrayList<>();
         private final List<Face> faces = new ArrayList<>();
         private final List<Integer> faceIndices = new ArrayList<>();
         private final Map<Face, Integer> faceToIndexMap = new HashMap<>();
@@ -273,23 +273,23 @@ public class ObjParser implements ModelParser {
             final FloatBuffer vertices = MemoryUtil.memAllocFloat(vertexCount * Mesh.ELEMENTS_PER_VERTEX);
             for (int i = 0; i < vertexCount; i++) {
                 final Face face = this.faces.get(i);
-                final Vector3 position = positions.get(face.getPositionIndex());
-                final Vector3 normal = normals.get(face.getNormalIndex());
-                final Vector2 coordinates = face.getCoordsIndex() > -1 ? MeshBuilder.coordinates.get(face.getCoordsIndex()) : new Vector2();
-                final Vector3 tangent = this.tangents.isEmpty() ? new Vector3() : this.tangents.get(i);
+                final Vector3f position = MeshBuilder.positions.get(face.getPositionIndex());
+                final Vector3f normal = MeshBuilder.normals.get(face.getNormalIndex());
+                final Vector2f coordinates = face.getCoordsIndex() > -1 ? MeshBuilder.coordinates.get(face.getCoordsIndex()) : new Vector2f();
+                final Vector3f tangent = this.tangents.isEmpty() ? new Vector3f() : this.tangents.get(i);
 
                 final int index = i * Mesh.ELEMENTS_PER_VERTEX;
-                vertices.put(index, position.getX());
-                vertices.put(index + 1, position.getY());
-                vertices.put(index + 2, position.getZ());
-                vertices.put(index + 3, normal.getX());
-                vertices.put(index + 4, normal.getY());
-                vertices.put(index + 5, normal.getZ());
-                vertices.put(index + 6, coordinates.getX());
-                vertices.put(index + 7, coordinates.getY());
-                vertices.put(index + 8, tangent.getX());
-                vertices.put(index + 9, tangent.getY());
-                vertices.put(index + 10, tangent.getZ());
+                vertices.put(index, position.x());
+                vertices.put(index + 1, position.y());
+                vertices.put(index + 2, position.z());
+                vertices.put(index + 3, normal.x());
+                vertices.put(index + 4, normal.y());
+                vertices.put(index + 5, normal.z());
+                vertices.put(index + 6, coordinates.x());
+                vertices.put(index + 7, coordinates.y());
+                vertices.put(index + 8, tangent.x());
+                vertices.put(index + 9, tangent.y());
+                vertices.put(index + 10, tangent.z());
             }
             final VertexBuffer vBuffer = new VertexBuffer(vertices, new VertexBufferParams()
                     .element(new VertexElement(Mesh.POSITION_INDEX, Mesh.ELEMENTS_PER_POSITION))
@@ -301,7 +301,7 @@ public class ObjParser implements ModelParser {
         }
 
         private void computeTangents() {
-            final Vector3[] tangents = new Vector3[this.faces.size()];
+            final Vector3f[] tangents = new Vector3f[this.faces.size()];
             for (int i = 0; i < this.faceIndices.size(); i += 3) {
 
                 final int index0 = this.faceIndices.get(i);
@@ -312,25 +312,24 @@ public class ObjParser implements ModelParser {
                 final Face face1 = this.faces.get(index1);
                 final Face face2 = this.faces.get(index2);
 
-                final Vector3 pos0 = positions.get(face0.getPositionIndex());
-                final Vector3 pos1 = positions.get(face1.getPositionIndex());
-                final Vector3 pos2 = positions.get(face2.getPositionIndex());
-                final Vector3 edge1 = Vector3.sub(pos1, pos0);
-                final Vector3 edge2 = Vector3.sub(pos2, pos0);
+                final Vector3f pos0 = MeshBuilder.positions.get(face0.getPositionIndex());
+                final Vector3f pos1 = MeshBuilder.positions.get(face1.getPositionIndex());
+                final Vector3f pos2 = MeshBuilder.positions.get(face2.getPositionIndex());
+                final Vector3f edge1 = new Vector3f(pos1).sub(pos0);
+                final Vector3f edge2 = new Vector3f(pos2).sub(pos0);
 
-                final Vector2 coordinates0 = coordinates.get(face0.getCoordsIndex());
-                final Vector2 coordinates1 = coordinates.get(face1.getCoordsIndex());
-                final Vector2 coordinates2 = coordinates.get(face2.getCoordsIndex());
-                final Vector2 deltaUVx = Vector2.sub(coordinates1, coordinates0);
-                final Vector2 deltaUVy = Vector2.sub(coordinates2, coordinates0);
+                final Vector2f coordinates0 = MeshBuilder.coordinates.get(face0.getCoordsIndex());
+                final Vector2f coordinates1 = MeshBuilder.coordinates.get(face1.getCoordsIndex());
+                final Vector2f coordinates2 = MeshBuilder.coordinates.get(face2.getCoordsIndex());
+                final Vector2f deltaUVx = new Vector2f(coordinates1).sub(coordinates0);
+                final Vector2f deltaUVy = new Vector2f(coordinates2).sub(coordinates0);
 
-                final float f = 1 / (deltaUVx.getX() * deltaUVy.getY() - deltaUVy.getX() * deltaUVx.getY());
+                final float f = 1f / (deltaUVx.x() * deltaUVy.y() - deltaUVy.x() * deltaUVx.y());
 
-                final float x = f * (deltaUVy.getY() * edge1.getX() - deltaUVx.getY() * edge2.getX());
-                final float y = f * (deltaUVy.getY() * edge1.getY() - deltaUVx.getY() * edge2.getY());
-                final float z = f * (deltaUVy.getY() * edge1.getZ() - deltaUVx.getY() * edge2.getZ());
-                final Vector3 tangent = new Vector3(x, y, z);
-                tangent.normalise();
+                final float x = f * (deltaUVy.y() * edge1.x() - deltaUVx.y() * edge2.x());
+                final float y = f * (deltaUVy.y() * edge1.y() - deltaUVx.y() * edge2.y());
+                final float z = f * (deltaUVy.y() * edge1.z() - deltaUVx.y() * edge2.z());
+                final Vector3f tangent = new Vector3f(x, y, z).normalize();
 
                 this.setTangentForFace(tangents, index0, tangent);
                 this.setTangentForFace(tangents, index1, tangent);
@@ -339,20 +338,20 @@ public class ObjParser implements ModelParser {
             Collections.addAll(this.tangents, tangents);
         }
 
-        private void setTangentForFace(Vector3[] tangents, int index, Vector3 tangent) {
-            Vector3 currentTangent = tangents[index];
+        private void setTangentForFace(final Vector3f[] tangents, final int index, final Vector3f tangent) {
+            Vector3f currentTangent = tangents[index];
             if (Objects.isNull(currentTangent)) {
-                currentTangent = new Vector3(tangent);
+                currentTangent = new Vector3f(tangent);
                 tangents[index] = currentTangent;
             } else {
-                currentTangent.average(tangent);
+                currentTangent.add(tangent).mul(0.5f);
             }
         }
 
         private static void clear() {
-            positions.clear();
-            coordinates.clear();
-            normals.clear();
+            MeshBuilder.positions.clear();
+            MeshBuilder.coordinates.clear();
+            MeshBuilder.normals.clear();
         }
     }
 }

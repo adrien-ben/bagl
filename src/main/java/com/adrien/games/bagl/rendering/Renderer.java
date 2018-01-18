@@ -3,8 +3,6 @@ package com.adrien.games.bagl.rendering;
 import com.adrien.games.bagl.core.Camera;
 import com.adrien.games.bagl.core.Configuration;
 import com.adrien.games.bagl.core.EngineException;
-import com.adrien.games.bagl.core.math.Matrix4;
-import com.adrien.games.bagl.core.math.Vector3;
 import com.adrien.games.bagl.rendering.light.DirectionalLight;
 import com.adrien.games.bagl.rendering.light.PointLight;
 import com.adrien.games.bagl.rendering.light.SpotLight;
@@ -17,6 +15,8 @@ import com.adrien.games.bagl.rendering.texture.Cubemap;
 import com.adrien.games.bagl.rendering.texture.Format;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.vertex.*;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
@@ -49,10 +49,10 @@ public class Renderer {
     private final List<DirectionalLight> directionalLights;
     private final List<PointLight> pointLights;
     private final List<SpotLight> spotLights;
-    private final Map<Model, Matrix4> models;
+    private final Map<Model, Matrix4f> models;
 
-    private final Matrix4 wvpBuffer;
-    private final Matrix4 lightViewProj;
+    private final Matrix4f wvpBuffer;
+    private final Matrix4f lightViewProj;
 
     private Mesh screenQuad;
 
@@ -90,8 +90,8 @@ public class Renderer {
         this.spotLights = new ArrayList<>();
         this.models = new LinkedHashMap<>();
 
-        this.wvpBuffer = Matrix4.createZero();
-        this.lightViewProj = Matrix4.createZero();
+        this.wvpBuffer = new Matrix4f();
+        this.lightViewProj = new Matrix4f();
 
         this.screenQuad = MeshFactory.createScreenQuad();
         this.initUnitCube();
@@ -251,9 +251,9 @@ public class Renderer {
     private void renderShadowMap() {
         this.renderShadow = !this.directionalLights.isEmpty();
         if (this.renderShadow) {
-            final Vector3 position = new Vector3(this.directionalLights.get(0).getDirection()).scale(-10f);
-            Matrix4.mul(Matrix4.createOrthographic(-10, 10, -10, 10, 0.1f, 20),
-                    Matrix4.createLookAt(position, new Vector3(), Vector3.UP), this.lightViewProj);
+            final Vector3f position = new Vector3f(this.directionalLights.get(0).getDirection()).mul(-10f);
+            new Matrix4f().setOrtho(-10, 10, -10, 10, 0.1f, 20f)
+                    .mul(new Matrix4f().setLookAt(position, new Vector3f(), new Vector3f(0, 1, 0)), this.lightViewProj);
 
             glViewport(0, 0, this.shadowMapResolution, this.shadowMapResolution);
             this.shadowBuffer.bind();
@@ -268,8 +268,8 @@ public class Renderer {
         }
     }
 
-    private void renderNodeShadow(final Model model, final Matrix4 transform, final Matrix4 lightViewProj) {
-        Matrix4.mul(lightViewProj, transform, this.wvpBuffer);
+    private void renderNodeShadow(final Model model, final Matrix4f transform, final Matrix4f lightViewProj) {
+        lightViewProj.mul(transform, this.wvpBuffer);
         this.shadowShader.setUniform("wvp", this.wvpBuffer);
         model.getMeshes().keySet().forEach(this::renderMesh);
     }
@@ -285,8 +285,8 @@ public class Renderer {
         this.gBuffer.unbind();
     }
 
-    private void renderSceneNode(final Model model, final Matrix4 transform, final Camera camera) {
-        Matrix4.mul(camera.getViewProj(), transform, this.wvpBuffer);
+    private void renderSceneNode(final Model model, final Matrix4f transform, final Camera camera) {
+        camera.getViewProj().mul(transform, this.wvpBuffer);
 
         this.gBufferShader.setUniform("uMatrices.world", transform);
         this.gBufferShader.setUniform("uMatrices.wvp", this.wvpBuffer);
@@ -416,7 +416,7 @@ public class Renderer {
         this.spotLights.add(light);
     }
 
-    public void addModel(final Matrix4 transform, final Model model) {
+    public void addModel(final Matrix4f transform, final Model model) {
         this.models.put(model, transform);
     }
 

@@ -1,10 +1,10 @@
 package com.adrien.games.bagl.rendering.model;
 
-import com.adrien.games.bagl.core.math.Vector3;
 import com.adrien.games.bagl.rendering.BufferUsage;
 import com.adrien.games.bagl.rendering.DataType;
 import com.adrien.games.bagl.rendering.PrimitiveType;
 import com.adrien.games.bagl.rendering.vertex.*;
+import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
@@ -319,9 +319,9 @@ public class MeshFactory {
                 bufferIt += 12;
             }
 
-            final Vector3 tangent = new Vector3();
-            final Vector3 biTangent = new Vector3();
-            final Vector3 normal = new Vector3();
+            final Vector3f tangent = new Vector3f();
+            final Vector3f biTangent = new Vector3f();
+            final Vector3f normal = new Vector3f();
 
             // side vertices
             for (int i = 0; i < segments; i++) {
@@ -330,22 +330,20 @@ public class MeshFactory {
                 final float z = -(float) Math.sin(theta);
 
                 // normal computation
-                final Vector3 top = new Vector3(x * topRadius, halfHeight, z * topRadius);
-                final Vector3 bottom = new Vector3(x * baseRadius, -halfHeight, z * baseRadius);
-                Vector3.sub(top, bottom, tangent);
-                tangent.normalise();
-                Vector3.cross(new Vector3(x, 0, z), tangent, biTangent);
-                biTangent.normalise();
-                Vector3.cross(tangent, biTangent, normal);
-                normal.normalise();
+                final Vector3f top = new Vector3f(x * topRadius, halfHeight, z * topRadius);
+                final Vector3f bottom = new Vector3f(x * baseRadius, -halfHeight, z * baseRadius);
+                top.sub(bottom, tangent);
+                new Vector3f(x, 0, z).cross(tangent, biTangent);
+                tangent.cross(biTangent, normal);
+                normal.normalize();
 
                 // top vertex
                 bufferIt += MeshFactory.insertElement3f(vertices, bufferIt, x * topRadius, halfHeight, z * topRadius);
-                bufferIt += MeshFactory.insertElement3f(vertices, bufferIt, normal.getX(), normal.getY(), normal.getZ());
+                bufferIt += MeshFactory.insertElement3f(vertices, bufferIt, normal.x(), normal.y(), normal.z());
 
                 // base vertex
                 bufferIt += MeshFactory.insertElement3f(vertices, bufferIt, x * baseRadius, -halfHeight, z * baseRadius);
-                bufferIt += MeshFactory.insertElement3f(vertices, bufferIt, normal.getX(), normal.getY(), normal.getZ());
+                bufferIt += MeshFactory.insertElement3f(vertices, bufferIt, normal.x(), normal.y(), normal.z());
             }
 
             return new VertexBuffer(vertices, new VertexBufferParams()

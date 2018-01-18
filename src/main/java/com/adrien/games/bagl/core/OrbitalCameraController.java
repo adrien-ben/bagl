@@ -1,7 +1,7 @@
 package com.adrien.games.bagl.core;
 
-import com.adrien.games.bagl.core.math.Vector2;
-import com.adrien.games.bagl.core.math.Vector3;
+import org.joml.Vector2f;
+import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 
 /**
@@ -15,7 +15,7 @@ import org.lwjgl.glfw.GLFW;
  */
 public class OrbitalCameraController extends CameraController {
 
-    private Vector3 target;
+    private Vector3f target;
     private float distance;
     private float phi;
     private float theta;
@@ -26,14 +26,14 @@ public class OrbitalCameraController extends CameraController {
      * @param camera The camera to control
      * @param target The target of the camera
      */
-    public OrbitalCameraController(final Camera camera, final Vector3 target) {
+    public OrbitalCameraController(final Camera camera, final Vector3f target) {
         super(camera);
         this.target = target;
-        final Vector3 toTarget = Vector3.sub(this.target, camera.getPosition());
+        final Vector3f toTarget = new Vector3f(this.target).sub(camera.getPosition());
         this.distance = toTarget.length();
-        final float x = -toTarget.getX();
-        final float y = -toTarget.getY();
-        final float z = -toTarget.getZ();
+        final float x = -toTarget.x();
+        final float y = -toTarget.y();
+        final float z = -toTarget.z();
         this.phi = (float) Math.acos(y / this.distance);
         this.theta = (float) Math.atan(x / z);
         this.computeCameraPosition();
@@ -47,11 +47,11 @@ public class OrbitalCameraController extends CameraController {
     @Override
     public void update(final Time time) {
         this.computeCameraPosition();
-        this.distance += -Input.getWheelDelta().getY() * 100 * time.getElapsedTime();
+        this.distance += -Input.getWheelDelta().y() * 100 * time.getElapsedTime();
         if (Input.isMouseButtonPressed(GLFW.GLFW_MOUSE_BUTTON_1)) {
-            final Vector2 mouseDelta = Input.getMouseDelta();
-            this.theta += mouseDelta.getX() * time.getElapsedTime();
-            this.phi -= mouseDelta.getY() * time.getElapsedTime();
+            final Vector2f mouseDelta = Input.getMouseDelta();
+            this.theta += mouseDelta.x() * time.getElapsedTime();
+            this.phi -= mouseDelta.y() * time.getElapsedTime();
         }
     }
 
@@ -60,13 +60,13 @@ public class OrbitalCameraController extends CameraController {
      * target and from the spherical coordinates of the camera
      */
     private void computeCameraPosition() {
-        final Vector3 fromTarget = new Vector3(
+        final Vector3f fromTarget = new Vector3f(
                 this.distance * (float) Math.sin(this.phi) * (float) Math.sin(this.theta),
                 this.distance * (float) Math.cos(this.phi),
                 this.distance * (float) Math.sin(this.phi) * (float) Math.cos(this.theta)
-        ).normalise().scale(this.distance);
+        ).normalize().mul(this.distance);
 
-        super.camera.setDirection(new Vector3(fromTarget).scale(-1));
-        super.camera.setPosition(Vector3.add(this.target, fromTarget));
+        super.camera.setDirection(new Vector3f(fromTarget).mul(-1));
+        super.camera.setPosition(new Vector3f(this.target).add(fromTarget));
     }
 }

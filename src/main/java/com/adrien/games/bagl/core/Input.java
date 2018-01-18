@@ -1,8 +1,8 @@
 package com.adrien.games.bagl.core;
 
-import com.adrien.games.bagl.core.math.Vector2;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joml.Vector2f;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -35,10 +35,10 @@ public final class Input {
     private static final boolean[] KEY_PREVIOUS_STATES = new boolean[KEY_COUNT];
     private static final boolean[] MOUSE_BUTTON_STATES = new boolean[MOUSE_BUTTON_COUNT];
     private static final boolean[] MOUSE_BUTTON_PREVIOUS_STATES = new boolean[MOUSE_BUTTON_COUNT];
-    private static final Vector2 MOUSE_PREVIOUS_POSITION = new Vector2();
-    private static final Vector2 MOUSE_POSITION = new Vector2();
-    private static final Vector2 MOUSE_DELTA = new Vector2();
-    private static final Vector2 WHEEL_DELTA = new Vector2();
+    private static final Vector2f MOUSE_PREVIOUS_POSITION = new Vector2f();
+    private static final Vector2f MOUSE_POSITION = new Vector2f();
+    private static final Vector2f MOUSE_DELTA = new Vector2f();
+    private static final Vector2f WHEEL_DELTA = new Vector2f();
     private static Consumer<MouseMode> MOUSE_MODE_UPDATE_CALLBACK = null;
 
     static {
@@ -88,8 +88,8 @@ public final class Input {
         System.arraycopy(KEY_STATES, 0, KEY_PREVIOUS_STATES, 0, KEY_COUNT);
         System.arraycopy(MOUSE_BUTTON_STATES, 0, MOUSE_BUTTON_PREVIOUS_STATES, 0, MOUSE_BUTTON_COUNT);
         MOUSE_PREVIOUS_POSITION.set(MOUSE_POSITION);
-        Vector2.sub(MOUSE_POSITION, MOUSE_PREVIOUS_POSITION, MOUSE_DELTA);
-        WHEEL_DELTA.setXY(0f, 0f);
+        MOUSE_POSITION.sub(MOUSE_PREVIOUS_POSITION, MOUSE_DELTA);
+        WHEEL_DELTA.set(0f, 0f);
     }
 
     /**
@@ -147,9 +147,9 @@ public final class Input {
      */
     public static void handleMouseMove(final long window, final double x, final double y, final boolean updateDelta) {
         MOUSE_PREVIOUS_POSITION.set(MOUSE_POSITION);
-        MOUSE_POSITION.setXY((float) x, (float) y);
+        MOUSE_POSITION.set((float) x, (float) y);
         if (updateDelta) {
-            Vector2.sub(MOUSE_POSITION, MOUSE_PREVIOUS_POSITION, MOUSE_DELTA);
+            MOUSE_POSITION.sub(MOUSE_PREVIOUS_POSITION, MOUSE_DELTA);
         }
     }
 
@@ -163,8 +163,7 @@ public final class Input {
      * @param yOffset The vertical offset of the wheel
      */
     public static void handleScroll(final long window, final double xOffset, final double yOffset) {
-        log.debug("Scroll update issued. xOffset: {} - yOffset: {}", xOffset, yOffset);
-        WHEEL_DELTA.setXY((float) xOffset, (float) yOffset);
+        WHEEL_DELTA.set((float) xOffset, (float) yOffset);
     }
 
     /**
@@ -232,7 +231,7 @@ public final class Input {
      *
      * @return The cursor position
      */
-    public static Vector2 getMousePosition() {
+    public static Vector2f getMousePosition() {
         return MOUSE_POSITION;
     }
 
@@ -241,7 +240,7 @@ public final class Input {
      *
      * @return The previous cursor position
      */
-    public static Vector2 getMousePreviousPosition() {
+    public static Vector2f getMousePreviousPosition() {
         return MOUSE_PREVIOUS_POSITION;
     }
 
@@ -250,11 +249,11 @@ public final class Input {
      *
      * @return The displacement of the mouse
      */
-    public static Vector2 getMouseDelta() {
+    public static Vector2f getMouseDelta() {
         return MOUSE_DELTA;
     }
 
-    public static Vector2 getWheelDelta() {
+    public static Vector2f getWheelDelta() {
         return WHEEL_DELTA;
     }
 

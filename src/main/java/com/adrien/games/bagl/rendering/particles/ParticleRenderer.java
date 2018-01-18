@@ -3,7 +3,6 @@ package com.adrien.games.bagl.rendering.particles;
 import com.adrien.games.bagl.core.Camera;
 import com.adrien.games.bagl.core.Engine;
 import com.adrien.games.bagl.core.Time;
-import com.adrien.games.bagl.core.math.Vector3;
 import com.adrien.games.bagl.rendering.BlendMode;
 import com.adrien.games.bagl.rendering.BufferUsage;
 import com.adrien.games.bagl.rendering.Shader;
@@ -14,6 +13,7 @@ import com.adrien.games.bagl.rendering.vertex.VertexBufferParams;
 import com.adrien.games.bagl.rendering.vertex.VertexElement;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.system.MemoryUtil;
 
@@ -106,9 +106,9 @@ public class ParticleRenderer {
         this.timer.update();
         for (final Particle p : this.particlesToRender) {
             final int index = particleToRender * ELEMENTS_PER_VERTEX;
-            this.vertices.put(index, p.getPosition().getX());
-            this.vertices.put(index + 1, p.getPosition().getY());
-            this.vertices.put(index + 2, p.getPosition().getZ());
+            this.vertices.put(index, p.getPosition().x());
+            this.vertices.put(index + 1, p.getPosition().y());
+            this.vertices.put(index + 2, p.getPosition().z());
             this.vertices.put(index + 3, p.getColor().getRed());
             this.vertices.put(index + 4, p.getColor().getGreen());
             this.vertices.put(index + 5, p.getColor().getBlue());
@@ -159,15 +159,15 @@ public class ParticleRenderer {
     private static class ParticleComparator implements Comparator<Particle> {
 
         private Camera camera;
-        private final Vector3 v0 = new Vector3();
-        private final Vector3 v1 = new Vector3();
+        private final Vector3f v0 = new Vector3f();
+        private final Vector3f v1 = new Vector3f();
 
         @Override
         public int compare(final Particle p0, final Particle p1) {
-            Vector3.sub(p0.getPosition(), camera.getPosition(), v0);
-            Vector3.sub(p1.getPosition(), camera.getPosition(), v1);
-            final float dist0 = v0.squareLength();
-            final float dist1 = v1.squareLength();
+            p0.getPosition().sub(this.camera.getPosition(), this.v0);
+            p1.getPosition().sub(this.camera.getPosition(), this.v1);
+            final float dist0 = this.v0.lengthSquared();
+            final float dist1 = this.v1.lengthSquared();
             return (int) (dist1 - dist0);
         }
 

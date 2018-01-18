@@ -4,9 +4,9 @@ import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.core.Engine;
 import com.adrien.games.bagl.core.Game;
 import com.adrien.games.bagl.core.Time;
-import com.adrien.games.bagl.core.math.Vector2;
 import com.adrien.games.bagl.rendering.BlendMode;
 import com.adrien.games.bagl.rendering.shape.UIRenderer;
+import org.joml.Vector2f;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,8 +23,8 @@ public class UIRenderingSample implements Game {
     private static final int SHAPE_COUNT = 5000;
 
     private UIRenderer renderer;
-    private List<Vector2> positions;
-    private List<Vector2> sizes;
+    private List<Vector2f> positions;
+    private List<Vector2f> sizes;
     private List<Color> colors;
 
     @Override
@@ -37,8 +37,8 @@ public class UIRenderingSample implements Game {
         this.colors = new ArrayList<>();
         final Random random = new Random();
         for (int i = 0; i < SHAPE_COUNT; i++) {
-            this.positions.add(new Vector2(random.nextFloat(), random.nextFloat()));
-            this.sizes.add(new Vector2(random.nextFloat() * 0.3f, random.nextFloat() * 0.3f));
+            this.positions.add(new Vector2f(random.nextFloat(), random.nextFloat()));
+            this.sizes.add(new Vector2f(random.nextFloat() * 0.3f, random.nextFloat() * 0.3f));
             this.colors.add(new Color(random.nextFloat(), random.nextFloat(), random.nextFloat(), random.nextFloat() * 0.4f + 0.6f));
         }
     }
@@ -56,10 +56,10 @@ public class UIRenderingSample implements Game {
     public void render() {
         this.renderer.start();
         for (int i = 0; i < SHAPE_COUNT; i++) {
-            final Vector2 position = this.positions.get(i);
-            final Vector2 size = this.sizes.get(i);
+            final Vector2f position = this.positions.get(i);
+            final Vector2f size = this.sizes.get(i);
             final Color color = this.colors.get(i);
-            this.renderer.renderBox(position.getX(), position.getY(), size.getX(), size.getY(), color);
+            this.renderer.renderBox(position.x(), position.y(), size.x(), size.y(), color);
         }
         this.renderer.end();
     }

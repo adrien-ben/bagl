@@ -94,7 +94,7 @@ public abstract class Component {
      * @return true if the component is root
      */
     private boolean isRoot() {
-        return Objects.isNull(parent);
+        return Objects.isNull(this.parent);
     }
 
     /**
@@ -105,11 +105,11 @@ public abstract class Component {
      * its local transform combined to the transform of its parent
      */
     private void computeTransform() {
-        if (!this.isRoot()) {
+        if (this.isRoot()) {
+            this.transform.set(this.localTransform);
+        } else {
             final Transform parentTransform = this.parent.getTransform();
             Transform.transform(this.localTransform, parentTransform, this.transform);
-        } else {
-            this.transform.set(this.localTransform);
         }
     }
 

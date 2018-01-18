@@ -1,11 +1,11 @@
 package com.adrien.games.bagl.sample;
 
 import com.adrien.games.bagl.core.*;
-import com.adrien.games.bagl.core.math.Vector2;
 import com.adrien.games.bagl.rendering.BlendMode;
 import com.adrien.games.bagl.rendering.Spritebatch;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.texture.TextureParameters;
+import org.joml.Vector2f;
 
 import java.io.File;
 import java.util.Random;
@@ -23,7 +23,7 @@ public class SpritebatchSample {
         private Texture texture;
         private Spritebatch spritebatch;
 
-        private final Vector2[] positions = new Vector2[SPRITE_COUNT];
+        private final Vector2f[] positions = new Vector2f[SPRITE_COUNT];
         private final int[] sizes = new int[SPRITE_COUNT];
         private final float[] rotations = new float[SPRITE_COUNT];
 
@@ -39,7 +39,7 @@ public class SpritebatchSample {
 
             Random r = new Random();
             for (int i = 0; i < SPRITE_COUNT; i++) {
-                this.positions[i] = new Vector2(r.nextFloat() * this.width, r.nextFloat() * this.height);
+                this.positions[i] = new Vector2f(r.nextFloat() * this.width, r.nextFloat() * this.height);
                 this.sizes[i] = r.nextInt(32) + 32;
                 this.rotations[i] = r.nextFloat() * 360;
             }

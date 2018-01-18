@@ -3,10 +3,10 @@ package com.adrien.games.bagl.rendering;
 import com.adrien.games.bagl.core.Camera2D;
 import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.core.EngineException;
-import com.adrien.games.bagl.core.math.Vector2;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.texture.TextureRegion;
 import com.adrien.games.bagl.rendering.vertex.*;
+import org.joml.Vector2f;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
@@ -70,7 +70,7 @@ public class Spritebatch {
         }
         this.size = size;
 
-        this.camera = new Camera2D(new Vector2(width / 2, height / 2), width, height);
+        this.camera = new Camera2D(new Vector2f(width / 2, height / 2), width, height);
         this.spriteShader = new Shader()
                 .addVertexShader("/sprite/sprite.vert")
                 .addFragmentShader("/sprite/sprite.frag")
@@ -196,7 +196,7 @@ public class Spritebatch {
      * @param texture  The texture to render
      * @param position The position where to render the sprite
      */
-    public void draw(final Texture texture, final Vector2 position) {
+    public void draw(final Texture texture, final Vector2f position) {
         this.draw(texture, position, texture.getWidth(), texture.getHeight(), 0, 0, 1, 1, 0, Color.WHITE);
     }
 
@@ -208,7 +208,7 @@ public class Spritebatch {
      * @param width    The width of the sprite to render
      * @param height   The height of the sprite to render
      */
-    public void draw(final Texture texture, final Vector2 position, final float width, final float height) {
+    public void draw(final Texture texture, final Vector2f position, final float width, final float height) {
         this.draw(texture, position, width, height, 0, 0, 1, 1, 0, Color.WHITE);
     }
 
@@ -221,7 +221,7 @@ public class Spritebatch {
      * @param height   The height of the sprite to render
      * @param rotation The rotation of the sprite
      */
-    public void draw(final Texture texture, final Vector2 position, final float width, final float height, final float rotation) {
+    public void draw(final Texture texture, final Vector2f position, final float width, final float height, final float rotation) {
         this.draw(texture, position, width, height, 0, 0, 1, 1, rotation, Color.WHITE);
     }
 
@@ -235,7 +235,7 @@ public class Spritebatch {
      * @param rotation The rotation of the sprite
      * @param color    The tint of the sprite
      */
-    public void draw(final Texture texture, final Vector2 position, final float width, final float height, final float rotation,
+    public void draw(final Texture texture, final Vector2f position, final float width, final float height, final float rotation,
                      final Color color) {
         this.draw(texture, position, width, height, 0, 0, 1, 1, rotation, color);
     }
@@ -248,7 +248,7 @@ public class Spritebatch {
      * @param width    The width of the sprite to render
      * @param height   The height of the sprite to render
      */
-    public void draw(final TextureRegion region, final Vector2 position, final float width, final float height) {
+    public void draw(final TextureRegion region, final Vector2f position, final float width, final float height) {
         this.draw(region.getTexture(), position, width, height, region.getLeft(), region.getBottom(),
                 region.getRight(), region.getTop(), 0f, Color.WHITE);
     }
@@ -263,7 +263,7 @@ public class Spritebatch {
      * @param rotation The rotation of the sprite
      * @param color    The tint of the sprite
      */
-    public void draw(final Texture texture, final Vector2 position, final float width, final float height,
+    public void draw(final Texture texture, final Vector2f position, final float width, final float height,
                      final float texRegionLeft, final float texRegionBottom, final float texRegionRight,
                      final float texRegionTop, final float rotation, final Color color) {
         this.checkStarted();
@@ -277,8 +277,8 @@ public class Spritebatch {
         final float halfPixelWidth = HALF_PIXEL_SIZE / texture.getWidth();
         final float halfPixelHeight = HALF_PIXEL_SIZE / texture.getHeight();
 
-        final float x = position.getX();
-        final float y = position.getY();
+        final float x = position.x();
+        final float y = position.y();
 
         final float xCenter = x + width / 2;
         final float yCenter = y + height / 2;
