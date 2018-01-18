@@ -1,5 +1,6 @@
 package com.adrien.games.bagl.core;
 
+import com.adrien.games.bagl.core.math.Vectors;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -49,7 +50,7 @@ public class FPSCameraController extends CameraController {
         this.side.set(this.camera.getSide()).normalize();
         this.up.set(0, 1, 0);
 
-        if (mouseDelta.x() != 0 || mouseDelta.y() != 0) {
+        if (!Vectors.isZero(mouseDelta)) {
             if (mouseDelta.y() != 0) {
                 float vAngle = (float) Math.toRadians(mouseDelta.y() * DEFAULT_DEGREES_PER_PIXEL);
                 this.camera.rotate(new Quaternionf().setAngleAxis(vAngle, this.side.x(), this.side.y(), this.side.z()));
@@ -92,7 +93,7 @@ public class FPSCameraController extends CameraController {
             this.direction.add(this.up);
         }
 
-        if (this.direction.x() != 0 || this.direction.y() != 0 || this.direction.z() != 0) {
+        if (!Vectors.isZero(this.direction)) {
             super.camera.move(this.direction.normalize().mul(elapsed * DEFAULT_MOVEMENT_SPEED));
         }
     }
