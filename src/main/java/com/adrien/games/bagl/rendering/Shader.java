@@ -3,7 +3,6 @@ package com.adrien.games.bagl.rendering;
 import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.core.EngineException;
 import com.adrien.games.bagl.resource.ShaderLoader;
-import com.adrien.games.bagl.utils.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joml.Matrix4f;
@@ -28,8 +27,6 @@ import java.util.Objects;
 public class Shader {
 
     private static final Logger LOG = LogManager.getLogger(Shader.class);
-
-    private static final String BASE_SHADER_DIRECTORY = "/shaders/";
 
     /** Currently bound shader */
     private static Shader boundShader;
@@ -63,50 +60,52 @@ public class Shader {
     }
 
     /**
-     * Call the addShader function for a vertex shader
+     * Attach a vertex shader to this shader program
      *
-     * @param file The path to the source file
+     * @param resourceFile The name of the resource file
      * @return This for chaining
+     * @throws EngineException If source loading or shader compilation fails
      */
-    public Shader addVertexShader(final String file) {
-        this.addShader(file, GL20.GL_VERTEX_SHADER);
+    public Shader addVertexShader(final String resourceFile) {
+        this.addShader(resourceFile, GL20.GL_VERTEX_SHADER);
         return this;
     }
 
     /**
-     * Call the addShader function for a fragment shader
+     * Attach a fragment shader to this shader program
      *
-     * @param file The path to the source file
+     * @param resourceFile The name of the resource file
      * @return This for chaining
+     * @throws EngineException If source loading or shader compilation fails
      */
-    public Shader addFragmentShader(final String file) {
-        this.addShader(file, GL20.GL_FRAGMENT_SHADER);
+    public Shader addFragmentShader(final String resourceFile) {
+        this.addShader(resourceFile, GL20.GL_FRAGMENT_SHADER);
         return this;
     }
 
     /**
-     * Call the addShader function for a geometry shader
+     * Attach a geometry shader to this shader program
      *
-     * @param file The path to the source file
+     * @param resourceFile The name of the resource file
      * @return This for chaining
+     * @throws EngineException If source loading or shader compilation fails
      */
-    public Shader addGeometryShader(final String file) {
-        this.addShader(file, GL32.GL_GEOMETRY_SHADER);
+    public Shader addGeometryShader(final String resourceFile) {
+        this.addShader(resourceFile, GL32.GL_GEOMETRY_SHADER);
         return this;
     }
 
     /**
-     * Load the source code of the shader. Parses it. Creates a new OpenGL shader object
-     * and try to compile it. If it fails, displays the shader's log on the error output.
-     * Finally it attaches the shader to the OpenGL program object and adds the handle
-     * to the attachedShaders list
+     * Load the source code of the shader. Create a new OpenGL shader object
+     * and compile it. Finally it attach the shader to the OpenGL program
+     * object and add the handle to the attached shaders list
      *
-     * @param file The path to the shader's source code
-     * @param type The type of shader to load
+     * @param resourceFile The name of the resource file
+     * @param type         The type of shader to load
+     * @throws EngineException If source loading or shader compilation fails
      */
-    private void addShader(final String file, final int type) {
-        final String resourcePath = BASE_SHADER_DIRECTORY + file.replaceAll("^/*", "");
-        final String source = new ShaderLoader().loadSourceFile(FileUtils.getResourceAbsolutePath(resourcePath));
+    private void addShader(final String resourceFile, final int type) {
+        final String source = new ShaderLoader().loadSourceFromResource(resourceFile);
 
         final int shader = GL20.glCreateShader(type);
         GL20.glShaderSource(shader, source);

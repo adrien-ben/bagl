@@ -2,11 +2,11 @@ package com.adrien.games.bagl.utils;
 
 import com.adrien.games.bagl.core.EngineException;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Paths;
+import java.util.Objects;
 
 /**
  * File utility methods
@@ -58,6 +58,20 @@ public final class FileUtils {
             throw new EngineException("File not found: " + filePath);
         }
         return file;
+    }
+
+    /**
+     * Opens a {@link BufferedReader} to a resource file
+     *
+     * @param resourcePath The path of the resource
+     * @return The opened buffered reader
+     */
+    public static BufferedReader getResourceAsBufferedReader(final String resourcePath) {
+        final InputStream inputStream = FileUtils.class.getResourceAsStream(resourcePath);
+        if (Objects.isNull(inputStream)) {
+            throw new EngineException("Could not find resource file " + resourcePath);
+        }
+        return new BufferedReader(new InputStreamReader(inputStream));
     }
 
 }
