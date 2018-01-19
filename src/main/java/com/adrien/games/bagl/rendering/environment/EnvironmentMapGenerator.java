@@ -1,7 +1,7 @@
 package com.adrien.games.bagl.rendering.environment;
 
-import com.adrien.games.bagl.core.Camera;
 import com.adrien.games.bagl.core.Configuration;
+import com.adrien.games.bagl.core.camera.Camera;
 import com.adrien.games.bagl.rendering.*;
 import com.adrien.games.bagl.rendering.texture.*;
 import com.adrien.games.bagl.rendering.vertex.*;

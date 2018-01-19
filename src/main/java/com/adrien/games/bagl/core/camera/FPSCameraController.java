@@ -1,5 +1,7 @@
-package com.adrien.games.bagl.core;
+package com.adrien.games.bagl.core.camera;
 
+import com.adrien.games.bagl.core.Input;
+import com.adrien.games.bagl.core.Time;
 import com.adrien.games.bagl.core.math.Vectors;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;

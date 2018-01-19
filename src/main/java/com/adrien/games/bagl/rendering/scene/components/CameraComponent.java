@@ -1,6 +1,6 @@
 package com.adrien.games.bagl.rendering.scene.components;
 
-import com.adrien.games.bagl.core.Camera;
+import com.adrien.games.bagl.core.camera.Camera;
 import com.adrien.games.bagl.rendering.Renderer;
 import com.adrien.games.bagl.rendering.scene.Component;
 

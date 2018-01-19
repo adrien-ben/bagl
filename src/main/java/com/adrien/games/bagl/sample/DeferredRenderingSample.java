@@ -1,6 +1,9 @@
 package com.adrien.games.bagl.sample;
 
 import com.adrien.games.bagl.core.*;
+import com.adrien.games.bagl.core.camera.Camera;
+import com.adrien.games.bagl.core.camera.CameraController;
+import com.adrien.games.bagl.core.camera.FPSCameraController;
 import com.adrien.games.bagl.rendering.Material;
 import com.adrien.games.bagl.rendering.Renderer;
 import com.adrien.games.bagl.rendering.Spritebatch;

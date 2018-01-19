@@ -1,8 +1,8 @@
 package com.adrien.games.bagl.rendering;
 
-import com.adrien.games.bagl.core.Camera;
 import com.adrien.games.bagl.core.Configuration;
 import com.adrien.games.bagl.core.EngineException;
+import com.adrien.games.bagl.core.camera.Camera;
 import com.adrien.games.bagl.rendering.light.DirectionalLight;
 import com.adrien.games.bagl.rendering.light.PointLight;
 import com.adrien.games.bagl.rendering.light.SpotLight;

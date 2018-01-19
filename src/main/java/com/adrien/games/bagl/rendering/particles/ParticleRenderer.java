@@ -1,8 +1,8 @@
 package com.adrien.games.bagl.rendering.particles;
 
-import com.adrien.games.bagl.core.Camera;
 import com.adrien.games.bagl.core.Engine;
 import com.adrien.games.bagl.core.Time;
+import com.adrien.games.bagl.core.camera.Camera;
 import com.adrien.games.bagl.rendering.BlendMode;
 import com.adrien.games.bagl.rendering.BufferUsage;
 import com.adrien.games.bagl.rendering.Shader;

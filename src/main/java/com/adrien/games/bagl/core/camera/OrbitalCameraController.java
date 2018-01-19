@@ -1,5 +1,7 @@
-package com.adrien.games.bagl.core;
+package com.adrien.games.bagl.core.camera;
 
+import com.adrien.games.bagl.core.Input;
+import com.adrien.games.bagl.core.Time;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;

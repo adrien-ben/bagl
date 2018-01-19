@@ -1,4 +1,4 @@
-package com.adrien.games.bagl.core;
+package com.adrien.games.bagl.core.camera;
 
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
