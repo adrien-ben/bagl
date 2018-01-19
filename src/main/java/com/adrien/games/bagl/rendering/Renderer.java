@@ -331,7 +331,7 @@ public class Renderer {
         this.gBuffer.getDepthTexture().bind(3);
 
         this.deferredShader.bind();
-        this.deferredShader.setUniform("uCamera.vp", camera.getViewProj());
+        this.deferredShader.setUniform("uCamera.invertedViewProj", camera.getInvertedViewProj());
         this.deferredShader.setUniform("uCamera.position", camera.getPosition());
         irradiance.ifPresent(map -> {
             map.bind(5);

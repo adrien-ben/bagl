@@ -21,7 +21,7 @@ struct GBuffer {
 };
 
 struct Camera {
-	mat4 vp;
+	mat4 invertedViewProj;
 	vec3 position;
 };
 
@@ -73,7 +73,7 @@ uniform Lights uLights;
 vec4 positionFromDepth(float depth) {
 	depth = depth*2.0 - 1.0;
 	vec4 screenSpace = vec4(passCoords*2.0 - 1.0, depth, 1.0);
-	vec4 position = inverse(uCamera.vp)*screenSpace;
+	vec4 position = uCamera.invertedViewProj*screenSpace;
 	position.xyz /= position.w;
 	return vec4(position.xyz, 1.0);
 }
