@@ -56,9 +56,8 @@ public class Camera {
         this.invertedViewProj = new Matrix4f();
         this.projection.invertPerspectiveView(this.view, this.invertedViewProj);
 
-        this.viewAtOrigin = new Matrix4f().setLookAt(new Vector3f(), this.direction, this.up);
+        this.viewAtOrigin = new Matrix4f().setLookAlong(this.direction, this.up);
         this.viewProjAtOrigin = new Matrix4f(this.projection).mulPerspectiveAffine(this.viewAtOrigin);
-        // TODO: this.viewAtOrigin = new Matrix4f().setLookAlong(this.direction, this.up);
         this.dirtyProj = false;
         this.dirtyView = false;
         this.dirtyViewProj = false;
@@ -162,8 +161,7 @@ public class Camera {
      */
     public Matrix4f getViewAtOrigin() {
         if (this.dirtyViewAtOrigin) {
-            this.viewAtOrigin.setLookAt(new Vector3f(), this.direction, this.up);
-            // TODO: this.viewAtOrigin.setLookAlong(this.direction, this.up);
+            this.viewAtOrigin.setLookAlong(this.direction, this.up);
             this.dirtyViewAtOrigin = false;
         }
         return this.viewAtOrigin;
