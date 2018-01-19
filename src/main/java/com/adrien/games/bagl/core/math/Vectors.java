@@ -4,7 +4,7 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 /**
- * Utility method and constants for joml vectors
+ * Utility methods and constants for joml vectors
  *
  * @author adrien
  */
