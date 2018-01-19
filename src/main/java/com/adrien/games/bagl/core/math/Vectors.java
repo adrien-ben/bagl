@@ -2,6 +2,7 @@ package com.adrien.games.bagl.core.math;
 
 import org.joml.Vector2f;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 /**
  * Utility methods and constants for joml vectors
@@ -9,6 +10,10 @@ import org.joml.Vector3f;
  * @author adrien
  */
 public class Vectors {
+
+    public static final Vector3fc VEC3_ZERO = new Vector3f();
+
+    public static final Vector3fc VEC3_UP = new Vector3f(0, 1, 0);
 
     /**
      * Private constructor to prevent instantiation
