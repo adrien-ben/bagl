@@ -1,6 +1,7 @@
 package com.adrien.games.bagl.rendering.scene;
 
 import com.adrien.games.bagl.core.EngineException;
+import com.adrien.games.bagl.core.Time;
 import com.adrien.games.bagl.rendering.scene.components.ObjectComponent;
 import com.adrien.games.bagl.rendering.texture.Cubemap;
 
@@ -41,6 +42,17 @@ public class Scene {
         this.environmentMap = null;
         this.irradianceMap = null;
         this.preFilteredMap = null;
+    }
+
+    /**
+     * Update the scene
+     * <p>
+     * This method calls the root component's update method
+     *
+     * @param time The program time
+     */
+    public void update(final Time time) {
+        this.root.update(time);
     }
 
     /**

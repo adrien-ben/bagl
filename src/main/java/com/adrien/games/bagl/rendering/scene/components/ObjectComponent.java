@@ -1,5 +1,6 @@
 package com.adrien.games.bagl.rendering.scene.components;
 
+import com.adrien.games.bagl.core.Time;
 import com.adrien.games.bagl.rendering.Renderer;
 import com.adrien.games.bagl.rendering.scene.Component;
 
@@ -24,12 +25,22 @@ public class ObjectComponent extends Component {
     }
 
     /**
+     * {@inheritDoc}
+     *
+     * @see Component#onUpdate(Time)
+     */
+    @Override
+    protected void onUpdate(final Time time) {
+        // does nothing
+    }
+
+    /**
      * Does nothing
      *
      * @param renderer The visiting renderer
      */
     @Override
     public void visit(final Renderer renderer) {
-        // left empty on purpose
+        // does nothing
     }
 }

@@ -1,5 +1,6 @@
 package com.adrien.games.bagl.rendering.scene;
 
+import com.adrien.games.bagl.core.Time;
 import com.adrien.games.bagl.core.Transform;
 import com.adrien.games.bagl.rendering.Renderer;
 
@@ -43,6 +44,36 @@ public abstract class Component {
     }
 
     /**
+     * Update the component
+     * <p>
+     * This method calls {@link Component#onUpdate(Time)} method then calls
+     * the update method of its children
+     * <p>
+     * This method also update the component's transform BEFORE calling
+     * {@link Component#onUpdate(Time)}
+     *
+     * @param time The time of the program
+     */
+    public void update(final Time time) {
+        this.computeTransform();
+        this.onUpdate(time);
+        this.children.forEach(child -> child.update(time));
+    }
+
+    /**
+     * Action to perform when the component is being updated
+     * <p>
+     * When called the transform of the component have already been
+     * computed, so if you make any change to the local transform
+     * of the component and want then taken into account at the current
+     * frame you will have to call {@link Component#computeTransform()}
+     * yourself
+     *
+     * @param time The time of the program
+     */
+    protected abstract void onUpdate(final Time time);
+
+    /**
      * Traverse the scene graph
      * <p>
      * This method first compute the derived transform of the component.
@@ -53,7 +84,6 @@ public abstract class Component {
      * @param renderer The renderer visiting the graph
      */
     public void traverse(final Renderer renderer) {
-        this.computeTransform();
         this.visit(renderer);
         this.children.forEach(child -> child.traverse(renderer));
     }
@@ -104,7 +134,7 @@ public abstract class Component {
      * to its local transform. If it is not a root, its transform is
      * its local transform combined to the transform of its parent
      */
-    private void computeTransform() {
+    protected void computeTransform() {
         if (this.isRoot()) {
             this.transform.set(this.localTransform);
         } else {

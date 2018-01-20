@@ -1,5 +1,6 @@
 package com.adrien.games.bagl.rendering.scene.components;
 
+import com.adrien.games.bagl.core.Time;
 import com.adrien.games.bagl.core.camera.Camera;
 import com.adrien.games.bagl.rendering.Renderer;
 import com.adrien.games.bagl.rendering.scene.Component;
@@ -23,6 +24,16 @@ public class CameraComponent extends Component {
     public CameraComponent(final Camera camera, final String id, final String... tags) {
         super(id, tags);
         this.camera = camera;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @see Component#onUpdate(Time)
+     */
+    @Override
+    protected void onUpdate(final Time time) {
+        // does nothing
     }
 
     /**
