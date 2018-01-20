@@ -1,9 +1,9 @@
 package com.adrien.games.bagl.rendering.scene.components;
 
 import com.adrien.games.bagl.core.Time;
-import com.adrien.games.bagl.rendering.Renderer;
 import com.adrien.games.bagl.rendering.model.Model;
 import com.adrien.games.bagl.rendering.scene.Component;
+import com.adrien.games.bagl.rendering.scene.ComponentVisitor;
 
 /**
  * Scene component containing a model
@@ -37,13 +37,13 @@ public class ModelComponent extends Component {
     }
 
     /**
-     * Add the model and its transform matrix to the renderer
+     * {@inheritDoc}
      *
-     * @param renderer The visiting renderer
+     * @see Component#onAccept(ComponentVisitor)
      */
     @Override
-    public void visit(final Renderer renderer) {
-        renderer.addModel(this.transform.getTransformMatrix(), this.model);
+    protected void onAccept(final ComponentVisitor visitor) {
+        visitor.visit(this);
     }
 
     public Model getModel() {

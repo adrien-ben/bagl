@@ -1,9 +1,9 @@
 package com.adrien.games.bagl.rendering.scene.components;
 
 import com.adrien.games.bagl.core.Time;
-import com.adrien.games.bagl.rendering.Renderer;
 import com.adrien.games.bagl.rendering.light.PointLight;
 import com.adrien.games.bagl.rendering.scene.Component;
+import com.adrien.games.bagl.rendering.scene.ComponentVisitor;
 
 /**
  * Scene component containing a point light
@@ -37,13 +37,13 @@ public class PointLightComponent extends Component {
     }
 
     /**
-     * Add the light contained in this component to the renderer
+     * {@inheritDoc}
      *
-     * @param renderer The visiting renderer
+     * @see Component#onAccept(ComponentVisitor)
      */
     @Override
-    public void visit(final Renderer renderer) {
-        renderer.addPointLight(this.light);
+    protected void onAccept(final ComponentVisitor visitor) {
+        visitor.visit(this);
     }
 
     public PointLight getLight() {

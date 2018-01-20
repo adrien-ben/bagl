@@ -11,7 +11,9 @@ import com.adrien.games.bagl.rendering.model.Mesh;
 import com.adrien.games.bagl.rendering.model.MeshFactory;
 import com.adrien.games.bagl.rendering.model.Model;
 import com.adrien.games.bagl.rendering.postprocess.PostProcessor;
+import com.adrien.games.bagl.rendering.scene.ComponentVisitor;
 import com.adrien.games.bagl.rendering.scene.Scene;
+import com.adrien.games.bagl.rendering.scene.components.*;
 import com.adrien.games.bagl.rendering.texture.Cubemap;
 import com.adrien.games.bagl.rendering.texture.Format;
 import com.adrien.games.bagl.rendering.texture.Texture;
@@ -36,7 +38,7 @@ import static org.lwjgl.opengl.GL11.*;
  *
  * @author adrien
  */
-public class Renderer {
+public class Renderer implements ComponentVisitor {
 
     private static final int BRDF_RESOLUTION = 512;
     private final static byte UNIT_CUBE_POS_HALF_SIZE = (byte) 1;
@@ -217,7 +219,7 @@ public class Renderer {
         this.spotLights.clear();
         this.models.clear();
 
-        scene.getRoot().traverse(this);
+        scene.accept(this);
 
         if (Objects.isNull(this.camera)) {
             throw new EngineException("Impossible to render a scene if no camera is set up");
@@ -406,20 +408,79 @@ public class Renderer {
         shader.setUniform("uLights.spots[" + index + "].outerCutOff", light.getOuterCutOff());
     }
 
-    public void addDirectionalLight(final DirectionalLight light) {
-        this.directionalLights.add(light);
+    /**
+     * {@inheritDoc}
+     *
+     * @see ComponentVisitor#visit(ObjectComponent)
+     */
+    @Override
+    public void visit(final ObjectComponent component) {
+        //does nothing
     }
 
-    public void addPointLight(final PointLight light) {
-        this.pointLights.add(light);
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Add the model contained in component to the list of models to render
+     *
+     * @see ComponentVisitor#visit(ModelComponent)
+     */
+    @Override
+    public void visit(final ModelComponent component) {
+        this.models.put(component.getModel(), component.getTransform().getTransformMatrix());
     }
 
-    public void addSpotLight(final SpotLight light) {
-        this.spotLights.add(light);
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Set the camera contained in component as the camera to use when rendering.
+     * Take care if your scene contains several camera then the last visited camera will
+     * be the one used
+     *
+     * @see ComponentVisitor#visit(CameraComponent)
+     */
+    @Override
+    public void visit(final CameraComponent component) {
+        this.camera = component.getCamera();
     }
 
-    public void addModel(final Matrix4f transform, final Model model) {
-        this.models.put(model, transform);
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Add the light contained in component to the list of light to take
+     * into account when rendering
+     *
+     * @see ComponentVisitor#visit(DirectionalLightComponent)
+     */
+    @Override
+    public void visit(final DirectionalLightComponent component) {
+        this.directionalLights.add(component.getLight());
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Add the light contained in component to the list of light to take
+     * into account when rendering
+     *
+     * @see ComponentVisitor#visit(PointLightComponent)
+     */
+    @Override
+    public void visit(final PointLightComponent component) {
+        this.pointLights.add(component.getLight());
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Add the light contained in component to the list of light to take
+     * into account when rendering
+     *
+     * @see ComponentVisitor#visit(SpotLightComponent)
+     */
+    @Override
+    public void visit(final SpotLightComponent component) {
+        this.spotLights.add(component.getLight());
     }
 
     public FrameBuffer getShadowBuffer() {
@@ -432,9 +493,5 @@ public class Renderer {
 
     public FrameBuffer getFinalBuffer() {
         return this.finalBuffer;
-    }
-
-    public void setCamera(final Camera camera) {
-        this.camera = camera;
     }
 }

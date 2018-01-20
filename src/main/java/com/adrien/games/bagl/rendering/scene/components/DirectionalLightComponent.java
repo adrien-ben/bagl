@@ -2,9 +2,9 @@ package com.adrien.games.bagl.rendering.scene.components;
 
 import com.adrien.games.bagl.core.Time;
 import com.adrien.games.bagl.core.math.Quaternions;
-import com.adrien.games.bagl.rendering.Renderer;
 import com.adrien.games.bagl.rendering.light.DirectionalLight;
 import com.adrien.games.bagl.rendering.scene.Component;
+import com.adrien.games.bagl.rendering.scene.ComponentVisitor;
 
 /**
  * Scene component containing a directional light
@@ -38,13 +38,13 @@ public class DirectionalLightComponent extends Component {
     }
 
     /**
-     * Add the light contained in this component to the renderer
+     * {@inheritDoc}
      *
-     * @param renderer The visiting renderer
+     * @see Component#onAccept(ComponentVisitor)
      */
     @Override
-    public void visit(final Renderer renderer) {
-        renderer.addDirectionalLight(this.light);
+    protected void onAccept(final ComponentVisitor visitor) {
+        visitor.visit(this);
     }
 
     public DirectionalLight getLight() {

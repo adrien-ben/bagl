@@ -2,9 +2,9 @@ package com.adrien.games.bagl.rendering.scene.components;
 
 import com.adrien.games.bagl.core.Time;
 import com.adrien.games.bagl.core.math.Quaternions;
-import com.adrien.games.bagl.rendering.Renderer;
 import com.adrien.games.bagl.rendering.light.SpotLight;
 import com.adrien.games.bagl.rendering.scene.Component;
+import com.adrien.games.bagl.rendering.scene.ComponentVisitor;
 
 /**
  * Scene component containing a spot light
@@ -39,13 +39,13 @@ public class SpotLightComponent extends Component {
     }
 
     /**
-     * Add the light contained in this component to the renderer
+     * {@inheritDoc}
      *
-     * @param renderer The visiting renderer
+     * @see Component#onAccept(ComponentVisitor)
      */
     @Override
-    public void visit(final Renderer renderer) {
-        renderer.addSpotLight(this.light);
+    protected void onAccept(final ComponentVisitor visitor) {
+        visitor.visit(this);
     }
 
     public SpotLight getLight() {

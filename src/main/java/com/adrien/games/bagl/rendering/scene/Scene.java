@@ -47,12 +47,25 @@ public class Scene {
     /**
      * Update the scene
      * <p>
-     * This method calls the root component's update method
+     * This method call {@link Component#update(Time)} on its root
+     * component
      *
      * @param time The program time
      */
     public void update(final Time time) {
         this.root.update(time);
+    }
+
+    /**
+     * Accept a component visitor
+     * <p>
+     * This method call {@link Component#accept(ComponentVisitor)}
+     * on its root component
+     *
+     * @param visitor The visitor to accept
+     */
+    public void accept(final ComponentVisitor visitor) {
+        this.root.accept(visitor);
     }
 
     /**

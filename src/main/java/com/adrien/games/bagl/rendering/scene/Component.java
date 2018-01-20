@@ -2,7 +2,6 @@ package com.adrien.games.bagl.rendering.scene;
 
 import com.adrien.games.bagl.core.Time;
 import com.adrien.games.bagl.core.Transform;
-import com.adrien.games.bagl.rendering.Renderer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -74,28 +73,24 @@ public abstract class Component {
     protected abstract void onUpdate(final Time time);
 
     /**
-     * Traverse the scene graph
+     * Accept a visitor
      * <p>
-     * This method first compute the derived transform of the component.
-     * Then it calls the {@link Component#visit(Renderer)} method of the
-     * component. Finally it calls the {@link Component#traverse(Renderer)}
-     * of its children
+     * This method calls the {@link Component#onAccept(ComponentVisitor)}'s
+     * method of this component then calls the accept method of its children
      *
-     * @param renderer The renderer visiting the graph
+     * @param visitor The visitor to accept
      */
-    public void traverse(final Renderer renderer) {
-        this.visit(renderer);
-        this.children.forEach(child -> child.traverse(renderer));
+    public void accept(final ComponentVisitor visitor) {
+        this.onAccept(visitor);
+        this.children.forEach(child -> child.accept(visitor));
     }
 
     /**
-     * Action to perform when visited by the {@link Renderer}
-     * <p>
-     * This method must be implement by classes extending this class
+     * Action to perform when visited by a {@link ComponentVisitor}
      *
-     * @param renderer The visiting renderer
+     * @param visitor The visitor
      */
-    public abstract void visit(final Renderer renderer);
+    protected abstract void onAccept(final ComponentVisitor visitor);
 
     /**
      * Add a child component to this component

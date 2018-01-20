@@ -2,8 +2,8 @@ package com.adrien.games.bagl.rendering.scene.components;
 
 import com.adrien.games.bagl.core.Time;
 import com.adrien.games.bagl.core.camera.Camera;
-import com.adrien.games.bagl.rendering.Renderer;
 import com.adrien.games.bagl.rendering.scene.Component;
+import com.adrien.games.bagl.rendering.scene.ComponentVisitor;
 
 /**
  * Scene component containing a {@link Camera}
@@ -37,15 +37,13 @@ public class CameraComponent extends Component {
     }
 
     /**
-     * Set this camera as the renderer's camera
-     * <p>
-     * Take care if you're scene contains several cameras !
+     * {@inheritDoc}
      *
-     * @param renderer The visiting renderer
+     * @see Component#onAccept(ComponentVisitor)
      */
     @Override
-    public void visit(final Renderer renderer) {
-        renderer.setCamera(this.camera);
+    protected void onAccept(final ComponentVisitor visitor) {
+        visitor.visit(this);
     }
 
     public Camera getCamera() {

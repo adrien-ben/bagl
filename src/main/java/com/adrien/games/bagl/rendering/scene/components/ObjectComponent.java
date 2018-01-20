@@ -1,8 +1,8 @@
 package com.adrien.games.bagl.rendering.scene.components;
 
 import com.adrien.games.bagl.core.Time;
-import com.adrien.games.bagl.rendering.Renderer;
 import com.adrien.games.bagl.rendering.scene.Component;
+import com.adrien.games.bagl.rendering.scene.ComponentVisitor;
 
 /**
  * Object component
@@ -35,12 +35,12 @@ public class ObjectComponent extends Component {
     }
 
     /**
-     * Does nothing
+     * {@inheritDoc}
      *
-     * @param renderer The visiting renderer
+     * @see Component#onAccept(ComponentVisitor)
      */
     @Override
-    public void visit(final Renderer renderer) {
-        // does nothing
+    protected void onAccept(final ComponentVisitor visitor) {
+        visitor.visit(this);
     }
 }
