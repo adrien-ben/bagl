@@ -160,10 +160,11 @@ public class Renderer implements ComponentVisitor {
     }
 
     private void initFrameBuffers() {
-        this.gBuffer = new FrameBuffer(this.xResolution, this.yResolution,
-                new FrameBufferParameters().addColorOutput(Format.RGBA8).addColorOutput(Format.RGBA16F).addColorOutput(Format.RGB16F));
+        this.gBuffer = new FrameBuffer(this.xResolution, this.yResolution, new FrameBufferParameters().addColorOutput(Format.RGBA8)
+                .addColorOutput(Format.RGBA16F).addColorOutput(Format.RGB16F).setDepthStencilTextureFormat(Format.DEPTH32F_STENCIL8));
         this.shadowBuffer = new FrameBuffer(this.shadowMapResolution, this.shadowMapResolution);
-        this.finalBuffer = new FrameBuffer(this.xResolution, this.yResolution, new FrameBufferParameters().addColorOutput(Format.RGBA32F));
+        this.finalBuffer = new FrameBuffer(this.xResolution, this.yResolution, new FrameBufferParameters().addColorOutput(Format.RGBA32F)
+                .setDepthStencilTextureFormat(Format.DEPTH32F_STENCIL8));
         this.brdfBuffer = new FrameBuffer(BRDF_RESOLUTION, BRDF_RESOLUTION, new FrameBufferParameters().hasDepth(false).addColorOutput(Format.RG16F));
     }
 
@@ -226,7 +227,7 @@ public class Renderer implements ComponentVisitor {
         }
         scene.getEnvironmentMap().ifPresent(map -> this.renderSkybox(map, this.camera));
         this.renderShadowMap();
-        this.renderScene(this.camera);
+        this.renderGBuffer(this.camera);
         this.renderDeferred(scene, this.camera);
         this.postProcessor.process(this.finalBuffer.getColorTexture(0));
     }
@@ -240,9 +241,7 @@ public class Renderer implements ComponentVisitor {
         this.skyboxShader.bind();
         this.skyboxShader.setUniform("viewProj", camera.getViewProjAtOrigin());
 
-        glDepthMask(false);
         glDrawElements(GL_TRIANGLES, this.iBuffer.getSize(), this.iBuffer.getDataType().getGlCode(), 0);
-        glDepthMask(true);
 
         Shader.unbind();
         Cubemap.unbind();
@@ -278,12 +277,16 @@ public class Renderer implements ComponentVisitor {
         model.getMeshes().keySet().forEach(this::renderMesh);
     }
 
-    private void renderScene(final Camera camera) {
+    private void renderGBuffer(final Camera camera) {
         this.gBuffer.bind();
         this.gBuffer.clear();
         this.gBufferShader.bind();
 
+        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE); // if depth & stencil test passes replace current value
+        glStencilFunc(GL_ALWAYS, 1, 0xFF); // write 1s in the stencil buffer
         this.models.forEach((model, transform) -> this.renderSceneNode(model, transform, camera));
+        glStencilFunc(GL_ALWAYS, 0, 0xFF);
+        glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 
         Shader.unbind();
         this.gBuffer.unbind();
@@ -328,6 +331,8 @@ public class Renderer implements ComponentVisitor {
         if (!scene.getEnvironmentMap().isPresent()) {
             this.finalBuffer.clear();
         }
+
+        this.finalBuffer.copyFrom(this.gBuffer, false, true);
 
         this.gBuffer.getColorTexture(0).bind(0);
         this.gBuffer.getColorTexture(1).bind(1);
@@ -374,7 +379,16 @@ public class Renderer implements ComponentVisitor {
         this.deferredShader.setUniform("uGBuffer.emissive", 2);
         this.deferredShader.setUniform("uGBuffer.depth", 3);
 
+        glStencilFunc(GL_EQUAL, 1, 0xFF); // stencil test passes if current buffer value = 1
+        glStencilMask(0x00); // disables writing to the stencil buffer
+        glDisable(GL_DEPTH_TEST); // disable depth testing
+
         this.renderMesh(this.screenQuad);
+
+        // reset default values
+        glEnable(GL_DEPTH_TEST);
+        glStencilMask(0xFF);
+        glStencilFunc(GL_ALWAYS, 0, 0xFF);
 
         Shader.unbind();
         Cubemap.unbind(4);

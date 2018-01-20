@@ -3,6 +3,7 @@ package com.adrien.games.bagl.rendering;
 import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.core.Engine;
 import com.adrien.games.bagl.core.EngineException;
+import com.adrien.games.bagl.rendering.texture.Format;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.texture.TextureParameters;
 import com.adrien.games.bagl.rendering.texture.Wrap;
@@ -57,11 +58,19 @@ public class FrameBuffer {
         this.width = width;
         this.height = height;
         this.colorOutputs = parameters.getColorOutputs().isEmpty() ? null : this.createColorOutputs(parameters, this.width, this.height);
-        this.depthTexture = parameters.hadDepth() ?
-                new Texture(this.width, this.height, new TextureParameters().format(parameters.getDepthTextureFormat())) : null;
-        this.handle = this.createBuffer(this.colorOutputs, this.depthTexture);
+        this.depthTexture = parameters.hadDepthStencil() ?
+                new Texture(this.width, this.height, new TextureParameters().format(parameters.getDepthStencilTextureFormat())) : null;
+        this.handle = this.createBuffer(this.colorOutputs, this.depthTexture, parameters.getDepthStencilTextureFormat() == Format.DEPTH_32F);
     }
 
+    /**
+     * Create one texture for each of the color output specified if the frame buffer parameters
+     *
+     * @param parameters The parameters of the frame buffer
+     * @param width      The width of each texture
+     * @param height     The height of each texture
+     * @return An array of {@link Texture}
+     */
     private Texture[] createColorOutputs(final FrameBufferParameters parameters, final int width, final int height) {
         final int colorOutputs = parameters.getColorOutputs().size();
         final Texture[] textures = new Texture[colorOutputs];
@@ -73,21 +82,22 @@ public class FrameBuffer {
     }
 
     /**
-     * Create the actual OpenGL frame buffer object and attaches
-     * the color buffer textures and the depth render buffer. If
-     * the frame buffer is depth only, only depth texture is attached
+     * Create the actual OpenGL frame buffer object and attache
+     * the color buffer textures and the depth/stencil texture. If
+     * the frame buffer is depth/stencil only, only depth/stencil texture is attached
      *
-     * @param textures The textures to use as color outputs
-     * @param depth    The depth texture
+     * @param textures     The textures to use as color outputs
+     * @param depthStencil The depth/stencil texture
      * @return The handle of the OpenGL frame buffer
      */
-    private int createBuffer(final Texture[] textures, final Texture depth) {
+    private int createBuffer(final Texture[] textures, final Texture depthStencil, final boolean depthOnly) {
         final int bufferHandle = glGenFramebuffers();
         glBindFramebuffer(GL_FRAMEBUFFER, bufferHandle);
         glDrawBuffer(GL_NONE);
 
-        if (Objects.nonNull(depth)) {
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth.getHandle(), 0);
+        if (Objects.nonNull(depthStencil)) {
+            final int attachment = depthOnly ? GL_DEPTH_ATTACHMENT : GL_DEPTH_STENCIL_ATTACHMENT;
+            glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, depthStencil.getHandle(), 0);
         }
 
         if (Objects.nonNull(textures)) {
@@ -139,6 +149,29 @@ public class FrameBuffer {
     }
 
     /**
+     * Copy the data of a frame buffer into this frame buffer
+     * <p>
+     * This method only copies the depth and/or stencil buffers, not the color buffers
+     *
+     * @param frameBuffer The frame buffer to copy
+     * @param depth       Should it copy the depth buffer
+     * @param stencil     Should it copy the stencil buffer
+     * @throws EngineException if this is not bound or if both depth and stencil flags are false
+     */
+    public void copyFrom(final FrameBuffer frameBuffer, final boolean depth, final boolean stencil) {
+        if (!this.isBound()) {
+            throw new EngineException("You cannot blit a frame buffer to an unbound frame buffer");
+        }
+        if (!depth && !stencil) {
+            throw new EngineException("Either depth or stencil has to be true if you want to blit a frame buffer");
+        }
+        int flags = (depth ? GL_DEPTH_BUFFER_BIT : 0) | (stencil ? GL_STENCIL_BUFFER_BIT : 0);
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, frameBuffer.getHandle());
+        glBlitFramebuffer(0, 0, frameBuffer.getWidth(), frameBuffer.getHeight(), 0, 0, this.width, this.height, flags, GL_NEAREST);
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, this.handle);
+    }
+
+    /**
      * Clear this frame buffer
      *
      * @throws EngineException if the frame buffer is not bound
@@ -158,7 +191,7 @@ public class FrameBuffer {
             throw new EngineException("You cannot clear a frame buffer that is not currently bound");
         }
         Engine.setClearColor(color);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     }
 
     /**

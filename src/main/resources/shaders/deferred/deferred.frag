@@ -285,5 +285,4 @@ void main() {
 
         finalColor = vec4(ambient + L0, 1.0);
     }
-    gl_FragDepth = depthValue;
 }
