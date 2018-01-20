@@ -1,16 +1,18 @@
 package com.adrien.games.bagl.rendering.environment;
 
 import com.adrien.games.bagl.core.Configuration;
+import com.adrien.games.bagl.core.EngineException;
 import com.adrien.games.bagl.core.camera.Camera;
-import com.adrien.games.bagl.rendering.*;
+import com.adrien.games.bagl.rendering.FrameBuffer;
+import com.adrien.games.bagl.rendering.FrameBufferParameters;
+import com.adrien.games.bagl.rendering.Shader;
+import com.adrien.games.bagl.rendering.model.Mesh;
+import com.adrien.games.bagl.rendering.model.MeshFactory;
 import com.adrien.games.bagl.rendering.texture.*;
-import com.adrien.games.bagl.rendering.vertex.*;
+import com.adrien.games.bagl.rendering.vertex.IndexBuffer;
 import com.adrien.games.bagl.utils.HDRImage;
 import com.adrien.games.bagl.utils.ImageUtils;
 import org.joml.Vector3f;
-import org.lwjgl.system.MemoryStack;
-
-import java.nio.ByteBuffer;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE_CUBE_MAP;
@@ -30,12 +32,7 @@ public class EnvironmentMapGenerator {
     private final static float NEAR_PLANE = 0.1f;
     private final static float FAR_PLANE = 10f;
 
-    private final static byte SKYBOX_POSITIVE_HALF_SIZE = (byte) 1;
-    private final static byte SKYBOX_NEGATIVE_HALF_SIZE = (byte) -1;
-
-    private VertexArray vArray;
-    private VertexBuffer vBuffer;
-    private IndexBuffer iBuffer;
+    private final Mesh cubeMapMesh;
 
     private FrameBuffer environmentFrameBuffer;
     private FrameBuffer irradianceFrameBuffer;
@@ -48,8 +45,7 @@ public class EnvironmentMapGenerator {
     private Camera[] cameras;
 
     public EnvironmentMapGenerator() {
-        this.generateVertexBuffer();
-        this.iBuffer = this.generateIndexBuffer();
+        this.cubeMapMesh = MeshFactory.createCubeMapMesh();
 
         final FrameBufferParameters frameBufferParameters = new FrameBufferParameters().hasDepth(false);
         this.environmentFrameBuffer = new FrameBuffer(ENVIRONMENT_MAP_RESOLUTION, ENVIRONMENT_MAP_RESOLUTION, frameBufferParameters);
@@ -76,9 +72,7 @@ public class EnvironmentMapGenerator {
      * Destroy resources
      */
     public void destroy() {
-        this.iBuffer.destroy();
-        this.vBuffer.destroy();
-        this.vArray.destroy();
+        this.cubeMapMesh.destroy();
         this.environmentSphericalShader.destroy();
         this.irradianceShader.destroy();
         this.preFilteredMapShader.destroy();
@@ -168,8 +162,9 @@ public class EnvironmentMapGenerator {
         frameBuffer.bind();
         frameBuffer.enableColorOutputs(0);
 
-        this.vArray.bind();
-        this.iBuffer.bind();
+        final IndexBuffer iBuffer = this.cubeMapMesh.getIndexBuffer().orElseThrow(() -> new EngineException("Cube map mesh should have an index"));
+        this.cubeMapMesh.getVertexArray().bind();
+        iBuffer.bind();
 
         final float mipFactor = 1f / (float) Math.pow(2, mipLevel);
         glViewport(0, 0, (int) (target.getWidth() * mipFactor), (int) (target.getHeight() * mipFactor));
@@ -179,48 +174,13 @@ public class EnvironmentMapGenerator {
 
             shader.setUniform("viewProj", this.cameras[i].getViewProjAtOrigin());
 
-            glDrawElements(GL_TRIANGLES, this.iBuffer.getSize(), this.iBuffer.getDataType().getGlCode(), 0);
+            glDrawElements(GL_TRIANGLES, iBuffer.getSize(), iBuffer.getDataType().getGlCode(), 0);
         }
         glViewport(0, 0, Configuration.getInstance().getXResolution(), Configuration.getInstance().getYResolution());
 
-        this.iBuffer.unbind();
-        this.vArray.unbind();
+        iBuffer.unbind();
+        this.cubeMapMesh.getVertexArray().unbind();
         frameBuffer.unbind();
-    }
-
-    private IndexBuffer generateIndexBuffer() {
-        try (final MemoryStack stack = MemoryStack.stackPush()) {
-            final ByteBuffer indices = stack.bytes(
-                    (byte) 1, (byte) 0, (byte) 3, (byte) 3, (byte) 0, (byte) 2,
-                    (byte) 5, (byte) 1, (byte) 7, (byte) 7, (byte) 1, (byte) 3,
-                    (byte) 4, (byte) 5, (byte) 6, (byte) 6, (byte) 5, (byte) 7,
-                    (byte) 0, (byte) 4, (byte) 2, (byte) 2, (byte) 4, (byte) 6,
-                    (byte) 6, (byte) 7, (byte) 2, (byte) 2, (byte) 7, (byte) 3,
-                    (byte) 0, (byte) 1, (byte) 4, (byte) 4, (byte) 1, (byte) 5
-            );
-            return new IndexBuffer(indices, BufferUsage.STATIC_DRAW);
-        }
-    }
-
-    private void generateVertexBuffer() {
-        try (final MemoryStack stack = MemoryStack.stackPush()) {
-            final ByteBuffer vertices = stack.bytes(
-                    SKYBOX_NEGATIVE_HALF_SIZE, SKYBOX_NEGATIVE_HALF_SIZE, SKYBOX_POSITIVE_HALF_SIZE,
-                    SKYBOX_POSITIVE_HALF_SIZE, SKYBOX_NEGATIVE_HALF_SIZE, SKYBOX_POSITIVE_HALF_SIZE,
-                    SKYBOX_NEGATIVE_HALF_SIZE, SKYBOX_POSITIVE_HALF_SIZE, SKYBOX_POSITIVE_HALF_SIZE,
-                    SKYBOX_POSITIVE_HALF_SIZE, SKYBOX_POSITIVE_HALF_SIZE, SKYBOX_POSITIVE_HALF_SIZE,
-                    SKYBOX_NEGATIVE_HALF_SIZE, SKYBOX_NEGATIVE_HALF_SIZE, SKYBOX_NEGATIVE_HALF_SIZE,
-                    SKYBOX_POSITIVE_HALF_SIZE, SKYBOX_NEGATIVE_HALF_SIZE, SKYBOX_NEGATIVE_HALF_SIZE,
-                    SKYBOX_NEGATIVE_HALF_SIZE, SKYBOX_POSITIVE_HALF_SIZE, SKYBOX_NEGATIVE_HALF_SIZE,
-                    SKYBOX_POSITIVE_HALF_SIZE, SKYBOX_POSITIVE_HALF_SIZE, SKYBOX_NEGATIVE_HALF_SIZE);
-            this.vBuffer = new VertexBuffer(vertices, new VertexBufferParams()
-                    .dataType(DataType.BYTE)
-                    .element(new VertexElement(0, 3)));
-        }
-        this.vArray = new VertexArray();
-        this.vArray.bind();
-        this.vArray.attachVertexBuffer(this.vBuffer);
-        this.vArray.unbind();
     }
 
     private Camera[] initCameras() {

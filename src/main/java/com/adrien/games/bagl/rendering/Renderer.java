@@ -17,12 +17,10 @@ import com.adrien.games.bagl.rendering.scene.components.*;
 import com.adrien.games.bagl.rendering.texture.Cubemap;
 import com.adrien.games.bagl.rendering.texture.Format;
 import com.adrien.games.bagl.rendering.texture.Texture;
-import com.adrien.games.bagl.rendering.vertex.*;
+import com.adrien.games.bagl.rendering.vertex.IndexBuffer;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import org.lwjgl.system.MemoryStack;
 
-import java.nio.ByteBuffer;
 import java.util.*;
 
 import static org.lwjgl.opengl.GL11.*;
@@ -41,8 +39,6 @@ import static org.lwjgl.opengl.GL11.*;
 public class Renderer implements ComponentVisitor {
 
     private static final int BRDF_RESOLUTION = 512;
-    private final static byte UNIT_CUBE_POS_HALF_SIZE = (byte) 1;
-    private final static byte UNIT_CUBE_NEG_HALF_SIZE = (byte) -1;
 
     private final int xResolution;
     private final int yResolution;
@@ -58,10 +54,7 @@ public class Renderer implements ComponentVisitor {
     private final Matrix4f lightViewProj;
 
     private Mesh screenQuad;
-
-    private VertexArray cubeVArray;
-    private VertexBuffer cubeVBuffer;
-    private IndexBuffer iBuffer;
+    private Mesh cubeMapMesh;
 
     private boolean renderShadow;
 
@@ -97,7 +90,8 @@ public class Renderer implements ComponentVisitor {
         this.lightViewProj = new Matrix4f();
 
         this.screenQuad = MeshFactory.createScreenQuad();
-        this.initUnitCube();
+        this.cubeMapMesh = MeshFactory.createCubeMapMesh();
+
         this.initFrameBuffers();
         this.initShaders();
         this.bakeBRDFIntegration();
@@ -119,44 +113,8 @@ public class Renderer implements ComponentVisitor {
         this.finalBuffer.destroy();
         this.brdfBuffer.destroy();
         this.screenQuad.destroy();
-        this.iBuffer.destroy();
-        this.cubeVBuffer.destroy();
-        this.cubeVArray.destroy();
+        this.cubeMapMesh.destroy();
         this.postProcessor.destroy();
-    }
-
-    private void initUnitCube() {
-        try (final MemoryStack stack = MemoryStack.stackPush()) {
-            final ByteBuffer indices = stack.bytes(
-                    (byte) 1, (byte) 0, (byte) 3, (byte) 3, (byte) 0, (byte) 2,
-                    (byte) 5, (byte) 1, (byte) 7, (byte) 7, (byte) 1, (byte) 3,
-                    (byte) 4, (byte) 5, (byte) 6, (byte) 6, (byte) 5, (byte) 7,
-                    (byte) 0, (byte) 4, (byte) 2, (byte) 2, (byte) 4, (byte) 6,
-                    (byte) 6, (byte) 7, (byte) 2, (byte) 2, (byte) 7, (byte) 3,
-                    (byte) 0, (byte) 1, (byte) 4, (byte) 4, (byte) 1, (byte) 5
-            );
-            this.iBuffer = new IndexBuffer(indices, BufferUsage.STATIC_DRAW);
-        }
-
-        try (final MemoryStack stack = MemoryStack.stackPush()) {
-            final ByteBuffer vertices = stack.bytes(
-                    UNIT_CUBE_NEG_HALF_SIZE, UNIT_CUBE_NEG_HALF_SIZE, UNIT_CUBE_POS_HALF_SIZE,
-                    UNIT_CUBE_POS_HALF_SIZE, UNIT_CUBE_NEG_HALF_SIZE, UNIT_CUBE_POS_HALF_SIZE,
-                    UNIT_CUBE_NEG_HALF_SIZE, UNIT_CUBE_POS_HALF_SIZE, UNIT_CUBE_POS_HALF_SIZE,
-                    UNIT_CUBE_POS_HALF_SIZE, UNIT_CUBE_POS_HALF_SIZE, UNIT_CUBE_POS_HALF_SIZE,
-                    UNIT_CUBE_NEG_HALF_SIZE, UNIT_CUBE_NEG_HALF_SIZE, UNIT_CUBE_NEG_HALF_SIZE,
-                    UNIT_CUBE_POS_HALF_SIZE, UNIT_CUBE_NEG_HALF_SIZE, UNIT_CUBE_NEG_HALF_SIZE,
-                    UNIT_CUBE_NEG_HALF_SIZE, UNIT_CUBE_POS_HALF_SIZE, UNIT_CUBE_NEG_HALF_SIZE,
-                    UNIT_CUBE_POS_HALF_SIZE, UNIT_CUBE_POS_HALF_SIZE, UNIT_CUBE_NEG_HALF_SIZE);
-            this.cubeVBuffer = new VertexBuffer(vertices, new VertexBufferParams()
-                    .dataType(DataType.BYTE)
-                    .element(new VertexElement(0, 3)));
-        }
-
-        this.cubeVArray = new VertexArray();
-        this.cubeVArray.bind();
-        this.cubeVArray.attachVertexBuffer(this.cubeVBuffer);
-        this.cubeVArray.unbind();
     }
 
     private void initFrameBuffers() {
@@ -235,18 +193,14 @@ public class Renderer implements ComponentVisitor {
     private void renderSkybox(final Cubemap skybox, final Camera camera) {
         this.finalBuffer.bind();
         this.finalBuffer.clear();
-        this.cubeVArray.bind();
-        this.iBuffer.bind();
         skybox.bind();
         this.skyboxShader.bind();
         this.skyboxShader.setUniform("viewProj", camera.getViewProjAtOrigin());
 
-        glDrawElements(GL_TRIANGLES, this.iBuffer.getSize(), this.iBuffer.getDataType().getGlCode(), 0);
+        this.renderMesh(this.cubeMapMesh);
 
         Shader.unbind();
         Cubemap.unbind();
-        this.iBuffer.unbind();
-        this.cubeVArray.unbind();
         this.finalBuffer.unbind();
     }
 

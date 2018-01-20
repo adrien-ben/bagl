@@ -19,6 +19,9 @@ import java.nio.IntBuffer;
  */
 public class MeshFactory {
 
+    private final static byte UNIT_CUBE_POS_HALF_SIZE = (byte) 1;
+    private final static byte UNIT_CUBE_NEG_HALF_SIZE = (byte) -1;
+
     /**
      * Create a plane mesh
      * <p>
@@ -50,6 +53,14 @@ public class MeshFactory {
         }
     }
 
+    /**
+     * Create a quad for full screen rendering
+     * <p>
+     * This method generates an un-indexed mesh with position
+     * and texture coordinates
+     *
+     * @return A new {@link Mesh}
+     */
     public static Mesh createScreenQuad() {
         try (final MemoryStack stack = MemoryStack.stackPush()) {
             final ByteBuffer positions = stack.bytes(
@@ -68,6 +79,50 @@ public class MeshFactory {
             vArray.unbind();
             return new Mesh(vBuffer, vArray, PrimitiveType.TRIANGLE_STRIP);
         }
+    }
+
+    /**
+     * Create a mesh to render cube maps
+     * <p>
+     * The method generates an indexed mesh with only position data
+     *
+     * @return A new {@link Mesh}
+     */
+    public static Mesh createCubeMapMesh() {
+        final IndexBuffer iBuffer;
+        try (final MemoryStack stack = MemoryStack.stackPush()) {
+            final ByteBuffer indices = stack.bytes(
+                    (byte) 1, (byte) 0, (byte) 3, (byte) 3, (byte) 0, (byte) 2,
+                    (byte) 5, (byte) 1, (byte) 7, (byte) 7, (byte) 1, (byte) 3,
+                    (byte) 4, (byte) 5, (byte) 6, (byte) 6, (byte) 5, (byte) 7,
+                    (byte) 0, (byte) 4, (byte) 2, (byte) 2, (byte) 4, (byte) 6,
+                    (byte) 6, (byte) 7, (byte) 2, (byte) 2, (byte) 7, (byte) 3,
+                    (byte) 0, (byte) 1, (byte) 4, (byte) 4, (byte) 1, (byte) 5
+            );
+            iBuffer = new IndexBuffer(indices, BufferUsage.STATIC_DRAW);
+        }
+
+        final VertexBuffer vBuffer;
+        try (final MemoryStack stack = MemoryStack.stackPush()) {
+            final ByteBuffer vertices = stack.bytes(
+                    UNIT_CUBE_NEG_HALF_SIZE, UNIT_CUBE_NEG_HALF_SIZE, UNIT_CUBE_POS_HALF_SIZE,
+                    UNIT_CUBE_POS_HALF_SIZE, UNIT_CUBE_NEG_HALF_SIZE, UNIT_CUBE_POS_HALF_SIZE,
+                    UNIT_CUBE_NEG_HALF_SIZE, UNIT_CUBE_POS_HALF_SIZE, UNIT_CUBE_POS_HALF_SIZE,
+                    UNIT_CUBE_POS_HALF_SIZE, UNIT_CUBE_POS_HALF_SIZE, UNIT_CUBE_POS_HALF_SIZE,
+                    UNIT_CUBE_NEG_HALF_SIZE, UNIT_CUBE_NEG_HALF_SIZE, UNIT_CUBE_NEG_HALF_SIZE,
+                    UNIT_CUBE_POS_HALF_SIZE, UNIT_CUBE_NEG_HALF_SIZE, UNIT_CUBE_NEG_HALF_SIZE,
+                    UNIT_CUBE_NEG_HALF_SIZE, UNIT_CUBE_POS_HALF_SIZE, UNIT_CUBE_NEG_HALF_SIZE,
+                    UNIT_CUBE_POS_HALF_SIZE, UNIT_CUBE_POS_HALF_SIZE, UNIT_CUBE_NEG_HALF_SIZE);
+            vBuffer = new VertexBuffer(vertices, new VertexBufferParams()
+                    .dataType(DataType.BYTE)
+                    .element(new VertexElement(0, 3)));
+        }
+
+        final VertexArray vArray = new VertexArray();
+        vArray.bind();
+        vArray.attachVertexBuffer(vBuffer);
+        vArray.unbind();
+        return new Mesh(vBuffer, vArray, iBuffer);
     }
 
     /**
