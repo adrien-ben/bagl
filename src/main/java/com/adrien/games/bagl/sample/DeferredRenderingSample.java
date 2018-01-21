@@ -112,14 +112,14 @@ public class DeferredRenderingSample {
         }
 
         private void loadMeshes() {
-//            this.environmentMap = this.environmentMapGenerator.generateEnvironmentMap(FileUtils.getResourceAbsolutePath("/envmaps/flat.hdr"));
-            this.environmentMap = this.environmentMapGenerator.generateEnvironmentMap("D:/Images/HDRI/lookout.hdr");
+            this.environmentMap = this.environmentMapGenerator.generateEnvironmentMap(FileUtils.getResourceAbsolutePath("/envmaps/flat.hdr"));
+//            this.environmentMap = this.environmentMapGenerator.generateEnvironmentMap("D:/Images/HDRI/lookout.hdr");
             this.irradianceMap = this.environmentMapGenerator.generateIrradianceMap(this.environmentMap);
             this.preFilteredMap = this.environmentMapGenerator.generatePreFilteredMap(this.environmentMap);
 
             this.floor = ModelFactory.fromFile(FileUtils.getResourceAbsolutePath("/models/floor/floor.obj"));
-//            this.cube = ModelFactory.fromFile(FileUtils.getResourceAbsolutePath("/models/cube/cube.obj"));
-            this.cube = ModelFactory.fromFile("D:/Documents/3D Models/gun/gun.obj");
+            this.cube = ModelFactory.fromFile(FileUtils.getResourceAbsolutePath("/models/cube/cube.obj"));
+//            this.cube = ModelFactory.fromFile("D:/Documents/3D Models/gun/gun.obj");
             final Material gold = new Material().setDiffuseColor(Color.YELLOW).setMetallic(1f).setRoughness(0.1f);
             this.sphere = ModelFactory.createSphere(0.5f, 25, 25, gold);
             this.pointBulb = MeshFactory.createSphere(0.1f, 8, 8);
@@ -144,13 +144,15 @@ public class DeferredRenderingSample {
             sphereObj.addComponent(new ModelComponent(this.sphere));
             sphereObj.getLocalTransform().setTranslation(new Vector3f(1.5f, 0.6f, 0f));
 
-            this.setUpLights(floorObj);
+            this.setUpLights();
         }
 
-        private void setUpLights(final GameObject parent) {
+        private void setUpLights() {
             final GameObject sunObj = this.scene.getRoot().createChild("sun");
             sunObj.getLocalTransform().setRotation(new Quaternionf().rotation((float) Math.toRadians(45f), (float) Math.toRadians(45f), 0));
             sunObj.addComponent(new DirectionalLightComponent(new DirectionalLight(0.8f, Color.WHITE, new Vector3f())));
+
+            final GameObject parent = this.scene.getObjectById("floor").orElseThrow(() -> new EngineException("No floor found in the scene"));
 
             final PointLight pointLight0 = new PointLight(8f, Color.GREEN, new Vector3f(), 3f);
             this.addPointLight(parent, new Vector3f(4f, 0.5f, 2f), pointLight0, 0);
@@ -198,6 +200,15 @@ public class DeferredRenderingSample {
         @Override
         public void update(final Time time) {
             this.scene.update(time);
+
+            if (Input.isKeyPressed(GLFW.GLFW_KEY_1) || Input.isKeyPressed(GLFW.GLFW_KEY_2)) {
+                float speed = Input.isKeyPressed(GLFW.GLFW_KEY_1) ? 20 : -20;
+                this.scene.getObjectById("sun").ifPresent(sunObj -> {
+                    final Transform transform = new Transform()
+                            .setRotation(new Quaternionf().setAngleAxis((float) Math.toRadians(speed * time.getElapsedTime()), 1f, 1f, 0f));
+                    sunObj.getLocalTransform().transform(transform);
+                });
+            }
 
             if (Input.wasKeyPressed(GLFW.GLFW_KEY_F1)) {
                 this.displayInstructions = !this.displayInstructions;
