@@ -182,9 +182,8 @@ public class Renderer implements ComponentVisitor {
         if (Objects.isNull(this.camera)) {
             throw new EngineException("Impossible to render a scene if no camera is set up");
         }
-        if (Objects.nonNull(this.environmentMap)) {
-            this.renderSkybox();
-        }
+
+        this.renderSkybox();
         this.renderShadowMap();
         this.performGeometryPass();
         this.performLightingPass();
@@ -209,17 +208,19 @@ public class Renderer implements ComponentVisitor {
      * Render the skybox from the environment map found in the scene if any
      */
     private void renderSkybox() {
-        this.finalBuffer.bind();
-        this.finalBuffer.clear();
-        this.environmentMap.bind();
-        this.skyboxShader.bind();
-        this.skyboxShader.setUniform("viewProj", this.camera.getViewProjAtOrigin());
+        if (Objects.nonNull(this.environmentMap)) {
+            this.finalBuffer.bind();
+            this.finalBuffer.clear();
+            this.environmentMap.bind();
+            this.skyboxShader.bind();
+            this.skyboxShader.setUniform("viewProj", this.camera.getViewProjAtOrigin());
 
-        this.renderMesh(this.cubeMapMesh);
+            this.renderMesh(this.cubeMapMesh);
 
-        Shader.unbind();
-        Cubemap.unbind();
-        this.finalBuffer.unbind();
+            Shader.unbind();
+            Cubemap.unbind();
+            this.finalBuffer.unbind();
+        }
     }
 
     /**
