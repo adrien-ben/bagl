@@ -33,6 +33,9 @@ import static org.lwjgl.opengl.GL11.*;
  * <li>Shadow mapping for one directional light</li>
  * <li>PBR rendering with IBL</li>
  * <li>Post processing pass (bloom/gamma correction/tone mapping from HDR to SDR</li>
+ * <p>
+ * When {@link Renderer#render(Scene)} is called, the renderer visits the scene and collects
+ * scene date required for rendering
  *
  * @author adrien
  */
@@ -75,7 +78,7 @@ public class Renderer implements ComponentVisitor {
     private PostProcessor postProcessor;
 
     /**
-     * Constructs the renderer
+     * Construct the renderer
      */
     public Renderer() {
         final Configuration config = Configuration.getInstance();
@@ -103,7 +106,7 @@ public class Renderer implements ComponentVisitor {
     }
 
     /**
-     * Releases resources
+     * Release resources
      */
     public void destroy() {
         this.skyboxShader.destroy();
@@ -120,6 +123,9 @@ public class Renderer implements ComponentVisitor {
         this.postProcessor.destroy();
     }
 
+    /**
+     * Initializes the frame buffers
+     */
     private void initFrameBuffers() {
         this.gBuffer = new FrameBuffer(this.xResolution, this.yResolution, new FrameBufferParameters().addColorOutput(Format.RGBA8)
                 .addColorOutput(Format.RGBA16F).addColorOutput(Format.RGB16F).setDepthStencilTextureFormat(Format.DEPTH32F_STENCIL8));
@@ -129,6 +135,9 @@ public class Renderer implements ComponentVisitor {
         this.brdfBuffer = new FrameBuffer(BRDF_RESOLUTION, BRDF_RESOLUTION, new FrameBufferParameters().hasDepth(false).addColorOutput(Format.RG16F));
     }
 
+    /**
+     * Initializes the shaders
+     */
     private void initShaders() {
         this.skyboxShader = new Shader()
                 .addVertexShader("/environment/environment.vert")
@@ -152,6 +161,9 @@ public class Renderer implements ComponentVisitor {
                 .compile();
     }
 
+    /**
+     * Bake the BRDF lookup texture for specular IBL
+     */
     private void bakeBRDFIntegration() {
         this.brdfBuffer.bind();
         this.brdfShader.bind();
@@ -165,7 +177,7 @@ public class Renderer implements ComponentVisitor {
     }
 
     /**
-     * Renders a scene from the camera point of view
+     * Render a scene from the camera point of view
      * <p>
      * First, if a skybox is present it is renderer to the default frame buffer.
      * Then, the shadow map is generated for the first available directional light
@@ -286,8 +298,8 @@ public class Renderer implements ComponentVisitor {
      */
     private void renderModelToGBuffer(final Model model, final Matrix4f transform) {
         this.camera.getViewProj().mul(transform, this.wvpBuffer);
-        this.gBufferShader.setUniform("uMatrices.world", transform);
-        this.gBufferShader.setUniform("uMatrices.wvp", this.wvpBuffer);
+        this.gBufferShader.setUniform("uMatrices.world", transform)
+                .setUniform("uMatrices.wvp", this.wvpBuffer);
         model.getMeshes().forEach(this::renderMeshToGBuffer);
     }
 
@@ -340,46 +352,43 @@ public class Renderer implements ComponentVisitor {
         this.gBuffer.getColorTexture(1).bind(1);
         this.gBuffer.getColorTexture(2).bind(2);
         this.gBuffer.getDepthTexture().bind(3);
+        this.brdfBuffer.getColorTexture(0).bind(7);
 
-        this.deferredShader.bind();
-        this.deferredShader.setUniform("uCamera.invertedViewProj", this.camera.getInvertedViewProj());
-        this.deferredShader.setUniform("uCamera.position", this.camera.getPosition());
+        this.deferredShader.bind()
+                .setUniform("uCamera.invertedViewProj", this.camera.getInvertedViewProj())
+                .setUniform("uCamera.position", this.camera.getPosition())
+                .setUniform("uShadow.hasShadow", this.renderShadow)
+                .setUniform("uLights.directionalCount", this.directionalLights.size())
+                .setUniform("uLights.pointCount", this.pointLights.size())
+                .setUniform("uLights.spotCount", this.spotLights.size())
+                .setUniform("uGBuffer.colors", 0)
+                .setUniform("uGBuffer.normals", 1)
+                .setUniform("uGBuffer.emissive", 2)
+                .setUniform("uGBuffer.depth", 3)
+                .setUniform("uShadow.shadowMap", 4)
+                .setUniform("uLights.irradiance", 5)
+                .setUniform("uLights.preFilteredMap", 6)
+                .setUniform("uLights.brdf", 7);
+
         if (Objects.nonNull(this.irradianceMap)) {
             this.irradianceMap.bind(5);
-            this.deferredShader.setUniform("uLights.irradiance", 5);
         }
         if (Objects.nonNull(this.preFilteredMap)) {
             this.preFilteredMap.bind(6);
-            this.deferredShader.setUniform("uLights.preFilteredMap", 6);
         }
-        this.brdfBuffer.getColorTexture(0).bind(7);
-        this.deferredShader.setUniform("uLights.brdf", 7);
-        this.deferredShader.setUniform("uShadow.hasShadow", this.renderShadow);
         if (this.renderShadow) {
             this.deferredShader.setUniform("uShadow.lightViewProj", this.lightViewProj);
             this.shadowBuffer.getDepthTexture().bind(4);
-            this.deferredShader.setUniform("uShadow.shadowMap", 4);
         }
-
-        this.deferredShader.setUniform("uLights.directionalCount", this.directionalLights.size());
         for (int i = 0; i < this.directionalLights.size(); i++) {
             this.setDirectionalLight(this.deferredShader, i, this.directionalLights.get(i));
         }
-
-        this.deferredShader.setUniform("uLights.pointCount", this.pointLights.size());
         for (int i = 0; i < this.pointLights.size(); i++) {
             this.setPointLight(this.deferredShader, i, this.pointLights.get(i));
         }
-
-        this.deferredShader.setUniform("uLights.spotCount", this.spotLights.size());
         for (int i = 0; i < this.spotLights.size(); i++) {
             this.setSpotLight(this.deferredShader, i, this.spotLights.get(i));
         }
-
-        this.deferredShader.setUniform("uGBuffer.colors", 0);
-        this.deferredShader.setUniform("uGBuffer.normals", 1);
-        this.deferredShader.setUniform("uGBuffer.emissive", 2);
-        this.deferredShader.setUniform("uGBuffer.depth", 3);
 
         glStencilFunc(GL_EQUAL, 1, 0xFF); // stencil test passes if current buffer value = 1
         glStencilMask(0x00); // disables writing to the stencil buffer
@@ -405,26 +414,26 @@ public class Renderer implements ComponentVisitor {
     }
 
     private void setDirectionalLight(final Shader shader, final int index, final DirectionalLight light) {
-        shader.setUniform("uLights.directionals[" + index + "].base.intensity", light.getIntensity());
-        shader.setUniform("uLights.directionals[" + index + "].base.color", light.getColor());
-        shader.setUniform("uLights.directionals[" + index + "].direction", light.getDirection());
+        shader.setUniform("uLights.directionals[" + index + "].base.intensity", light.getIntensity())
+                .setUniform("uLights.directionals[" + index + "].base.color", light.getColor())
+                .setUniform("uLights.directionals[" + index + "].direction", light.getDirection());
     }
 
     private void setPointLight(Shader shader, int index, PointLight light) {
-        shader.setUniform("uLights.points[" + index + "].base.intensity", light.getIntensity());
-        shader.setUniform("uLights.points[" + index + "].base.color", light.getColor());
-        shader.setUniform("uLights.points[" + index + "].position", light.getPosition());
-        shader.setUniform("uLights.points[" + index + "].radius", light.getRadius());
+        shader.setUniform("uLights.points[" + index + "].base.intensity", light.getIntensity())
+                .setUniform("uLights.points[" + index + "].base.color", light.getColor())
+                .setUniform("uLights.points[" + index + "].position", light.getPosition())
+                .setUniform("uLights.points[" + index + "].radius", light.getRadius());
     }
 
     private void setSpotLight(Shader shader, int index, SpotLight light) {
-        shader.setUniform("uLights.spots[" + index + "].point.base.intensity", light.getIntensity());
-        shader.setUniform("uLights.spots[" + index + "].point.base.color", light.getColor());
-        shader.setUniform("uLights.spots[" + index + "].point.position", light.getPosition());
-        shader.setUniform("uLights.spots[" + index + "].point.radius", light.getRadius());
-        shader.setUniform("uLights.spots[" + index + "].direction", light.getDirection());
-        shader.setUniform("uLights.spots[" + index + "].cutOff", light.getCutOff());
-        shader.setUniform("uLights.spots[" + index + "].outerCutOff", light.getOuterCutOff());
+        shader.setUniform("uLights.spots[" + index + "].point.base.intensity", light.getIntensity())
+                .setUniform("uLights.spots[" + index + "].point.base.color", light.getColor())
+                .setUniform("uLights.spots[" + index + "].point.position", light.getPosition())
+                .setUniform("uLights.spots[" + index + "].point.radius", light.getRadius())
+                .setUniform("uLights.spots[" + index + "].direction", light.getDirection())
+                .setUniform("uLights.spots[" + index + "].cutOff", light.getCutOff())
+                .setUniform("uLights.spots[" + index + "].outerCutOff", light.getOuterCutOff());
     }
 
     /**
