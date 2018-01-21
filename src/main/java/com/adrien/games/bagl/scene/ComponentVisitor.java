@@ -1,6 +1,6 @@
-package com.adrien.games.bagl.rendering.scene;
+package com.adrien.games.bagl.scene;
 
-import com.adrien.games.bagl.rendering.scene.components.*;
+import com.adrien.games.bagl.scene.components.*;
 
 /**
  * Interface that must be implemented by classes that desire to
@@ -11,35 +11,35 @@ import com.adrien.games.bagl.rendering.scene.components.*;
 public interface ComponentVisitor {
 
     /**
-     * Action to perform when visiting an {@link ObjectComponent}
-     *
-     * @param component The component to visit
-     */
-    void visit(ObjectComponent component);
-
-    /**
-     * Action to perform when visiting an {@link ModelComponent}
+     * Action to perform when visiting a {@link ModelComponent}
      *
      * @param component The component to visit
      */
     void visit(ModelComponent component);
 
     /**
-     * Action to perform when visiting an {@link CameraComponent}
+     * Action to perform when visiting a {@link CameraComponent}
      *
      * @param component The component to visit
      */
     void visit(CameraComponent component);
 
     /**
-     * Action to perform when visiting an {@link DirectionalLightComponent}
+     * Actio to perform when visiting an {@link EnvironmentComponent}
+     *
+     * @param component The component to visit
+     */
+    void visit(EnvironmentComponent component);
+
+    /**
+     * Action to perform when visiting a {@link DirectionalLightComponent}
      *
      * @param component The component to visit
      */
     void visit(DirectionalLightComponent component);
 
     /**
-     * Action to perform when visiting an {@link PointLightComponent}
+     * Action to perform when visiting a {@link PointLightComponent}
      *
      * @param component The component to visit
      */
@@ -47,7 +47,7 @@ public interface ComponentVisitor {
 
 
     /**
-     * Action to perform when visiting an {@link SpotLightComponent}
+     * Action to perform when visiting a {@link SpotLightComponent}
      *
      * @param component The component to visit
      */

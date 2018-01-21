@@ -15,12 +15,12 @@ import com.adrien.games.bagl.rendering.model.Mesh;
 import com.adrien.games.bagl.rendering.model.MeshFactory;
 import com.adrien.games.bagl.rendering.model.Model;
 import com.adrien.games.bagl.rendering.model.ModelFactory;
-import com.adrien.games.bagl.rendering.scene.Component;
-import com.adrien.games.bagl.rendering.scene.Scene;
-import com.adrien.games.bagl.rendering.scene.components.*;
 import com.adrien.games.bagl.rendering.text.Font;
 import com.adrien.games.bagl.rendering.text.TextRenderer;
 import com.adrien.games.bagl.rendering.texture.Cubemap;
+import com.adrien.games.bagl.scene.GameObject;
+import com.adrien.games.bagl.scene.Scene;
+import com.adrien.games.bagl.scene.components.*;
 import com.adrien.games.bagl.utils.FileUtils;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
@@ -32,7 +32,6 @@ public class DeferredRenderingSample {
     private static final class TestGame implements Game {
 
         private static final String TITLE = "Deferred Rendering";
-        private static final String LIGHT_TAG = "light";
 
         private static final String INSTRUCTIONS = "Display scene : F2\n"
                 + "Display Albedo : F3\n"
@@ -113,18 +112,14 @@ public class DeferredRenderingSample {
         }
 
         private void loadMeshes() {
-            this.environmentMap = this.environmentMapGenerator.generateEnvironmentMap(FileUtils.getResourceAbsolutePath("/envmaps/flat.hdr"));
-//            this.environmentMap = this.environmentMapGenerator.generateEnvironmentMap("D:/Images/HDRI/lookout.hdr");
+//            this.environmentMap = this.environmentMapGenerator.generateEnvironmentMap(FileUtils.getResourceAbsolutePath("/envmaps/flat.hdr"));
+            this.environmentMap = this.environmentMapGenerator.generateEnvironmentMap("D:/Images/HDRI/lookout.hdr");
             this.irradianceMap = this.environmentMapGenerator.generateIrradianceMap(this.environmentMap);
             this.preFilteredMap = this.environmentMapGenerator.generatePreFilteredMap(this.environmentMap);
 
-            this.scene.setEnvironmentMap(this.environmentMap);
-            this.scene.setIrradianceMap(this.irradianceMap);
-            this.scene.setPreFilteredMap(this.preFilteredMap);
-
             this.floor = ModelFactory.fromFile(FileUtils.getResourceAbsolutePath("/models/floor/floor.obj"));
-            this.cube = ModelFactory.fromFile(FileUtils.getResourceAbsolutePath("/models/cube/cube.obj"));
-//            this.cube = ModelFactory.fromFile("D:/Documents/3D Models/gun/gun.obj");
+//            this.cube = ModelFactory.fromFile(FileUtils.getResourceAbsolutePath("/models/cube/cube.obj"));
+            this.cube = ModelFactory.fromFile("D:/Documents/3D Models/gun/gun.obj");
             final Material gold = new Material().setDiffuseColor(Color.YELLOW).setMetallic(1f).setRoughness(0.1f);
             this.sphere = ModelFactory.createSphere(0.5f, 25, 25, gold);
             this.pointBulb = MeshFactory.createSphere(0.1f, 8, 8);
@@ -132,95 +127,76 @@ public class DeferredRenderingSample {
         }
 
         private void initScene() {
-            this.scene.getRoot().addChild(new CameraComponent(this.camera, "camera"));
+            this.scene.getRoot().addComponent(new EnvironmentComponent(this.environmentMap, this.irradianceMap, this.preFilteredMap));
 
-            final ModelComponent floorComponent = new ModelComponent(this.floor, "floor");
-            floorComponent.getLocalTransform().setScale(new Vector3f(2f, 2f, 2f));
-            this.scene.getRoot().addChild(floorComponent);
+            final GameObject cameraObj = this.scene.getRoot().createChild("camera");
+            cameraObj.addComponent(new CameraComponent(this.camera));
 
-            final ModelComponent cubeComponent = new ModelComponent(this.cube, "cube");
-            cubeComponent.getLocalTransform().setTranslation(new Vector3f(0f, 0.5f, 0f));
-            floorComponent.addChild(cubeComponent);
+            final GameObject floorObj = this.scene.getRoot().createChild("floor");
+            floorObj.addComponent(new ModelComponent(this.floor));
+            floorObj.getLocalTransform().setScale(new Vector3f(2f, 2f, 2f));
 
-            final ModelComponent sphereComponent = new ModelComponent(this.sphere, "sphere");
-            sphereComponent.getLocalTransform().setTranslation(new Vector3f(1.5f, 0.6f, 0f));
-            floorComponent.addChild(sphereComponent);
+            final GameObject cubeObj = floorObj.createChild("cube");
+            cubeObj.addComponent(new ModelComponent(this.cube));
+            cubeObj.getLocalTransform().setTranslation(new Vector3f(0f, 0.5f, 0f));
 
-            this.setUpLights();
+            final GameObject sphereObj = floorObj.createChild("sphere");
+            sphereObj.addComponent(new ModelComponent(this.sphere));
+            sphereObj.getLocalTransform().setTranslation(new Vector3f(1.5f, 0.6f, 0f));
+
+            this.setUpLights(floorObj);
         }
 
-        private void setUpLights() {
-            final DirectionalLight sinLight = new DirectionalLight(0.8f, Color.WHITE, new Vector3f());
-            final DirectionalLightComponent directionalLight0 = new DirectionalLightComponent(sinLight, "sun", LIGHT_TAG);
-            directionalLight0.getLocalTransform().setRotation(new Quaternionf().rotation((float) Math.toRadians(45f), (float) Math.toRadians(45f), 0));
-            this.scene.getRoot().addChild(directionalLight0);
-
-            final Component floor = this.scene.getComponentById("floor").orElseThrow(() -> new EngineException("No component 'floor' in the scene"));
+        private void setUpLights(final GameObject parent) {
+            final GameObject sunObj = this.scene.getRoot().createChild("sun");
+            sunObj.getLocalTransform().setRotation(new Quaternionf().rotation((float) Math.toRadians(45f), (float) Math.toRadians(45f), 0));
+            sunObj.addComponent(new DirectionalLightComponent(new DirectionalLight(0.8f, Color.WHITE, new Vector3f())));
 
             final PointLight pointLight0 = new PointLight(8f, Color.GREEN, new Vector3f(), 3f);
-            this.addPointLight(floor, new Vector3f(4f, 0.5f, 2f), pointLight0, 0);
+            this.addPointLight(parent, new Vector3f(4f, 0.5f, 2f), pointLight0, 0);
             final PointLight pointLight1 = new PointLight(10f, Color.YELLOW, new Vector3f(), 2f);
-            this.addPointLight(floor, new Vector3f(-4f, 0.2f, 2f), pointLight1, 1);
+            this.addPointLight(parent, new Vector3f(-4f, 0.2f, 2f), pointLight1, 1);
             final PointLight pointLight2 = new PointLight(10f, Color.BLUE, new Vector3f(), 2f);
-            this.addPointLight(floor, new Vector3f(0f, 0.5f, 3f), pointLight2, 2);
+            this.addPointLight(parent, new Vector3f(0f, 0.5f, 3f), pointLight2, 2);
             final PointLight pointLight3 = new PointLight(10f, Color.TURQUOISE, new Vector3f(), 2f);
-            this.addPointLight(floor, new Vector3f(-1f, 0.1f, 1f), pointLight3, 3);
+            this.addPointLight(parent, new Vector3f(-1f, 0.1f, 1f), pointLight3, 3);
             final PointLight pointLight4 = new PointLight(10f, Color.CYAN, new Vector3f(), 2f);
-            this.addPointLight(floor, new Vector3f(3f, 0.6f, -3f), pointLight4, 4);
+            this.addPointLight(parent, new Vector3f(3f, 0.6f, -3f), pointLight4, 4);
 
             final SpotLight spotLight0 = new SpotLight(10f, Color.RED, new Vector3f(), 20f, new Vector3f(), 20f, 5f);
-            this.addSpotLight(floor, new Vector3f(-3, 1f, -2), new Quaternionf().rotationX((float) Math.toRadians(45f)), spotLight0, 0);
+            this.addSpotLight(parent, new Vector3f(-3, 1f, -2), new Quaternionf().rotationX((float) Math.toRadians(45f)), spotLight0, 0);
             final SpotLight spotLight1 = new SpotLight(2f, Color.WHITE, new Vector3f(), 7f, new Vector3f(), 10f, 4f);
-            this.addSpotLight(floor, new Vector3f(2f, 2f, 2f), new Quaternionf().rotationX((float) Math.toRadians(90f)), spotLight1, 1);
+            this.addSpotLight(parent, new Vector3f(2f, 2f, 2f), new Quaternionf().rotationX((float) Math.toRadians(90f)), spotLight1, 1);
         }
 
-        private void addPointLight(final Component parent, final Vector3f position, final PointLight light, final int id) {
+        private void addPointLight(final GameObject parent, final Vector3f position, final PointLight light, final int id) {
             final String lightId = "point_light_" + id;
-            final ObjectComponent lightObject = this.createLightObject(parent, position, new Quaternionf(), light.getColor(), this.pointBulb, lightId);
-            final PointLightComponent lightComponent = new PointLightComponent(light, lightId, LIGHT_TAG);
-            lightObject.addChild(lightComponent);
+            final GameObject lightObject = this.createLightObject(parent, position, new Quaternionf(), light.getColor(), this.pointBulb, lightId);
+            lightObject.addComponent(new PointLightComponent(light));
         }
 
-        private void addSpotLight(final Component parent, final Vector3f position, final Quaternionf rotation, final SpotLight light, final int id) {
+        private void addSpotLight(final GameObject parent, final Vector3f position, final Quaternionf rotation, final SpotLight light, final int id) {
             final String lightId = "spot_light_" + id;
-            final ObjectComponent lightObject = this.createLightObject(parent, position, rotation, light.getColor(), this.spotBulb, lightId);
-            final SpotLightComponent component = new SpotLightComponent(light, lightId, LIGHT_TAG);
-            lightObject.addChild(component);
+            final GameObject lightObject = this.createLightObject(parent, position, rotation, light.getColor(), this.spotBulb, lightId);
+            lightObject.addComponent(new SpotLightComponent(light));
         }
 
-        private ObjectComponent createLightObject(final Component parent, final Vector3f position, final Quaternionf rotation, final Color color,
-                                                  final Mesh mesh, final String id) {
-            final ObjectComponent lightObject = new ObjectComponent("object_" + id);
+        private GameObject createLightObject(final GameObject parent, final Vector3f position, final Quaternionf rotation, final Color color,
+                                             final Mesh mesh, final String id) {
+            final GameObject lightObject = parent.createChild("object_" + id);
             lightObject.getLocalTransform().setTranslation(position).setRotation(rotation);
-            parent.addChild(lightObject);
+
+            final GameObject modelObject = lightObject.createChild("bulb_" + id);
+            modelObject.getLocalTransform().setRotation(new Quaternionf().rotationX((float) Math.toRadians(-90f)));
 
             final Material material = new Material().setEmissiveColor(color).setEmissiveIntensity(10f);
-            final Model bulbModel = new Model().addMesh(mesh, material);
-            final ModelComponent modelComponent = new ModelComponent(bulbModel, "blub_" + id);
-            modelComponent.getLocalTransform().setRotation(new Quaternionf().rotationX((float) Math.toRadians(-90f)));
-            lightObject.addChild(modelComponent);
+            modelObject.addComponent(new ModelComponent(new Model().addMesh(mesh, material)));
 
             return lightObject;
         }
 
         @Override
         public void update(final Time time) {
-            if (Input.isKeyPressed(GLFW.GLFW_KEY_1) || Input.isKeyPressed(GLFW.GLFW_KEY_2)) {
-                float speed = Input.isKeyPressed(GLFW.GLFW_KEY_1) ? 20 : -20;
-                this.scene.getComponentById("sun").ifPresent(component -> {
-                    final Transform transform = new Transform()
-                            .setRotation(new Quaternionf().setAngleAxis((float) Math.toRadians(speed * time.getElapsedTime()), 1f, 1f, 0f));
-                    component.getLocalTransform().transform(transform);
-                });
-            }
-
-            this.scene.getComponentsByType(PointLightComponent.class)
-                    .map(PointLightComponent::getLight)
-                    .forEach(light -> {
-                        final float intensity = (float) Math.sin(time.getTotalTime() * 3f) * 40f + 60f;
-                        light.setIntensity(intensity);
-                    });
-
             this.scene.update(time);
 
             if (Input.wasKeyPressed(GLFW.GLFW_KEY_F1)) {
@@ -281,8 +257,6 @@ public class DeferredRenderingSample {
             if (this.displayInstructions) {
                 this.textRenderer.render(INSTRUCTIONS, this.font, new Vector2f(0.01f, 0.94f), 0.03f, Color.BLACK);
             }
-            final long lightCount = this.scene.getComponentsByTag(LIGHT_TAG).count();
-            this.textRenderer.render("Lights: " + lightCount, this.font, new Vector2f(0.01f, 0f), 0.03f, Color.BLACK);
         }
     }
 

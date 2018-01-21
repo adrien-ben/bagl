@@ -11,13 +11,13 @@ import com.adrien.games.bagl.rendering.model.Mesh;
 import com.adrien.games.bagl.rendering.model.MeshFactory;
 import com.adrien.games.bagl.rendering.model.Model;
 import com.adrien.games.bagl.rendering.postprocess.PostProcessor;
-import com.adrien.games.bagl.rendering.scene.ComponentVisitor;
-import com.adrien.games.bagl.rendering.scene.Scene;
-import com.adrien.games.bagl.rendering.scene.components.*;
 import com.adrien.games.bagl.rendering.texture.Cubemap;
 import com.adrien.games.bagl.rendering.texture.Format;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.vertex.IndexBuffer;
+import com.adrien.games.bagl.scene.ComponentVisitor;
+import com.adrien.games.bagl.scene.Scene;
+import com.adrien.games.bagl.scene.components.*;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
@@ -45,6 +45,9 @@ public class Renderer implements ComponentVisitor {
     private final int shadowMapResolution;
 
     private Camera camera;
+    private Cubemap environmentMap;
+    private Cubemap irradianceMap;
+    private Cubemap preFilteredMap;
     private final List<DirectionalLight> directionalLights;
     private final List<PointLight> pointLights;
     private final List<SpotLight> spotLights;
@@ -172,30 +175,45 @@ public class Renderer implements ComponentVisitor {
      * @param scene The scene to render
      */
     public void render(final Scene scene) {
-        this.camera = null;
-        this.directionalLights.clear();
-        this.pointLights.clear();
-        this.spotLights.clear();
-        this.models.clear();
+        this.preRenderCleanup();
 
         scene.accept(this);
 
         if (Objects.isNull(this.camera)) {
             throw new EngineException("Impossible to render a scene if no camera is set up");
         }
-        scene.getEnvironmentMap().ifPresent(map -> this.renderSkybox(map, this.camera));
+        if (Objects.nonNull(this.environmentMap)) {
+            this.renderSkybox();
+        }
         this.renderShadowMap();
-        this.renderGBuffer(this.camera);
-        this.renderDeferred(scene, this.camera);
+        this.performGeometryPass();
+        this.performLightingPass();
         this.postProcessor.process(this.finalBuffer.getColorTexture(0));
     }
 
-    private void renderSkybox(final Cubemap skybox, final Camera camera) {
+    /**
+     * Clear data before rendering in case the scene change since last frame
+     */
+    private void preRenderCleanup() {
+        this.camera = null;
+        this.environmentMap = null;
+        this.irradianceMap = null;
+        this.preFilteredMap = null;
+        this.directionalLights.clear();
+        this.pointLights.clear();
+        this.spotLights.clear();
+        this.models.clear();
+    }
+
+    /**
+     * Render the skybox from the environment map found in the scene if any
+     */
+    private void renderSkybox() {
         this.finalBuffer.bind();
         this.finalBuffer.clear();
-        skybox.bind();
+        this.environmentMap.bind();
         this.skyboxShader.bind();
-        this.skyboxShader.setUniform("viewProj", camera.getViewProjAtOrigin());
+        this.skyboxShader.setUniform("viewProj", this.camera.getViewProjAtOrigin());
 
         this.renderMesh(this.cubeMapMesh);
 
@@ -204,6 +222,9 @@ public class Renderer implements ComponentVisitor {
         this.finalBuffer.unbind();
     }
 
+    /**
+     * Render the shadow map if the scene contains a directional light
+     */
     private void renderShadowMap() {
         this.renderShadow = !this.directionalLights.isEmpty();
         if (this.renderShadow) {
@@ -217,7 +238,7 @@ public class Renderer implements ComponentVisitor {
             this.shadowBuffer.clear();
             this.shadowShader.bind();
 
-            this.models.forEach((model, transform) -> this.renderNodeShadow(model, transform, this.lightViewProj));
+            this.models.forEach((model, transform) -> this.renderModelShadow(model, transform, this.lightViewProj));
 
             Shader.unbind();
             this.shadowBuffer.unbind();
@@ -225,20 +246,30 @@ public class Renderer implements ComponentVisitor {
         }
     }
 
-    private void renderNodeShadow(final Model model, final Matrix4f transform, final Matrix4f lightViewProj) {
+    /**
+     * Render a model in the shadow map
+     *
+     * @param model         The model to render
+     * @param transform     The transform matrix of the model
+     * @param lightViewProj The projection/view matrix of the light
+     */
+    private void renderModelShadow(final Model model, final Matrix4f transform, final Matrix4f lightViewProj) {
         lightViewProj.mul(transform, this.wvpBuffer);
         this.shadowShader.setUniform("wvp", this.wvpBuffer);
         model.getMeshes().keySet().forEach(this::renderMesh);
     }
 
-    private void renderGBuffer(final Camera camera) {
+    /**
+     * Perform the GBuffer pass
+     */
+    private void performGeometryPass() {
         this.gBuffer.bind();
         this.gBuffer.clear();
         this.gBufferShader.bind();
 
         glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE); // if depth & stencil test passes replace current value
         glStencilFunc(GL_ALWAYS, 1, 0xFF); // write 1s in the stencil buffer
-        this.models.forEach((model, transform) -> this.renderSceneNode(model, transform, camera));
+        this.models.forEach(this::renderModelToGBuffer);
         glStencilFunc(GL_ALWAYS, 0, 0xFF);
         glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 
@@ -246,15 +277,25 @@ public class Renderer implements ComponentVisitor {
         this.gBuffer.unbind();
     }
 
-    private void renderSceneNode(final Model model, final Matrix4f transform, final Camera camera) {
-        camera.getViewProj().mul(transform, this.wvpBuffer);
-
+    /**
+     * Render a model to the GBuffer
+     *
+     * @param model     The model to render
+     * @param transform The transform matrix of the model
+     */
+    private void renderModelToGBuffer(final Model model, final Matrix4f transform) {
+        this.camera.getViewProj().mul(transform, this.wvpBuffer);
         this.gBufferShader.setUniform("uMatrices.world", transform);
         this.gBufferShader.setUniform("uMatrices.wvp", this.wvpBuffer);
-
         model.getMeshes().forEach(this::renderMeshToGBuffer);
     }
 
+    /**
+     * Render a mesh to the GBuffer
+     *
+     * @param mesh     The mesh to render
+     * @param material The material to apply
+     */
     private void renderMeshToGBuffer(final Mesh mesh, final Material material) {
         material.applyTo(this.gBufferShader);
         this.renderMesh(mesh);
@@ -263,6 +304,11 @@ public class Renderer implements ComponentVisitor {
         Texture.unbind(2);
     }
 
+    /**
+     * Render a mesh
+     *
+     * @param mesh The mesh to render
+     */
     private void renderMesh(final Mesh mesh) {
         mesh.getVertexArray().bind();
         final Optional<IndexBuffer> iBufferOpt = mesh.getIndexBuffer();
@@ -277,12 +323,13 @@ public class Renderer implements ComponentVisitor {
         mesh.getVertexArray().unbind();
     }
 
-    private void renderDeferred(final Scene scene, final Camera camera) {
-        final Optional<Cubemap> irradiance = scene.getIrradianceMap();
-        final Optional<Cubemap> preFilteredMap = scene.getPreFilteredMap();
-
+    /**
+     * Perform the lighting pass using data from the GBuffer, environment maps if any and
+     * analytical light found in the scene
+     */
+    private void performLightingPass() {
         this.finalBuffer.bind();
-        if (!scene.getEnvironmentMap().isPresent()) {
+        if (Objects.isNull(this.environmentMap)) {
             this.finalBuffer.clear();
         }
 
@@ -294,16 +341,16 @@ public class Renderer implements ComponentVisitor {
         this.gBuffer.getDepthTexture().bind(3);
 
         this.deferredShader.bind();
-        this.deferredShader.setUniform("uCamera.invertedViewProj", camera.getInvertedViewProj());
-        this.deferredShader.setUniform("uCamera.position", camera.getPosition());
-        irradiance.ifPresent(map -> {
-            map.bind(5);
+        this.deferredShader.setUniform("uCamera.invertedViewProj", this.camera.getInvertedViewProj());
+        this.deferredShader.setUniform("uCamera.position", this.camera.getPosition());
+        if (Objects.nonNull(this.irradianceMap)) {
+            this.irradianceMap.bind(5);
             this.deferredShader.setUniform("uLights.irradiance", 5);
-        });
-        preFilteredMap.ifPresent(map -> {
-            map.bind(6);
+        }
+        if (Objects.nonNull(this.preFilteredMap)) {
+            this.preFilteredMap.bind(6);
             this.deferredShader.setUniform("uLights.preFilteredMap", 6);
-        });
+        }
         this.brdfBuffer.getColorTexture(0).bind(7);
         this.deferredShader.setUniform("uLights.brdf", 7);
         this.deferredShader.setUniform("uShadow.hasShadow", this.renderShadow);
@@ -345,11 +392,14 @@ public class Renderer implements ComponentVisitor {
         glStencilFunc(GL_ALWAYS, 0, 0xFF);
 
         Shader.unbind();
-        Cubemap.unbind(4);
+        Cubemap.unbind(5);
+        Cubemap.unbind(6);
+        Cubemap.unbind(7);
         Texture.unbind(0);
         Texture.unbind(1);
         Texture.unbind(2);
         Texture.unbind(3);
+        Texture.unbind(4);
         this.finalBuffer.unbind();
     }
 
@@ -378,16 +428,6 @@ public class Renderer implements ComponentVisitor {
 
     /**
      * {@inheritDoc}
-     *
-     * @see ComponentVisitor#visit(ObjectComponent)
-     */
-    @Override
-    public void visit(final ObjectComponent component) {
-        //does nothing
-    }
-
-    /**
-     * {@inheritDoc}
      * <p>
      * Add the model contained in component to the list of models to render
      *
@@ -395,7 +435,7 @@ public class Renderer implements ComponentVisitor {
      */
     @Override
     public void visit(final ModelComponent component) {
-        this.models.put(component.getModel(), component.getTransform().getTransformMatrix());
+        this.models.put(component.getModel(), component.getParentObject().getTransform().getTransformMatrix());
     }
 
     /**
@@ -410,6 +450,22 @@ public class Renderer implements ComponentVisitor {
     @Override
     public void visit(final CameraComponent component) {
         this.camera = component.getCamera();
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Set the environment maps to render. Take care, for now only one set of
+     * maps can be used. If several {@link EnvironmentComponent} are present
+     * in the scene then only the last will be used
+     *
+     * @param component The component to visit
+     */
+    @Override
+    public void visit(final EnvironmentComponent component) {
+        this.environmentMap = component.getEnvironmentMap().orElse(null);
+        this.irradianceMap = component.getIrradianceMap().orElse(null);
+        this.preFilteredMap = component.getPreFilteredMap().orElse(null);
     }
 
     /**

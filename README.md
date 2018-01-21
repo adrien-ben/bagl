@@ -62,14 +62,11 @@ Basic shadow mapping is implemented. It only works for one directional light (Th
 
 ## TODO
 
-- Improving scene graph
-    - Game Objects with components(Mesh, Light, ...)
 - Rendering
     - Animations
     - Sprites in 3D environment (debug icons, ...)
     - Area lights (sphere and tubes)
     - Fixing shadows
-- 2D scene
 - Assets management
 - Replace the custom obj loader 
 - OpenGL state manager

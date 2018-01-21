@@ -1,9 +1,9 @@
-package com.adrien.games.bagl.rendering.scene.components;
+package com.adrien.games.bagl.scene.components;
 
 import com.adrien.games.bagl.core.Time;
 import com.adrien.games.bagl.rendering.model.Model;
-import com.adrien.games.bagl.rendering.scene.Component;
-import com.adrien.games.bagl.rendering.scene.ComponentVisitor;
+import com.adrien.games.bagl.scene.Component;
+import com.adrien.games.bagl.scene.ComponentVisitor;
 
 /**
  * Scene component containing a model
@@ -18,31 +18,28 @@ public class ModelComponent extends Component {
      * Construct a direction light component
      *
      * @param model The model to link to this component
-     * @param id    The id of the component
-     * @param tags  The tags of the component
      */
-    public ModelComponent(final Model model, final String id, final String... tags) {
-        super(id, tags);
+    public ModelComponent(final Model model) {
         this.model = model;
     }
 
     /**
      * {@inheritDoc}
      *
-     * @see Component#onUpdate(Time)
+     * @see Component#update(Time)
      */
     @Override
-    protected void onUpdate(final Time time) {
+    public void update(final Time time) {
         // does nothing
     }
 
     /**
      * {@inheritDoc}
      *
-     * @see Component#onAccept(ComponentVisitor)
+     * @see Component#accept(ComponentVisitor)
      */
     @Override
-    protected void onAccept(final ComponentVisitor visitor) {
+    public void accept(final ComponentVisitor visitor) {
         visitor.visit(this);
     }
 

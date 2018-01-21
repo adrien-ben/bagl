@@ -1,10 +1,11 @@
-package com.adrien.games.bagl.rendering.scene.components;
+package com.adrien.games.bagl.scene.components;
 
 import com.adrien.games.bagl.core.Time;
 import com.adrien.games.bagl.core.math.Quaternions;
 import com.adrien.games.bagl.rendering.light.DirectionalLight;
-import com.adrien.games.bagl.rendering.scene.Component;
-import com.adrien.games.bagl.rendering.scene.ComponentVisitor;
+import com.adrien.games.bagl.scene.Component;
+import com.adrien.games.bagl.scene.ComponentVisitor;
+import org.joml.Quaternionf;
 
 /**
  * Scene component containing a directional light
@@ -19,31 +20,29 @@ public class DirectionalLightComponent extends Component {
      * Construct a directional light component
      *
      * @param light The light to link to this component
-     * @param id    The id of the component
-     * @param tags  The tags of the component
      */
-    public DirectionalLightComponent(final DirectionalLight light, final String id, final String... tags) {
-        super(id, tags);
+    public DirectionalLightComponent(final DirectionalLight light) {
         this.light = light;
     }
 
     /**
      * {@inheritDoc}
      *
-     * @see Component#onUpdate(Time)
+     * @see Component#update(Time)
      */
     @Override
-    protected void onUpdate(final Time time) {
-        this.light.setDirection(Quaternions.getForwardVector(super.transform.getRotation()));
+    public void update(final Time time) {
+        final Quaternionf rotation = super.parentObject.getTransform().getRotation();
+        this.light.setDirection(Quaternions.getForwardVector(rotation));
     }
 
     /**
      * {@inheritDoc}
      *
-     * @see Component#onAccept(ComponentVisitor)
+     * @see Component#accept(ComponentVisitor)
      */
     @Override
-    protected void onAccept(final ComponentVisitor visitor) {
+    public void accept(final ComponentVisitor visitor) {
         visitor.visit(this);
     }
 

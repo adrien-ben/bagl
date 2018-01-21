@@ -1,9 +1,9 @@
-package com.adrien.games.bagl.rendering.scene.components;
+package com.adrien.games.bagl.scene.components;
 
 import com.adrien.games.bagl.core.Time;
 import com.adrien.games.bagl.core.camera.Camera;
-import com.adrien.games.bagl.rendering.scene.Component;
-import com.adrien.games.bagl.rendering.scene.ComponentVisitor;
+import com.adrien.games.bagl.scene.Component;
+import com.adrien.games.bagl.scene.ComponentVisitor;
 
 /**
  * Scene component containing a {@link Camera}
@@ -18,31 +18,28 @@ public class CameraComponent extends Component {
      * Construct a camera component
      *
      * @param camera The camera to link to this component
-     * @param id     The id of the component
-     * @param tags   The tags of the component
      */
-    public CameraComponent(final Camera camera, final String id, final String... tags) {
-        super(id, tags);
+    public CameraComponent(final Camera camera) {
         this.camera = camera;
     }
 
     /**
      * {@inheritDoc}
      *
-     * @see Component#onUpdate(Time)
+     * @see Component#update(Time)
      */
     @Override
-    protected void onUpdate(final Time time) {
+    public void update(final Time time) {
         // does nothing
     }
 
     /**
      * {@inheritDoc}
      *
-     * @see Component#onAccept(ComponentVisitor)
+     * @see Component#accept(ComponentVisitor)
      */
     @Override
-    protected void onAccept(final ComponentVisitor visitor) {
+    public void accept(final ComponentVisitor visitor) {
         visitor.visit(this);
     }
 
