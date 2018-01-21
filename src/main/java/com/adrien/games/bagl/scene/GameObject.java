@@ -58,6 +58,7 @@ public class GameObject {
         this.localTransform = new Transform();
         this.transform = new Transform();
         this.parentScene = parent;
+        this.parentScene.storeObject(this);
         this.parent = null;
         this.children = new ArrayList<>();
         this.components = new ArrayList<>();
@@ -149,5 +150,13 @@ public class GameObject {
 
     public Transform getLocalTransform() {
         return this.localTransform;
+    }
+
+    public String getId() {
+        return this.id;
+    }
+
+    public List<String> getTags() {
+        return this.tags;
     }
 }
