@@ -185,7 +185,7 @@ public class DeferredRenderingSample {
 
         private GameObject createLightObject(final GameObject parent, final Vector3f position, final Quaternionf rotation, final Color color,
                                              final Mesh mesh, final String id) {
-            final GameObject lightObject = parent.createChild("object_" + id);
+            final GameObject lightObject = parent.createChild("object_" + id, "light");
             lightObject.getLocalTransform().setTranslation(position).setRotation(rotation);
 
             final GameObject modelObject = lightObject.createChild("bulb_" + id);
@@ -268,6 +268,9 @@ public class DeferredRenderingSample {
             if (this.displayInstructions) {
                 this.textRenderer.render(INSTRUCTIONS, this.font, new Vector2f(0.01f, 0.94f), 0.03f, Color.BLACK);
             }
+
+            final long lightCount = this.scene.getObjectsByTag("light").count();
+            this.textRenderer.render("Lights: " + lightCount, this.font, new Vector2f(0.01f, 0.01f), 0.03f, Color.BLACK);
         }
     }
 
