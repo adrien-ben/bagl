@@ -39,7 +39,6 @@ public final class Engine {
     private void initGlState() {
         glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
         glEnable(GL_DEPTH_TEST);
-        glEnable(GL_STENCIL_TEST);
         glEnable(GL_CULL_FACE);
     }
 

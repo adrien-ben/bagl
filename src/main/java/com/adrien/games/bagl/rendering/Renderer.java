@@ -128,10 +128,10 @@ public class Renderer implements ComponentVisitor {
      */
     private void initFrameBuffers() {
         this.gBuffer = new FrameBuffer(this.xResolution, this.yResolution, new FrameBufferParameters().addColorOutput(Format.RGBA8)
-                .addColorOutput(Format.RGBA16F).addColorOutput(Format.RGB16F).setDepthStencilTextureFormat(Format.DEPTH32F_STENCIL8));
+                .addColorOutput(Format.RGBA16F).addColorOutput(Format.RGB16F).setDepthStencilTextureFormat(Format.DEPTH_32F));
         this.shadowBuffer = new FrameBuffer(this.shadowMapResolution, this.shadowMapResolution);
         this.finalBuffer = new FrameBuffer(this.xResolution, this.yResolution, new FrameBufferParameters().addColorOutput(Format.RGBA32F)
-                .setDepthStencilTextureFormat(Format.DEPTH32F_STENCIL8));
+                .setDepthStencilTextureFormat(Format.DEPTH_32F));
         this.brdfBuffer = new FrameBuffer(BRDF_RESOLUTION, BRDF_RESOLUTION, new FrameBufferParameters().hasDepth(false).addColorOutput(Format.RG16F));
     }
 
@@ -280,11 +280,7 @@ public class Renderer implements ComponentVisitor {
         this.gBuffer.clear();
         this.gBufferShader.bind();
 
-        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE); // if depth & stencil test passes replace current value
-        glStencilFunc(GL_ALWAYS, 1, 0xFF); // write 1s in the stencil buffer
         this.models.forEach(this::renderModelToGBuffer);
-        glStencilFunc(GL_ALWAYS, 0, 0xFF);
-        glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 
         Shader.unbind();
         this.gBuffer.unbind();
@@ -346,7 +342,7 @@ public class Renderer implements ComponentVisitor {
             this.finalBuffer.clear();
         }
 
-        this.finalBuffer.copyFrom(this.gBuffer, false, true);
+        this.finalBuffer.copyFrom(this.gBuffer, true, false);
 
         this.gBuffer.getColorTexture(0).bind(0);
         this.gBuffer.getColorTexture(1).bind(1);
@@ -390,16 +386,9 @@ public class Renderer implements ComponentVisitor {
             this.setSpotLight(this.deferredShader, i, this.spotLights.get(i));
         }
 
-        glStencilFunc(GL_EQUAL, 1, 0xFF); // stencil test passes if current buffer value = 1
-        glStencilMask(0x00); // disables writing to the stencil buffer
-        glDisable(GL_DEPTH_TEST); // disable depth testing
-
+        glDepthFunc(GL_NOTEQUAL);
         this.renderMesh(this.screenQuad);
-
-        // reset default values
-        glEnable(GL_DEPTH_TEST);
-        glStencilMask(0xFF);
-        glStencilFunc(GL_ALWAYS, 0, 0xFF);
+        glDepthFunc(GL_LESS);
 
         Shader.unbind();
         Cubemap.unbind(5);

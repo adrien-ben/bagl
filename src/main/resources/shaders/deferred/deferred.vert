@@ -7,5 +7,5 @@ out vec2 passCoords;
 
 void main() {
 	passCoords = vCoords;
-	gl_Position = vPosition;
+	gl_Position = vPosition.xyww;
 }
