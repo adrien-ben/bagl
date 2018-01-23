@@ -3,10 +3,7 @@ package com.adrien.games.bagl.scene;
 import com.adrien.games.bagl.core.Time;
 import com.adrien.games.bagl.core.Transform;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Game object
@@ -25,9 +22,10 @@ import java.util.Objects;
  * {@link GameObject#createChild(String, String...)}. This ensure
  * that parent object and scene are properly set
  * <p>
- * Each game object also has a list of components. The game object
- * is responsible for updating its components. It is also responsible
- * for forwarding visit request coming from a {@link ComponentVisitor}
+ * Each game object also has a list of components. An object can only
+ * have one component by type at most. The game object is responsible
+ * for updating its components. It is also responsible for forwarding
+ * visit request coming from a {@link ComponentVisitor}
  *
  * @author adrien
  */
@@ -40,7 +38,7 @@ public class GameObject {
     private Scene parentScene;
     private GameObject parent;
     private final List<GameObject> children;
-    private final List<Component> components;
+    private final Map<Class<? extends Component>, Component> componentsByType;
 
     /**
      * Construct a game object
@@ -61,7 +59,7 @@ public class GameObject {
         this.parentScene.storeObject(this);
         this.parent = null;
         this.children = new ArrayList<>();
-        this.components = new ArrayList<>();
+        this.componentsByType = new HashMap<>();
     }
 
     /**
@@ -75,7 +73,7 @@ public class GameObject {
      */
     public void update(final Time time) {
         this.computeTransform();
-        this.components.forEach(component -> component.update(time));
+        this.componentsByType.values().forEach(component -> component.update(time));
         this.children.forEach(child -> child.update(time));
     }
 
@@ -84,7 +82,7 @@ public class GameObject {
      * its local transform by the transform of its parent or by copying
      * its local transform if the object has no parent
      */
-    public void computeTransform() {
+    private void computeTransform() {
         if (this.isRoot()) {
             this.transform.set(this.localTransform);
         } else {
@@ -102,7 +100,7 @@ public class GameObject {
      * @param visitor The visitor
      */
     public void accept(final ComponentVisitor visitor) {
-        this.components.forEach(component -> component.accept(visitor));
+        this.componentsByType.values().forEach(component -> component.accept(visitor));
         this.children.forEach(child -> child.accept(visitor));
     }
 
@@ -126,13 +124,18 @@ public class GameObject {
     }
 
     /**
-     * Add a component to this object
+     * Add a component to this object if there already was a component
+     * of the same type, the old component will be replaced and its
+     * parent object set to null
      *
      * @param component The component to add
      */
     public void addComponent(final Component component) {
-        this.components.add(component);
+        final Component old = this.componentsByType.put(component.getClass(), component);
         component.setParentObject(this);
+        if (Objects.nonNull(old)) {
+            old.setParentObject(null);
+        }
     }
 
     /**
@@ -142,6 +145,16 @@ public class GameObject {
      */
     private boolean isRoot() {
         return Objects.isNull(this.parent);
+    }
+
+    /**
+     * Retrieve a component by its type
+     *
+     * @param type The type of the component to retrieve
+     * @return A component of type {@code T} or an empty optional
+     */
+    public <T extends Component> Optional<T> getComponentOfType(final Class<T> type) {
+        return Optional.ofNullable(this.componentsByType.get(type)).map(type::cast);
     }
 
     public Transform getTransform() {
