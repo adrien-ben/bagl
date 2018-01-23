@@ -8,5 +8,5 @@ uniform mat4 viewProj;
 
 void main() {
 	passPosition = vPosition.xyz;
-	gl_Position = viewProj*vPosition;
+	gl_Position = (viewProj*vPosition).xyww;
 }

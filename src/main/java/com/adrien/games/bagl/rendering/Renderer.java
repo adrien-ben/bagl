@@ -127,12 +127,18 @@ public class Renderer implements ComponentVisitor {
      * Initializes the frame buffers
      */
     private void initFrameBuffers() {
-        this.gBuffer = new FrameBuffer(this.xResolution, this.yResolution, new FrameBufferParameters().addColorOutput(Format.RGBA8)
-                .addColorOutput(Format.RGBA16F).addColorOutput(Format.RGB16F).setDepthStencilTextureFormat(Format.DEPTH_32F));
-        this.shadowBuffer = new FrameBuffer(this.shadowMapResolution, this.shadowMapResolution);
-        this.finalBuffer = new FrameBuffer(this.xResolution, this.yResolution, new FrameBufferParameters().addColorOutput(Format.RGBA32F)
+        this.gBuffer = new FrameBuffer(this.xResolution, this.yResolution, new FrameBufferParameters()
+                .addColorOutput(Format.RGBA8)
+                .addColorOutput(Format.RGBA16F)
+                .addColorOutput(Format.RGB16F)
                 .setDepthStencilTextureFormat(Format.DEPTH_32F));
-        this.brdfBuffer = new FrameBuffer(BRDF_RESOLUTION, BRDF_RESOLUTION, new FrameBufferParameters().hasDepth(false).addColorOutput(Format.RG16F));
+        this.shadowBuffer = new FrameBuffer(this.shadowMapResolution, this.shadowMapResolution);
+        this.finalBuffer = new FrameBuffer(this.xResolution, this.yResolution, new FrameBufferParameters()
+                .addColorOutput(Format.RGBA32F)
+                .setDepthStencilTextureFormat(Format.DEPTH_32F));
+        this.brdfBuffer = new FrameBuffer(BRDF_RESOLUTION, BRDF_RESOLUTION, new FrameBufferParameters()
+                .hasDepth(false)
+                .addColorOutput(Format.RG16F));
     }
 
     /**
@@ -195,10 +201,10 @@ public class Renderer implements ComponentVisitor {
             throw new EngineException("Impossible to render a scene if no camera is set up");
         }
 
-        this.renderSkybox();
         this.renderShadowMap();
         this.performGeometryPass();
         this.performLightingPass();
+        this.renderSkybox();
         this.postProcessor.process(this.finalBuffer.getColorTexture(0));
     }
 
@@ -222,12 +228,13 @@ public class Renderer implements ComponentVisitor {
     private void renderSkybox() {
         if (Objects.nonNull(this.environmentMap)) {
             this.finalBuffer.bind();
-            this.finalBuffer.clear();
             this.environmentMap.bind();
             this.skyboxShader.bind();
             this.skyboxShader.setUniform("viewProj", this.camera.getViewProjAtOrigin());
 
+            glDepthFunc(GL_EQUAL);
             this.renderMesh(this.cubeMapMesh);
+            glDepthFunc(GL_LESS);
 
             Shader.unbind();
             Cubemap.unbind();
@@ -338,10 +345,7 @@ public class Renderer implements ComponentVisitor {
      */
     private void performLightingPass() {
         this.finalBuffer.bind();
-        if (Objects.isNull(this.environmentMap)) {
-            this.finalBuffer.clear();
-        }
-
+        this.finalBuffer.clear();
         this.finalBuffer.copyFrom(this.gBuffer, true, false);
 
         this.gBuffer.getColorTexture(0).bind(0);
@@ -387,7 +391,9 @@ public class Renderer implements ComponentVisitor {
         }
 
         glDepthFunc(GL_NOTEQUAL);
+        glDepthMask(false);
         this.renderMesh(this.screenQuad);
+        glDepthMask(true);
         glDepthFunc(GL_LESS);
 
         Shader.unbind();

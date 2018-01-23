@@ -22,6 +22,7 @@ import com.adrien.games.bagl.scene.GameObject;
 import com.adrien.games.bagl.scene.Scene;
 import com.adrien.games.bagl.scene.components.*;
 import com.adrien.games.bagl.utils.FileUtils;
+import com.adrien.games.bagl.utils.MathUtils;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -258,7 +259,7 @@ public class DeferredRenderingSample {
             } else if (this.displayMode == DisplayMode.EMISSIVE) {
                 this.spritebatch.draw(this.renderer.getGBuffer().getColorTexture(2), new Vector2f());
             } else if (this.displayMode == DisplayMode.SHADOW) {
-                this.spritebatch.draw(this.renderer.getShadowBuffer().getDepthTexture(), new Vector2f());
+                this.spritebatch.draw(this.renderer.getShadowBuffer().getDepthTexture(), new Vector2f(), MathUtils.min(this.width, this.height), MathUtils.min(this.width, this.height));
             } else if (this.displayMode == DisplayMode.UNPROCESSED) {
                 this.spritebatch.draw(this.renderer.getFinalBuffer().getColorTexture(0), new Vector2f());
             }
