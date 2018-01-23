@@ -232,7 +232,7 @@ public class Renderer implements ComponentVisitor {
             this.skyboxShader.bind();
             this.skyboxShader.setUniform("viewProj", this.camera.getViewProjAtOrigin());
 
-            glDepthFunc(GL_EQUAL);
+            glDepthFunc(GL_LEQUAL);
             this.renderMesh(this.cubeMapMesh);
             glDepthFunc(GL_LESS);
 
