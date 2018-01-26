@@ -58,8 +58,9 @@ public class FrameBuffer {
         this.width = width;
         this.height = height;
         this.colorOutputs = parameters.getColorOutputs().isEmpty() ? null : this.createColorOutputs(parameters, this.width, this.height);
-        this.depthTexture = parameters.hadDepthStencil() ?
-                new Texture(this.width, this.height, new TextureParameters().format(parameters.getDepthStencilTextureFormat())) : null;
+        this.depthTexture = parameters.hadDepthStencil()
+                ? new Texture(this.width, this.height, TextureParameters.builder().format(parameters.getDepthStencilTextureFormat()).build())
+                : null;
         this.handle = this.createBuffer(this.colorOutputs, this.depthTexture, parameters.getDepthStencilTextureFormat() == Format.DEPTH_32F);
     }
 
@@ -74,9 +75,12 @@ public class FrameBuffer {
     private Texture[] createColorOutputs(final FrameBufferParameters parameters, final int width, final int height) {
         final int colorOutputs = parameters.getColorOutputs().size();
         final Texture[] textures = new Texture[colorOutputs];
+        final TextureParameters.Builder params = TextureParameters.builder()
+                .sWrap(Wrap.CLAMP_TO_EDGE)
+                .tWrap(Wrap.CLAMP_TO_EDGE);
         for (int i = 0; i < colorOutputs; i++) {
-            textures[i] = new Texture(width, height, new TextureParameters().format(parameters.getColorOutputs().get(i))
-                    .sWrap(Wrap.CLAMP_TO_EDGE).tWrap(Wrap.CLAMP_TO_EDGE));
+            params.format(parameters.getColorOutputs().get(i));
+            textures[i] = new Texture(width, height, params.build());
         }
         return textures;
     }

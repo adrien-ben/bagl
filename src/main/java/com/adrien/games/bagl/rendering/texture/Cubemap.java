@@ -21,7 +21,7 @@ public class Cubemap {
     private final int handle;
     private final int width;
     private final int height;
-    private final Format format;
+    private final TextureParameters parameters;
 
     /**
      * Create a cubemap
@@ -36,11 +36,11 @@ public class Cubemap {
         this.handle = glGenTextures();
         this.width = width;
         this.height = height;
-        this.format = parameters.getFormat();
+        this.parameters = parameters;
 
         glBindTexture(GL_TEXTURE_CUBE_MAP, this.handle);
         for (int i = 0; i < 6; i++) {
-            this.initCubemapFace(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, width, height, this.format);
+            this.initCubemapFace(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
         }
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, parameters.getMagFilter().getGlFilter());
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, parameters.getMinFilter().getGlFilter());
@@ -57,15 +57,13 @@ public class Cubemap {
      * Allocate memory for one of the face of the cubemap
      *
      * @param faceId The id of the face
-     * @param width  The width of the face
-     * @param height The height of the face
-     * @param format THe format of the texture
      */
-    private void initCubemapFace(final int faceId, final int width, final int height, final Format format) {
+    private void initCubemapFace(final int faceId) {
+        final Format format = this.parameters.getFormat();
         if (format.getGlDataType() == GL_FLOAT) {
-            glTexImage2D(faceId, 0, format.getGlInternalFormat(), width, height, 0, format.getGlFormat(), format.getGlDataType(), FloatBuffer.class.cast(null));
+            glTexImage2D(faceId, 0, format.getGlInternalFormat(), this.width, this.height, 0, format.getGlFormat(), format.getGlDataType(), FloatBuffer.class.cast(null));
         } else if (format.getGlDataType() == GL_UNSIGNED_BYTE) {
-            glTexImage2D(faceId, 0, format.getGlInternalFormat(), width, height, 0, format.getGlFormat(), format.getGlDataType(), ByteBuffer.class.cast(null));
+            glTexImage2D(faceId, 0, format.getGlInternalFormat(), this.width, this.height, 0, format.getGlFormat(), format.getGlDataType(), ByteBuffer.class.cast(null));
         } else {
             throw new EngineException("Cannot initialize texture faceId for this data type (" + format.getGlDataType() + ")");
         }
@@ -124,7 +122,7 @@ public class Cubemap {
         return this.height;
     }
 
-    public Format getFormat() {
-        return this.format;
+    public TextureParameters getParameters() {
+        return this.parameters;
     }
 }

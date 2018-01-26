@@ -2,7 +2,6 @@ package com.adrien.games.bagl.rendering.text;
 
 import com.adrien.games.bagl.core.EngineException;
 import com.adrien.games.bagl.parser.ParseException;
-import com.adrien.games.bagl.rendering.texture.Format;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.texture.TextureParameters;
 import com.adrien.games.bagl.rendering.texture.TextureRegion;
@@ -62,8 +61,8 @@ public class Font {
             throw new EngineException("Failed to parse font file '" + filePath + "'.", e);
         }
 
-        this.bitmap = new Texture(file.getParentFile().getAbsolutePath() + File.separator + this.atlasName,
-                new TextureParameters().format(Format.ALPHA8));
+        this.bitmap = Texture.fromFile(file.getParentFile().getAbsolutePath() + File.separator + this.atlasName,
+                TextureParameters.builder());
     }
 
     private void parseHeader(BufferedReader reader) throws IOException, ParseException {

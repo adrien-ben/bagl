@@ -156,9 +156,11 @@ public class MtlParser {
     private Texture loadTexture(String name) {
         final String folderPath = Paths.get(this.currentFile).getParent().toString();
         final String texturePath = folderPath + "/" + name;
-        final TextureParameters parameters = new TextureParameters().mipmaps(true).minFilter(Filter.MIPMAP_LINEAR_LINEAR)
+        final TextureParameters.Builder params = TextureParameters.builder()
+                .mipmaps()
+                .minFilter(Filter.MIPMAP_LINEAR_LINEAR)
                 .anisotropic(Configuration.getInstance().getAnisotropicLevel());
-        return new Texture(texturePath, parameters);
+        return Texture.fromFile(texturePath, params);
     }
 
     private void checkCurrentMaterial() {

@@ -11,6 +11,7 @@ public enum Format {
     RGBA32F(GL_RGBA32F, GL_RGBA, GL_FLOAT),
     RGB8(GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE),
     RGB16F(GL_RGB16F, GL_RGB, GL_FLOAT),
+    RG8(GL_RG8, GL_RG, GL_UNSIGNED_BYTE),
     RG16F(GL_RG16F, GL_RG, GL_FLOAT),
     RED8(GL_R8, GL_RED, GL_UNSIGNED_BYTE),
     ALPHA8(GL_ALPHA8, GL_ALPHA, GL_UNSIGNED_BYTE),
@@ -25,7 +26,6 @@ public enum Format {
         this.glInternalFormat = glInternalFormat;
         this.glFormat = glFormat;
         this.glDataType = glDataType;
-
     }
 
     public int getGlInternalFormat() {

@@ -89,10 +89,19 @@ public class EnvironmentMapGenerator {
      */
     public Cubemap generateEnvironmentMap(final String filePath) {
         final HDRImage hdrImage = ImageUtils.loadHDRImage(filePath);
-        final Texture equirectangularMap = new Texture(hdrImage.getWidth(), hdrImage.getHeight(), hdrImage.getData(),
-                new TextureParameters().format(Format.RGB16F).sWrap(Wrap.CLAMP_TO_EDGE).tWrap(Wrap.CLAMP_TO_EDGE));
-        final Cubemap cubemap = new Cubemap(ENVIRONMENT_MAP_RESOLUTION, ENVIRONMENT_MAP_RESOLUTION,
-                new TextureParameters().format(Format.RGB16F).minFilter(Filter.MIPMAP_LINEAR_LINEAR));
+
+        final TextureParameters textureParams = TextureParameters.builder()
+                .format(Format.RGB16F)
+                .sWrap(Wrap.CLAMP_TO_EDGE)
+                .tWrap(Wrap.CLAMP_TO_EDGE)
+                .build();
+        final Texture equirectangularMap = new Texture(hdrImage.getWidth(), hdrImage.getHeight(), hdrImage.getData(), textureParams);
+
+        final TextureParameters cubemapParams = TextureParameters.builder()
+                .format(Format.RGB16F)
+                .minFilter(Filter.MIPMAP_LINEAR_LINEAR)
+                .build();
+        final Cubemap cubemap = new Cubemap(ENVIRONMENT_MAP_RESOLUTION, ENVIRONMENT_MAP_RESOLUTION, cubemapParams);
 
         equirectangularMap.bind();
         this.environmentSphericalShader.bind();
@@ -117,7 +126,7 @@ public class EnvironmentMapGenerator {
      */
     public Cubemap generateIrradianceMap(final Cubemap environmentMap) {
         final Cubemap cubemap = new Cubemap(IRRADIANCE_MAP_RESOLUTION, IRRADIANCE_MAP_RESOLUTION,
-                new TextureParameters().format(Format.RGB16F));
+                TextureParameters.builder().format(Format.RGB16F).build());
         environmentMap.bind();
         this.irradianceShader.bind();
         this.renderToCubemap(cubemap, 0, this.irradianceShader, this.irradianceFrameBuffer);
@@ -133,8 +142,12 @@ public class EnvironmentMapGenerator {
      * @return An {@link Cubemap}
      */
     public Cubemap generatePreFilteredMap(final Cubemap environmentMap) {
-        final Cubemap cubemap = new Cubemap(PRE_FILTERED_MAP_RESOLUTION, PRE_FILTERED_MAP_RESOLUTION, new TextureParameters()
-                .format(Format.RGB16F).mipmaps(true).minFilter(Filter.MIPMAP_LINEAR_LINEAR));
+        final TextureParameters cubemapParams = TextureParameters.builder()
+                .format(Format.RGB16F)
+                .mipmaps()
+                .minFilter(Filter.MIPMAP_LINEAR_LINEAR)
+                .build();
+        final Cubemap cubemap = new Cubemap(PRE_FILTERED_MAP_RESOLUTION, PRE_FILTERED_MAP_RESOLUTION, cubemapParams);
 
         this.preFilteredMapShader.bind();
         environmentMap.bind();

@@ -1,6 +1,5 @@
 package com.adrien.games.bagl.rendering.texture;
 
-import com.adrien.games.bagl.core.EngineException;
 import com.adrien.games.bagl.utils.Image;
 import com.adrien.games.bagl.utils.ImageUtils;
 
@@ -20,10 +19,10 @@ import static org.lwjgl.opengl.GL30.glGenerateMipmap;
  */
 public final class Texture {
 
-    private final int handle;
     private final int width;
     private final int height;
-    private final Format format;
+    private final TextureParameters parameters;
+    private final int handle;
 
     /**
      * Create a new texture
@@ -33,26 +32,7 @@ public final class Texture {
      * @param parameters The parameters of the texture
      */
     public Texture(final int width, final int height, final TextureParameters parameters) {
-        this.width = width;
-        this.height = height;
-        this.handle = this.generateGlTexture(this.width, this.height, parameters, ByteBuffer.class.cast(null));
-        this.format = parameters.getFormat();
-    }
-
-    /**
-     * Create a texture from an image file
-     *
-     * @param file       The path to the image file to load
-     * @param parameters The parameters of the texture. (!format will be overridden by the image format)
-     */
-    public Texture(final String file, final TextureParameters parameters) {
-        final Image image = ImageUtils.loadImage(file);
-        this.width = image.getWidth();
-        this.height = image.getHeight();
-        this.format = this.getFormat(image.getChannelCount());
-        parameters.format(this.format);
-        this.handle = this.generateGlTexture(this.width, this.height, parameters, image.getData());
-        ImageUtils.free(image);
+        this(width, height, ByteBuffer.class.cast(null), parameters);
     }
 
     /**
@@ -68,8 +48,8 @@ public final class Texture {
     public Texture(final int width, final int height, final ByteBuffer pixels, final TextureParameters parameters) {
         this.width = width;
         this.height = height;
-        this.handle = this.generateGlTexture(this.width, this.height, parameters, pixels);
-        this.format = parameters.getFormat();
+        this.parameters = parameters;
+        this.handle = this.generateGlTexture(pixels);
     }
 
     /**
@@ -85,52 +65,73 @@ public final class Texture {
     public Texture(final int width, final int height, final FloatBuffer pixels, final TextureParameters parameters) {
         this.width = width;
         this.height = height;
-        this.handle = this.generateGlTexture(this.width, this.height, parameters, pixels);
-        this.format = parameters.getFormat();
+        this.parameters = parameters;
+        this.handle = this.generateGlTexture(pixels);
     }
 
-    private int generateGlTexture(final int width, final int height, final TextureParameters parameters, final ByteBuffer pixels) {
+    /**
+     * Create a texture from an image file
+     * <p>
+     * Here we expect the builder as parameters instead of the built parameters
+     * because the texture format will be inferred from the image file format
+     *
+     * @param path   The path to the image file
+     * @param params The parameters builder
+     * @return A new texture
+     */
+    public static Texture fromFile(final String path, final TextureParameters.Builder params) {
+        final Image image = ImageUtils.loadImage(path);
+        params.format(Texture.getFormat(image.getChannelCount()));
+        final Texture texture = new Texture(image.getWidth(), image.getHeight(), image.getData(), params.build());
+        ImageUtils.free(image);
+        return texture;
+    }
+
+    private int generateGlTexture(final ByteBuffer pixels) {
         final int handle = glGenTextures();
         glBindTexture(GL_TEXTURE_2D, handle);
-        glTexImage2D(GL_TEXTURE_2D, 0, parameters.getFormat().getGlInternalFormat(), width, height, 0,
-                parameters.getFormat().getGlFormat(), parameters.getFormat().getGlDataType(), pixels);
-        this.applyTextureParameters(parameters);
+        glTexImage2D(GL_TEXTURE_2D, 0, this.parameters.getFormat().getGlInternalFormat(), this.width, this.height, 0,
+                this.parameters.getFormat().getGlFormat(), this.parameters.getFormat().getGlDataType(), pixels);
+        this.applyTextureParameters();
         glBindTexture(GL_TEXTURE_2D, 0);
         return handle;
     }
 
-    private int generateGlTexture(final int width, final int height, final TextureParameters parameters, final FloatBuffer pixels) {
+    private int generateGlTexture(final FloatBuffer pixels) {
         final int handle = glGenTextures();
         glBindTexture(GL_TEXTURE_2D, handle);
-        glTexImage2D(GL_TEXTURE_2D, 0, parameters.getFormat().getGlInternalFormat(), width, height, 0,
-                parameters.getFormat().getGlFormat(), parameters.getFormat().getGlDataType(), pixels);
-        this.applyTextureParameters(parameters);
+        glTexImage2D(GL_TEXTURE_2D, 0, this.parameters.getFormat().getGlInternalFormat(), this.width, this.height, 0,
+                this.parameters.getFormat().getGlFormat(), this.parameters.getFormat().getGlDataType(), pixels);
+        this.applyTextureParameters();
         glBindTexture(GL_TEXTURE_2D, 0);
         return handle;
     }
 
-    private void applyTextureParameters(final TextureParameters parameters) {
-        if (parameters.getMipmaps()) {
+    private void applyTextureParameters() {
+        if (this.parameters.getMipmaps()) {
             glGenerateMipmap(GL_TEXTURE_2D);
         }
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, parameters.getMagFilter().getGlFilter());
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, parameters.getMinFilter().getGlFilter());
-        if (parameters.getAnisotropic() > 0) {
-            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, parameters.getAnisotropic());
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, this.parameters.getMagFilter().getGlFilter());
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, this.parameters.getMinFilter().getGlFilter());
+        if (this.parameters.getAnisotropic() > 0) {
+            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, this.parameters.getAnisotropic());
         }
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, parameters.getsWrap().getGlWrap());
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, parameters.gettWrap().getGlWrap());
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, this.parameters.getsWrap().getGlWrap());
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, this.parameters.gettWrap().getGlWrap());
     }
 
-    private Format getFormat(final int channelCount) {
-        if (channelCount == 4) {
-            return Format.RGBA8;
-        } else if (channelCount == 3) {
-            return Format.RGB8;
-        } else if (channelCount == 1) {
-            return Format.RED8;
-        } else {
-            throw new EngineException("Only textures with 1, 3 or 4 color channel or supported.");
+    private static Format getFormat(final int channelCount) {
+        switch (channelCount) {
+            case 1:
+                return Format.RED8;
+            case 2:
+                return Format.RG8;
+            case 3:
+                return Format.RGB8;
+            case 4:
+                return Format.RGBA8;
+            default:
+                throw new IllegalArgumentException("A texture cannot be composed of less than 1 or more that 4 channels");
         }
     }
 
@@ -188,8 +189,8 @@ public final class Texture {
         return this.height;
     }
 
-    public Format getFormat() {
-        return this.format;
+    public TextureParameters getParameters() {
+        return this.parameters;
     }
 }
 
