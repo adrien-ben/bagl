@@ -17,6 +17,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -41,8 +42,8 @@ public class MtlParser {
     private static final Logger log = LogManager.getLogger(MtlParser.class);
 
     private String currentFile;
-    private final Map<String, Material> materials = new HashMap<>();
-    private Material currentMaterial;
+    private final Map<String, Material.Builder> builders = new HashMap<>();
+    private Material.Builder currentBuilder;
 
     /**
      * Parse a Wavefront's mtl file
@@ -58,13 +59,15 @@ public class MtlParser {
         } catch (final IOException e) {
             throw new EngineException("Failed to parse material file", e);
         }
-        return this.materials;
+        return this.builders.entrySet()
+                .stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().build()));
     }
 
     private void reset(final String filePath) {
         this.currentFile = filePath;
-        this.materials.clear();
-        this.currentMaterial = null;
+        this.builders.clear();
+        this.currentBuilder = null;
     }
 
     private void parseLine(final String line) {
@@ -93,60 +96,60 @@ public class MtlParser {
         }
     }
 
-    private void parseNewMaterial(String name) {
-        currentMaterial = new Material();
-        materials.put(name, currentMaterial);
+    private void parseNewMaterial(final String name) {
+        this.currentBuilder = Material.builder();
+        this.builders.put(name, this.currentBuilder);
     }
 
-    private void parseDiffuseMap(String fileName) {
+    private void parseDiffuseMap(final String fileName) {
         this.checkCurrentMaterial();
-        this.currentMaterial.setDiffuseMap(this.loadTexture(fileName));
+        this.currentBuilder.diffuse(this.loadTexture(fileName));
     }
 
-    private void parseDiffuseColor(String[] tokens) {
+    private void parseDiffuseColor(final String[] tokens) {
         this.checkCurrentMaterial();
-        float r = Float.parseFloat(tokens[1]);
-        float g = Float.parseFloat(tokens[2]);
-        float b = Float.parseFloat(tokens[3]);
-        this.currentMaterial.setDiffuseColor(new Color(r, g, b));
+        final float r = Float.parseFloat(tokens[1]);
+        final float g = Float.parseFloat(tokens[2]);
+        final float b = Float.parseFloat(tokens[3]);
+        this.currentBuilder.diffuse(new Color(r, g, b));
     }
 
-    private void parseBumpMap(String fileName) {
+    private void parseBumpMap(final String fileName) {
         this.checkCurrentMaterial();
-        this.currentMaterial.setNormalMap(this.loadTexture(fileName));
+        this.currentBuilder.normals(this.loadTexture(fileName));
     }
 
-    private void parseRoughness(String value) {
+    private void parseRoughness(final String value) {
         this.checkCurrentMaterial();
-        this.currentMaterial.setRoughness(Float.parseFloat(value));
+        this.currentBuilder.roughness(Float.parseFloat(value));
     }
 
-    private void parseMetallic(String value) {
+    private void parseMetallic(final String value) {
         this.checkCurrentMaterial();
-        this.currentMaterial.setMetallic(Float.parseFloat(value));
+        this.currentBuilder.roughness(Float.parseFloat(value));
     }
 
     private void parseEmissiveColor(final String[] tokens) {
         this.checkCurrentMaterial();
-        float r = Float.parseFloat(tokens[1]);
-        float g = Float.parseFloat(tokens[2]);
-        float b = Float.parseFloat(tokens[3]);
-        this.currentMaterial.setEmissiveColor(new Color(r, g, b));
-        this.currentMaterial.setEmissiveIntensity(1.0f);
+        final float r = Float.parseFloat(tokens[1]);
+        final float g = Float.parseFloat(tokens[2]);
+        final float b = Float.parseFloat(tokens[3]);
+        this.currentBuilder.emissive(new Color(r, g, b));
+        this.currentBuilder.emissiveIntensity(1.0f);
     }
 
     private void parseEmissiveMap(final String filePath) {
         this.checkCurrentMaterial();
-        this.currentMaterial.setEmissiveMap(this.loadTexture(filePath));
-        this.currentMaterial.setEmissiveIntensity(1.0f);
+        this.currentBuilder.emissive(this.loadTexture(filePath));
+        this.currentBuilder.emissiveIntensity(1.0f);
     }
 
     private void parseOrmMap(final String filePath) {
         this.checkCurrentMaterial();
-        this.currentMaterial.setOrmMap(this.loadTexture(filePath));
+        this.currentBuilder.orm(this.loadTexture(filePath));
     }
 
-    private Texture loadTexture(String name) {
+    private Texture loadTexture(final String name) {
         final String folderPath = Paths.get(this.currentFile).getParent().toString();
         final String texturePath = folderPath + "/" + name;
         final TextureParameters.Builder params = TextureParameters.builder()
@@ -157,7 +160,7 @@ public class MtlParser {
     }
 
     private void checkCurrentMaterial() {
-        if (Objects.isNull(this.currentMaterial)) {
+        if (Objects.isNull(this.currentBuilder)) {
             throw new EngineException("Missing 'newmtl' declaration in '" + this.currentFile + "'.");
         }
     }

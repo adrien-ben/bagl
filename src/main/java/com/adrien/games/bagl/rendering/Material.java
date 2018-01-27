@@ -2,6 +2,7 @@ package com.adrien.games.bagl.rendering;
 
 import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.rendering.texture.Texture;
+import com.adrien.games.bagl.utils.AssertUtils;
 
 import java.util.Objects;
 
@@ -21,6 +22,16 @@ import java.util.Objects;
  * <li>An ORM (Occlusion/Roughness/Metalness) texture (default: null)
  * <li>A normal texture (default: null)
  * </ul>
+ * <p>
+ * To construct a material you have to use a material builder :
+ * <pre>
+ *     final Material material = Material.builder()
+ *         .diffuse(Color.RED)
+ *         .metallic(1f)
+ *         .roughness(0.1f)
+ *         .build();
+ * </pre>
+ * Once built, a material cannot be changed
  *
  * @author adrien
  */
@@ -31,16 +42,56 @@ public class Material {
     private static final int ORM_MAP_CHANNEL = 2;
     private static final int NORMAL_MAP_CHANNEL = 3;
 
-    private Color diffuseColor = Color.WHITE;
-    private Color emissiveColor = Color.WHITE;
-    private float emissiveIntensity = 0f;
-    private float roughness = 0.5f;
-    private float metallic = 0f;
+    private final Color diffuseColor;
+    private final Color emissiveColor;
+    private final float emissiveIntensity;
+    private final float roughness;
+    private final float metallic;
 
-    private Texture diffuseMap = null;
-    private Texture emissiveMap = null;
-    private Texture ormMap = null;
-    private Texture normalMap = null;
+    private final Texture diffuseMap;
+    private final Texture emissiveMap;
+    private final Texture ormMap;
+    private final Texture normalMap;
+
+    private Material(final Builder builder) {
+        this.diffuseColor = builder.diffuseColor;
+        this.emissiveColor = builder.emissiveColor;
+        this.emissiveIntensity = builder.emissiveIntensity;
+        this.roughness = builder.roughness;
+        this.metallic = builder.metallic;
+
+        this.diffuseMap = builder.diffuseMap;
+        this.emissiveMap = builder.emissiveMap;
+        this.ormMap = builder.ormMap;
+        this.normalMap = builder.normalMap;
+    }
+
+    /**
+     * Return a material builder
+     *
+     * @return A new builder
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
+     * Release resources
+     */
+    public void destroy() {
+        if (Objects.nonNull(this.diffuseMap)) {
+            this.diffuseMap.destroy();
+        }
+        if (Objects.nonNull(this.emissiveMap)) {
+            this.emissiveMap.destroy();
+        }
+        if (Objects.nonNull(this.ormMap)) {
+            this.ormMap.destroy();
+        }
+        if (Objects.nonNull(this.normalMap)) {
+            this.normalMap.destroy();
+        }
+    }
 
     /**
      * Apply the current material to a shader
@@ -83,24 +134,6 @@ public class Material {
         }
     }
 
-    /**
-     * Release resources
-     */
-    public void destroy() {
-        if (Objects.nonNull(this.diffuseMap)) {
-            this.diffuseMap.destroy();
-        }
-        if (Objects.nonNull(this.emissiveMap)) {
-            this.emissiveMap.destroy();
-        }
-        if (Objects.nonNull(this.ormMap)) {
-            this.ormMap.destroy();
-        }
-        if (Objects.nonNull(this.normalMap)) {
-            this.normalMap.destroy();
-        }
-    }
-
     public boolean hasNormalMap() {
         return Objects.nonNull(this.normalMap);
     }
@@ -109,81 +142,114 @@ public class Material {
         return diffuseColor;
     }
 
-    public Material setDiffuseColor(final Color diffuseColor) {
-        this.diffuseColor = diffuseColor;
-        return this;
-    }
-
     public Color getEmissiveColor() {
         return this.emissiveColor;
-    }
-
-    public Material setEmissiveColor(final Color emissiveColor) {
-        this.emissiveColor = emissiveColor;
-        return this;
     }
 
     public float getEmissiveIntensity() {
         return this.emissiveIntensity;
     }
 
-    public Material setEmissiveIntensity(final float emissiveIntensity) {
-        this.emissiveIntensity = emissiveIntensity;
-        return this;
-    }
-
     public float getRoughness() {
         return roughness;
-    }
-
-    public Material setRoughness(final float roughness) {
-        this.roughness = roughness;
-        return this;
     }
 
     public float getMetallic() {
         return metallic;
     }
 
-    public Material setMetallic(final float metallic) {
-        this.metallic = metallic;
-        return this;
-    }
-
-
     public Texture getDiffuseMap() {
         return diffuseMap;
-    }
-
-    public Material setDiffuseMap(final Texture diffuseMap) {
-        this.diffuseMap = diffuseMap;
-        return this;
     }
 
     public Texture getEmissiveMap() {
         return this.emissiveMap;
     }
 
-    public Material setEmissiveMap(final Texture emissiveMap) {
-        this.emissiveMap = emissiveMap;
-        return this;
-    }
-
     public Texture getOrmMap() {
         return this.ormMap;
-    }
-
-    public Material setOrmMap(final Texture ormMap) {
-        this.ormMap = ormMap;
-        return this;
     }
 
     public Texture getNormalMap() {
         return normalMap;
     }
 
-    public Material setNormalMap(final Texture normalMap) {
-        this.normalMap = normalMap;
-        return this;
+    /**
+     * Material builder
+     */
+    public static class Builder {
+        private Color diffuseColor = Color.WHITE;
+        private Color emissiveColor = Color.WHITE;
+        private float emissiveIntensity = 0f;
+        private float roughness = 0.5f;
+        private float metallic = 0f;
+
+        private Texture diffuseMap = null;
+        private Texture emissiveMap = null;
+        private Texture ormMap = null;
+        private Texture normalMap = null;
+
+        /**
+         * Private constructor to private instantiation
+         */
+        private Builder() {
+        }
+
+        /**
+         * Build a new material
+         *
+         * @return A new material
+         */
+        public Material build() {
+            return new Material(this);
+        }
+
+        public Builder diffuse(final Color color) {
+            this.diffuseColor = Objects.requireNonNull(color, "color cannot be null");
+            return this;
+        }
+
+        public Builder emissive(final Color color) {
+            this.emissiveColor = Objects.requireNonNull(color, "color cannot be null");
+            return this;
+        }
+
+        public Builder emissiveIntensity(final float intensity) {
+            this.emissiveIntensity = AssertUtils.validate(intensity, v -> v >= 0,
+                    "intensity must be positive");
+            return this;
+        }
+
+        public Builder roughness(final float roughness) {
+            this.roughness = AssertUtils.validate(roughness, v -> v >= 0 && v <= 1,
+                    "roughness must be in [0..1]");
+            return this;
+        }
+
+        public Builder metallic(final float metallic) {
+            this.metallic = AssertUtils.validate(metallic, v -> v >= 0 && v <= 1,
+                    "metallic must be in [0..1]");
+            return this;
+        }
+
+        public Builder diffuse(final Texture diffuseMap) {
+            this.diffuseMap = diffuseMap;
+            return this;
+        }
+
+        public Builder emissive(final Texture emissiveMap) {
+            this.emissiveMap = emissiveMap;
+            return this;
+        }
+
+        public Builder orm(final Texture ormMap) {
+            this.ormMap = ormMap;
+            return this;
+        }
+
+        public Builder normals(final Texture normalMap) {
+            this.normalMap = normalMap;
+            return this;
+        }
     }
 }

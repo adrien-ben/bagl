@@ -121,7 +121,7 @@ public class DeferredRenderingSample {
             this.floor = ModelFactory.fromFile(FileUtils.getResourceAbsolutePath("/models/floor/floor.obj"));
             this.cube = ModelFactory.fromFile(FileUtils.getResourceAbsolutePath("/models/cube/cube.obj"));
 //            this.cube = ModelFactory.fromFile("D:/Documents/3D Models/gun/gun.obj");
-            final Material gold = new Material().setDiffuseColor(Color.YELLOW).setMetallic(1f).setRoughness(0.1f);
+            final Material gold = Material.builder().diffuse(Color.YELLOW).metallic(1f).roughness(0.1f).build();
             this.sphere = ModelFactory.createSphere(0.5f, 25, 25, gold);
             this.pointBulb = MeshFactory.createSphere(0.1f, 8, 8);
             this.spotBulb = MeshFactory.createCylinder(0.1f, 0.065f, 0.2f, 12);
@@ -192,7 +192,7 @@ public class DeferredRenderingSample {
             final GameObject modelObject = lightObject.createChild("bulb_" + id);
             modelObject.getLocalTransform().setRotation(new Quaternionf().rotationX((float) Math.toRadians(-90f)));
 
-            final Material material = new Material().setEmissiveColor(color).setEmissiveIntensity(10f);
+            final Material material = Material.builder().emissive(color).emissiveIntensity(10f).build();
             modelObject.addComponent(new ModelComponent(new Model().addMesh(mesh, material)));
 
             return lightObject;
