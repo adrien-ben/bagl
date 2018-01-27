@@ -11,14 +11,15 @@ import java.util.Objects;
  * Represents the material of a mesh. It contains:
  * <ul>
  * <li>The diffuse color (default: {@link Color#WHITE}
- * <li>A diffuse texture (default: null)
- * <li>A roughness factor (default: 0.5f)
- * <li>A roughness texture (default: null)
- * <li>A metalness factor (default: 0f)
- * <li>A metalness texture (default: null)
  * <li>An emissive color (default {@link Color#WHITE}
  * <li>An emissive intensity (default: 0f)
+ * <li>A roughness factor (default: 0.5f)
+ * <li>A metalness factor (default: 0f)
+ * <p>
+ * <li>A diffuse texture (default: null)
  * <li>An emissive texture (default: null)
+ * <li>An ORM (Occlusion/Roughness/Metalness) texture (default: null)
+ * <li>A normal texture (default: null)
  * </ul>
  *
  * @author adrien
@@ -26,21 +27,20 @@ import java.util.Objects;
 public class Material {
 
     private static final int DIFFUSE_MAP_CHANNEL = 0;
-    private static final int ROUGHNESS_MAP_CHANNEL = 1;
-    private static final int METALLIC_MAP_CHANNEL = 2;
+    private static final int EMISSIVE_MAP_CHANNEL = 1;
+    private static final int ORM_MAP_CHANNEL = 2;
     private static final int NORMAL_MAP_CHANNEL = 3;
-    private static final int EMISSIVE_MAP_CHANNEL = 4;
 
     private Color diffuseColor = Color.WHITE;
-    private Texture diffuseMap = null;
-    private float roughness = 0.5f;
-    private Texture roughnessMap = null;
-    private float metallic = 0f;
-    private Texture metallicMap = null;
-    private Texture normalMap = null;
     private Color emissiveColor = Color.WHITE;
-    private Texture emissiveMap = null;
     private float emissiveIntensity = 0f;
+    private float roughness = 0.5f;
+    private float metallic = 0f;
+
+    private Texture diffuseMap = null;
+    private Texture emissiveMap = null;
+    private Texture ormMap = null;
+    private Texture normalMap = null;
 
     /**
      * Apply the current material to a shader
@@ -49,6 +49,11 @@ public class Material {
      */
     public void applyTo(final Shader shader) {
         shader.setUniform("uMaterial.diffuseColor", this.diffuseColor);
+        shader.setUniform("uMaterial.emissiveColor", this.emissiveColor);
+        shader.setUniform("uMaterial.emissiveIntensity", this.emissiveIntensity);
+        shader.setUniform("uMaterial.roughness", this.roughness);
+        shader.setUniform("uMaterial.metallic", this.metallic);
+
         final boolean hasDiffuseMap = Objects.nonNull(this.diffuseMap);
         shader.setUniform("uMaterial.hasDiffuseMap", hasDiffuseMap);
         if (hasDiffuseMap) {
@@ -56,20 +61,18 @@ public class Material {
             this.diffuseMap.bind(DIFFUSE_MAP_CHANNEL);
         }
 
-        shader.setUniform("uMaterial.roughness", this.roughness);
-        final boolean hasRoughnessMap = Objects.nonNull(this.roughnessMap);
-        shader.setUniform("uMaterial.hasRoughnessMap", hasRoughnessMap);
-        if (hasRoughnessMap) {
-            shader.setUniform("uMaterial.roughnessMap", ROUGHNESS_MAP_CHANNEL);
-            this.roughnessMap.bind(ROUGHNESS_MAP_CHANNEL);
+        final boolean hasEmissiveMap = Objects.nonNull(this.emissiveMap);
+        shader.setUniform("uMaterial.hasEmissiveMap", hasEmissiveMap);
+        if (hasEmissiveMap) {
+            shader.setUniform("uMaterial.emissiveMap", EMISSIVE_MAP_CHANNEL);
+            this.emissiveMap.bind(EMISSIVE_MAP_CHANNEL);
         }
 
-        shader.setUniform("uMaterial.metallic", this.metallic);
-        final boolean hasMetallicMap = Objects.nonNull(this.metallicMap);
-        shader.setUniform("uMaterial.hasMetallicMap", hasMetallicMap);
-        if (hasMetallicMap) {
-            shader.setUniform("uMaterial.metallicMap", METALLIC_MAP_CHANNEL);
-            this.metallicMap.bind(METALLIC_MAP_CHANNEL);
+        final boolean hasOrmMap = Objects.nonNull(this.ormMap);
+        shader.setUniform("uMaterial.hasOrmMap", hasOrmMap);
+        if (hasOrmMap) {
+            shader.setUniform("uMaterial.ormMap", ORM_MAP_CHANNEL);
+            this.ormMap.bind(ORM_MAP_CHANNEL);
         }
 
         final boolean hasNormalMap = Objects.nonNull(this.normalMap);
@@ -77,15 +80,6 @@ public class Material {
         if (hasNormalMap) {
             shader.setUniform("uMaterial.normalMap", NORMAL_MAP_CHANNEL);
             this.normalMap.bind(NORMAL_MAP_CHANNEL);
-        }
-
-        shader.setUniform("uMaterial.emissiveColor", this.emissiveColor);
-        shader.setUniform("uMaterial.emissiveIntensity", this.emissiveIntensity);
-        final boolean hasEmissiveMap = Objects.nonNull(this.emissiveMap);
-        shader.setUniform("uMaterial.hasEmissiveMap", hasEmissiveMap);
-        if (hasEmissiveMap) {
-            shader.setUniform("uMaterial.emissiveMap", EMISSIVE_MAP_CHANNEL);
-            this.emissiveMap.bind(EMISSIVE_MAP_CHANNEL);
         }
     }
 
@@ -96,17 +90,14 @@ public class Material {
         if (Objects.nonNull(this.diffuseMap)) {
             this.diffuseMap.destroy();
         }
-        if (Objects.nonNull(this.roughnessMap)) {
-            this.roughnessMap.destroy();
+        if (Objects.nonNull(this.emissiveMap)) {
+            this.emissiveMap.destroy();
         }
-        if (Objects.nonNull(this.metallicMap)) {
-            this.metallicMap.destroy();
+        if (Objects.nonNull(this.ormMap)) {
+            this.ormMap.destroy();
         }
         if (Objects.nonNull(this.normalMap)) {
             this.normalMap.destroy();
-        }
-        if (Objects.nonNull(this.emissiveMap)) {
-            this.emissiveMap.destroy();
         }
     }
 
@@ -120,60 +111,6 @@ public class Material {
 
     public Material setDiffuseColor(final Color diffuseColor) {
         this.diffuseColor = diffuseColor;
-        return this;
-    }
-
-    public Texture getDiffuseMap() {
-        return diffuseMap;
-    }
-
-    public Material setDiffuseMap(final Texture diffuseMap) {
-        this.diffuseMap = diffuseMap;
-        return this;
-    }
-
-    public float getRoughness() {
-        return roughness;
-    }
-
-    public Material setRoughness(final float roughness) {
-        this.roughness = roughness;
-        return this;
-    }
-
-    public Texture getRoughnessMap() {
-        return roughnessMap;
-    }
-
-    public Material setRoughnessMap(final Texture roughnessMap) {
-        this.roughnessMap = roughnessMap;
-        return this;
-    }
-
-    public float getMetallic() {
-        return metallic;
-    }
-
-    public Material setMetallic(final float metallic) {
-        this.metallic = metallic;
-        return this;
-    }
-
-    public Texture getMetallicMap() {
-        return metallicMap;
-    }
-
-    public Material setMetallicMap(final Texture metallicMap) {
-        this.metallicMap = metallicMap;
-        return this;
-    }
-
-    public Texture getNormalMap() {
-        return normalMap;
-    }
-
-    public Material setNormalMap(final Texture normalMap) {
-        this.normalMap = normalMap;
         return this;
     }
 
@@ -195,12 +132,58 @@ public class Material {
         return this;
     }
 
+    public float getRoughness() {
+        return roughness;
+    }
+
+    public Material setRoughness(final float roughness) {
+        this.roughness = roughness;
+        return this;
+    }
+
+    public float getMetallic() {
+        return metallic;
+    }
+
+    public Material setMetallic(final float metallic) {
+        this.metallic = metallic;
+        return this;
+    }
+
+
+    public Texture getDiffuseMap() {
+        return diffuseMap;
+    }
+
+    public Material setDiffuseMap(final Texture diffuseMap) {
+        this.diffuseMap = diffuseMap;
+        return this;
+    }
+
     public Texture getEmissiveMap() {
         return this.emissiveMap;
     }
 
     public Material setEmissiveMap(final Texture emissiveMap) {
         this.emissiveMap = emissiveMap;
+        return this;
+    }
+
+    public Texture getOrmMap() {
+        return this.ormMap;
+    }
+
+    public Material setOrmMap(final Texture ormMap) {
+        this.ormMap = ormMap;
+        return this;
+    }
+
+    public Texture getNormalMap() {
+        return normalMap;
+    }
+
+    public Material setNormalMap(final Texture normalMap) {
+        this.normalMap = normalMap;
         return this;
     }
 }

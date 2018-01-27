@@ -1,5 +1,4 @@
 newmtl container
 
-map_Kd container_kd.png
-map_Kr container_roughness.png
-map_Km container_metallic.png
+map_Kd container_Kd.tga
+map_Korm container_Korm.tga

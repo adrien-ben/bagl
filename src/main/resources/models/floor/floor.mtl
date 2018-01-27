@@ -6,8 +6,7 @@ Km 1
 Kr 0.4
 
 newmtl mahogfloor
-map_Kd mahogfloor_basecolor.png
-map_Kr mahogfloor_roughness.png
-map_bump mahogfloor_normal.png
-Km 0
+map_Kd mahogfloor_Kd.tga
+map_Korm mahogfloor_Korm.tga
+map_bump mahogfloor_Kn.tga
 

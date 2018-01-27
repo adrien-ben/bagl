@@ -2,20 +2,19 @@
 
 struct Material {
 	vec4 diffuseColor;
+	vec4 emissiveColor;
+    float emissiveIntensity;
+	float roughness;
+	float metallic;
+
 	bool hasDiffuseMap;
     sampler2D diffuseMap;
-	float roughness;
-	bool hasRoughnessMap;
-	sampler2D roughnessMap;
-	float metallic;
-	bool hasMetallicMap;
-	sampler2D metallicMap;
-	bool hasNormalMap;
-    sampler2D normalMap;
-    vec4 emissiveColor;
-    float emissiveIntensity;
     bool hasEmissiveMap;
     sampler2D emissiveMap;
+    bool hasOrmMap;
+    sampler2D ormMap;
+	bool hasNormalMap;
+    sampler2D normalMap;
 };
 
 in vec2 passCoords;
@@ -30,7 +29,7 @@ uniform Material uMaterial;
 
 void main() {
 	colors.rgb = uMaterial.hasDiffuseMap ? pow(texture2D(uMaterial.diffuseMap, passCoords).rgb, vec3(2.2)) : uMaterial.diffuseColor.rgb;
-	float roughness = uMaterial.hasRoughnessMap ? texture2D(uMaterial.roughnessMap, passCoords).r : uMaterial.roughness;
+	float roughness = uMaterial.hasOrmMap ? texture2D(uMaterial.ormMap, passCoords).g : uMaterial.roughness;
     colors.a = clamp(roughness, 0.03, 1.0);
 
 	vec3 normal;
@@ -42,7 +41,7 @@ void main() {
 	}
 
 	normals.rgb = normal*0.5 + 0.5;
-	normals.a = uMaterial.hasMetallicMap ? texture2D(uMaterial.metallicMap, passCoords).r : uMaterial.metallic;
+	normals.a = uMaterial.hasOrmMap ? texture2D(uMaterial.ormMap, passCoords).b : uMaterial.metallic;
 
     if(uMaterial.hasEmissiveMap) {
         emissive = pow(texture2D(uMaterial.emissiveMap, passCoords).rgb, vec3(2.2))*uMaterial.emissiveIntensity;

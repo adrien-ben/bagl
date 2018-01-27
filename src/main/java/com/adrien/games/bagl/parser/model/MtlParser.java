@@ -26,12 +26,12 @@ import java.util.stream.Stream;
  * <ul>
  * <li>diffuse color (Kd R G B)
  * <li>diffuse map (map_Kd RELATIVE_FILE_PATH)
- * <li>roughness factor (Kr FLOAT)
- * <li>roughness map (map_Kr RELATIVE_FILE_PATH)
- * <li>metalness factor (Km FLOAT)
- * <li>metalness map (map_Km RELATIVE_FILE_PATH)
- * <li>normal map (bump/map_bump RELATIVE_FILE_PATH)
  * <li>emissive color (Ke R G B)
+ * <li>emissive map (map_Ke RELATIVE_FILE_PATH)
+ * <li>roughness factor (Kr FLOAT)
+ * <li>metalness factor (Km FLOAT)
+ * <li>orm (occlusion/roughness/metalness) map (map_Korm RELATIVE_FILE_PATH)
+ * <li>normal map (bump/map_bump RELATIVE_FILE_PATH)
  * </ul>
  *
  * @author adrien
@@ -81,16 +81,14 @@ public class MtlParser {
                 this.parseBumpMap(tokens[1]);
             } else if ("Kr".equals(first) && tokens.length > 1) {
                 this.parseRoughness(tokens[1]);
-            } else if ("map_Kr".equals(first) && tokens.length > 1) {
-                this.parseRoughnessMap(tokens[1]);
             } else if ("Km".equals(first) && tokens.length > 1) {
                 this.parseMetallic(tokens[1]);
-            } else if ("map_Km".equals(first) && tokens.length > 1) {
-                this.parseMetallicMap(tokens[1]);
             } else if ("Ke".equals(first) && tokens.length > 3) {
                 this.parseEmissiveColor(tokens);
             } else if ("map_Ke".equals(first) && tokens.length > 1) {
                 this.parseEmissiveMap(tokens[1]);
+            } else if ("map_Korm".equals(first) && tokens.length > 1) {
+                this.parseOrmMap(tokens[1]);
             }
         }
     }
@@ -123,19 +121,9 @@ public class MtlParser {
         this.currentMaterial.setRoughness(Float.parseFloat(value));
     }
 
-    private void parseRoughnessMap(String fileName) {
-        this.checkCurrentMaterial();
-        this.currentMaterial.setRoughnessMap(this.loadTexture(fileName));
-    }
-
     private void parseMetallic(String value) {
         this.checkCurrentMaterial();
         this.currentMaterial.setMetallic(Float.parseFloat(value));
-    }
-
-    private void parseMetallicMap(String fileName) {
-        this.checkCurrentMaterial();
-        this.currentMaterial.setMetallicMap(this.loadTexture(fileName));
     }
 
     private void parseEmissiveColor(final String[] tokens) {
@@ -151,6 +139,11 @@ public class MtlParser {
         this.checkCurrentMaterial();
         this.currentMaterial.setEmissiveMap(this.loadTexture(filePath));
         this.currentMaterial.setEmissiveIntensity(1.0f);
+    }
+
+    private void parseOrmMap(final String filePath) {
+        this.checkCurrentMaterial();
+        this.currentMaterial.setOrmMap(this.loadTexture(filePath));
     }
 
     private Texture loadTexture(String name) {
