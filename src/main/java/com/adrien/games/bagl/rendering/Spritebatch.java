@@ -89,11 +89,12 @@ public class Spritebatch {
      * Initialize the vertex array and buffer
      */
     private void initVertices() {
-        this.vBuffer = new VertexBuffer(this.vertices, new VertexBufferParams()
+        this.vBuffer = new VertexBuffer(this.vertices, VertexBufferParams.builder()
                 .usage(BufferUsage.DYNAMIC_DRAW)
                 .element(new VertexElement(POSITION_INDEX, ELEMENTS_PER_POSITION))
                 .element(new VertexElement(COLOR_INDEX, ELEMENTS_PER_COLOR))
-                .element(new VertexElement(COORDINATES_INDEX, ELEMENTS_PER_COORDINATES)));
+                .element(new VertexElement(COORDINATES_INDEX, ELEMENTS_PER_COORDINATES))
+                .build());
         this.vArray = new VertexArray();
         this.vArray.bind();
         this.vArray.attachVertexBuffer(this.vBuffer);
@@ -149,7 +150,7 @@ public class Spritebatch {
      * Can only be called once before Spritebatch::end is called
      * <p>
      * The passed in shader MUST accept a uniform called uCamera, this uniform
-     * MUST be filled with a {@link com.adrien.games.bagl.core.math.Matrix4}.
+     * MUST be filled with a {@link org.joml.Matrix4f}.
      * The shader must accept 3 vertex attributes, the first channel (0) is for
      * position (two floats), the second for color (four floats) and the third
      * for texture coordinates (2 floats)

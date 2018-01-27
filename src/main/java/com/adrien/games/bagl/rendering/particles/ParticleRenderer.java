@@ -56,11 +56,12 @@ public class ParticleRenderer {
                 .compile();
 
         this.vertices = MemoryUtil.memAllocFloat(ParticleEmitter.MAX_PARTICLE_COUNT * ELEMENTS_PER_VERTEX);
-        this.vBuffer = new VertexBuffer(this.vertices, new VertexBufferParams()
+        this.vBuffer = new VertexBuffer(this.vertices, VertexBufferParams.builder()
                 .usage(BufferUsage.STREAM_DRAW)
                 .element(new VertexElement(POSITION_INDEX, ELEMENTS_PER_POSITION))
                 .element(new VertexElement(COLOR_INDEX, ELEMENTS_PER_COLOR))
-                .element(new VertexElement(SIZE_INDEX, ELEMENTS_PER_SIZE)));
+                .element(new VertexElement(SIZE_INDEX, ELEMENTS_PER_SIZE))
+                .build());
 
         this.vArray = new VertexArray();
         this.vArray.bind();

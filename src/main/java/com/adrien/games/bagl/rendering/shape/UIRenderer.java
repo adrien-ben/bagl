@@ -37,9 +37,10 @@ public class UIRenderer {
         this.vertices = MemoryUtil.memAllocFloat(BUFFER_SIZE * VERTICES_PER_SHAPE * ELEMENT_PER_VERTEX);
         this.shader = new Shader().addVertexShader("/ui/shape.vert").addFragmentShader("/ui/shape.frag").compile();
 
-        this.vBuffer = new VertexBuffer(this.vertices, new VertexBufferParams()
+        this.vBuffer = new VertexBuffer(this.vertices, VertexBufferParams.builder()
                 .element(new VertexElement(0, 2))
-                .element(new VertexElement(1, 4)));
+                .element(new VertexElement(1, 4))
+                .build());
 
         this.vArray = new VertexArray();
         this.vArray.bind();

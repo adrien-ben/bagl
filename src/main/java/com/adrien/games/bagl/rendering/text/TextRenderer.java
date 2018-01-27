@@ -90,11 +90,12 @@ public class TextRenderer {
      * Initialize vertices
      */
     private void initVertices() {
-        this.vBuffer = new VertexBuffer(this.vertices, new VertexBufferParams()
+        this.vBuffer = new VertexBuffer(this.vertices, VertexBufferParams.builder()
                 .usage(BufferUsage.DYNAMIC_DRAW)
                 .element(new VertexElement(POSITION_INDEX, ELEMENTS_PER_POSITION))
                 .element(new VertexElement(COORDINATES_INDEX, ELEMENTS_PER_COORDINATES))
-                .element(new VertexElement(COLOR_INDEX, ELEMENTS_PER_COLOR)));
+                .element(new VertexElement(COLOR_INDEX, ELEMENTS_PER_COLOR))
+                .build());
         this.vArray = new VertexArray();
         this.vArray.bind();
         this.vArray.attachVertexBuffer(this.vBuffer);

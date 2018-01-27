@@ -291,11 +291,12 @@ public class ObjParser implements ModelParser {
                 vertices.put(index + 9, tangent.y());
                 vertices.put(index + 10, tangent.z());
             }
-            final VertexBuffer vBuffer = new VertexBuffer(vertices, new VertexBufferParams()
+            final VertexBuffer vBuffer = new VertexBuffer(vertices, VertexBufferParams.builder()
                     .element(new VertexElement(Mesh.POSITION_INDEX, Mesh.ELEMENTS_PER_POSITION))
                     .element(new VertexElement(Mesh.NORMAL_INDEX, Mesh.ELEMENTS_PER_NORMAL))
                     .element(new VertexElement(Mesh.COORDINATES_INDEX, Mesh.ELEMENTS_PER_COORDINATES))
-                    .element(new VertexElement(Mesh.TANGENT_INDEX, Mesh.ELEMENTS_PER_TANGENT)));
+                    .element(new VertexElement(Mesh.TANGENT_INDEX, Mesh.ELEMENTS_PER_TANGENT))
+                    .build());
             MemoryUtil.memFree(vertices);
             return vBuffer;
         }

@@ -42,9 +42,10 @@ public class MeshFactory {
                     -halfWidth, 0, -halfDepth, 0, 1, 0,
                     halfWidth, 0, -halfDepth, 0, 1, 0);
 
-            final VertexBuffer vBuffer = new VertexBuffer(vertices, new VertexBufferParams()
+            final VertexBuffer vBuffer = new VertexBuffer(vertices, VertexBufferParams.builder()
                     .element(new VertexElement(Mesh.POSITION_INDEX, Mesh.ELEMENTS_PER_POSITION))
-                    .element(new VertexElement(Mesh.NORMAL_INDEX, Mesh.ELEMENTS_PER_NORMAL)));
+                    .element(new VertexElement(Mesh.NORMAL_INDEX, Mesh.ELEMENTS_PER_NORMAL))
+                    .build());
             final VertexArray vArray = new VertexArray();
             vArray.bind();
             vArray.attachVertexBuffer(vBuffer);
@@ -68,10 +69,11 @@ public class MeshFactory {
                     (byte) 1, (byte) -1, Byte.MAX_VALUE, (byte) 0,
                     (byte) -1, (byte) 1, (byte) 0, Byte.MAX_VALUE,
                     (byte) 1, (byte) 1, Byte.MAX_VALUE, Byte.MAX_VALUE);
-            final VertexBuffer vBuffer = new VertexBuffer(positions, new VertexBufferParams()
+            final VertexBuffer vBuffer = new VertexBuffer(positions, VertexBufferParams.builder()
                     .dataType(DataType.BYTE)
                     .element(new VertexElement(0, 2))
-                    .element(new VertexElement(2, 2, true)));
+                    .element(new VertexElement(2, 2, true))
+                    .build());
 
             final VertexArray vArray = new VertexArray();
             vArray.bind();
@@ -113,9 +115,10 @@ public class MeshFactory {
                     UNIT_CUBE_POS_HALF_SIZE, UNIT_CUBE_NEG_HALF_SIZE, UNIT_CUBE_NEG_HALF_SIZE,
                     UNIT_CUBE_NEG_HALF_SIZE, UNIT_CUBE_POS_HALF_SIZE, UNIT_CUBE_NEG_HALF_SIZE,
                     UNIT_CUBE_POS_HALF_SIZE, UNIT_CUBE_POS_HALF_SIZE, UNIT_CUBE_NEG_HALF_SIZE);
-            vBuffer = new VertexBuffer(vertices, new VertexBufferParams()
+            vBuffer = new VertexBuffer(vertices, VertexBufferParams.builder()
                     .dataType(DataType.BYTE)
-                    .element(new VertexElement(0, 3)));
+                    .element(new VertexElement(0, 3))
+                    .build());
         }
 
         final VertexArray vArray = new VertexArray();
@@ -189,9 +192,10 @@ public class MeshFactory {
                     halfSize, halfSize, -halfSize, 0, 1, 0,
                     -halfSize, halfSize, -halfSize, 0, 1, 0
             );
-            vBuffer = new VertexBuffer(vertices, new VertexBufferParams()
+            vBuffer = new VertexBuffer(vertices, VertexBufferParams.builder()
                     .element(new VertexElement(Mesh.POSITION_INDEX, Mesh.ELEMENTS_PER_POSITION))
-                    .element(new VertexElement(Mesh.NORMAL_INDEX, Mesh.ELEMENTS_PER_NORMAL)));
+                    .element(new VertexElement(Mesh.NORMAL_INDEX, Mesh.ELEMENTS_PER_NORMAL))
+                    .build());
         }
 
         final VertexArray vArray = new VertexArray();
@@ -239,9 +243,10 @@ public class MeshFactory {
         bufferIt += MeshFactory.insertElement3f(vertices, bufferIt, 0, -radius, 0);
         MeshFactory.insertElement3f(vertices, bufferIt, 0, -1, 0);
 
-        final VertexBuffer vBuffer = new VertexBuffer(vertices, new VertexBufferParams()
+        final VertexBuffer vBuffer = new VertexBuffer(vertices, VertexBufferParams.builder()
                 .element(new VertexElement(Mesh.POSITION_INDEX, Mesh.ELEMENTS_PER_POSITION))
-                .element(new VertexElement(Mesh.NORMAL_INDEX, Mesh.ELEMENTS_PER_NORMAL)));
+                .element(new VertexElement(Mesh.NORMAL_INDEX, Mesh.ELEMENTS_PER_NORMAL))
+                .build());
         MemoryUtil.memFree(vertices);
 
         final VertexArray vArray = new VertexArray();
@@ -401,9 +406,10 @@ public class MeshFactory {
                 bufferIt += MeshFactory.insertElement3f(vertices, bufferIt, normal.x(), normal.y(), normal.z());
             }
 
-            return new VertexBuffer(vertices, new VertexBufferParams()
+            return new VertexBuffer(vertices, VertexBufferParams.builder()
                     .element(new VertexElement(Mesh.POSITION_INDEX, Mesh.ELEMENTS_PER_POSITION))
-                    .element(new VertexElement(Mesh.NORMAL_INDEX, Mesh.ELEMENTS_PER_NORMAL)));
+                    .element(new VertexElement(Mesh.NORMAL_INDEX, Mesh.ELEMENTS_PER_NORMAL))
+                    .build());
         }
     }
 
