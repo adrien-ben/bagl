@@ -31,11 +31,12 @@ public class FrameBuffer {
     /** Used to keep track of the bound frame buffer */
     private static int boundBuffer = 0;
 
-    private final int handle;
     private final int width;
     private final int height;
+    private final FrameBufferParameters parameters;
     private Texture[] colorOutputs;
     private Texture depthTexture;
+    private final int handle;
 
     /**
      * Create a new {@link FrameBuffer}. This is a depth only frame buffer
@@ -44,7 +45,7 @@ public class FrameBuffer {
      * @param height The height of the frame buffer
      */
     public FrameBuffer(final int width, final int height) {
-        this(width, height, new FrameBufferParameters());
+        this(width, height, FrameBufferParameters.getDefault());
     }
 
     /**
@@ -57,30 +58,28 @@ public class FrameBuffer {
     public FrameBuffer(final int width, final int height, final FrameBufferParameters parameters) {
         this.width = width;
         this.height = height;
-        this.colorOutputs = parameters.getColorOutputs().isEmpty() ? null : this.createColorOutputs(parameters, this.width, this.height);
+        this.parameters = parameters;
+        this.colorOutputs = parameters.getColorOutputs().isEmpty() ? null : this.createColorOutputs();
         this.depthTexture = parameters.hadDepthStencil()
-                ? new Texture(this.width, this.height, TextureParameters.builder().format(parameters.getDepthStencilTextureFormat()).build())
+                ? new Texture(this.width, this.height, TextureParameters.builder().format(parameters.getDepthStencilFormat()).build())
                 : null;
-        this.handle = this.createBuffer(this.colorOutputs, this.depthTexture, parameters.getDepthStencilTextureFormat() == Format.DEPTH_32F);
+        this.handle = this.createBuffer();
     }
 
     /**
      * Create one texture for each of the color output specified if the frame buffer parameters
      *
-     * @param parameters The parameters of the frame buffer
-     * @param width      The width of each texture
-     * @param height     The height of each texture
      * @return An array of {@link Texture}
      */
-    private Texture[] createColorOutputs(final FrameBufferParameters parameters, final int width, final int height) {
-        final int colorOutputs = parameters.getColorOutputs().size();
+    private Texture[] createColorOutputs() {
+        final int colorOutputs = this.parameters.getColorOutputs().size();
         final Texture[] textures = new Texture[colorOutputs];
         final TextureParameters.Builder params = TextureParameters.builder()
                 .sWrap(Wrap.CLAMP_TO_EDGE)
                 .tWrap(Wrap.CLAMP_TO_EDGE);
         for (int i = 0; i < colorOutputs; i++) {
-            params.format(parameters.getColorOutputs().get(i));
-            textures[i] = new Texture(width, height, params.build());
+            params.format(this.parameters.getColorOutputs().get(i));
+            textures[i] = new Texture(this.width, this.height, params.build());
         }
         return textures;
     }
@@ -90,29 +89,36 @@ public class FrameBuffer {
      * the color buffer textures and the depth/stencil texture. If
      * the frame buffer is depth/stencil only, only depth/stencil texture is attached
      *
-     * @param textures     The textures to use as color outputs
-     * @param depthStencil The depth/stencil texture
      * @return The handle of the OpenGL frame buffer
      */
-    private int createBuffer(final Texture[] textures, final Texture depthStencil, final boolean depthOnly) {
+    private int createBuffer() {
         final int bufferHandle = glGenFramebuffers();
         glBindFramebuffer(GL_FRAMEBUFFER, bufferHandle);
         glDrawBuffer(GL_NONE);
 
-        if (Objects.nonNull(depthStencil)) {
-            final int attachment = depthOnly ? GL_DEPTH_ATTACHMENT : GL_DEPTH_STENCIL_ATTACHMENT;
-            glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, depthStencil.getHandle(), 0);
+        if (Objects.nonNull(this.depthTexture)) {
+            final int attachment = this.isDepthOnly() ? GL_DEPTH_ATTACHMENT : GL_DEPTH_STENCIL_ATTACHMENT;
+            glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, this.depthTexture.getHandle(), 0);
         }
 
-        if (Objects.nonNull(textures)) {
-            for (int i = 0; i < textures.length; i++) {
-                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, textures[i].getHandle(), 0);
+        if (Objects.nonNull(this.colorOutputs)) {
+            for (int i = 0; i < this.colorOutputs.length; i++) {
+                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, this.colorOutputs[i].getHandle(), 0);
             }
             this.enableAllColorOutputs();
         }
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         return bufferHandle;
+    }
+
+    /**
+     * Check if the frame buffer is depth only
+     *
+     * @return true if depth only false is depth/stencil
+     */
+    private boolean isDepthOnly() {
+        return this.parameters.getDepthStencilFormat() == Format.DEPTH_32F;
     }
 
     /**

@@ -47,7 +47,7 @@ public class EnvironmentMapGenerator {
     public EnvironmentMapGenerator() {
         this.cubeMapMesh = MeshFactory.createCubeMapMesh();
 
-        final FrameBufferParameters frameBufferParameters = new FrameBufferParameters().hasDepth(false);
+        final FrameBufferParameters frameBufferParameters = FrameBufferParameters.builder().hasDepthStencil(false).build();
         this.environmentFrameBuffer = new FrameBuffer(ENVIRONMENT_MAP_RESOLUTION, ENVIRONMENT_MAP_RESOLUTION, frameBufferParameters);
         this.irradianceFrameBuffer = new FrameBuffer(IRRADIANCE_MAP_RESOLUTION, IRRADIANCE_MAP_RESOLUTION, frameBufferParameters);
         this.preFilteredMapFrameBuffer = new FrameBuffer(PRE_FILTERED_MAP_RESOLUTION, PRE_FILTERED_MAP_RESOLUTION, frameBufferParameters);

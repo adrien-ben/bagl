@@ -127,18 +127,19 @@ public class Renderer implements ComponentVisitor {
      * Initializes the frame buffers
      */
     private void initFrameBuffers() {
-        this.gBuffer = new FrameBuffer(this.xResolution, this.yResolution, new FrameBufferParameters()
-                .addColorOutput(Format.RGBA8)
-                .addColorOutput(Format.RGBA16F)
-                .addColorOutput(Format.RGB16F)
-                .setDepthStencilTextureFormat(Format.DEPTH_32F));
+        this.gBuffer = new FrameBuffer(this.xResolution, this.yResolution, FrameBufferParameters.builder()
+                .colorOutputFormat(Format.RGBA8, Format.RGBA16F, Format.RGB16F)
+                .depthStencilFormat(Format.DEPTH_32F)
+                .build());
         this.shadowBuffer = new FrameBuffer(this.shadowMapResolution, this.shadowMapResolution);
-        this.finalBuffer = new FrameBuffer(this.xResolution, this.yResolution, new FrameBufferParameters()
-                .addColorOutput(Format.RGBA32F)
-                .setDepthStencilTextureFormat(Format.DEPTH_32F));
-        this.brdfBuffer = new FrameBuffer(BRDF_RESOLUTION, BRDF_RESOLUTION, new FrameBufferParameters()
-                .hasDepth(false)
-                .addColorOutput(Format.RG16F));
+        this.finalBuffer = new FrameBuffer(this.xResolution, this.yResolution, FrameBufferParameters.builder()
+                .colorOutputFormat(Format.RGBA32F)
+                .depthStencilFormat(Format.DEPTH_32F)
+                .build());
+        this.brdfBuffer = new FrameBuffer(BRDF_RESOLUTION, BRDF_RESOLUTION, FrameBufferParameters.builder()
+                .hasDepthStencil(false)
+                .colorOutputFormat(Format.RG16F)
+                .build());
     }
 
     /**

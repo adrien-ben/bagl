@@ -30,7 +30,7 @@ public class PostProcessor {
     private Mesh screenQuad;
 
     public PostProcessor(final int xResolution, final int yResolution) {
-        final FrameBufferParameters parameters = new FrameBufferParameters().hasDepth(false).addColorOutput(Format.RGB16F);
+        final FrameBufferParameters parameters = FrameBufferParameters.builder().hasDepthStencil(false).colorOutputFormat(Format.RGB16F).build();
         this.bloomBuffer = new FrameBuffer(xResolution, yResolution, parameters);
         this.blurBuffer = new DoubleBuffer<>(() -> new FrameBuffer(xResolution, yResolution, parameters));
 
