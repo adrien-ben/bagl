@@ -93,8 +93,10 @@ public final class VertexBufferParams {
         private BufferUsage usage = BufferUsage.STATIC_DRAW;
         private List<VertexElement> elements = new ArrayList<>();
 
+        /**
+         * Private constructor to private instantiation
+         */
         private Builder() {
-            // empty to prevent instantiation
         }
 
         /**

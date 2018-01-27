@@ -97,8 +97,10 @@ public final class TextureParameters {
         private int anisotropic = 0;
         private boolean mipmaps = false;
 
+        /**
+         * Private constructor to private instantiation
+         */
         private Builder() {
-            // left empty
         }
 
         public TextureParameters build() {

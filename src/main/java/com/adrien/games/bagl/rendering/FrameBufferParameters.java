@@ -88,8 +88,10 @@ public final class FrameBufferParameters {
         private Format depthStencilFormat = Format.DEPTH_32F;
         private List<Format> colorOutputFormats = new ArrayList<>();
 
+        /**
+         * Private constructor to private instantiation
+         */
         private Builder() {
-            // prevents initialization
         }
 
         public FrameBufferParameters build() {
