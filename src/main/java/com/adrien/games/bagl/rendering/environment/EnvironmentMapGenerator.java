@@ -144,7 +144,7 @@ public class EnvironmentMapGenerator {
     public Cubemap generatePreFilteredMap(final Cubemap environmentMap) {
         final TextureParameters cubemapParams = TextureParameters.builder()
                 .format(Format.RGB16F)
-                .mipmaps()
+                .mipmaps(true)
                 .minFilter(Filter.MIPMAP_LINEAR_LINEAR)
                 .build();
         final Cubemap cubemap = new Cubemap(PRE_FILTERED_MAP_RESOLUTION, PRE_FILTERED_MAP_RESOLUTION, cubemapParams);

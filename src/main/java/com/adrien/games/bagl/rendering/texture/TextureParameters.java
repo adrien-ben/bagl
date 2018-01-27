@@ -1,5 +1,9 @@
 package com.adrien.games.bagl.rendering.texture;
 
+import com.adrien.games.bagl.utils.AssertUtils;
+
+import java.util.Objects;
+
 /**
  * <p>Parameters for textures. The different parameters are :
  * <ul>
@@ -102,37 +106,38 @@ public final class TextureParameters {
         }
 
         public Builder format(final Format format) {
-            this.format = format;
+            this.format = Objects.requireNonNull(format, "format cannot be null");
             return this;
         }
 
         public Builder minFilter(final Filter filter) {
-            this.minFilter = filter;
+            this.minFilter = Objects.requireNonNull(filter, "filter cannot be null");
             return this;
         }
 
         public Builder magFilter(final Filter filter) {
-            this.magFilter = filter;
+            this.magFilter = Objects.requireNonNull(filter, "filter cannot be null");
             return this;
         }
 
         public Builder sWrap(final Wrap wrap) {
-            this.sWrap = wrap;
+            this.sWrap = Objects.requireNonNull(wrap, "wrap cannot be null");
             return this;
         }
 
         public Builder tWrap(final Wrap wrap) {
-            this.tWrap = wrap;
+            this.tWrap = Objects.requireNonNull(wrap, "wrap cannot be null");
             return this;
         }
 
         public Builder anisotropic(final int anisotropic) {
-            this.anisotropic = anisotropic;
+            this.anisotropic = AssertUtils.validate(anisotropic, v -> v >= 0,
+                    "anisotropic must be at least 0");
             return this;
         }
 
-        public Builder mipmaps() {
-            this.mipmaps = true;
+        public Builder mipmaps(final boolean mipmaps) {
+            this.mipmaps = mipmaps;
             return this;
         }
     }

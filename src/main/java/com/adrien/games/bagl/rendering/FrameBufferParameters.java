@@ -5,6 +5,8 @@ import com.adrien.games.bagl.rendering.texture.Format;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 /**
  * Parameters for {@link FrameBuffer}
@@ -112,7 +114,8 @@ public final class FrameBufferParameters {
          * @return This
          */
         public Builder depthStencilFormat(final Format depthStencilFormat) {
-            this.depthStencilFormat = depthStencilFormat;
+            this.depthStencilFormat = Objects.requireNonNull(depthStencilFormat,
+                    "depthStencilFormat cannot be null");
             return this;
         }
 
@@ -125,8 +128,8 @@ public final class FrameBufferParameters {
          * @return This
          */
         public Builder colorOutputFormat(final Format... format) {
-            if (format.length > 0) {
-                Collections.addAll(this.colorOutputFormats, format);
+            if (Objects.nonNull(format)) {
+                Stream.of(format).filter(Objects::nonNull).forEach(this.colorOutputFormats::add);
             }
             return this;
         }

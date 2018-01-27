@@ -32,7 +32,8 @@ import java.util.Objects;
  * <br> But if it is set to false element have to be stored as follows :
  * <br> p1x|p1y|p2x|p2y|...pNx|pNy|n1x|n1y|n2x|n2y|...nNx|nNy
  * <p>
- * <br>
+ * At least one {@link VertexElement} must be added
+ * <p>
  * Use example :
  * <pre>
  * final VertexBufferParams params = VertexBufferParams.builder()
@@ -59,7 +60,7 @@ public final class VertexBufferParams {
         this.dataType = builder.dataType;
         this.usage = builder.usage;
         this.elements = Collections.unmodifiableList(AssertUtils.validate(builder.elements, c -> !c.isEmpty(),
-                "A vertex buffer parameters must have elements"));
+                "A vertex buffer parameters must have at least one element"));
     }
 
     public static Builder builder() {
@@ -111,12 +112,12 @@ public final class VertexBufferParams {
         }
 
         public Builder dataType(final DataType dataType) {
-            this.dataType = Objects.requireNonNull(dataType);
+            this.dataType = Objects.requireNonNull(dataType, "dataType cannot bu null");
             return this;
         }
 
         public Builder usage(final BufferUsage usage) {
-            this.usage = Objects.requireNonNull(usage);
+            this.usage = Objects.requireNonNull(usage, "usage cannot be null");
             return this;
         }
 
