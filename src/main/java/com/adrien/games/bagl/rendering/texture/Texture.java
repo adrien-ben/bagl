@@ -1,7 +1,6 @@
 package com.adrien.games.bagl.rendering.texture;
 
 import com.adrien.games.bagl.utils.Image;
-import com.adrien.games.bagl.utils.ImageUtils;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
@@ -80,11 +79,10 @@ public final class Texture {
      * @return A new texture
      */
     public static Texture fromFile(final String path, final TextureParameters.Builder params) {
-        final Image image = ImageUtils.loadImage(path);
-        params.format(Texture.getFormat(image.getChannelCount()));
-        final Texture texture = new Texture(image.getWidth(), image.getHeight(), image.getData(), params.build());
-        ImageUtils.free(image);
-        return texture;
+        try (final Image image = Image.fromFile(path)) {
+            params.format(Texture.getFormat(image.getChannelCount(), image.isHdr()));
+            return new Texture(image.getWidth(), image.getHeight(), image.getData(), params.build());
+        }
     }
 
     private int generateGlTexture(final ByteBuffer pixels) {
@@ -120,16 +118,16 @@ public final class Texture {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, this.parameters.gettWrap().getGlWrap());
     }
 
-    private static Format getFormat(final int channelCount) {
+    private static Format getFormat(final int channelCount, final boolean isHdr) {
         switch (channelCount) {
             case 1:
-                return Format.RED8;
+                return isHdr ? Format.RED16F : Format.RED8;
             case 2:
-                return Format.RG8;
+                return isHdr ? Format.RG16F : Format.RG8;
             case 3:
-                return Format.RGB8;
+                return isHdr ? Format.RGB16F : Format.RGB8;
             case 4:
-                return Format.RGBA8;
+                return isHdr ? Format.RGBA16F : Format.RGBA8;
             default:
                 throw new IllegalArgumentException("A texture cannot be composed of less than 1 or more that 4 channels");
         }

@@ -10,8 +10,6 @@ import com.adrien.games.bagl.rendering.model.Mesh;
 import com.adrien.games.bagl.rendering.model.MeshFactory;
 import com.adrien.games.bagl.rendering.texture.*;
 import com.adrien.games.bagl.rendering.vertex.IndexBuffer;
-import com.adrien.games.bagl.utils.HDRImage;
-import com.adrien.games.bagl.utils.ImageUtils;
 import org.joml.Vector3f;
 
 import static org.lwjgl.opengl.GL11.*;
@@ -88,14 +86,10 @@ public class EnvironmentMapGenerator {
      * @return An {@link Cubemap}
      */
     public Cubemap generateEnvironmentMap(final String filePath) {
-        final HDRImage hdrImage = ImageUtils.loadHDRImage(filePath);
-
-        final TextureParameters textureParams = TextureParameters.builder()
-                .format(Format.RGB16F)
+        final TextureParameters.Builder params = TextureParameters.builder()
                 .sWrap(Wrap.CLAMP_TO_EDGE)
-                .tWrap(Wrap.CLAMP_TO_EDGE)
-                .build();
-        final Texture equirectangularMap = new Texture(hdrImage.getWidth(), hdrImage.getHeight(), hdrImage.getData(), textureParams);
+                .tWrap(Wrap.CLAMP_TO_EDGE);
+        final Texture equirectangularMap = Texture.fromFile(filePath, params);
 
         final TextureParameters cubemapParams = TextureParameters.builder()
                 .format(Format.RGB16F)
@@ -114,7 +108,6 @@ public class EnvironmentMapGenerator {
         Cubemap.unbind();
 
         equirectangularMap.destroy();
-        ImageUtils.free(hdrImage);
         return cubemap;
     }
 
