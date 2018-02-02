@@ -3,7 +3,10 @@ package com.adrien.games.bagl.rendering.model;
 import com.adrien.games.bagl.rendering.BufferUsage;
 import com.adrien.games.bagl.rendering.DataType;
 import com.adrien.games.bagl.rendering.PrimitiveType;
-import com.adrien.games.bagl.rendering.vertex.*;
+import com.adrien.games.bagl.rendering.vertex.IndexBuffer;
+import com.adrien.games.bagl.rendering.vertex.VertexBuffer;
+import com.adrien.games.bagl.rendering.vertex.VertexBufferParams;
+import com.adrien.games.bagl.rendering.vertex.VertexElement;
 import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
@@ -46,11 +49,8 @@ public class MeshFactory {
                     .element(new VertexElement(Mesh.POSITION_INDEX, Mesh.ELEMENTS_PER_POSITION))
                     .element(new VertexElement(Mesh.NORMAL_INDEX, Mesh.ELEMENTS_PER_NORMAL))
                     .build());
-            final VertexArray vArray = new VertexArray();
-            vArray.bind();
-            vArray.attachVertexBuffer(vBuffer);
-            vArray.unbind();
-            return new Mesh(vBuffer, vArray, PrimitiveType.TRIANGLE_STRIP);
+
+            return new Mesh(vBuffer, PrimitiveType.TRIANGLE_STRIP);
         }
     }
 
@@ -75,11 +75,7 @@ public class MeshFactory {
                     .element(new VertexElement(2, 2, true))
                     .build());
 
-            final VertexArray vArray = new VertexArray();
-            vArray.bind();
-            vArray.attachVertexBuffer(vBuffer);
-            vArray.unbind();
-            return new Mesh(vBuffer, vArray, PrimitiveType.TRIANGLE_STRIP);
+            return new Mesh(vBuffer, PrimitiveType.TRIANGLE_STRIP);
         }
     }
 
@@ -121,11 +117,7 @@ public class MeshFactory {
                     .build());
         }
 
-        final VertexArray vArray = new VertexArray();
-        vArray.bind();
-        vArray.attachVertexBuffer(vBuffer);
-        vArray.unbind();
-        return new Mesh(vBuffer, vArray, iBuffer);
+        return new Mesh(vBuffer, iBuffer);
     }
 
     /**
@@ -198,12 +190,7 @@ public class MeshFactory {
                     .build());
         }
 
-        final VertexArray vArray = new VertexArray();
-        vArray.bind();
-        vArray.attachVertexBuffer(vBuffer);
-        vArray.unbind();
-
-        return new Mesh(vBuffer, vArray, iBuffer);
+        return new Mesh(vBuffer, iBuffer);
     }
 
     /**
@@ -249,11 +236,6 @@ public class MeshFactory {
                 .build());
         MemoryUtil.memFree(vertices);
 
-        final VertexArray vArray = new VertexArray();
-        vArray.bind();
-        vArray.attachVertexBuffer(vBuffer);
-        vArray.unbind();
-
         final IntBuffer indices = MemoryUtil.memAllocInt(segments * (rings - 1) * 6 + 6 * segments);
         bufferIt = 0;
         for (int i = 0; i < rings - 1; i++) {
@@ -282,7 +264,7 @@ public class MeshFactory {
         final IndexBuffer iBuffer = new IndexBuffer(indices, BufferUsage.STATIC_DRAW);
         MemoryUtil.memFree(indices);
 
-        return new Mesh(vBuffer, vArray, iBuffer);
+        return new Mesh(vBuffer, iBuffer);
     }
 
     /**
@@ -331,12 +313,7 @@ public class MeshFactory {
             iBuffer = new IndexBuffer(indices, BufferUsage.STATIC_DRAW);
         }
 
-        final VertexArray vArray = new VertexArray();
-        vArray.bind();
-        vArray.attachVertexBuffer(vBuffer);
-        vArray.unbind();
-
-        return new Mesh(vBuffer, vArray, iBuffer);
+        return new Mesh(vBuffer, iBuffer);
     }
 
     /**

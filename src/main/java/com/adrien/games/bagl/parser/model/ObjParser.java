@@ -5,7 +5,10 @@ import com.adrien.games.bagl.rendering.BufferUsage;
 import com.adrien.games.bagl.rendering.Material;
 import com.adrien.games.bagl.rendering.model.Mesh;
 import com.adrien.games.bagl.rendering.model.Model;
-import com.adrien.games.bagl.rendering.vertex.*;
+import com.adrien.games.bagl.rendering.vertex.IndexBuffer;
+import com.adrien.games.bagl.rendering.vertex.VertexBuffer;
+import com.adrien.games.bagl.rendering.vertex.VertexBufferParams;
+import com.adrien.games.bagl.rendering.vertex.VertexElement;
 import com.adrien.games.bagl.utils.Tuple2;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -247,14 +250,9 @@ public class ObjParser implements ModelParser {
             }
 
             final VertexBuffer vBuffer = this.generateVertexBuffer();
-            final VertexArray vArray = new VertexArray();
-            vArray.bind();
-            vArray.attachVertexBuffer(vBuffer);
-            vArray.unbind();
-
             final IndexBuffer indexBuffer = this.generateIndexBuffer();
 
-            return new Tuple2<>(new Mesh(vBuffer, vArray, indexBuffer), this.material);
+            return new Tuple2<>(new Mesh(vBuffer, indexBuffer), this.material);
         }
 
         private IndexBuffer generateIndexBuffer() {

@@ -5,6 +5,8 @@ import com.adrien.games.bagl.rendering.vertex.IndexBuffer;
 import com.adrien.games.bagl.rendering.vertex.VertexArray;
 import com.adrien.games.bagl.rendering.vertex.VertexBuffer;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -25,44 +27,58 @@ public class Mesh {
     public static final int TANGENT_INDEX = 3;
     public static final int ELEMENTS_PER_TANGENT = 3;
 
-    private final VertexBuffer vBuffer;
+    private final List<VertexBuffer> vBuffer;
     private final VertexArray vArray;
     private final IndexBuffer iBuffer;
     private final PrimitiveType primitiveType;
+    private final int vertexCount;
 
     /**
      * Construct a mesh
      *
      * @param vBuffer The vertex buffer
-     * @param vArray  The vertex array
      * @param iBuffer The index buffer
      */
-    public Mesh(final VertexBuffer vBuffer, final VertexArray vArray, final IndexBuffer iBuffer) {
-        this.vBuffer = vBuffer;
-        this.vArray = vArray;
+    public Mesh(final VertexBuffer vBuffer, final IndexBuffer iBuffer) {
+        this.vBuffer = Collections.singletonList(vBuffer);
         this.iBuffer = iBuffer;
+        this.vArray = this.generateVertexArray();
         this.primitiveType = PrimitiveType.TRIANGLES;
+        this.vertexCount = vBuffer.getVertexCount();
     }
 
     /**
      * Construct a mesh
      *
      * @param vBuffer       The vertex buffer
-     * @param vArray        The vertex array
      * @param primitiveType The type of primitives to use when rendering
      */
-    public Mesh(final VertexBuffer vBuffer, final VertexArray vArray, final PrimitiveType primitiveType) {
-        this.vBuffer = vBuffer;
-        this.vArray = vArray;
+    public Mesh(final VertexBuffer vBuffer, final PrimitiveType primitiveType) {
+        this.vBuffer = Collections.singletonList(vBuffer);
         this.iBuffer = null;
+        this.vArray = this.generateVertexArray();
         this.primitiveType = primitiveType;
+        this.vertexCount = vBuffer.getVertexCount();
+    }
+
+    /**
+     * Generate a vertex array from the vertex buffers of the mesh
+     *
+     * @return The generate vertex array
+     */
+    private VertexArray generateVertexArray() {
+        final VertexArray vArray = new VertexArray();
+        vArray.bind();
+        this.vBuffer.forEach(vArray::attachVertexBuffer);
+        vArray.unbind();
+        return vArray;
     }
 
     /**
      * Release resources
      */
     public void destroy() {
-        this.vBuffer.destroy();
+        this.vBuffer.forEach(VertexBuffer::destroy);
         this.vArray.destroy();
         if (Objects.nonNull(this.iBuffer)) {
             this.iBuffer.destroy();
@@ -82,6 +98,6 @@ public class Mesh {
     }
 
     public int getVertexCount() {
-        return this.vBuffer.getVertexCount();
+        return this.vertexCount;
     }
 }
