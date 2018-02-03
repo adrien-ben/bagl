@@ -100,8 +100,8 @@ public class GltfLoader {
         }
 
         final ByteBuffer indices = byteBuffer.get();
-        // TODO: not this -> indices.asShortBuffer()
-        final IndexBuffer indexBuffer = new IndexBuffer(indices.asShortBuffer(), BufferUsage.STATIC_DRAW);
+        final DataType dataType = this.mapDataType(accessor.getComponentType());
+        final IndexBuffer indexBuffer = new IndexBuffer(indices, dataType, BufferUsage.STATIC_DRAW);
         MemoryUtil.memFree(indices);
         return indexBuffer;
     }
@@ -126,8 +126,7 @@ public class GltfLoader {
                 .dataType(this.mapDataType(accessor.getComponentType()))
                 .element(new VertexElement(channel, accessor.getType().getComponentCount(), accessor.getNormalized()));
 
-        // TODO: not this -> vertices.asFloatBuffer()
-        final VertexBuffer vertexBuffer = new VertexBuffer(vertices.asFloatBuffer(), builder.build());
+        final VertexBuffer vertexBuffer = new VertexBuffer(vertices, builder.build());
         MemoryUtil.memFree(vertices);
         return Optional.of(vertexBuffer);
     }
@@ -255,8 +254,14 @@ public class GltfLoader {
         final com.adrien.tools.gltf.Color emissive = gltfMaterial.getEmissiveFactor();
         final float metallic = gltfMaterial.getPbrMetallicRoughness().getMetallicFactor();
         final float roughness = gltfMaterial.getPbrMetallicRoughness().getRoughnessFactor();
-        final Texture diffuseTexture = this.mapTexture(gltfMaterial.getPbrMetallicRoughness().getBaseColorTexture());
-        final Texture emissiveTexture = this.mapTexture(gltfMaterial.getEmissiveTexture());
+        final Texture diffuseTexture = Optional.ofNullable(gltfMaterial.getPbrMetallicRoughness().getBaseColorTexture())
+                .map(TextureInfo::getTexture).map(this::mapTexture).orElse(null);
+        final Texture emissiveTexture = Optional.ofNullable(gltfMaterial.getEmissiveTexture())
+                .map(TextureInfo::getTexture).map(this::mapTexture).orElse(null);
+        final Texture pbrTexture = Optional.ofNullable(gltfMaterial.getPbrMetallicRoughness().getMetallicRoughnessTexture())
+                .map(TextureInfo::getTexture).map(this::mapTexture).orElse(null);
+        final Texture normalMap = Optional.ofNullable(gltfMaterial.getNormalTexture()).map(NormalTextureInfo::getTexture)
+                .map(this::mapTexture).orElse(null);
 
         return Material.builder()
                 .diffuse(new Color(color.getR(), color.getG(), color.getB(), color.getA()))
@@ -265,7 +270,8 @@ public class GltfLoader {
                 .metallic(metallic)
                 .diffuse(diffuseTexture)
                 .emissive(emissiveTexture)
-
+                .orm(pbrTexture)
+                .normals(normalMap)
                 .build();
     }
 
@@ -275,15 +281,15 @@ public class GltfLoader {
      * @param texture The texture to map
      * @return A new texture or null
      */
-    private Texture mapTexture(final TextureInfo texture) {
-        if (Objects.isNull(texture) || Objects.isNull(texture.getTexture().getSource())) {
+    private Texture mapTexture(final com.adrien.tools.gltf.Texture texture) {
+        if (Objects.isNull(texture) || Objects.isNull(texture.getSource())) {
             return null;
         }
 
-        final String path = Paths.get(this.directory, texture.getTexture().getSource().getUri()).toString();
+        final String path = Paths.get(this.directory, texture.getSource().getUri()).toString();
         System.out.println(path);
 
-        final Sampler sampler = texture.getTexture().getSampler();
+        final Sampler sampler = texture.getSampler();
 
         final TextureParameters.Builder params = TextureParameters.builder();
         params.mipmaps(true);
