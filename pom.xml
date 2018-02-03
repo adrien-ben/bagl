@@ -13,6 +13,7 @@
         <java.version>1.9</java.version>
         <lwjgl.version>3.1.5</lwjgl.version>
         <joml.version>1.9.8</joml.version>
+        <gltf-loader.version>1.0.0-SNAPSHOT</gltf-loader.version>
         <log4j.version>2.8</log4j.version>
         <commons.lang3.version>3.5</commons.lang3.version>
         <junit.version>4.12</junit.version>
@@ -101,6 +102,12 @@
             <groupId>org.joml</groupId>
             <artifactId>joml</artifactId>
             <version>${joml.version}</version>
+        </dependency>
+        <!-- gltf-loader -->
+        <dependency>
+            <groupId>com.adrien.tools</groupId>
+            <artifactId>gltf-loader</artifactId>
+            <version>${gltf-loader.version}</version>
         </dependency>
         <!-- LOG4J dependencies -->
         <dependency>
@@ -197,5 +204,15 @@
             </properties>
         </profile>
     </profiles>
+
+    <repositories>
+        <repository>
+            <id>jcenter</id>
+            <url>http://jcenter.bintray.com</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
 </project>

@@ -27,7 +27,7 @@ public class Mesh {
     public static final int TANGENT_INDEX = 3;
     public static final int ELEMENTS_PER_TANGENT = 3;
 
-    private final List<VertexBuffer> vBuffer;
+    private final List<VertexBuffer> vBuffers;
     private final VertexArray vArray;
     private final IndexBuffer iBuffer;
     private final PrimitiveType primitiveType;
@@ -40,7 +40,7 @@ public class Mesh {
      * @param iBuffer The index buffer
      */
     public Mesh(final VertexBuffer vBuffer, final IndexBuffer iBuffer) {
-        this.vBuffer = Collections.singletonList(vBuffer);
+        this.vBuffers = Collections.singletonList(vBuffer);
         this.iBuffer = iBuffer;
         this.vArray = this.generateVertexArray();
         this.primitiveType = PrimitiveType.TRIANGLES;
@@ -54,11 +54,26 @@ public class Mesh {
      * @param primitiveType The type of primitives to use when rendering
      */
     public Mesh(final VertexBuffer vBuffer, final PrimitiveType primitiveType) {
-        this.vBuffer = Collections.singletonList(vBuffer);
+        this.vBuffers = Collections.singletonList(vBuffer);
         this.iBuffer = null;
         this.vArray = this.generateVertexArray();
         this.primitiveType = primitiveType;
         this.vertexCount = vBuffer.getVertexCount();
+    }
+
+    /**
+     * Construct a mesh
+     *
+     * @param vBuffers      The vertex buffers
+     * @param iBuffer       The index buffer
+     * @param primitiveType The type of primitives to use when rendering
+     */
+    public Mesh(final List<VertexBuffer> vBuffers, final IndexBuffer iBuffer, final PrimitiveType primitiveType) {
+        this.vBuffers = vBuffers;
+        this.iBuffer = iBuffer;
+        this.vArray = this.generateVertexArray();
+        this.primitiveType = primitiveType;
+        this.vertexCount = this.vBuffers.get(0).getVertexCount();
     }
 
     /**
@@ -69,7 +84,7 @@ public class Mesh {
     private VertexArray generateVertexArray() {
         final VertexArray vArray = new VertexArray();
         vArray.bind();
-        this.vBuffer.forEach(vArray::attachVertexBuffer);
+        this.vBuffers.forEach(vArray::attachVertexBuffer);
         vArray.unbind();
         return vArray;
     }
@@ -78,7 +93,7 @@ public class Mesh {
      * Release resources
      */
     public void destroy() {
-        this.vBuffer.forEach(VertexBuffer::destroy);
+        this.vBuffers.forEach(VertexBuffer::destroy);
         this.vArray.destroy();
         if (Objects.nonNull(this.iBuffer)) {
             this.iBuffer.destroy();

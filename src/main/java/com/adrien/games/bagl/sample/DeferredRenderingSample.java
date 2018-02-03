@@ -18,6 +18,7 @@ import com.adrien.games.bagl.rendering.model.ModelFactory;
 import com.adrien.games.bagl.rendering.text.Font;
 import com.adrien.games.bagl.rendering.text.TextRenderer;
 import com.adrien.games.bagl.rendering.texture.Cubemap;
+import com.adrien.games.bagl.resource.GltfLoader;
 import com.adrien.games.bagl.scene.GameObject;
 import com.adrien.games.bagl.scene.Scene;
 import com.adrien.games.bagl.scene.components.*;
@@ -67,6 +68,8 @@ public class DeferredRenderingSample {
         private Mesh pointBulb;
         private Mesh spotBulb;
 
+        private Model gltf;
+
         private Spritebatch spritebatch;
 
         private DisplayMode displayMode = DisplayMode.SCENE;
@@ -96,6 +99,7 @@ public class DeferredRenderingSample {
             this.spritebatch = new Spritebatch(1024, this.width, this.height);
         }
 
+
         @Override
         public void destroy() {
             this.textRenderer.destroy();
@@ -110,6 +114,7 @@ public class DeferredRenderingSample {
             this.sphere.destroy();
             this.pointBulb.destroy();
             this.spotBulb.destroy();
+            this.gltf.destroy();
         }
 
         private void loadMeshes() {
@@ -125,6 +130,7 @@ public class DeferredRenderingSample {
             this.sphere = ModelFactory.createSphere(0.5f, 25, 25, gold);
             this.pointBulb = MeshFactory.createSphere(0.1f, 8, 8);
             this.spotBulb = MeshFactory.createCylinder(0.1f, 0.065f, 0.2f, 12);
+            this.gltf = new GltfLoader().load(FileUtils.getResourceAbsolutePath("/models/box/Box.gltf"));
         }
 
         private void initScene() {
@@ -144,6 +150,10 @@ public class DeferredRenderingSample {
             final GameObject sphereObj = floorObj.createChild("sphere");
             sphereObj.addComponent(new ModelComponent(this.sphere));
             sphereObj.getLocalTransform().setTranslation(new Vector3f(1.5f, 0.6f, 0f));
+
+            final GameObject gltfObj = floorObj.createChild("gltf");
+            gltfObj.addComponent(new ModelComponent(this.gltf));
+            gltfObj.getLocalTransform().setTranslation(new Vector3f(-1.5f, 0.5f, 0f));
 
             this.setUpLights();
         }
