@@ -32,7 +32,7 @@ public class VertexBuffer {
     public VertexBuffer(final DoubleBuffer buffer, final VertexBufferParams params) {
         this.checkType(params.getDataType(), DataType.DOUBLE, "DoubleBuffer is only compatible with DataType.DOUBLE");
 
-        this.vertexCount = this.checkBufferConsistenceWithParams(buffer, params);
+        this.vertexCount = this.checkBufferConsistenceWithParams(buffer, DataType.DOUBLE, params);
         this.bufferSize = buffer.capacity();
         this.stride = this.computeStride(params);
         this.params = params;
@@ -54,7 +54,7 @@ public class VertexBuffer {
     public VertexBuffer(final FloatBuffer buffer, final VertexBufferParams params) {
         this.checkType(params.getDataType(), DataType.FLOAT, "FloatBuffer is only compatible with DataType.FLOAT");
 
-        this.vertexCount = this.checkBufferConsistenceWithParams(buffer, params);
+        this.vertexCount = this.checkBufferConsistenceWithParams(buffer, DataType.FLOAT, params);
         this.bufferSize = buffer.capacity();
         this.stride = this.computeStride(params);
         this.params = params;
@@ -76,7 +76,7 @@ public class VertexBuffer {
     public VertexBuffer(final IntBuffer buffer, final VertexBufferParams params) {
         this.checkType(params.getDataType(), DataType.INT, "IntBuffer is only compatible with DataType.INT");
 
-        this.vertexCount = this.checkBufferConsistenceWithParams(buffer, params);
+        this.vertexCount = this.checkBufferConsistenceWithParams(buffer, DataType.INT, params);
         this.bufferSize = buffer.capacity();
         this.stride = this.computeStride(params);
         this.params = params;
@@ -98,7 +98,7 @@ public class VertexBuffer {
     public VertexBuffer(final ShortBuffer buffer, final VertexBufferParams params) {
         this.checkType(params.getDataType(), DataType.SHORT, "ShortBuffer is only compatible with DataType.SHORT");
 
-        this.vertexCount = this.checkBufferConsistenceWithParams(buffer, params);
+        this.vertexCount = this.checkBufferConsistenceWithParams(buffer, DataType.SHORT, params);
         this.bufferSize = buffer.capacity();
         this.stride = this.computeStride(params);
         this.params = params;
@@ -112,16 +112,14 @@ public class VertexBuffer {
     /**
      * Construct a vertex buffer
      * <p>
-     * dataType must be {@link DataType#BYTE}
+     * Unlike other constructor this one allows and {@code dataType}.
      *
      * @param buffer The vertex data
      * @param params The buffer parameters
      */
     public VertexBuffer(final ByteBuffer buffer, final VertexBufferParams params) {
-        this.checkType(params.getDataType(), DataType.BYTE, "ByteBuffer is only compatible with DataType.BYTE");
-
-        this.vertexCount = this.checkBufferConsistenceWithParams(buffer, params);
-        this.bufferSize = buffer.capacity();
+        this.vertexCount = this.checkBufferConsistenceWithParams(buffer, DataType.BYTE, params);
+        this.bufferSize = buffer.capacity() / params.getDataType().getSize();
         this.stride = this.computeStride(params);
         this.params = params;
 
@@ -164,12 +162,17 @@ public class VertexBuffer {
     /**
      * Check that buffer size is consistent with buffer parameters
      *
-     * @param buffer The buffer to check
-     * @param params The parameters of the buffer
+     * @param buffer         The buffer to check
+     * @param bufferDataType The data type of elements in the buffer
+     * @param params         The parameters of the buffer
      * @return The number of vertex contained in the buffer
      */
-    private int checkBufferConsistenceWithParams(final Buffer buffer, final VertexBufferParams params) {
-        final int capacity = buffer.capacity();
+    private int checkBufferConsistenceWithParams(
+            final Buffer buffer,
+            final DataType bufferDataType,
+            final VertexBufferParams params
+    ) {
+        final int capacity = buffer.capacity() / (params.getDataType().getSize() / bufferDataType.getSize());
         final int vertexSize = params.getElements().stream().mapToInt(VertexElement::getSize).sum();
         if (capacity % vertexSize != 0) {
             throw new EngineException("The number of elements in the buffer (" + capacity + ") is incorrect. It should be a multiple of "
@@ -264,8 +267,6 @@ public class VertexBuffer {
      */
     public void update(final ByteBuffer buffer) {
         this.checkIsBound("You cannot update a vertex buffer which is not bound");
-        this.checkType(params.getDataType(), DataType.BYTE, "ByteBuffer is only compatible with DataType.BYTE. Current data type is "
-                + this.params.getDataType());
         this.checkUpdateBufferSize(buffer);
         GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, buffer);
     }
@@ -277,7 +278,7 @@ public class VertexBuffer {
      * @param buffer The update buffer
      */
     private void checkUpdateBufferSize(final Buffer buffer) {
-        if (buffer.capacity() > this.bufferSize) {
+        if (buffer.capacity() / this.params.getDataType().getSize() > this.bufferSize) {
             throw new EngineException("The buffer has too much element. Max size is " + this.bufferSize);
         }
     }
