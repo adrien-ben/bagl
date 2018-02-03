@@ -41,8 +41,22 @@ public class IndexBuffer {
     }
 
     public IndexBuffer(final ByteBuffer buffer, final BufferUsage usage) {
-        this.dataType = DataType.UNSIGNED_BYTE;
-        this.size = buffer.capacity();
+        this(buffer, DataType.UNSIGNED_BYTE, usage);
+    }
+
+    /**
+     * Construct a new index buffer
+     * <p>
+     * Indices are stored in a byte buffer but the actual type of the indices
+     * can be any {@link DataType}
+     *
+     * @param buffer   The buffer containing indices data
+     * @param dataType The data type of each index
+     * @param usage    The buffer usage
+     */
+    public IndexBuffer(final ByteBuffer buffer, final DataType dataType, final BufferUsage usage) {
+        this.dataType = dataType;
+        this.size = buffer.capacity() / dataType.getSize();
         this.iboId = GL15.glGenBuffers();
         this.bind(this.iboId);
         GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, buffer, usage.getGlCode());
