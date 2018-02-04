@@ -11,7 +11,7 @@ baGL is an OpenGL framework that I use for educational purpose. It uses [LWJGL 3
 - Post processing (bloom, gamma correction and tone mapping)
 - Lights (directional lights, point lights and spot lights)
 - HDR environment maps (from .hdr equirectangular images)
-- Simple .obj and .mtl loaders
+- Partial [glTF 2.0](https://github.com/KhronosGroup/glTF) support
 - 3D Particles using Geometry Shader
 - Sprite batching
 - Scalable text using Signed Distance Field fonts. See [Valve's paper](http://www.valvesoftware.com/publications/2007/SIGGRAPH2007_AlphaTestedMagnification.pdf)
@@ -48,12 +48,16 @@ We use the roughness/metallic workflow. The materials are described as follows :
 - Diffuse color (Color or Texture)
 - Roughness [0.0..1.0]
 - Metallic [0.0..1.0]
-- ORM (Occlusion/Roughness/Metalness) map (Texture) 
+- ORM (Occlusion/Roughness/Metalness) map (Texture, Optional) 
 - Normal map (Texture, Optional)
 - Emissive color (Color or Texture)
 
 For ORM maps, roughness must be put in the green channel and metalness in the blue channel.
 Ambient occlusion maps are not yet supported but when they are, data will be read from the red channel of the same map.
+
+### Models
+
+Partial support of glTF 2.0 is implemented. For now only static mesh rendering are handle. Sparse accessors are not supported. 
 
 ### Lights
 
@@ -71,10 +75,12 @@ Basic shadow mapping is implemented. It only works for one directional light (Th
     - Sprites in 3D environment (debug icons, ...)
     - Area lights (sphere and tubes)
     - Fixing shadows
+    - Some form of anti-aliasing
+    - UI (third party ?)
 - Assets management
-- Replace the custom obj loader 
 - OpenGL state manager
 - Composed shaders (#import library.glsl)
+- Complete glTF 2.0 support
 - An overall review, some refactoring and code cleanup
 - And much more... :)
 

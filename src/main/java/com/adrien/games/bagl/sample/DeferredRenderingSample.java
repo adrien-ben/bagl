@@ -18,7 +18,6 @@ import com.adrien.games.bagl.rendering.model.ModelFactory;
 import com.adrien.games.bagl.rendering.text.Font;
 import com.adrien.games.bagl.rendering.text.TextRenderer;
 import com.adrien.games.bagl.rendering.texture.Cubemap;
-import com.adrien.games.bagl.resource.GltfLoader;
 import com.adrien.games.bagl.scene.GameObject;
 import com.adrien.games.bagl.scene.Scene;
 import com.adrien.games.bagl.scene.components.*;
@@ -63,8 +62,6 @@ public class DeferredRenderingSample {
         private Cubemap irradianceMap;
         private Cubemap preFilteredMap;
         private Model floor;
-        private Model cube;
-        private Model sphere;
         private Mesh pointBulb;
         private Mesh spotBulb;
 
@@ -99,7 +96,6 @@ public class DeferredRenderingSample {
             this.spritebatch = new Spritebatch(1024, this.width, this.height);
         }
 
-
         @Override
         public void destroy() {
             this.textRenderer.destroy();
@@ -110,27 +106,21 @@ public class DeferredRenderingSample {
             this.irradianceMap.destroy();
             this.preFilteredMap.destroy();
             this.floor.destroy();
-            this.cube.destroy();
-            this.sphere.destroy();
             this.pointBulb.destroy();
             this.spotBulb.destroy();
             this.boomBox.destroy();
         }
 
         private void loadMeshes() {
-            this.environmentMap = this.environmentMapGenerator.generateEnvironmentMap(FileUtils.getResourceAbsolutePath("/envmaps/flat.hdr"));
+            this.environmentMap = this.environmentMapGenerator.generateEnvironmentMap(FileUtils.getResourceAbsolutePath("/envmaps/beach.hdr"));
 //            this.environmentMap = this.environmentMapGenerator.generateEnvironmentMap("D:/Images/HDRI/lookout.hdr");
             this.irradianceMap = this.environmentMapGenerator.generateIrradianceMap(this.environmentMap);
             this.preFilteredMap = this.environmentMapGenerator.generatePreFilteredMap(this.environmentMap);
 
-            this.floor = ModelFactory.fromFile(FileUtils.getResourceAbsolutePath("/models/floor/floor.obj"));
-            this.cube = ModelFactory.fromFile(FileUtils.getResourceAbsolutePath("/models/cube/cube.obj"));
-//            this.cube = ModelFactory.fromFile("D:/Documents/3D Models/gun/gun.obj");
-            final Material gold = Material.builder().diffuse(Color.YELLOW).metallic(1f).roughness(0.1f).build();
-            this.sphere = ModelFactory.createSphere(0.5f, 25, 25, gold);
+            this.floor = ModelFactory.fromFile(FileUtils.getResourceAbsolutePath("/models/floor/floor.gltf"));
             this.pointBulb = MeshFactory.createSphere(0.1f, 8, 8);
             this.spotBulb = MeshFactory.createCylinder(0.1f, 0.065f, 0.2f, 12);
-            this.boomBox = new GltfLoader().load(FileUtils.getResourceAbsolutePath("/models/BoomBox/BoomBox.gltf"));
+            this.boomBox = ModelFactory.fromFile(FileUtils.getResourceAbsolutePath("/models/BoomBox/BoomBox.gltf"));
         }
 
         private void initScene() {
@@ -141,20 +131,13 @@ public class DeferredRenderingSample {
 
             final GameObject floorObj = this.scene.getRoot().createChild("floor");
             floorObj.addComponent(new ModelComponent(this.floor));
-            floorObj.getLocalTransform().setScale(new Vector3f(2f, 2f, 2f));
-
-            final GameObject cubeObj = floorObj.createChild("cube");
-            cubeObj.addComponent(new ModelComponent(this.cube));
-            cubeObj.getLocalTransform().setTranslation(new Vector3f(0f, 0.5f, 0f));
-
-            final GameObject sphereObj = floorObj.createChild("sphere");
-            sphereObj.addComponent(new ModelComponent(this.sphere));
-            sphereObj.getLocalTransform().setTranslation(new Vector3f(1.5f, 0.6f, 0f));
+            floorObj.getLocalTransform().setScale(new Vector3f(10f, 10f, 10f));
 
             final GameObject gltfObj = floorObj.createChild("gltf");
             gltfObj.addComponent(new ModelComponent(this.boomBox));
-            gltfObj.getLocalTransform().setTranslation(new Vector3f(-1.5f, 0.5f, 0f))
-                    .setScale(new Vector3f(20f, 20f, 20f));
+            gltfObj.getLocalTransform().setTranslation(new Vector3f(0f, 0.1f, 0f))
+                    .setRotation(new Quaternionf().rotateY((float) Math.PI))
+                    .setScale(new Vector3f(10f, 10f, 10f));
 
             this.setUpLights();
         }
@@ -164,7 +147,7 @@ public class DeferredRenderingSample {
             sunObj.getLocalTransform().setRotation(new Quaternionf().rotation((float) Math.toRadians(45f), (float) Math.toRadians(45f), 0));
             sunObj.addComponent(new DirectionalLightComponent(new DirectionalLight(0.8f, Color.WHITE, new Vector3f())));
 
-            final GameObject parent = this.scene.getObjectById("floor").orElseThrow(() -> new EngineException("No floor found in the scene"));
+            final GameObject parent = this.scene.getRoot();
 
             final PointLight pointLight0 = new PointLight(8f, Color.GREEN, new Vector3f(), 3f);
             this.addPointLight(parent, new Vector3f(4f, 0.5f, 2f), pointLight0, 0);

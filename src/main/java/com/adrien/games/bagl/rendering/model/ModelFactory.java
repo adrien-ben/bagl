@@ -1,12 +1,22 @@
 package com.adrien.games.bagl.rendering.model;
 
-import com.adrien.games.bagl.parser.model.ModelParser;
-import com.adrien.games.bagl.parser.model.ObjParser;
 import com.adrien.games.bagl.rendering.Material;
+import com.adrien.games.bagl.resource.GltfLoader;
 
-public class ModelFactory {
+/**
+ * {@link Model} factory
+ *
+ * @author adrien
+ */
+public final class ModelFactory {
 
-    private static final ModelParser parser = new ObjParser();
+    private static final GltfLoader loader = new GltfLoader();
+
+    /**
+     * Private constructor to prevent instantiation
+     */
+    private ModelFactory() {
+    }
 
     /**
      * Load a model from a file
@@ -15,7 +25,7 @@ public class ModelFactory {
      * @return A {@link Model}
      */
     public static Model fromFile(final String filePath) {
-        return ModelFactory.parser.parse(filePath);
+        return ModelFactory.loader.load(filePath);
     }
 
     /**
