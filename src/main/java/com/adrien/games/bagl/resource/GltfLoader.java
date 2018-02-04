@@ -1,6 +1,7 @@
 package com.adrien.games.bagl.resource;
 
 import com.adrien.games.bagl.core.Color;
+import com.adrien.games.bagl.core.Configuration;
 import com.adrien.games.bagl.rendering.BufferUsage;
 import com.adrien.games.bagl.rendering.DataType;
 import com.adrien.games.bagl.rendering.Material;
@@ -300,6 +301,7 @@ public class GltfLoader {
                 || minFilter.map(Filter::isMipmap).orElse(false));
         params.sWrap(this.mapWrap(sampler.getWrapS()));
         params.tWrap(this.mapWrap(sampler.getWrapT()));
+        params.anisotropic(Configuration.getInstance().getAnisotropicLevel());
 
         return Texture.fromFile(path, params);
     }
