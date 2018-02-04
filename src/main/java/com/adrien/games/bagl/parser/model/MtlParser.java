@@ -156,7 +156,7 @@ public class MtlParser {
                 .mipmaps(true)
                 .minFilter(Filter.MIPMAP_LINEAR_LINEAR)
                 .anisotropic(Configuration.getInstance().getAnisotropicLevel());
-        return Texture.fromFile(texturePath, params);
+        return Texture.fromFile(texturePath, true, params);
     }
 
     private void checkCurrentMaterial() {

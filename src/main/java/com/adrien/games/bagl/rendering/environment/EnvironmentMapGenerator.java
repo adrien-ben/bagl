@@ -89,7 +89,7 @@ public class EnvironmentMapGenerator {
         final TextureParameters.Builder params = TextureParameters.builder()
                 .sWrap(Wrap.CLAMP_TO_EDGE)
                 .tWrap(Wrap.CLAMP_TO_EDGE);
-        final Texture equirectangularMap = Texture.fromFile(filePath, params);
+        final Texture equirectangularMap = Texture.fromFile(filePath, true, params);
 
         final TextureParameters cubemapParams = TextureParameters.builder()
                 .format(Format.RGB16F)

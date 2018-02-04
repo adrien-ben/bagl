@@ -34,7 +34,7 @@ public class SpritebatchSample {
 
             this.spritebatch = new Spritebatch(1024, this.width, this.height);
 
-            this.texture = Texture.fromFile(FileUtils.getResourceAbsolutePath("/default.png"), TextureParameters.builder());
+            this.texture = Texture.fromFile(FileUtils.getResourceAbsolutePath("/default.png"), true, TextureParameters.builder());
 
             Random r = new Random();
             for (int i = 0; i < SPRITE_COUNT; i++) {

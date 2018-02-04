@@ -62,7 +62,7 @@ public class Font {
         }
 
         this.bitmap = Texture.fromFile(file.getParentFile().getAbsolutePath() + File.separator + this.atlasName,
-                TextureParameters.builder());
+                true, TextureParameters.builder());
     }
 
     private void parseHeader(BufferedReader reader) throws IOException, ParseException {

@@ -9,6 +9,12 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.Objects;
 
+/**
+ * This class represents a image
+ * <p>
+ * An image has a width, an height, a number of channels and can be
+ * flagged as HDR.
+ */
 public class Image implements AutoCloseable {
 
     private final int width;
@@ -25,13 +31,32 @@ public class Image implements AutoCloseable {
         this.data = data;
     }
 
+    /**
+     * Load an image from a file
+     *
+     * @param filePath The path of the file
+     * @return A new image
+     */
     public static Image fromFile(final String filePath) {
+        return Image.fromFile(filePath, false);
+    }
+
+    /**
+     * Load an image from a file
+     * <p>
+     * You can choose to flip the image vertically
+     *
+     * @param filePath       The path to the image
+     * @param flipVertically Should the image be flipped vertically
+     * @return A new image
+     */
+    public static Image fromFile(final String filePath, final boolean flipVertically) {
         try (final MemoryStack stack = MemoryStack.stackPush()) {
             final IntBuffer width = stack.mallocInt(1);
             final IntBuffer height = stack.mallocInt(1);
             final IntBuffer comp = stack.mallocInt(1);
 
-            STBImage.stbi_set_flip_vertically_on_load(true);
+            STBImage.stbi_set_flip_vertically_on_load(flipVertically);
 
             final boolean isHdr = STBImage.stbi_is_hdr(filePath);
             final FloatBuffer data = isHdr

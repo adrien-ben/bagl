@@ -79,7 +79,22 @@ public final class Texture {
      * @return A new texture
      */
     public static Texture fromFile(final String path, final TextureParameters.Builder params) {
-        try (final Image image = Image.fromFile(path)) {
+        return Texture.fromFile(path, false, params);
+    }
+
+    /**
+     * Create a texture from an image file
+     * <p>
+     * Here we expect the builder as parameters instead of the built parameters
+     * because the texture format will be inferred from the image file format
+     *
+     * @param path           The path to the image file
+     * @param flipVertically Should the image be flipped vertically
+     * @param params         The parameters builder
+     * @return A new texture
+     */
+    public static Texture fromFile(final String path, final boolean flipVertically, final TextureParameters.Builder params) {
+        try (final Image image = Image.fromFile(path, flipVertically)) {
             params.format(Texture.getFormat(image.getChannelCount(), image.isHdr()));
             return new Texture(image.getWidth(), image.getHeight(), image.getData(), params.build());
         }
