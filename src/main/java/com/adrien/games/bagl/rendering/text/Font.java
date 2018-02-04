@@ -1,6 +1,6 @@
 package com.adrien.games.bagl.rendering.text;
 
-import com.adrien.games.bagl.core.EngineException;
+import com.adrien.games.bagl.exception.EngineException;
 import com.adrien.games.bagl.exception.ParseException;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.texture.TextureParameters;

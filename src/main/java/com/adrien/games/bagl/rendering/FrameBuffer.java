@@ -2,7 +2,7 @@ package com.adrien.games.bagl.rendering;
 
 import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.core.Engine;
-import com.adrien.games.bagl.core.EngineException;
+import com.adrien.games.bagl.exception.EngineException;
 import com.adrien.games.bagl.rendering.texture.Format;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.texture.TextureParameters;

@@ -1,6 +1,6 @@
 package com.adrien.games.bagl.utils;
 
-import com.adrien.games.bagl.core.EngineException;
+import com.adrien.games.bagl.exception.EngineException;
 
 import java.io.*;
 import java.nio.ByteBuffer;

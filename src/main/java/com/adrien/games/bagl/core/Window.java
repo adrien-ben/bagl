@@ -1,5 +1,6 @@
 package com.adrien.games.bagl.core;
 
+import com.adrien.games.bagl.exception.EngineException;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;

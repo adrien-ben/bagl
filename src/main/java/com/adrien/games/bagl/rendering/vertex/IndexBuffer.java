@@ -1,6 +1,6 @@
 package com.adrien.games.bagl.rendering.vertex;
 
-import com.adrien.games.bagl.core.EngineException;
+import com.adrien.games.bagl.exception.EngineException;
 import com.adrien.games.bagl.rendering.BufferUsage;
 import com.adrien.games.bagl.rendering.DataType;
 import org.lwjgl.opengl.GL15;

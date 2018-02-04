@@ -1,7 +1,7 @@
 package com.adrien.games.bagl.scene;
 
-import com.adrien.games.bagl.core.EngineException;
 import com.adrien.games.bagl.core.Time;
+import com.adrien.games.bagl.exception.EngineException;
 
 import java.util.*;
 import java.util.stream.Stream;

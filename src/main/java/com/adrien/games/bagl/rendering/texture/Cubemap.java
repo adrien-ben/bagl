@@ -1,6 +1,6 @@
 package com.adrien.games.bagl.rendering.texture;
 
-import com.adrien.games.bagl.core.EngineException;
+import com.adrien.games.bagl.exception.EngineException;
 import org.lwjgl.opengl.GL30;
 
 import java.nio.ByteBuffer;

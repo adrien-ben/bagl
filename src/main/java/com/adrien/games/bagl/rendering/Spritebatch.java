@@ -1,8 +1,8 @@
 package com.adrien.games.bagl.rendering;
 
 import com.adrien.games.bagl.core.Color;
-import com.adrien.games.bagl.core.EngineException;
 import com.adrien.games.bagl.core.camera.Camera2D;
+import com.adrien.games.bagl.exception.EngineException;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.texture.TextureRegion;
 import com.adrien.games.bagl.rendering.vertex.*;

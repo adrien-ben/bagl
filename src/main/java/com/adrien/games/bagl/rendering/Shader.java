@@ -1,7 +1,7 @@
 package com.adrien.games.bagl.rendering;
 
 import com.adrien.games.bagl.core.Color;
-import com.adrien.games.bagl.core.EngineException;
+import com.adrien.games.bagl.exception.EngineException;
 import com.adrien.games.bagl.resource.ShaderLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

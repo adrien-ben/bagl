@@ -1,8 +1,8 @@
 package com.adrien.games.bagl.rendering.environment;
 
 import com.adrien.games.bagl.core.Configuration;
-import com.adrien.games.bagl.core.EngineException;
 import com.adrien.games.bagl.core.camera.Camera;
+import com.adrien.games.bagl.exception.EngineException;
 import com.adrien.games.bagl.rendering.FrameBuffer;
 import com.adrien.games.bagl.rendering.FrameBufferParameters;
 import com.adrien.games.bagl.rendering.Shader;

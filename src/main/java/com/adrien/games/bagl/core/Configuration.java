@@ -1,5 +1,6 @@
 package com.adrien.games.bagl.core;
 
+import com.adrien.games.bagl.exception.EngineException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
