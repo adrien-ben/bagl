@@ -17,6 +17,18 @@ public enum Filter {
         this.glFilter = glFilter;
     }
 
+    /**
+     * Check if this filter is a mipmap filter
+     *
+     * @return true if the filter is a mipmap filter
+     */
+    public boolean isMipmap() {
+        return this == MIPMAP_LINEAR_LINEAR
+                || this == MIPMAP_LINEAR_NEAREST
+                || this == MIPMAP_NEAREST_LINEAR
+                || this == MIPMAP_NEAREST_NEAREST;
+    }
+
     public int getGlFilter() {
         return this.glFilter;
     }
