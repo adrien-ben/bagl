@@ -266,6 +266,7 @@ public class GltfLoader {
         return Material.builder()
                 .diffuse(new Color(color.getR(), color.getG(), color.getB(), color.getA()))
                 .emissive(new Color(emissive.getR(), emissive.getG(), emissive.getB(), emissive.getA()))
+                .emissiveIntensity(1f)
                 .roughness(roughness)
                 .metallic(metallic)
                 .diffuse(diffuseTexture)
