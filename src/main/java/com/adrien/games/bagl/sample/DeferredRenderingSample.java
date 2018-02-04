@@ -68,7 +68,7 @@ public class DeferredRenderingSample {
         private Mesh pointBulb;
         private Mesh spotBulb;
 
-        private Model gltf;
+        private Model boomBox;
 
         private Spritebatch spritebatch;
 
@@ -114,7 +114,7 @@ public class DeferredRenderingSample {
             this.sphere.destroy();
             this.pointBulb.destroy();
             this.spotBulb.destroy();
-            this.gltf.destroy();
+            this.boomBox.destroy();
         }
 
         private void loadMeshes() {
@@ -130,7 +130,7 @@ public class DeferredRenderingSample {
             this.sphere = ModelFactory.createSphere(0.5f, 25, 25, gold);
             this.pointBulb = MeshFactory.createSphere(0.1f, 8, 8);
             this.spotBulb = MeshFactory.createCylinder(0.1f, 0.065f, 0.2f, 12);
-            this.gltf = new GltfLoader().load(FileUtils.getResourceAbsolutePath("/models/box/Box.gltf"));
+            this.boomBox = new GltfLoader().load(FileUtils.getResourceAbsolutePath("/models/BoomBox/BoomBox.gltf"));
         }
 
         private void initScene() {
@@ -152,8 +152,9 @@ public class DeferredRenderingSample {
             sphereObj.getLocalTransform().setTranslation(new Vector3f(1.5f, 0.6f, 0f));
 
             final GameObject gltfObj = floorObj.createChild("gltf");
-            gltfObj.addComponent(new ModelComponent(this.gltf));
-            gltfObj.getLocalTransform().setTranslation(new Vector3f(-1.5f, 0.5f, 0f));
+            gltfObj.addComponent(new ModelComponent(this.boomBox));
+            gltfObj.getLocalTransform().setTranslation(new Vector3f(-1.5f, 0.5f, 0f))
+                    .setScale(new Vector3f(20f, 20f, 20f));
 
             this.setUpLights();
         }
