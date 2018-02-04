@@ -288,14 +288,16 @@ public class GltfLoader {
         }
 
         final String path = Paths.get(this.directory, texture.getSource().getUri()).toString();
-        System.out.println(path);
 
         final Sampler sampler = texture.getSampler();
+        final Optional<Filter> magFilter = Optional.ofNullable(sampler.getMagFilter()).map(this::mapFilter);
+        final Optional<Filter> minFilter = Optional.ofNullable(sampler.getMinFilter()).map(this::mapFilter);
 
         final TextureParameters.Builder params = TextureParameters.builder();
-        params.mipmaps(true);
-        Optional.ofNullable(sampler.getMagFilter()).ifPresent(filter -> params.magFilter(this.mapFilter(filter)));
-        Optional.ofNullable(sampler.getMinFilter()).ifPresent(filter -> params.minFilter(this.mapFilter(filter)));
+        magFilter.ifPresent(params::magFilter);
+        minFilter.ifPresent(params::minFilter);
+        params.mipmaps(magFilter.map(Filter::isMipmap).orElse(false)
+                || minFilter.map(Filter::isMipmap).orElse(false));
         params.sWrap(this.mapWrap(sampler.getWrapS()));
         params.tWrap(this.mapWrap(sampler.getWrapT()));
 
