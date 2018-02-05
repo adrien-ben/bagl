@@ -5,8 +5,8 @@ import com.adrien.games.bagl.exception.EngineException;
 import com.adrien.games.bagl.resource.ShaderLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
+import org.joml.Matrix4fc;
+import org.joml.Vector3fc;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL32;
@@ -166,7 +166,7 @@ public class Shader {
      * @param matrix The value of the uniform
      * @return This for chaining
      */
-    public Shader setUniform(final String name, final Matrix4f matrix) {
+    public Shader setUniform(final String name, final Matrix4fc matrix) {
         this.checkIsShaderBound();
         final int location = this.getLocation(name);
         GL20.glUniformMatrix4fv(location, false, matrix.get(this.matrix4fBuffer));
@@ -180,7 +180,7 @@ public class Shader {
      * @param vector The value of the uniform
      * @return This for chaining
      */
-    public Shader setUniform(final String name, final Vector3f vector) {
+    public Shader setUniform(final String name, final Vector3fc vector) {
         this.checkIsShaderBound();
         final int location = this.getLocation(name);
         GL20.glUniform3f(location, vector.x(), vector.y(), vector.z());

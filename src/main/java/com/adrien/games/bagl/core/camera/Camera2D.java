@@ -1,7 +1,9 @@
 package com.adrien.games.bagl.core.camera;
 
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.joml.Vector2f;
+import org.joml.Vector2fc;
 
 /**
  * Two-dimensional camera. Can be use for 2D rendering like sprite or UI
@@ -24,8 +26,8 @@ public class Camera2D {
      * @param width    The width of the camera
      * @param height   The height of the camera
      */
-    public Camera2D(final Vector2f position, final int width, final int height) {
-        this.position = position;
+    public Camera2D(final Vector2fc position, final int width, final int height) {
+        this.position = new Vector2f(position);
         this.width = width;
         this.height = height;
         this.orthographic = new Matrix4f();
@@ -47,17 +49,17 @@ public class Camera2D {
      *
      * @param translation The translation to apply
      */
-    public void translate(final Vector2f translation) {
+    public void translate(final Vector2fc translation) {
         this.position.add(translation);
         this.dirty = true;
     }
 
-    public Vector2f getPosition() {
+    public Vector2fc getPosition() {
         return this.position;
     }
 
-    public void setPosition(final Vector2f position) {
-        this.position.set(position.x(), position.y());
+    public void setPosition(final Vector2fc position) {
+        this.position.set(position);
         this.dirty = true;
     }
 
@@ -69,7 +71,7 @@ public class Camera2D {
         return this.height;
     }
 
-    public Matrix4f getOrthographic() {
+    public Matrix4fc getOrthographic() {
         if (this.dirty) {
             this.computeOrthographic();
         }
