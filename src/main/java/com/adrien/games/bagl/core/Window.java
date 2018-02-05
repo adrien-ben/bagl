@@ -18,7 +18,7 @@ import java.nio.DoubleBuffer;
  * <p>
  * Input events are forwarded to the {@link Input} class.
  */
-public final class Window {
+final class Window {
 
     private final int width;
     private final int height;
@@ -33,7 +33,7 @@ public final class Window {
      * @param vSync      Enables vertical synchronisation.
      * @param fullScreen Enables full screen mode.
      */
-    public Window(String title, int width, int height, boolean vSync, boolean fullScreen) {
+    Window(String title, int width, int height, boolean vSync, boolean fullScreen) {
         this.width = width;
         this.height = height;
 
@@ -66,7 +66,7 @@ public final class Window {
      * <p>
      * Poll events and swaps buffers.
      */
-    public void update() {
+    void update() {
         GLFW.glfwPollEvents();
         this.updateCursorPosition();
         GLFW.glfwSwapBuffers(windowHandle);
@@ -84,7 +84,7 @@ public final class Window {
         }
     }
 
-    public boolean isCloseRequested() {
+    boolean isCloseRequested() {
         return GLFW.glfwWindowShouldClose(windowHandle);
     }
 
@@ -93,7 +93,7 @@ public final class Window {
      *
      * @param mouseMode The mouse mode to set.
      */
-    public void setMouseMode(final MouseMode mouseMode) {
+    private void setMouseMode(final MouseMode mouseMode) {
         GLFW.glfwSetInputMode(this.windowHandle, GLFW.GLFW_CURSOR, mouseMode.getGlfwCode());
         if (mouseMode != MouseMode.DISABLED) {
             GLFW.glfwSetCursorPos(this.windowHandle, this.width / 2, this.height / 2);
@@ -104,17 +104,16 @@ public final class Window {
     /**
      * Destroys this window.
      */
-    public void destroy() {
+    void destroy() {
         GLFW.glfwDestroyWindow(this.windowHandle);
         GLFW.glfwTerminate();
     }
 
-    public int getWidth() {
+    int getWidth() {
         return this.width;
     }
 
-    public int getHeight() {
+    int getHeight() {
         return this.height;
     }
-
 }
