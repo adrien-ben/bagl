@@ -47,7 +47,7 @@ public class GltfLoader {
         this.directory = Paths.get(path).getParent().toString();
 
 
-        final GltfAsset gltfAsset = GltfAsset.Factory.fromGltfFile(path);
+        final GltfAsset gltfAsset = GltfAsset.Factory.fromFile(path);
         if (Objects.isNull(gltfAsset)) {
             throw new IllegalStateException("Failed to load gltf " + path);
         }
