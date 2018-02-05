@@ -58,10 +58,10 @@ public class TextRenderer {
         this.iBuffer = this.initIndices();
 
         this.configuration = Configuration.getInstance();
-        this.shader = new Shader()
-                .addVertexShader("/ui/text.vert")
-                .addFragmentShader("/ui/text.frag")
-                .compile();
+        this.shader = Shader.builder()
+                .vertexPath("/ui/text.vert")
+                .fragmentPath("/ui/text.frag")
+                .build();
 
         this.bufferedChar = 0;
     }

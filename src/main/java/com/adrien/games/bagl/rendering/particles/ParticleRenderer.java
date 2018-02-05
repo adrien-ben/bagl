@@ -49,11 +49,11 @@ public class ParticleRenderer {
      * Construct the particle renderer
      */
     public ParticleRenderer() {
-        this.shader = new Shader()
-                .addVertexShader("/particles/particles.vert")
-                .addFragmentShader("/particles/particles.frag")
-                .addGeometryShader("/particles/particles.geom")
-                .compile();
+        this.shader = Shader.builder()
+                .vertexPath("/particles/particles.vert")
+                .fragmentPath("/particles/particles.frag")
+                .geometryPath("/particles/particles.geom")
+                .build();
 
         this.vertices = MemoryUtil.memAllocFloat(ParticleEmitter.MAX_PARTICLE_COUNT * ELEMENTS_PER_VERTEX);
         this.vBuffer = new VertexBuffer(this.vertices, VertexBufferParams.builder()

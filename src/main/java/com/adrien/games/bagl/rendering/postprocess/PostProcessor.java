@@ -34,9 +34,9 @@ public class PostProcessor {
         this.bloomBuffer = new FrameBuffer(xResolution, yResolution, parameters);
         this.blurBuffer = new DoubleBuffer<>(() -> new FrameBuffer(xResolution, yResolution, parameters));
 
-        this.bloomShader = new Shader().addVertexShader(POST_PROCESS_VERTEX_SHADER_FILE).addFragmentShader("/post/bloom.frag").compile();
-        this.blurShader = new Shader().addVertexShader(POST_PROCESS_VERTEX_SHADER_FILE).addFragmentShader("/post/blur.frag").compile();
-        this.lastStageShader = new Shader().addVertexShader(POST_PROCESS_VERTEX_SHADER_FILE).addFragmentShader("/post/post_process.frag").compile();
+        this.bloomShader = Shader.builder().vertexPath(POST_PROCESS_VERTEX_SHADER_FILE).fragmentPath("/post/bloom.frag").build();
+        this.blurShader = Shader.builder().vertexPath(POST_PROCESS_VERTEX_SHADER_FILE).fragmentPath("/post/blur.frag").build();
+        this.lastStageShader = Shader.builder().vertexPath(POST_PROCESS_VERTEX_SHADER_FILE).fragmentPath("/post/post_process.frag").build();
         this.screenQuad = MeshFactory.createScreenQuad();
     }
 

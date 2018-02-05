@@ -41,11 +41,33 @@ public class Shader {
      * <p>
      * This create a openGL shader program
      */
-    public Shader() {
+    private Shader(final Builder builder) {
         this.matrix4fBuffer = MemoryUtil.memAllocFloat(16);
         this.uniformToLocationMap = new HashMap<>();
         this.attachedShaders = new ArrayList<>();
         this.handle = GL20.glCreateProgram();
+
+        if (Objects.isNull(builder.vertexPath)) {
+            throw new IllegalArgumentException("You cannot build a shader with no vertex shader source");
+        }
+
+        this.addShader(builder.vertexPath, GL20.GL_VERTEX_SHADER);
+        if (Objects.nonNull(builder.fragmentPath)) {
+            this.addShader(builder.fragmentPath, GL20.GL_FRAGMENT_SHADER);
+        }
+        if (Objects.nonNull(builder.geometryPath)) {
+            this.addShader(builder.geometryPath, GL32.GL_GEOMETRY_SHADER);
+        }
+        this.compile();
+    }
+
+    /**
+     * Generate a shader builder
+     *
+     * @return A new builder
+     */
+    public static Builder builder() {
+        return new Builder();
     }
 
     /**
@@ -57,42 +79,6 @@ public class Shader {
             GL20.glDeleteShader(i);
         }
         GL20.glDeleteProgram(this.handle);
-    }
-
-    /**
-     * Attach a vertex shader to this shader program
-     *
-     * @param resourceFile The name of the resource file
-     * @return This for chaining
-     * @throws EngineException If source loading or shader compilation fails
-     */
-    public Shader addVertexShader(final String resourceFile) {
-        this.addShader(resourceFile, GL20.GL_VERTEX_SHADER);
-        return this;
-    }
-
-    /**
-     * Attach a fragment shader to this shader program
-     *
-     * @param resourceFile The name of the resource file
-     * @return This for chaining
-     * @throws EngineException If source loading or shader compilation fails
-     */
-    public Shader addFragmentShader(final String resourceFile) {
-        this.addShader(resourceFile, GL20.GL_FRAGMENT_SHADER);
-        return this;
-    }
-
-    /**
-     * Attach a geometry shader to this shader program
-     *
-     * @param resourceFile The name of the resource file
-     * @return This for chaining
-     * @throws EngineException If source loading or shader compilation fails
-     */
-    public Shader addGeometryShader(final String resourceFile) {
-        this.addShader(resourceFile, GL32.GL_GEOMETRY_SHADER);
-        return this;
     }
 
     /**
@@ -114,7 +100,6 @@ public class Shader {
         if (GL20.glGetShaderi(shader, GL20.GL_COMPILE_STATUS) == GL11.GL_FALSE) {
             final int logLength = GL20.glGetShaderi(shader, GL20.GL_INFO_LOG_LENGTH);
             final String message = GL20.glGetShaderInfoLog(shader, logLength);
-            LOG.error("Shader compilation error : {}", message);
             throw new EngineException("Shader compilation error : " + message);
         }
         GL20.glAttachShader(this.handle, shader);
@@ -124,10 +109,8 @@ public class Shader {
     /**
      * Compile the OpenGL program object. If it fails, displays the program's log on the
      * error output. Adds all the uniforms parsed in the shaders' source
-     *
-     * @return This for chaining
      */
-    public Shader compile() {
+    private void compile() {
         LOG.trace("Compiling shader");
         GL20.glLinkProgram(this.handle);
         if (GL20.glGetProgrami(this.handle, GL20.GL_LINK_STATUS) == GL11.GL_FALSE) {
@@ -146,7 +129,6 @@ public class Shader {
                 this.uniformToLocationMap.put(name, i);
             }
         }
-        return this;
     }
 
     /**
@@ -276,5 +258,72 @@ public class Shader {
     public static void unbind() {
         GL20.glUseProgram(0);
         Shader.boundShader = null;
+    }
+
+    /**
+     * Shader builder
+     */
+    public static class Builder {
+
+        private String vertexPath;
+        private String fragmentPath;
+        private String geometryPath;
+
+        /**
+         * Private constructor to prevent instantiation
+         */
+        private Builder() {
+        }
+
+        /**
+         * Build the shader
+         *
+         * @return The built shader
+         */
+        public Shader build() {
+            return new Shader(this);
+        }
+
+        /**
+         * Sets the path of the resource file containing vertex shader
+         * source code
+         * <p>
+         * The file must be in the resource folder 'shaders'
+         *
+         * @param path The path of the resource
+         * @return This
+         */
+        public Builder vertexPath(final String path) {
+            this.vertexPath = path;
+            return this;
+        }
+
+        /**
+         * Sets the path of the resource file containing fragment shader
+         * source code
+         * <p>
+         * The file must be in the resource folder 'shaders'
+         *
+         * @param path The path of the resource
+         * @return This
+         */
+        public Builder fragmentPath(final String path) {
+            this.fragmentPath = path;
+            return this;
+        }
+
+        /**
+         * Sets the path of the resource file containing geometry shader
+         * source code
+         * <p>
+         * The file must be in the resource folder 'shaders'
+         *
+         * @param path The path of the resource
+         * @return This
+         */
+        public Builder geometryPath(final String path) {
+            this.geometryPath = path;
+            return this;
+        }
     }
 }

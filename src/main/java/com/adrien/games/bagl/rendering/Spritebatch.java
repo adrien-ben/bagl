@@ -71,10 +71,10 @@ public class Spritebatch {
         this.size = size;
 
         this.camera = new Camera2D(new Vector2f(width / 2, height / 2), width, height);
-        this.spriteShader = new Shader()
-                .addVertexShader("/sprite/sprite.vert")
-                .addFragmentShader("/sprite/sprite.frag")
-                .compile();
+        this.spriteShader = Shader.builder()
+                .vertexPath("/sprite/sprite.vert")
+                .fragmentPath("/sprite/sprite.frag")
+                .build();
 
         this.vertices = MemoryUtil.memAllocFloat(this.size * VERTICES_PER_SPRITE * ELEMENTS_PER_VERTICES);
         this.initVertices();

@@ -146,26 +146,26 @@ public class Renderer implements ComponentVisitor {
      * Initializes the shaders
      */
     private void initShaders() {
-        this.skyboxShader = new Shader()
-                .addVertexShader("/environment/environment.vert")
-                .addFragmentShader("/environment/environment_cubemap_sample.frag")
-                .compile();
-        this.shadowShader = new Shader()
-                .addVertexShader("/shadow/shadow.vert")
-                .addFragmentShader("/shadow/shadow.frag")
-                .compile();
-        this.gBufferShader = new Shader()
-                .addVertexShader("/deferred/gbuffer.vert")
-                .addFragmentShader("/deferred/gbuffer.frag")
-                .compile();
-        this.deferredShader = new Shader()
-                .addVertexShader("/deferred/deferred.vert")
-                .addFragmentShader("/deferred/deferred.frag")
-                .compile();
-        this.brdfShader = new Shader()
-                .addVertexShader("/post/post_process.vert")
-                .addFragmentShader("/environment/brdf_integration.frag")
-                .compile();
+        this.skyboxShader = Shader.builder()
+                .vertexPath("/environment/environment.vert")
+                .fragmentPath("/environment/environment_cubemap_sample.frag")
+                .build();
+        this.shadowShader = Shader.builder()
+                .vertexPath("/shadow/shadow.vert")
+                .fragmentPath("/shadow/shadow.frag")
+                .build();
+        this.gBufferShader = Shader.builder()
+                .vertexPath("/deferred/gbuffer.vert")
+                .fragmentPath("/deferred/gbuffer.frag")
+                .build();
+        this.deferredShader = Shader.builder()
+                .vertexPath("/deferred/deferred.vert")
+                .fragmentPath("/deferred/deferred.frag")
+                .build();
+        this.brdfShader = Shader.builder()
+                .vertexPath("/post/post_process.vert")
+                .fragmentPath("/environment/brdf_integration.frag")
+                .build();
     }
 
     /**
