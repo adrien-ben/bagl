@@ -5,6 +5,7 @@ import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.Objects;
@@ -68,12 +69,66 @@ public class Image implements AutoCloseable {
                         + STBImage.stbi_failure_reason());
             }
 
-            final FloatBuffer copy = MemoryUtil.memAllocFloat(data.capacity());
-            MemoryUtil.memCopy(data, copy);
-            STBImage.stbi_image_free(data);
+            final FloatBuffer copy = Image.copyImageData(data);
 
             return new Image(width.get(), height.get(), comp.get(), isHdr, copy);
         }
+    }
+
+    /**
+     * Load an image from memory
+     *
+     * @param image The image to load
+     * @return A new image
+     */
+    public static Image fromMemory(final ByteBuffer image) {
+        return Image.fromMemory(image, false);
+    }
+
+    /**
+     * Load an image from memory
+     * <p>
+     * You can choose to flip the image vertically
+     *
+     * @param image          The image to load
+     * @param flipVertically Should the image be flipped vertically
+     * @return A new image
+     */
+    public static Image fromMemory(final ByteBuffer image, final boolean flipVertically) {
+        try (final MemoryStack stack = MemoryStack.stackPush()) {
+            final IntBuffer width = stack.mallocInt(1);
+            final IntBuffer height = stack.mallocInt(1);
+            final IntBuffer comp = stack.mallocInt(1);
+
+            STBImage.stbi_set_flip_vertically_on_load(flipVertically);
+
+            final boolean isHdr = STBImage.stbi_is_hdr_from_memory(image);
+            final FloatBuffer data = isHdr
+                    ? STBImage.stbi_loadf_from_memory(image, width, height, comp, 0)
+                    : STBImage.stbi_load_from_memory(image, width, height, comp, 0).asFloatBuffer();
+
+            if (Objects.isNull(data)) {
+                throw new EngineException("Failed to load image from memory. Cause: "
+                        + STBImage.stbi_failure_reason());
+            }
+
+            final FloatBuffer copy = Image.copyImageData(data);
+
+            return new Image(width.get(), height.get(), comp.get(), isHdr, copy);
+        }
+    }
+
+    /**
+     * Copy image data and free the original buffer
+     *
+     * @param toCopy The buffer to copy then free
+     * @return A new float buffer
+     */
+    private static FloatBuffer copyImageData(final FloatBuffer toCopy) {
+        final FloatBuffer copy = MemoryUtil.memAllocFloat(toCopy.capacity());
+        MemoryUtil.memCopy(toCopy, copy);
+        STBImage.stbi_image_free(toCopy);
+        return copy;
     }
 
     @Override

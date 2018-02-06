@@ -100,6 +100,42 @@ public final class Texture {
         }
     }
 
+    /**
+     * Create a texture from an image stored in memory
+     * <p>
+     * Here we expect the builder as parameters instead of the built parameters
+     * because the texture format will be inferred from the image file format
+     * <p>
+     * {@code imageData} must contain an actual image (jpeg, png, tga...) not just the pixel data.
+     *
+     * @param imageData The buffer containing the image
+     * @param params    The parameters builder
+     * @return A new texture
+     */
+    public static Texture fromMemory(final ByteBuffer imageData, final TextureParameters.Builder params) {
+        return Texture.fromMemory(imageData, false, params);
+    }
+
+    /**
+     * Create a texture from an image stored in memory
+     * <p>
+     * Here we expect the builder as parameters instead of the built parameters
+     * because the texture format will be inferred from the image file format
+     * <p>
+     * {@code imageData} must contain an actual image (jpeg, png, tga...) not just the pixel data.
+     *
+     * @param imageData      The buffer containing the image
+     * @param flipVertically Should the image be flipped vertically
+     * @param params         The parameters builder
+     * @return A new texture
+     */
+    public static Texture fromMemory(final ByteBuffer imageData, final boolean flipVertically, final TextureParameters.Builder params) {
+        try (final Image image = Image.fromMemory(imageData, flipVertically)) {
+            params.format(Texture.getFormat(image.getChannelCount(), image.isHdr()));
+            return new Texture(image.getWidth(), image.getHeight(), image.getData(), params.build());
+        }
+    }
+
     private int generateGlTexture(final ByteBuffer pixels) {
         final int handle = glGenTextures();
         glBindTexture(GL_TEXTURE_2D, handle);
