@@ -22,12 +22,9 @@ import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
 import java.nio.file.Paths;
-import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -36,8 +33,6 @@ import java.util.stream.Collectors;
  * @author adrien
  */
 public class GltfLoader {
-
-    private static final Pattern DATA_URI_REGEX = Pattern.compile("data:.*(?:;base64)?,(.*)");
 
     private String directory;
 
@@ -51,7 +46,6 @@ public class GltfLoader {
 
         this.directory = Paths.get(path).getParent().toString();
 
-
         final GltfAsset gltfAsset = GltfAsset.Factory.fromFile(path);
         if (Objects.isNull(gltfAsset)) {
             throw new IllegalStateException("Failed to load gltf " + path);
@@ -61,7 +55,7 @@ public class GltfLoader {
 
         gltfAsset.getMeshes()
                 .stream()
-                .map(com.adrien.tools.gltf.Mesh::getPrimitives)
+                .map(GltfMesh::getPrimitives)
                 .flatMap(List::stream)
                 .map(this::createMesh)
                 .forEach(tuple -> model.addMesh(tuple.getFirst(), tuple.getSecond()));
@@ -75,7 +69,7 @@ public class GltfLoader {
      * @param primitive The primitive from which to create the mesh
      * @return A new mesh
      */
-    private Tuple2<Mesh, Material> createMesh(final Primitive primitive) {
+    private Tuple2<Mesh, Material> createMesh(final GltfPrimitive primitive) {
         final IndexBuffer iBuffer = this.createIndexBuffer(primitive.getIndices());
 
         final List<VertexBuffer> vBuffers = primitive.getAttributes()
@@ -85,7 +79,6 @@ public class GltfLoader {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toList());
-
 
         final Mesh mesh = new Mesh(vBuffers, iBuffer, this.mapPrimitiveType(primitive.getMode()));
         final Material material = this.mapMaterial(primitive.getMaterial());
@@ -99,7 +92,7 @@ public class GltfLoader {
      * @param accessor The accessor pointing to the index data
      * @return A new index buffer
      */
-    private IndexBuffer createIndexBuffer(final Accessor accessor) {
+    private IndexBuffer createIndexBuffer(final GltfAccessor accessor) {
         final Optional<ByteBuffer> byteBuffer = this.extractData(accessor);
         if (!byteBuffer.isPresent()) {
             return null;
@@ -119,7 +112,7 @@ public class GltfLoader {
      * @param accessor The accessor
      * @return A new vertex buffer
      */
-    private Optional<VertexBuffer> createVertexBuffer(final String type, final Accessor accessor) {
+    private Optional<VertexBuffer> createVertexBuffer(final String type, final GltfAccessor accessor) {
         final ByteBuffer vertices = this.extractData(accessor).orElseThrow(() -> new IllegalArgumentException(
                 "Primitive attribute's accessor should not be null"));
 
@@ -166,7 +159,7 @@ public class GltfLoader {
      * @param componentType The component type to map
      * @return The corresponding data type
      */
-    private DataType mapDataType(final ComponentType componentType) {
+    private DataType mapDataType(final GltfComponentType componentType) {
         switch (componentType) {
             case BYTE:
                 return DataType.BYTE;
@@ -193,7 +186,7 @@ public class GltfLoader {
      * @param accessor The accessor to extract the data from
      * @return A new byte buffer
      */
-    private Optional<ByteBuffer> extractData(final Accessor accessor) {
+    private Optional<ByteBuffer> extractData(final GltfAccessor accessor) {
         if (Objects.isNull(accessor)) {
             return Optional.empty();
         }
@@ -204,7 +197,7 @@ public class GltfLoader {
             throw new UnsupportedOperationException("Accessor has no buffer view");
         }
 
-        final BufferView bufferView = accessor.getBufferView();
+        final GltfBufferView bufferView = accessor.getBufferView();
         final byte[] data = bufferView.getBuffer().getData();
         final int byteOffset = accessor.getByteOffset() + bufferView.getByteOffset();
         final int count = accessor.getCount();
@@ -236,7 +229,7 @@ public class GltfLoader {
      * @return The corresponding primitive type
      * @throws UnsupportedOperationException if the mode is not supported
      */
-    private PrimitiveType mapPrimitiveType(final PrimitiveMode mode) {
+    private PrimitiveType mapPrimitiveType(final GltfPrimitiveMode mode) {
         switch (mode) {
             case POINTS:
                 return PrimitiveType.POINTS;
@@ -255,18 +248,18 @@ public class GltfLoader {
      * @param gltfMaterial The material to map
      * @return A new material
      */
-    private Material mapMaterial(final com.adrien.tools.gltf.Material gltfMaterial) {
-        final com.adrien.tools.gltf.Color color = gltfMaterial.getPbrMetallicRoughness().getBaseColorFactor();
-        final com.adrien.tools.gltf.Color emissive = gltfMaterial.getEmissiveFactor();
+    private Material mapMaterial(final GltfMaterial gltfMaterial) {
+        final GltfColor color = gltfMaterial.getPbrMetallicRoughness().getBaseColorFactor();
+        final GltfColor emissive = gltfMaterial.getEmissiveFactor();
         final float metallic = gltfMaterial.getPbrMetallicRoughness().getMetallicFactor();
         final float roughness = gltfMaterial.getPbrMetallicRoughness().getRoughnessFactor();
         final Texture diffuseTexture = Optional.ofNullable(gltfMaterial.getPbrMetallicRoughness().getBaseColorTexture())
-                .map(TextureInfo::getTexture).map(this::mapTexture).orElse(null);
+                .map(GltfTextureInfo::getTexture).map(this::mapTexture).orElse(null);
         final Texture emissiveTexture = Optional.ofNullable(gltfMaterial.getEmissiveTexture())
-                .map(TextureInfo::getTexture).map(this::mapTexture).orElse(null);
+                .map(GltfTextureInfo::getTexture).map(this::mapTexture).orElse(null);
         final Texture pbrTexture = Optional.ofNullable(gltfMaterial.getPbrMetallicRoughness().getMetallicRoughnessTexture())
-                .map(TextureInfo::getTexture).map(this::mapTexture).orElse(null);
-        final Texture normalMap = Optional.ofNullable(gltfMaterial.getNormalTexture()).map(NormalTextureInfo::getTexture)
+                .map(GltfTextureInfo::getTexture).map(this::mapTexture).orElse(null);
+        final Texture normalMap = Optional.ofNullable(gltfMaterial.getNormalTexture()).map(GltfNormalTextureInfo::getTexture)
                 .map(this::mapTexture).orElse(null);
 
         return Material.builder()
@@ -288,12 +281,12 @@ public class GltfLoader {
      * @param texture The texture to map
      * @return A new texture or null
      */
-    private Texture mapTexture(final com.adrien.tools.gltf.Texture texture) {
+    private Texture mapTexture(final GltfTexture texture) {
         if (Objects.isNull(texture) || Objects.isNull(texture.getSource()) || Objects.isNull(texture.getSource().getUri())) {
             return null;
         }
 
-        final Sampler sampler = texture.getSampler();
+        final GltfSampler sampler = texture.getSampler();
         final Optional<Filter> magFilter = Optional.ofNullable(sampler.getMagFilter()).map(this::mapFilter);
         final Optional<Filter> minFilter = Optional.ofNullable(sampler.getMinFilter()).map(this::mapFilter);
 
@@ -306,20 +299,27 @@ public class GltfLoader {
         params.tWrap(this.mapWrap(sampler.getWrapT()));
         params.anisotropic(Configuration.getInstance().getAnisotropicLevel());
 
+        return this.generateTexture(texture.getSource(), params);
+    }
+
+    /**
+     * Generate a texture from a {@link GltfImage}
+     *
+     * @param gltfImage The gltf image from which to generate the texture
+     * @param params    The parameters of the texture
+     * @return A new texture
+     */
+    private Texture generateTexture(final GltfImage gltfImage, final TextureParameters.Builder params) {
         final Texture tex;
-        final String uri = texture.getSource().getUri();
-        final Matcher matcher = DATA_URI_REGEX.matcher(uri);
-        if (matcher.matches()) {
-            final String base64 = matcher.group(1);
-            final byte[] decode = Base64.getDecoder().decode(base64);
-            final ByteBuffer imageData = MemoryUtil.memAlloc(decode.length).put(decode).flip();
+        if (Objects.nonNull(gltfImage.getData())) {
+            final byte[] data = gltfImage.getData();
+            final ByteBuffer imageData = MemoryUtil.memAlloc(data.length).put(data).flip();
             tex = Texture.fromMemory(imageData, params);
             MemoryUtil.memFree(imageData);
         } else {
-            final String path = Paths.get(this.directory, uri).toString();
+            final String path = Paths.get(this.directory, gltfImage.getUri()).toString();
             tex = Texture.fromFile(path, params);
         }
-
         return tex;
     }
 
@@ -329,7 +329,7 @@ public class GltfLoader {
      * @param filter The filter to map
      * @return The corresponding texture filter
      */
-    private Filter mapFilter(final com.adrien.tools.gltf.Filter filter) {
+    private Filter mapFilter(final GltfFilter filter) {
         switch (filter) {
             case NEAREST:
                 return Filter.NEAREST;
@@ -354,7 +354,7 @@ public class GltfLoader {
      * @param wrapMode the wrap mode to map
      * @return The corresponding wrap
      */
-    private Wrap mapWrap(final WrapMode wrapMode) {
+    private Wrap mapWrap(final GltfWrapMode wrapMode) {
         switch (wrapMode) {
             case REPEAT:
                 return Wrap.REPEAT;
