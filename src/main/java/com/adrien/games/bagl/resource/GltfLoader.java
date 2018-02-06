@@ -22,9 +22,12 @@ import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
 import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -33,6 +36,8 @@ import java.util.stream.Collectors;
  * @author adrien
  */
 public class GltfLoader {
+
+    private static final Pattern DATA_URI_REGEX = Pattern.compile("data:.*(?:;base64)?,(.*)");
 
     private String directory;
 
@@ -284,11 +289,9 @@ public class GltfLoader {
      * @return A new texture or null
      */
     private Texture mapTexture(final com.adrien.tools.gltf.Texture texture) {
-        if (Objects.isNull(texture) || Objects.isNull(texture.getSource())) {
+        if (Objects.isNull(texture) || Objects.isNull(texture.getSource()) || Objects.isNull(texture.getSource().getUri())) {
             return null;
         }
-
-        final String path = Paths.get(this.directory, texture.getSource().getUri()).toString();
 
         final Sampler sampler = texture.getSampler();
         final Optional<Filter> magFilter = Optional.ofNullable(sampler.getMagFilter()).map(this::mapFilter);
@@ -303,7 +306,21 @@ public class GltfLoader {
         params.tWrap(this.mapWrap(sampler.getWrapT()));
         params.anisotropic(Configuration.getInstance().getAnisotropicLevel());
 
-        return Texture.fromFile(path, params);
+        final Texture tex;
+        final String uri = texture.getSource().getUri();
+        final Matcher matcher = DATA_URI_REGEX.matcher(uri);
+        if (matcher.matches()) {
+            final String base64 = matcher.group(1);
+            final byte[] decode = Base64.getDecoder().decode(base64);
+            final ByteBuffer imageData = MemoryUtil.memAlloc(decode.length).put(decode).flip();
+            tex = Texture.fromMemory(imageData, params);
+            MemoryUtil.memFree(imageData);
+        } else {
+            final String path = Paths.get(this.directory, uri).toString();
+            tex = Texture.fromFile(path, params);
+        }
+
+        return tex;
     }
 
     /**
