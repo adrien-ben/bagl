@@ -282,7 +282,7 @@ public class GltfLoader {
      * @return A new texture or null
      */
     private Texture mapTexture(final GltfTexture texture) {
-        if (Objects.isNull(texture) || Objects.isNull(texture.getSource()) || Objects.isNull(texture.getSource().getUri())) {
+        if (Objects.isNull(texture) || Objects.isNull(texture.getSource())) {
             return null;
         }
 
@@ -311,7 +311,14 @@ public class GltfLoader {
      */
     private Texture generateTexture(final GltfImage gltfImage, final TextureParameters.Builder params) {
         final Texture tex;
-        if (Objects.nonNull(gltfImage.getData())) {
+        if (Objects.nonNull(gltfImage.getBufferView())) {
+            final GltfBufferView view = gltfImage.getBufferView();
+            final int length = view.getByteLength();
+            final ByteBuffer imageData = MemoryUtil.memAlloc(length)
+                    .put(view.getBuffer().getData(), view.getByteOffset(), length).flip();
+            tex = Texture.fromMemory(imageData, params);
+            MemoryUtil.memFree(imageData);
+        } else if (Objects.nonNull(gltfImage.getData())) {
             final byte[] data = gltfImage.getData();
             final ByteBuffer imageData = MemoryUtil.memAlloc(data.length).put(data).flip();
             tex = Texture.fromMemory(imageData, params);

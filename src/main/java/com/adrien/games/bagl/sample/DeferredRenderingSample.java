@@ -120,7 +120,7 @@ public class DeferredRenderingSample {
             this.floor = ModelFactory.fromFile(FileUtils.getResourceAbsolutePath("/models/floor/floor.gltf"));
             this.pointBulb = MeshFactory.createSphere(0.1f, 8, 8);
             this.spotBulb = MeshFactory.createCylinder(0.1f, 0.065f, 0.2f, 12);
-            this.boomBox = ModelFactory.fromFile(FileUtils.getResourceAbsolutePath("/models/BoomBox/BoomBox.gltf"));
+            this.boomBox = ModelFactory.fromFile(FileUtils.getResourceAbsolutePath("/models/BoomBox/BoomBox.glb"));
         }
 
         private void initScene() {
