@@ -198,91 +198,87 @@ void main() {
     float metallic = normalMetallic.a;
     vec3 emissive = texture2D(uGBuffer.emissive, passCoords).rgb;
 
-    if(emissive != vec3(0.0)) {
-        finalColor = vec4(emissive, 1.0);
-    } else {
-        vec3 L0 = vec3(0.0);
+    vec3 L0 = vec3(0.0);
 
-        //View vector
-        vec3 V = normalize(uCamera.position - position.xyz);
+    //View vector
+    vec3 V = normalize(uCamera.position - position.xyz);
 
-        //Reflected view vector
-        vec3 R = reflect(-V, N);
+    //Reflected view vector
+    vec3 R = reflect(-V, N);
 
-        //N.V
-        float NdotV = max(dot(N, V), 0.0);
+    //N.V
+    float NdotV = max(dot(N, V), 0.0);
 
-        //base reflexivity
-        vec3 F0 = mix(vec3(0.04), color, metallic);
+    //base reflexivity
+    vec3 F0 = mix(vec3(0.04), color, metallic);
 
-        //Ambient term
-        vec3 F = fresnel(NdotV, F0, roughness);
-        vec3 kS = F;
-        vec3 kD = 1.0 - kS;
-        kD *= 1.0 - metallic;
+    //Ambient term
+    vec3 F = fresnel(NdotV, F0, roughness);
+    vec3 kS = F;
+    vec3 kD = 1.0 - kS;
+    kD *= 1.0 - metallic;
 
-        vec3 irradiance = texture(uLights.irradiance, N).rgb;
-        vec3 diffuse = irradiance * color;
+    vec3 irradiance = texture(uLights.irradiance, N).rgb;
+    vec3 diffuse = irradiance * color;
 
-        vec3 prefilteredSample = textureLod(uLights.preFilteredMap, R, roughness * MAX_REFLECTION_LOD).rgb;
-        vec2 envBRDF = texture2D(uLights.brdf, vec2(NdotV, roughness)).rg;
-        vec3 specular = prefilteredSample * (F * envBRDF.x + envBRDF.y);
+    vec3 prefilteredSample = textureLod(uLights.preFilteredMap, R, roughness * MAX_REFLECTION_LOD).rgb;
+    vec2 envBRDF = texture2D(uLights.brdf, vec2(NdotV, roughness)).rg;
+    vec3 specular = prefilteredSample * (F * envBRDF.x + envBRDF.y);
 
-        vec3 ambient = kD * diffuse + specular;
+    vec3 ambient = kD * diffuse + specular;
 
-        //directional lights
-        int directionalCount = min(uLights.directionalCount, MAX_DIR_LIGHTS);
-        for(int i = 0; i < directionalCount; i++) {
-            if(i == 0 && uShadow.hasShadow) {
-                vec4 lightSpacePosition = uShadow.lightViewProj*position;
-                lightSpacePosition.xyz /= lightSpacePosition.w;
-                float shadowMapDepth = texture2D(uShadow.shadowMap, lightSpacePosition.xy*0.5 + 0.5).r;
-                if(shadowMapDepth + SHADOW_BIAS < lightSpacePosition.z*0.5 + 0.5) {
-                    continue;
-                }
-            }
-
-            //light direction
-            vec3 L = normalize(-uLights.directionals[i].direction);
-
-            L0 += computeLight(uLights.directionals[i].base.color.rgb, uLights.directionals[i].base.intensity, 1.0, L, V, N, NdotV, F0, color, roughness, metallic);
-        }
-
-        //point lights
-        int pointCount = min(uLights.pointCount, MAX_POINT_LIGHTS);
-        for(int i = 0; i < pointCount; i++) {
-            vec3 lightDirection = uLights.points[i].position - position.xyz;
-            float distance = length(lightDirection);
-            if(distance > uLights.points[i].radius) {
+    //directional lights
+    int directionalCount = min(uLights.directionalCount, MAX_DIR_LIGHTS);
+    for(int i = 0; i < directionalCount; i++) {
+        if(i == 0 && uShadow.hasShadow) {
+            vec4 lightSpacePosition = uShadow.lightViewProj*position;
+            lightSpacePosition.xyz /= lightSpacePosition.w;
+            float shadowMapDepth = texture2D(uShadow.shadowMap, lightSpacePosition.xy*0.5 + 0.5).r;
+            if(shadowMapDepth + SHADOW_BIAS < lightSpacePosition.z*0.5 + 0.5) {
                 continue;
             }
-
-            vec3 L = normalize(lightDirection);
-            float attenuation = computeFalloff(distance, uLights.points[i].radius);
-
-            L0 += computeLight(uLights.points[i].base.color.rgb, uLights.points[i].base.intensity, attenuation, L, V, N, NdotV, F0, color, roughness, metallic);
         }
 
-        //spot lights
-        int spotCount = min(uLights.spotCount, MAX_SPOT_LIGHTS);
-        for(int i = 0; i < spotCount; i++) {
-            vec3 lightDirection = uLights.spots[i].point.position - position.xyz;
-            float distance = length(lightDirection);
-            vec3 L = normalize(lightDirection);
-            float theta = dot(-normalize(uLights.spots[i].direction), L);
+        //light direction
+        vec3 L = normalize(-uLights.directionals[i].direction);
 
-            if(theta <= uLights.spots[i].outerCutOff || distance > uLights.spots[i].point.radius) {
-                continue;
-            }
-
-            float attenuation = computeFalloff(distance, uLights.spots[i].point.radius);
-
-            float epsilon = uLights.spots[i].cutOff - uLights.spots[i].outerCutOff;
-            float falloff = clamp((theta - uLights.spots[i].outerCutOff)/epsilon, 0, 1);
-
-            L0 += computeLight(uLights.spots[i].point.base.color.rgb, uLights.spots[i].point.base.intensity, attenuation*falloff, L, V, N, NdotV, F0, color, roughness, metallic);
-        }
-
-        finalColor = vec4(ambient + L0, 1.0);
+        L0 += computeLight(uLights.directionals[i].base.color.rgb, uLights.directionals[i].base.intensity, 1.0, L, V, N, NdotV, F0, color, roughness, metallic);
     }
+
+    //point lights
+    int pointCount = min(uLights.pointCount, MAX_POINT_LIGHTS);
+    for(int i = 0; i < pointCount; i++) {
+        vec3 lightDirection = uLights.points[i].position - position.xyz;
+        float distance = length(lightDirection);
+        if(distance > uLights.points[i].radius) {
+            continue;
+        }
+
+        vec3 L = normalize(lightDirection);
+        float attenuation = computeFalloff(distance, uLights.points[i].radius);
+
+        L0 += computeLight(uLights.points[i].base.color.rgb, uLights.points[i].base.intensity, attenuation, L, V, N, NdotV, F0, color, roughness, metallic);
+    }
+
+    //spot lights
+    int spotCount = min(uLights.spotCount, MAX_SPOT_LIGHTS);
+    for(int i = 0; i < spotCount; i++) {
+        vec3 lightDirection = uLights.spots[i].point.position - position.xyz;
+        float distance = length(lightDirection);
+        vec3 L = normalize(lightDirection);
+        float theta = dot(-normalize(uLights.spots[i].direction), L);
+
+        if(theta <= uLights.spots[i].outerCutOff || distance > uLights.spots[i].point.radius) {
+            continue;
+        }
+
+        float attenuation = computeFalloff(distance, uLights.spots[i].point.radius);
+
+        float epsilon = uLights.spots[i].cutOff - uLights.spots[i].outerCutOff;
+        float falloff = clamp((theta - uLights.spots[i].outerCutOff)/epsilon, 0, 1);
+
+        L0 += computeLight(uLights.spots[i].point.base.color.rgb, uLights.spots[i].point.base.intensity, attenuation*falloff, L, V, N, NdotV, F0, color, roughness, metallic);
+    }
+
+    finalColor = vec4(ambient + L0 + emissive, 1.0);
 }

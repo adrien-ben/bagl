@@ -43,9 +43,8 @@ void main() {
 	normals.rgb = normal*0.5 + 0.5;
 	normals.a = uMaterial.hasOrmMap ? texture2D(uMaterial.ormMap, passCoords).b : uMaterial.metallic;
 
+    emissive = uMaterial.emissiveColor.rgb*uMaterial.emissiveIntensity;
     if(uMaterial.hasEmissiveMap) {
-        emissive = pow(texture2D(uMaterial.emissiveMap, passCoords).rgb, vec3(2.2))*uMaterial.emissiveIntensity;
-    } else {
-	    emissive = uMaterial.emissiveColor.rgb*uMaterial.emissiveIntensity;
+        emissive *= pow(texture2D(uMaterial.emissiveMap, passCoords).rgb, vec3(2.2));
     }
 }
