@@ -2,12 +2,14 @@ package com.adrien.games.bagl.resource;
 
 import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.core.Configuration;
+import com.adrien.games.bagl.core.Transform;
 import com.adrien.games.bagl.rendering.BufferUsage;
 import com.adrien.games.bagl.rendering.DataType;
 import com.adrien.games.bagl.rendering.Material;
 import com.adrien.games.bagl.rendering.PrimitiveType;
 import com.adrien.games.bagl.rendering.model.Mesh;
 import com.adrien.games.bagl.rendering.model.Model;
+import com.adrien.games.bagl.rendering.model.ModelNode;
 import com.adrien.games.bagl.rendering.texture.Filter;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.texture.TextureParameters;
@@ -16,19 +18,27 @@ import com.adrien.games.bagl.rendering.vertex.IndexBuffer;
 import com.adrien.games.bagl.rendering.vertex.VertexBuffer;
 import com.adrien.games.bagl.rendering.vertex.VertexBufferParams;
 import com.adrien.games.bagl.rendering.vertex.VertexElement;
+import com.adrien.games.bagl.utils.CollectionUtils;
 import com.adrien.games.bagl.utils.Tuple2;
 import com.adrien.tools.gltf.*;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
  * Gltf file loader
+ * <p>
+ * Load the content of a gltf file into on {@link Model}. Each non empty
+ * scene and each of their nodes containing a mesh will be transformed in
+ * a {@link ModelNode}
  *
  * @author adrien
  */
@@ -51,16 +61,98 @@ public class GltfLoader {
             throw new IllegalStateException("Failed to load gltf " + path);
         }
 
+        final List<Map<Mesh, Material>> meshes = gltfAsset.getMeshes().stream().map(this::mapGltfMesh).collect(Collectors.toList());
         final Model model = new Model();
-
-        gltfAsset.getMeshes()
-                .stream()
-                .map(GltfMesh::getPrimitives)
-                .flatMap(List::stream)
-                .map(this::createMesh)
-                .forEach(tuple -> model.addMesh(tuple.getFirst(), tuple.getSecond()));
-
+        gltfAsset.getScenes().forEach(scene -> this.mapGltfScene(scene, model, meshes));
         return model;
+    }
+
+    /**
+     * Map a gltf scene
+     *
+     * @param scene  The scene to map
+     * @param model  The model to which to add the nodes
+     * @param meshes The meshes of the asset
+     */
+    private void mapGltfScene(final GltfScene scene, final Model model, final List<Map<Mesh, Material>> meshes) {
+        if (CollectionUtils.isNotEmpty(scene.getNodes())) {
+            scene.getNodes().forEach(node -> {
+                if (CollectionUtils.isNotEmpty(node.getChildren()) || Objects.nonNull(node.getMesh())) {
+                    final ModelNode root = model.addNode(this.mapTransform(node));
+                    if (Objects.nonNull(node.getMesh())) {
+                        meshes.get(node.getMesh().getIndex()).forEach(root::addMesh);
+                    }
+
+                    if (CollectionUtils.isNotEmpty(node.getChildren())) {
+                        node.getChildren().forEach(child -> this.mapGltfNode(child, root, meshes));
+                    }
+                }
+            });
+        }
+    }
+
+    /**
+     * Map a gltf node
+     *
+     * @param gltfNode The node to mesh
+     * @param parent   The parent node to which to add the children
+     * @param meshes   The meshes of the asset
+     */
+    private void mapGltfNode(final GltfNode gltfNode, final ModelNode parent, final List<Map<Mesh, Material>> meshes) {
+        if (CollectionUtils.isNotEmpty(gltfNode.getChildren()) || Objects.nonNull(gltfNode.getMesh())) {
+            final ModelNode node = parent.addChild(this.mapTransform(gltfNode));
+
+            if (Objects.nonNull(gltfNode.getMesh())) {
+                meshes.get(gltfNode.getMesh().getIndex()).forEach(node::addMesh);
+            }
+            if (CollectionUtils.isNotEmpty(gltfNode.getChildren())) {
+                gltfNode.getChildren().forEach(child -> this.mapGltfNode(child, node, meshes));
+            }
+        }
+    }
+
+    /**
+     * Map a node's transform
+     *
+     * @param gltfNode The node whose map has to be mapped
+     * @return A new transform
+     */
+    private Transform mapTransform(final GltfNode gltfNode) {
+        final Transform transform = new Transform();
+        transform.setTranslation(this.mapGltfVec3(gltfNode.getTranslation()));
+        transform.setRotation(this.mapGltfQuaternion(gltfNode.getRotation()));
+        transform.setScale(this.mapGltfVec3(gltfNode.getScale()));
+        return transform;
+    }
+
+    /**
+     * Map a vector3
+     *
+     * @param vec3 The vector to map
+     * @return A new vector
+     */
+    private Vector3f mapGltfVec3(final GltfVec3 vec3) {
+        return new Vector3f(vec3.getX(), vec3.getY(), vec3.getZ());
+    }
+
+    /**
+     * Map a quaternion
+     *
+     * @param quaternion The quaternion to map
+     * @return A new quaternion
+     */
+    private Quaternionf mapGltfQuaternion(final GltfQuaternion quaternion) {
+        return new Quaternionf(quaternion.getI(), quaternion.getJ(), quaternion.getK(), quaternion.getA());
+    }
+
+    /**
+     * Map a gltf mesh into a map mapping meshes to their material
+     *
+     * @param mesh The mesh to map
+     * @return A map of meshes mapped to their material
+     */
+    private Map<Mesh, Material> mapGltfMesh(final GltfMesh mesh) {
+        return mesh.getPrimitives().stream().map(this::createMesh).collect(Collectors.toMap(Tuple2::getFirst, Tuple2::getSecond));
     }
 
     /**
@@ -251,8 +343,6 @@ public class GltfLoader {
     private Material mapMaterial(final GltfMaterial gltfMaterial) {
         final GltfColor color = gltfMaterial.getPbrMetallicRoughness().getBaseColorFactor();
         final GltfColor emissive = gltfMaterial.getEmissiveFactor();
-        final float metallic = gltfMaterial.getPbrMetallicRoughness().getMetallicFactor();
-        final float roughness = gltfMaterial.getPbrMetallicRoughness().getRoughnessFactor();
         final Texture diffuseTexture = Optional.ofNullable(gltfMaterial.getPbrMetallicRoughness().getBaseColorTexture())
                 .map(GltfTextureInfo::getTexture).map(this::mapTexture).orElse(null);
         final Texture emissiveTexture = Optional.ofNullable(gltfMaterial.getEmissiveTexture())
@@ -266,8 +356,8 @@ public class GltfLoader {
                 .diffuse(new Color(color.getR(), color.getG(), color.getB(), color.getA()))
                 .emissive(new Color(emissive.getR(), emissive.getG(), emissive.getB(), emissive.getA()))
                 .emissiveIntensity(1f)
-                .roughness(roughness)
-                .metallic(metallic)
+                .roughness(gltfMaterial.getPbrMetallicRoughness().getRoughnessFactor())
+                .metallic(gltfMaterial.getPbrMetallicRoughness().getMetallicFactor())
                 .diffuse(diffuseTexture)
                 .emissive(emissiveTexture)
                 .orm(pbrTexture)

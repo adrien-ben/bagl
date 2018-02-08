@@ -57,7 +57,10 @@ Ambient occlusion maps are not yet supported but when they are, data will be rea
 
 ### Models
 
-Partial support of glTF 2.0 is implemented. For now only static mesh rendering are handle. Sparse accessors are not supported. 
+Partial support of glTF 2.0 is implemented. For now only static mesh rendering are handle. Sparse accessors are not supported.
+
+Model are represented by a graph. The root (represented by the Model class) can contains several nodes (represented by the 
+ModelNode class). Each node can have its own children. A node contains transform data and can contain one or more meshes.
 
 ### Lights
 

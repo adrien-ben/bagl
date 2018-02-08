@@ -1,44 +1,77 @@
 package com.adrien.games.bagl.rendering.model;
 
-import com.adrien.games.bagl.rendering.Material;
+import com.adrien.games.bagl.core.Transform;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
- * A model is a set of {@link Mesh}
+ * A model is the root of a {@link ModelNode} tree
+ * <p>
+ * It contains all the {@link Mesh}es of the hierarchy.
  *
  * @author adrien
  */
-public class Model {
+public final class Model {
 
-    private final Map<Mesh, Material> meshes = new LinkedHashMap<>();
-
-    /**
-     * Add a mesh to the model
-     *
-     * @param mesh     The mesh to add
-     * @param material The material of the model
-     * @return This for chaining
-     */
-    public Model addMesh(final Mesh mesh, final Material material) {
-        this.meshes.put(mesh, material);
-        return this;
-    }
-
-    /**
-     * Return all the meshes of the model
-     *
-     * @return A map of {@link Mesh} coupled with their {@link Material}
-     */
-    public Map<Mesh, Material> getMeshes() {
-        return this.meshes;
-    }
+    private final List<ModelNode> nodes = new ArrayList<>();
+    private final Set<Mesh> meshes = new HashSet<>();
 
     /**
      * Release resources
      */
     public void destroy() {
-        this.meshes.keySet().forEach(Mesh::destroy);
+        this.meshes.forEach(Mesh::destroy);
+    }
+
+    /**
+     * Transform the model
+     * <p>
+     * The call will be forwarded to its nodes
+     *
+     * @param transform The transform to apply to the model
+     */
+    public void transform(final Transform transform) {
+        this.nodes.forEach(node -> node.transform(transform));
+    }
+
+    /**
+     * Add a node the the model
+     *
+     * @param transform The transform of the node to add
+     * @return The new node
+     */
+    public ModelNode addNode(final Transform transform) {
+        final ModelNode node = new ModelNode(this, transform);
+        this.nodes.add(node);
+        return node;
+    }
+
+    /**
+     * Add a node the the model
+     *
+     * @return The new node
+     */
+    public ModelNode addNode() {
+        return this.addNode(new Transform());
+    }
+
+    /**
+     * Register a mesh
+     * <p>
+     * Node added to the hierarchy should register their meshes so their can be
+     * destroyed when the model is destroyed. Since the mesh can be shared between
+     * nodes this helps preventing that meshes are destroyed several time
+     *
+     * @param mesh The mesh to register
+     */
+    void registerMesh(final Mesh mesh) {
+        this.meshes.add(mesh);
+    }
+
+    public List<ModelNode> getNodes() {
+        return this.nodes;
     }
 }

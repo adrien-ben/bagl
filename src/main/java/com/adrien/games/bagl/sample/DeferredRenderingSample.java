@@ -113,14 +113,15 @@ public class DeferredRenderingSample {
 
         private void loadMeshes() {
             this.environmentMap = this.environmentMapGenerator.generateEnvironmentMap(FileUtils.getResourceAbsolutePath("/envmaps/beach.hdr"));
-//            this.environmentMap = this.environmentMapGenerator.generateEnvironmentMap("D:/Images/HDRI/lookout.hdr");
+            //            this.environmentMap = this.environmentMapGenerator.generateEnvironmentMap("D:/Images/HDRI/lookout.hdr");
             this.irradianceMap = this.environmentMapGenerator.generateIrradianceMap(this.environmentMap);
             this.preFilteredMap = this.environmentMapGenerator.generatePreFilteredMap(this.environmentMap);
 
             this.floor = ModelFactory.fromFile(FileUtils.getResourceAbsolutePath("/models/floor/floor.gltf"));
             this.pointBulb = MeshFactory.createSphere(0.1f, 8, 8);
             this.spotBulb = MeshFactory.createCylinder(0.1f, 0.065f, 0.2f, 12);
-            this.boomBox = ModelFactory.fromFile(FileUtils.getResourceAbsolutePath("/models/BoomBox/BoomBox.glb"));
+//            this.boomBox = ModelFactory.fromFile(FileUtils.getResourceAbsolutePath("/models/BoomBox/BoomBox.glb"));
+            this.boomBox = ModelFactory.fromFile("D:\\programming\\glTF-Sample-Models-master\\2.0\\Lantern\\glTF\\Lantern.gltf");
         }
 
         private void initScene() {
@@ -131,13 +132,12 @@ public class DeferredRenderingSample {
 
             final GameObject floorObj = this.scene.getRoot().createChild("floor");
             floorObj.addComponent(new ModelComponent(this.floor));
-            floorObj.getLocalTransform().setScale(new Vector3f(10f, 10f, 10f));
+//            floorObj.getLocalTransform().setScale(new Vector3f(10f, 10f, 10f));
 
             final GameObject gltfObj = floorObj.createChild("gltf");
             gltfObj.addComponent(new ModelComponent(this.boomBox));
-            gltfObj.getLocalTransform().setTranslation(new Vector3f(0f, 0.1f, 0f))
-                    .setRotation(new Quaternionf().rotateY((float) Math.PI))
-                    .setScale(new Vector3f(10f, 10f, 10f));
+//            gltfObj.getLocalTransform().setTranslation(new Vector3f(0f, 0.1f, 0f))
+//                    .setScale(new Vector3f(10f, 10f, 10f));
 
             this.setUpLights();
         }
@@ -187,7 +187,9 @@ public class DeferredRenderingSample {
             modelObject.getLocalTransform().setRotation(new Quaternionf().rotationX((float) Math.toRadians(-90f)));
 
             final Material material = Material.builder().emissive(color).emissiveIntensity(10f).build();
-            modelObject.addComponent(new ModelComponent(new Model().addMesh(mesh, material)));
+            final Model model = new Model();
+            model.addNode().addMesh(mesh, material);
+            modelObject.addComponent(new ModelComponent(model));
 
             return lightObject;
         }

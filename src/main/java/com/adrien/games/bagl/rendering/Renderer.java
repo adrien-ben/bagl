@@ -10,6 +10,7 @@ import com.adrien.games.bagl.rendering.light.SpotLight;
 import com.adrien.games.bagl.rendering.model.Mesh;
 import com.adrien.games.bagl.rendering.model.MeshFactory;
 import com.adrien.games.bagl.rendering.model.Model;
+import com.adrien.games.bagl.rendering.model.ModelNode;
 import com.adrien.games.bagl.rendering.postprocess.PostProcessor;
 import com.adrien.games.bagl.rendering.texture.Cubemap;
 import com.adrien.games.bagl.rendering.texture.Format;
@@ -21,7 +22,10 @@ import com.adrien.games.bagl.scene.components.*;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 import static org.lwjgl.opengl.GL11.*;
 
@@ -54,7 +58,7 @@ public class Renderer implements ComponentVisitor {
     private final List<DirectionalLight> directionalLights;
     private final List<PointLight> pointLights;
     private final List<SpotLight> spotLights;
-    private final Map<Model, Matrix4f> models;
+    private final List<Model> models;
 
     private final Matrix4f wvpBuffer;
     private final Matrix4f lightViewProj;
@@ -90,7 +94,7 @@ public class Renderer implements ComponentVisitor {
         this.directionalLights = new ArrayList<>();
         this.pointLights = new ArrayList<>();
         this.spotLights = new ArrayList<>();
-        this.models = new LinkedHashMap<>();
+        this.models = new ArrayList<>();
 
         this.wvpBuffer = new Matrix4f();
         this.lightViewProj = new Matrix4f();
@@ -259,7 +263,7 @@ public class Renderer implements ComponentVisitor {
             this.shadowBuffer.clear();
             this.shadowShader.bind();
 
-            this.models.forEach((model, transform) -> this.renderModelShadow(model, transform, this.lightViewProj));
+            this.models.forEach(this::renderModelShadow);
 
             Shader.unbind();
             this.shadowBuffer.unbind();
@@ -270,14 +274,23 @@ public class Renderer implements ComponentVisitor {
     /**
      * Render a model in the shadow map
      *
-     * @param model         The model to render
-     * @param transform     The transform matrix of the model
-     * @param lightViewProj The projection/view matrix of the light
+     * @param model The model to render
      */
-    private void renderModelShadow(final Model model, final Matrix4f transform, final Matrix4f lightViewProj) {
-        lightViewProj.mul(transform, this.wvpBuffer);
+    private void renderModelShadow(final Model model) {
+        model.getNodes().forEach(this::renderModelNodeShadow);
+    }
+
+    /**
+     * Render a model node in the shadow map
+     *
+     * @param node The node to render
+     */
+    private void renderModelNodeShadow(final ModelNode node) {
+        final Matrix4f nodeTransform = node.getTransform().getTransformMatrix();
+        this.lightViewProj.mul(nodeTransform, this.wvpBuffer);
         this.shadowShader.setUniform("wvp", this.wvpBuffer);
-        model.getMeshes().keySet().forEach(this::renderMesh);
+        node.getMeshes().keySet().forEach(this::renderMesh);
+        node.getChildren().forEach(this::renderModelNodeShadow);
     }
 
     /**
@@ -297,14 +310,25 @@ public class Renderer implements ComponentVisitor {
     /**
      * Render a model to the GBuffer
      *
-     * @param model     The model to render
-     * @param transform The transform matrix of the model
+     * @param model The model to render
      */
-    private void renderModelToGBuffer(final Model model, final Matrix4f transform) {
-        this.camera.getViewProj().mul(transform, this.wvpBuffer);
-        this.gBufferShader.setUniform("uMatrices.world", transform)
+    private void renderModelToGBuffer(final Model model) {
+        model.getNodes().forEach(this::renderModelNodeToGBuffer);
+    }
+
+    /**
+     * Render a model node to the GBuffer
+     *
+     * @param node The node to render
+     */
+    private void renderModelNodeToGBuffer(final ModelNode node) {
+        final Matrix4f nodeTransform = node.getTransform().getTransformMatrix();
+        this.camera.getViewProj().mul(nodeTransform, this.wvpBuffer);
+        this.gBufferShader
+                .setUniform("uMatrices.world", nodeTransform)
                 .setUniform("uMatrices.wvp", this.wvpBuffer);
-        model.getMeshes().forEach(this::renderMeshToGBuffer);
+        node.getMeshes().forEach(this::renderMeshToGBuffer);
+        node.getChildren().forEach(this::renderModelNodeToGBuffer);
     }
 
     /**
@@ -441,7 +465,7 @@ public class Renderer implements ComponentVisitor {
      */
     @Override
     public void visit(final ModelComponent component) {
-        this.models.put(component.getModel(), component.getParentObject().getTransform().getTransformMatrix());
+        this.models.add(component.getModel());
     }
 
     /**
