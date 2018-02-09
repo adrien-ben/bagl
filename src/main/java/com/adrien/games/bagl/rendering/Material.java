@@ -179,10 +179,10 @@ public class Material {
      */
     public static class Builder {
         private Color diffuseColor = Color.WHITE;
-        private Color emissiveColor = Color.WHITE;
+        private Color emissiveColor = Color.BLACK;
         private float emissiveIntensity = 0f;
-        private float roughness = 0.5f;
-        private float metallic = 0f;
+        private float roughness = 1.0f;
+        private float metallic = 1.0f;
 
         private Texture diffuseMap = null;
         private Texture emissiveMap = null;
