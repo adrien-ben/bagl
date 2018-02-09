@@ -28,10 +28,20 @@ layout (location = 2) out vec3 emissive;
 uniform Material uMaterial;
 
 void main() {
-	colors.rgb = uMaterial.hasDiffuseMap ? pow(texture2D(uMaterial.diffuseMap, passCoords).rgb, vec3(2.2)) : uMaterial.diffuseColor.rgb;
-	float roughness = uMaterial.hasOrmMap ? texture2D(uMaterial.ormMap, passCoords).g : uMaterial.roughness;
+    // diffuse color
+    colors.rgb = uMaterial.diffuseColor.rgb;
+    if(uMaterial.hasDiffuseMap) {
+        colors.rgb *= pow(texture2D(uMaterial.diffuseMap, passCoords).rgb, vec3(2.2));
+    }
+
+    // roughness
+    float roughness = uMaterial.roughness;
+    if(uMaterial.hasOrmMap) {
+        roughness *= texture2D(uMaterial.ormMap, passCoords).g;
+    }
     colors.a = clamp(roughness, 0.03, 1.0);
 
+    // normals
 	vec3 normal;
 	if(uMaterial.hasNormalMap) {
 		normal = normalize(texture2D(uMaterial.normalMap, passCoords).rgb*2 - 1);
@@ -39,10 +49,15 @@ void main() {
 	} else {
 		normal = normalize(passNormal);
 	}
-
 	normals.rgb = normal*0.5 + 0.5;
-	normals.a = uMaterial.hasOrmMap ? texture2D(uMaterial.ormMap, passCoords).b : uMaterial.metallic;
 
+    // metallic
+	normals.a = uMaterial.metallic;
+	if(uMaterial.hasOrmMap) {
+	    normals.a *= texture2D(uMaterial.ormMap, passCoords).b;
+	}
+
+    // emissive color
     emissive = uMaterial.emissiveColor.rgb*uMaterial.emissiveIntensity;
     if(uMaterial.hasEmissiveMap) {
         emissive *= pow(texture2D(uMaterial.emissiveMap, passCoords).rgb, vec3(2.2));
