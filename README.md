@@ -51,9 +51,11 @@ We use the roughness/metallic workflow. The materials are described as follows :
 - ORM (Occlusion/Roughness/Metalness) map (Texture, Optional) 
 - Normal map (Texture, Optional)
 - Emissive color (Color or Texture)
+- Double sided flag
 
 For ORM maps, roughness must be put in the green channel and metalness in the blue channel.
 Ambient occlusion maps are not yet supported but when they are, data will be read from the red channel of the same map.
+For double sided materials, normals will be automatically inverted during the fragment shader stage.
 
 ### Models
 

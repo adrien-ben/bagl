@@ -49,7 +49,13 @@ void main() {
 	} else {
 		normal = normalize(passNormal);
 	}
+	if(!gl_FrontFacing) {
+	    normal *= -1;
+    }
+
 	normals.rgb = normal*0.5 + 0.5;
+
+
 
     // metallic
 	normals.a = uMaterial.metallic;

@@ -289,8 +289,24 @@ public class Renderer implements ComponentVisitor {
         final Matrix4f nodeTransform = node.getTransform().getTransformMatrix();
         this.lightViewProj.mul(nodeTransform, this.wvpBuffer);
         this.shadowShader.setUniform("wvp", this.wvpBuffer);
-        node.getMeshes().keySet().forEach(this::renderMesh);
+        node.getMeshes().forEach(this::renderMeshShadow);
         node.getChildren().forEach(this::renderModelNodeShadow);
+    }
+
+    /**
+     * Render a mesh to the shadow map
+     *
+     * @param mesh     The mesh to render
+     * @param material The material to use
+     */
+    private void renderMeshShadow(final Mesh mesh, final Material material) {
+        if (material.isDoubleSided()) {
+            glDisable(GL_CULL_FACE);
+        }
+        this.renderMesh(mesh);
+        if (material.isDoubleSided()) {
+            glEnable(GL_CULL_FACE);
+        }
     }
 
     /**
@@ -338,11 +354,17 @@ public class Renderer implements ComponentVisitor {
      * @param material The material to apply
      */
     private void renderMeshToGBuffer(final Mesh mesh, final Material material) {
+        if (material.isDoubleSided()) {
+            glDisable(GL_CULL_FACE);
+        }
         material.applyTo(this.gBufferShader);
         this.renderMesh(mesh);
         Texture.unbind();
         Texture.unbind(1);
         Texture.unbind(2);
+        if (material.isDoubleSided()) {
+            glEnable(GL_CULL_FACE);
+        }
     }
 
     /**

@@ -362,6 +362,7 @@ public class GltfLoader {
                 .emissive(emissiveTexture)
                 .orm(pbrTexture)
                 .normals(normalMap)
+                .doubleSided(gltfMaterial.getDoubleSided())
                 .build();
     }
 

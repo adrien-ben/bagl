@@ -21,6 +21,8 @@ import java.util.Objects;
  * <li>An emissive texture (default: null)
  * <li>An ORM (Occlusion/Roughness/Metalness) texture (default: null)
  * <li>A normal texture (default: null)
+ * <p>
+ * <li>A double sided flag (default: false)
  * </ul>
  * <p>
  * To construct a material you have to use a material builder :
@@ -53,6 +55,8 @@ public class Material {
     private final Texture ormMap;
     private final Texture normalMap;
 
+    private final boolean doubleSided;
+
     private Material(final Builder builder) {
         this.diffuseColor = builder.diffuseColor;
         this.emissiveColor = builder.emissiveColor;
@@ -64,6 +68,8 @@ public class Material {
         this.emissiveMap = builder.emissiveMap;
         this.ormMap = builder.ormMap;
         this.normalMap = builder.normalMap;
+
+        this.doubleSided = builder.doubleSided;
     }
 
     /**
@@ -174,6 +180,10 @@ public class Material {
         return normalMap;
     }
 
+    public boolean isDoubleSided() {
+        return this.doubleSided;
+    }
+
     /**
      * Material builder
      */
@@ -188,6 +198,8 @@ public class Material {
         private Texture emissiveMap = null;
         private Texture ormMap = null;
         private Texture normalMap = null;
+
+        private boolean doubleSided = false;
 
         /**
          * Private constructor to private instantiation
@@ -249,6 +261,11 @@ public class Material {
 
         public Builder normals(final Texture normalMap) {
             this.normalMap = normalMap;
+            return this;
+        }
+
+        public Builder doubleSided(final boolean doubleSided) {
+            this.doubleSided = doubleSided;
             return this;
         }
     }
