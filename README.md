@@ -64,6 +64,9 @@ Partial support of glTF 2.0 is implemented. For now only static mesh rendering a
 Model are represented by a graph. The root (represented by the Model class) can contains several nodes (represented by the 
 ModelNode class). Each node can have its own children. A node contains transform data and can contain one or more meshes.
 
+> Normals and tangents are not computed after load. So make sur that models you import already contain those. Models without
+> normals won't be lit and models using normal mapping but whose tangent are not provided will be either not lit or incorrectly lit.
+
 ### Lights
 
 The renderer supports directional, point, and spot lights. Some area lights will be implemented (sphere and tube).
