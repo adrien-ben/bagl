@@ -2,6 +2,8 @@
 
 baGL is an OpenGL framework that I use for educational purpose. It uses [LWJGL 3](https://www.lwjgl.org/) and [JOML](https://github.com/JOML-CI/JOML).
 
+![Screenshot](images/screenshot_720p.bmp "Screenshot")
+
 ## Features
 
 - Deferred Rendering
