@@ -87,7 +87,6 @@ Basic shadow mapping is implemented. It only works for one directional light (Th
     - Fixing shadows
     - Some form of anti-aliasing
     - UI (third party ?)
-    - Fix emissive map artifacts
 - Assets management
 - OpenGL state manager
 - Composed shaders (#import library.glsl)
