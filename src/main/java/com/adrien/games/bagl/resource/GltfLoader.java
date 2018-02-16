@@ -20,7 +20,7 @@ import com.adrien.games.bagl.rendering.vertex.VertexBufferParams;
 import com.adrien.games.bagl.rendering.vertex.VertexElement;
 import com.adrien.games.bagl.utils.CollectionUtils;
 import com.adrien.games.bagl.utils.Tuple2;
-import com.adrien.tools.gltf.*;
+import com.adrienben.tools.gltf.models.*;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.lwjgl.system.MemoryUtil;
