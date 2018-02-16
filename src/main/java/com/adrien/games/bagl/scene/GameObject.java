@@ -32,7 +32,7 @@ import java.util.*;
 public class GameObject {
 
     private final String id;
-    private final List<String> tags;
+    private final Set<String> tags;
     private final Transform localTransform;
     private final Transform transform;
     private Scene parentScene;
@@ -52,7 +52,7 @@ public class GameObject {
      */
     public GameObject(final Scene parent, final String id, final String... tags) {
         this.id = id;
-        this.tags = Arrays.asList(tags);
+        this.tags = Set.of(tags);
         this.localTransform = new Transform();
         this.transform = new Transform();
         this.parentScene = parent;
@@ -169,7 +169,7 @@ public class GameObject {
         return this.id;
     }
 
-    public List<String> getTags() {
+    public Set<String> getTags() {
         return this.tags;
     }
 }
