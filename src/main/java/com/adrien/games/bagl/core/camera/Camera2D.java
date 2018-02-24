@@ -1,5 +1,6 @@
 package com.adrien.games.bagl.core.camera;
 
+import com.adrien.games.bagl.utils.Dirtiable;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 import org.joml.Vector2f;
@@ -16,8 +17,7 @@ public class Camera2D {
     private final int width;
     private final int height;
 
-    private final Matrix4f orthographic;
-    private boolean dirty;
+    private final Dirtiable<Matrix4f> orthographic;
 
     /**
      * Construct a 2D camera
@@ -30,18 +30,17 @@ public class Camera2D {
         this.position = new Vector2f(position);
         this.width = width;
         this.height = height;
-        this.orthographic = new Matrix4f();
-        this.computeOrthographic();
+        this.orthographic = new Dirtiable<>(new Matrix4f(), this::computeOrthographic);
+        this.computeOrthographic(this.orthographic.get());
     }
 
     /**
      * Compute the orthographic projection matrix
      */
-    private void computeOrthographic() {
+    private void computeOrthographic(final Matrix4f orthographic) {
         final int left = Math.round(position.x()) - this.width / 2;
         final int bottom = Math.round(position.y()) - this.height / 2;
-        this.orthographic.setOrtho2D(left, left + this.width, bottom, bottom + this.height);
-        this.dirty = false;
+        orthographic.setOrtho2D(left, left + this.width, bottom, bottom + this.height);
     }
 
     /**
@@ -51,7 +50,7 @@ public class Camera2D {
      */
     public void translate(final Vector2fc translation) {
         this.position.add(translation);
-        this.dirty = true;
+        this.orthographic.dirty();
     }
 
     public Vector2fc getPosition() {
@@ -60,7 +59,7 @@ public class Camera2D {
 
     public void setPosition(final Vector2fc position) {
         this.position.set(position);
-        this.dirty = true;
+        this.orthographic.dirty();
     }
 
     public int getWidth() {
@@ -72,9 +71,6 @@ public class Camera2D {
     }
 
     public Matrix4fc getOrthographic() {
-        if (this.dirty) {
-            this.computeOrthographic();
-        }
-        return this.orthographic;
+        return this.orthographic.get();
     }
 }

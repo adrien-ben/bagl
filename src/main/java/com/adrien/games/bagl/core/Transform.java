@@ -1,8 +1,7 @@
 package com.adrien.games.bagl.core;
 
-import org.joml.Matrix4f;
-import org.joml.Quaternionf;
-import org.joml.Vector3f;
+import com.adrien.games.bagl.utils.Dirtiable;
+import org.joml.*;
 
 /**
  * A transform represents a translation, rotation and scaling in space
@@ -11,24 +10,22 @@ import org.joml.Vector3f;
  */
 public class Transform {
 
-    private Vector3f translation;
-    private Quaternionf rotation;
-    private Vector3f scale;
-    private final Matrix4f transform;
-    private boolean isDirty;
+    private final Vector3f translation;
+    private final Quaternionf rotation;
+    private final Vector3f scale;
+    private final Dirtiable<Matrix4f> transform;
 
     /**
      * Construct a transform
      * <p>
      * By default their is no translation nor rotation and scale
-     * is set to (1, 1, )
+     * is set to (1, 1, 1)
      */
     public Transform() {
         this.translation = new Vector3f();
         this.rotation = new Quaternionf();
         this.scale = new Vector3f(1, 1, 1);
-        this.transform = new Matrix4f();
-        this.isDirty = false;
+        this.transform = new Dirtiable<>(new Matrix4f(), this::computeTransform);
     }
 
     /**
@@ -57,17 +54,18 @@ public class Transform {
         toTransform.translation.mulPosition(tm, result.translation);
         toTransform.scale.mul(transform.scale, result.scale);
         toTransform.rotation.mul(transform.rotation, result.rotation);
-        result.isDirty = true;
+        result.transform.dirty();
     }
 
     /**
      * Compute the transform matrix
+     *
+     * @param transform The result of the computation.
      */
-    private void computeTransform() {
-        this.transform.translation(this.translation)
+    private void computeTransform(final Matrix4f transform) {
+        transform.translation(this.translation)
                 .rotate(this.rotation)
                 .scale(this.scale);
-        this.isDirty = false;
     }
 
     /**
@@ -80,7 +78,7 @@ public class Transform {
         this.translation.set(other.translation);
         this.rotation.set(other.rotation);
         this.scale.set(other.scale);
-        this.isDirty = true;
+        this.transform.dirty();
         return this;
     }
 
@@ -94,10 +92,7 @@ public class Transform {
      * @return The transformation matrix
      */
     public Matrix4f getTransformMatrix() {
-        if (this.isDirty) {
-            this.computeTransform();
-        }
-        return this.transform;
+        return this.transform.get();
     }
 
     /**
@@ -107,9 +102,9 @@ public class Transform {
      * @param translation The translation vector to set
      * @return This for chaining
      */
-    public Transform setTranslation(final Vector3f translation) {
-        this.translation = translation;
-        this.isDirty = true;
+    public Transform setTranslation(final Vector3fc translation) {
+        this.translation.set(translation);
+        this.transform.dirty();
         return this;
     }
 
@@ -120,9 +115,9 @@ public class Transform {
      * @param rotation The rotation to set
      * @return This for chaining
      */
-    public Transform setRotation(final Quaternionf rotation) {
-        this.rotation = rotation;
-        this.isDirty = true;
+    public Transform setRotation(final Quaternionfc rotation) {
+        this.rotation.set(rotation);
+        this.transform.dirty();
         return this;
     }
 
@@ -133,21 +128,21 @@ public class Transform {
      * @param scale The scale vector to set
      * @return This for chaining
      */
-    public Transform setScale(final Vector3f scale) {
-        this.scale = scale;
-        this.isDirty = true;
+    public Transform setScale(final Vector3fc scale) {
+        this.scale.set(scale);
+        this.transform.dirty();
         return this;
     }
 
-    public Vector3f getTranslation() {
+    public Vector3fc getTranslation() {
         return translation;
     }
 
-    public Quaternionf getRotation() {
+    public Quaternionfc getRotation() {
         return rotation;
     }
 
-    public Vector3f getScale() {
+    public Vector3fc getScale() {
         return scale;
     }
 }

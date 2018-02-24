@@ -1,6 +1,6 @@
 package com.adrien.games.bagl.core.math;
 
-import org.joml.Quaternionf;
+import org.joml.Quaternionfc;
 import org.joml.Vector3f;
 
 /**
@@ -23,7 +23,7 @@ public class Quaternions {
      * @param q The quaternion to retrieve the forward vector from
      * @return A new {@link Vector3f} representing
      */
-    public static Vector3f getForwardVector(final Quaternionf q) {
+    public static Vector3f getForwardVector(final Quaternionfc q) {
         return Quaternions.getForwardVector(q, new Vector3f());
     }
 
@@ -36,7 +36,7 @@ public class Quaternions {
      * @param target The vector where to store the result
      * @return target
      */
-    public static Vector3f getForwardVector(final Quaternionf q, final Vector3f target) {
+    public static Vector3f getForwardVector(final Quaternionfc q, final Vector3f target) {
         return q.transformPositiveZ(target);
     }
 }

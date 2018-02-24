@@ -1,5 +1,6 @@
 package com.adrien.games.bagl.core.camera;
 
+import com.adrien.games.bagl.utils.Dirtiable;
 import org.joml.*;
 
 /**
@@ -9,33 +10,33 @@ import org.joml.*;
  */
 public class Camera {
 
-    private Vector3f position;
-    private Vector3f direction;
-    private Vector3f target;
-    private Vector3f up;
-    private Vector3f side;
+    private final Vector3f position;
+    private final Vector3f direction;
+    private final Vector3f target;
+    private final Vector3f up;
+    private final Vector3f side;
 
     private final float fov;
     private final float aspectRatio;
     private final float zNear;
     private final float zFar;
 
-    private final Matrix4f projection;
-    private final Matrix4f view;
-    private final Matrix4f viewProj;
-    private final Matrix4f invertedViewProj;
-    private final Matrix4f viewAtOrigin;
-    private final Matrix4f viewProjAtOrigin;
+    private final Dirtiable<Matrix4f> projection;
+    private final Dirtiable<Matrix4f> view;
+    private final Dirtiable<Matrix4f> viewProj;
+    private final Dirtiable<Matrix4f> invertedViewProj;
+    private final Dirtiable<Matrix4f> viewAtOrigin;
+    private final Dirtiable<Matrix4f> viewProjAtOrigin;
 
-    private boolean dirtyProj;
-    private boolean dirtyView;
-    private boolean dirtyViewProj;
-    private boolean dirtyInvertedViewProj;
-    private boolean dirtyViewAtOrigin;
-    private boolean dirtyViewProjAtOrigin;
-
-    public Camera(final Vector3fc position, final Vector3fc direction, final Vector3fc up, final float fovRads, final float aspectRatio,
-                  final float zNear, final float zFar) {
+    public Camera(
+            final Vector3fc position,
+            final Vector3fc direction,
+            final Vector3fc up,
+            final float fovRads,
+            final float aspectRatio,
+            final float zNear,
+            final float zFar
+    ) {
         this.position = new Vector3f(position);
         this.direction = new Vector3f(direction);
         this.target = new Vector3f(position).add(direction);
@@ -47,21 +48,17 @@ public class Camera {
         this.zNear = zNear;
         this.zFar = zFar;
 
-        this.projection = new Matrix4f().setPerspective(this.fov, this.aspectRatio, this.zNear, this.zFar);
+        // camera
+        this.projection = new Dirtiable<>(new Matrix4f(), projection -> projection.setPerspective(this.fov, this.aspectRatio, this.zNear, this.zFar));
+        this.view = new Dirtiable<>(new Matrix4f(), view -> view.setLookAt(this.position, this.target, this.up));
+        this.viewProj = new Dirtiable<>(new Matrix4f(), viewProj -> this.projection.get().mulPerspectiveAffine(this.view.get(), viewProj));
 
-        this.view = new Matrix4f().setLookAt(this.position, this.target, this.up);
-        this.viewProj = new Matrix4f(this.projection).mulPerspectiveAffine(this.view);
-        this.invertedViewProj = new Matrix4f();
-        this.projection.invertPerspectiveView(this.view, this.invertedViewProj);
+        // inverted
+        this.invertedViewProj = new Dirtiable<>(new Matrix4f(), inverted -> this.projection.get().invertPerspectiveView(this.view.get(), inverted));
 
-        this.viewAtOrigin = new Matrix4f().setLookAlong(this.direction, this.up);
-        this.viewProjAtOrigin = new Matrix4f(this.projection).mulPerspectiveAffine(this.viewAtOrigin);
-        this.dirtyProj = false;
-        this.dirtyView = false;
-        this.dirtyViewProj = false;
-        this.dirtyInvertedViewProj = false;
-        this.dirtyViewAtOrigin = false;
-        this.dirtyViewProjAtOrigin = false;
+        // at origin
+        this.viewAtOrigin = new Dirtiable<>(new Matrix4f(), viewAtOrigin -> viewAtOrigin.setLookAlong(this.direction, this.up));
+        this.viewProjAtOrigin = new Dirtiable<>(new Matrix4f(), atOrigin -> this.projection.get().mulPerspectiveAffine(this.viewAtOrigin.get(), atOrigin));
     }
 
     /**
@@ -75,11 +72,11 @@ public class Camera {
         this.up.rotate(rotation);
         this.position.add(this.direction, this.target);
         this.direction.cross(this.up, this.side);
-        this.dirtyView = true;
-        this.dirtyViewProj = true;
-        this.dirtyInvertedViewProj = true;
-        this.dirtyViewAtOrigin = true;
-        this.dirtyViewProjAtOrigin = true;
+        this.view.dirty();
+        this.viewProj.dirty();
+        this.invertedViewProj.dirty();
+        this.viewAtOrigin.dirty();
+        this.viewProjAtOrigin.dirty();
         return this;
     }
 
@@ -93,9 +90,9 @@ public class Camera {
     public Camera move(final Vector3fc direction) {
         this.position.add(direction);
         this.position.add(this.direction, this.target);
-        this.dirtyView = true;
-        this.dirtyViewProj = true;
-        this.dirtyInvertedViewProj = true;
+        this.view.dirty();
+        this.viewProj.dirty();
+        this.invertedViewProj.dirty();
         return this;
     }
 
@@ -105,11 +102,7 @@ public class Camera {
      * @return The projection matrix
      */
     public Matrix4fc getProjection() {
-        if (this.dirtyProj) {
-            this.projection.setPerspective(this.fov, this.aspectRatio, this.zNear, this.zFar);
-            this.dirtyProj = false;
-        }
-        return this.projection;
+        return this.projection.get();
     }
 
     /**
@@ -118,11 +111,7 @@ public class Camera {
      * @return The view matrix
      */
     public Matrix4fc getView() {
-        if (this.dirtyView) {
-            this.view.setLookAt(this.position, this.target, this.up);
-            this.dirtyView = false;
-        }
-        return this.view;
+        return this.view.get();
     }
 
     /**
@@ -132,11 +121,7 @@ public class Camera {
      * @return The view/projection matrix
      */
     public Matrix4fc getViewProj() {
-        if (this.dirtyViewProj) {
-            this.getProjection().mulPerspectiveAffine(this.getView(), this.viewProj);
-            this.dirtyViewProj = false;
-        }
-        return this.viewProj;
+        return this.viewProj.get();
     }
 
     /**
@@ -145,11 +130,7 @@ public class Camera {
      * @return The inverse of the view/projection matrix
      */
     public Matrix4fc getInvertedViewProj() {
-        if (this.dirtyInvertedViewProj) {
-            this.getProjection().invertPerspectiveView(this.getView(), this.invertedViewProj);
-            this.dirtyInvertedViewProj = false;
-        }
-        return this.invertedViewProj;
+        return this.invertedViewProj.get();
     }
 
     /**
@@ -158,11 +139,7 @@ public class Camera {
      * @return The view matrix at origin
      */
     public Matrix4fc getViewAtOrigin() {
-        if (this.dirtyViewAtOrigin) {
-            this.viewAtOrigin.setLookAlong(this.direction, this.up);
-            this.dirtyViewAtOrigin = false;
-        }
-        return this.viewAtOrigin;
+        return this.viewAtOrigin.get();
     }
 
     /**
@@ -172,11 +149,7 @@ public class Camera {
      * @return The view/projection matrix at origin
      */
     public Matrix4fc getViewProjAtOrigin() {
-        if (this.dirtyViewProjAtOrigin) {
-            this.getProjection().mulPerspectiveAffine(this.getViewAtOrigin(), this.viewProjAtOrigin);
-            this.dirtyViewProjAtOrigin = false;
-        }
-        return this.viewProjAtOrigin;
+        return this.viewProjAtOrigin.get();
     }
 
     public Vector3fc getPosition() {
@@ -198,29 +171,29 @@ public class Camera {
     public void setPosition(final Vector3fc position) {
         this.position.set(position);
         this.position.add(this.direction, this.target);
-        this.dirtyView = true;
-        this.dirtyViewProj = true;
-        this.dirtyInvertedViewProj = true;
+        this.view.dirty();
+        this.viewProj.dirty();
+        this.invertedViewProj.dirty();
     }
 
     public void setDirection(final Vector3fc direction) {
         this.direction.set(direction);
         this.position.add(this.direction, this.target);
         this.direction.cross(this.up, this.side);
-        this.dirtyView = true;
-        this.dirtyViewProj = true;
-        this.dirtyInvertedViewProj = true;
-        this.dirtyViewAtOrigin = true;
-        this.dirtyViewProjAtOrigin = true;
+        this.view.dirty();
+        this.viewProj.dirty();
+        this.invertedViewProj.dirty();
+        this.viewAtOrigin.dirty();
+        this.viewProjAtOrigin.dirty();
     }
 
     public void setUp(final Vector3fc up) {
         this.up.set(up);
         this.direction.cross(this.up, this.side);
-        this.dirtyView = true;
-        this.dirtyViewProj = true;
-        this.dirtyInvertedViewProj = true;
-        this.dirtyViewAtOrigin = true;
-        this.dirtyViewProjAtOrigin = true;
+        this.view.dirty();
+        this.viewProj.dirty();
+        this.invertedViewProj.dirty();
+        this.viewAtOrigin.dirty();
+        this.viewProjAtOrigin.dirty();
     }
 }
