@@ -17,7 +17,7 @@ import org.lwjgl.glfw.GLFW;
  */
 public class OrbitalCameraController extends CameraController {
 
-    private Vector3f target;
+    private final Vector3f target;
     private float distance;
     private float phi;
     private float theta;

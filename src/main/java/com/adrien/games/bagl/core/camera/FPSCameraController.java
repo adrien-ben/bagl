@@ -21,10 +21,10 @@ public class FPSCameraController extends CameraController {
     private static final float DEFAULT_DEGREES_PER_PIXEL = 0.15f;
     private static final float DEFAULT_MOVEMENT_SPEED = 8f;
 
-    private Vector3f forward;
-    private Vector3f side;
-    private Vector3f up;
-    private Vector3f direction;
+    private final Vector3f forward;
+    private final Vector3f side;
+    private final Vector3f up;
+    private final Vector3f direction;
 
     /**
      * Construct a FPS camera controller

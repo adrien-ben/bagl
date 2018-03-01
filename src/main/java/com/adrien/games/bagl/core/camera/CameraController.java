@@ -9,7 +9,7 @@ import com.adrien.games.bagl.core.Time;
  */
 public abstract class CameraController {
 
-    protected Camera camera;
+    protected final Camera camera;
 
     public CameraController(final Camera camera) {
         this.camera = camera;
