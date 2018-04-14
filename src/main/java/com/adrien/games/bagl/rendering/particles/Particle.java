@@ -29,12 +29,12 @@ public class Particle {
     public void update(Time time) {
         this.alive = this.timeLeft > 0;
         if (this.alive) {
-            final float elapsedTime = time.getElapsedTime();
+            final var elapsedTime = time.getElapsedTime();
             this.timeLeft -= elapsedTime;
             this.direction.normalize().mul(elapsedTime * this.speed);
             this.position.add(this.direction);
 
-            final float life = this.timeLeft / this.ttl;
+            final var life = this.timeLeft / this.ttl;
             Color.blend(this.startColor, this.endColor, life, this.color);
         }
     }

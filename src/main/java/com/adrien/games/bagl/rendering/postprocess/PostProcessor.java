@@ -30,7 +30,7 @@ public class PostProcessor {
     private Mesh screenQuad;
 
     public PostProcessor(final int xResolution, final int yResolution) {
-        final FrameBufferParameters parameters = FrameBufferParameters.builder().hasDepthStencil(false).colorOutputFormat(Format.RGB16F).build();
+        final var parameters = FrameBufferParameters.builder().hasDepthStencil(false).colorOutputFormat(Format.RGB16F).build();
         this.bloomBuffer = new FrameBuffer(xResolution, yResolution, parameters);
         this.blurBuffer = new DoubleBuffer<>(() -> new FrameBuffer(xResolution, yResolution, parameters));
 
@@ -80,9 +80,9 @@ public class PostProcessor {
 
     private void performGaussianBlur(final Texture image) {
         this.blurShader.bind();
-        boolean horizontal = true;
+        var horizontal = true;
 
-        for (int i = 0; i < 10; i++, horizontal = !horizontal) {
+        for (var i = 0; i < 10; i++, horizontal = !horizontal) {
             this.blurBuffer.getWriteBuffer().bind();
             this.blurBuffer.getWriteBuffer().clear();
             this.blurShader.setUniform("horizontal", horizontal);

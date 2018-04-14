@@ -59,8 +59,8 @@ public class Color {
      * @param result      The color where to store the result.
      */
     public static void blend(Color color, Color other, float blendFactor, Color result) {
-        final float clampedBlendFactor = MathUtils.clamp(blendFactor, 0, 1);
-        final float oneMinusBlendFactor = 1 - clampedBlendFactor;
+        final var clampedBlendFactor = MathUtils.clamp(blendFactor, 0, 1);
+        final var oneMinusBlendFactor = 1 - clampedBlendFactor;
         result.setRed(clampedBlendFactor * color.getRed() + oneMinusBlendFactor * other.getRed());
         result.setGreen(clampedBlendFactor * color.getGreen() + oneMinusBlendFactor * other.getGreen());
         result.setBlue(clampedBlendFactor * color.getBlue() + oneMinusBlendFactor * other.getBlue());

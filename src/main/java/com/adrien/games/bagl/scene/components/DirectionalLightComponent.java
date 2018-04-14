@@ -5,7 +5,6 @@ import com.adrien.games.bagl.core.math.Quaternions;
 import com.adrien.games.bagl.rendering.light.DirectionalLight;
 import com.adrien.games.bagl.scene.Component;
 import com.adrien.games.bagl.scene.ComponentVisitor;
-import org.joml.Quaternionfc;
 
 /**
  * Scene component containing a directional light
@@ -32,7 +31,7 @@ public class DirectionalLightComponent extends Component {
      */
     @Override
     public void update(final Time time) {
-        final Quaternionfc rotation = super.parentObject.getTransform().getRotation();
+        final var rotation = super.parentObject.getTransform().getRotation();
         this.light.setDirection(Quaternions.getForwardVector(rotation));
     }
 

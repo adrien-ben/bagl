@@ -6,8 +6,6 @@ import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
 
-import java.nio.DoubleBuffer;
-
 /**
  * Window class.
  * <p>
@@ -33,7 +31,7 @@ final class Window {
      * @param vSync      Enables vertical synchronisation.
      * @param fullScreen Enables full screen mode.
      */
-    Window(String title, int width, int height, boolean vSync, boolean fullScreen) {
+    Window(final String title, final int width, final int height, final boolean vSync, final boolean fullScreen) {
         this.width = width;
         this.height = height;
 
@@ -41,7 +39,7 @@ final class Window {
         GLFW.glfwSetErrorCallback(GLFWErrorCallback.createPrint(System.err));
         GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_FALSE);
 
-        final long primaryMonitor = fullScreen ? GLFW.glfwGetPrimaryMonitor() : 0;
+        final var primaryMonitor = fullScreen ? GLFW.glfwGetPrimaryMonitor() : 0;
         this.windowHandle = GLFW.glfwCreateWindow(this.width, this.height, title, primaryMonitor, 0);
         if (this.windowHandle == 0) {
             throw new EngineException("Failed to create window");
@@ -77,8 +75,8 @@ final class Window {
      */
     private void updateCursorPosition() {
         try (final MemoryStack stack = MemoryStack.stackPush()) {
-            final DoubleBuffer x = stack.mallocDouble(1);
-            final DoubleBuffer y = stack.mallocDouble(1);
+            final var x = stack.mallocDouble(1);
+            final var y = stack.mallocDouble(1);
             GLFW.glfwGetCursorPos(this.windowHandle, x, y);
             Input.handleMouseMove(this.windowHandle, x.get(), this.height - y.get(), true);
         }

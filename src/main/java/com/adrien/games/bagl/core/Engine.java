@@ -23,7 +23,7 @@ public final class Engine {
         if (Objects.isNull(game)) {
             throw new IllegalArgumentException("The argument game cannot be null.");
         }
-        final Configuration configuration = Configuration.getInstance();
+        final var configuration = Configuration.getInstance();
         this.game = game;
         this.window = new Window(title,
                 configuration.getXResolution(),

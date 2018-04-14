@@ -7,7 +7,6 @@ import com.adrien.games.bagl.rendering.BlendMode;
 import com.adrien.games.bagl.rendering.BufferUsage;
 import com.adrien.games.bagl.rendering.Shader;
 import com.adrien.games.bagl.rendering.texture.Texture;
-import com.adrien.games.bagl.rendering.texture.TextureRegion;
 import com.adrien.games.bagl.rendering.vertex.*;
 import org.joml.Vector2f;
 import org.lwjgl.opengl.GL11;
@@ -15,7 +14,6 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
-import java.nio.ShortBuffer;
 import java.util.Objects;
 
 /**
@@ -70,11 +68,11 @@ public class TextRenderer {
      * Initialize indices
      */
     private IndexBuffer initIndices() {
-        try (final MemoryStack stack = MemoryStack.stackPush()) {
-            final ShortBuffer indices = stack.mallocShort(MAX_TEXT_LENGTH * INDICES_PER_CHAR);
-            for (int i = 0; i < MAX_TEXT_LENGTH; i++) {
-                final int offset = i * INDICES_PER_CHAR;
-                final int firstIndex = i * VERTICES_PER_CHAR;
+        try (final var stack = MemoryStack.stackPush()) {
+            final var indices = stack.mallocShort(MAX_TEXT_LENGTH * INDICES_PER_CHAR);
+            for (var i = 0; i < MAX_TEXT_LENGTH; i++) {
+                final var offset = i * INDICES_PER_CHAR;
+                final var firstIndex = i * VERTICES_PER_CHAR;
                 indices.put(offset, (short) firstIndex);
                 indices.put(offset + 1, (short) (firstIndex + 1));
                 indices.put(offset + 2, (short) (firstIndex + 2));
@@ -131,20 +129,20 @@ public class TextRenderer {
      * @param color    The color of the text
      */
     public void render(final String text, final Font font, final Vector2f position, final float scale, final Color color) {
-        final float aspectRatio = (float) this.configuration.getXResolution() / this.configuration.getYResolution();
-        final float vScale = scale / font.getLineGap() * 2;
-        final float hScale = vScale / aspectRatio;
+        final var aspectRatio = (float) this.configuration.getXResolution() / this.configuration.getYResolution();
+        final var vScale = scale / font.getLineGap() * 2;
+        final var hScale = vScale / aspectRatio;
 
-        final Caret caret = new Caret(font.getLineGap() * vScale, position.x() * 2 - HALF_SCREEN_SIZE,
+        final var caret = new Caret(font.getLineGap() * vScale, position.x() * 2 - HALF_SCREEN_SIZE,
                 position.y() * 2 - HALF_SCREEN_SIZE);
 
-        final int textLength = text.length();
-        for (int i = 0; i < textLength; i++) {
-            final char c = text.charAt(i);
+        final var textLength = text.length();
+        for (var i = 0; i < textLength; i++) {
+            final var c = text.charAt(i);
             if (c == '\n' || c == '\r') {
                 caret.nextLine();
             } else {
-                final Glyph glyph = font.getGlyph(c);
+                final var glyph = font.getGlyph(c);
                 if (Objects.nonNull(glyph)) {
                     this.generateGlyphVertices(glyph, caret, hScale, vScale, color);
                 }
@@ -163,14 +161,14 @@ public class TextRenderer {
      * @param color  The color of the text
      */
     private void generateGlyphVertices(final Glyph glyph, final Caret caret, final float hScale, final float vScale, final Color color) {
-        final TextureRegion region = glyph.getRegion();
+        final var region = glyph.getRegion();
 
-        final float left = caret.isNewLine() ? caret.getX() : glyph.getXOffset() * hScale + caret.getX();
-        final float right = left + (region.getRight() - region.getLeft()) * hScale;
-        final float bottom = caret.getY() + glyph.getYOffset() * vScale;
-        final float top = bottom + (region.getTop() - region.getBottom()) * vScale;
+        final var left = caret.isNewLine() ? caret.getX() : glyph.getXOffset() * hScale + caret.getX();
+        final var right = left + (region.getRight() - region.getLeft()) * hScale;
+        final var bottom = caret.getY() + glyph.getYOffset() * vScale;
+        final var top = bottom + (region.getTop() - region.getBottom()) * vScale;
 
-        final int vertexIndex = this.bufferedChar * VERTICES_PER_CHAR;
+        final var vertexIndex = this.bufferedChar * VERTICES_PER_CHAR;
         this.updateVertex(vertexIndex, left, bottom, region.getLeft(), region.getBottom(), color);
         this.updateVertex(vertexIndex + 1, right, bottom, region.getRight(), region.getBottom(), color);
         this.updateVertex(vertexIndex + 2, left, top, region.getLeft(), region.getTop(), color);
@@ -191,7 +189,7 @@ public class TextRenderer {
      * @param color       The color of the vertex
      */
     private void updateVertex(final int vertexIndex, final float x, final float y, final float u, final float v, final Color color) {
-        final int index = vertexIndex * ELEMENTS_PER_VERTEX;
+        final var index = vertexIndex * ELEMENTS_PER_VERTEX;
         this.vertices.put(index, x);
         this.vertices.put(index + 1, y);
         this.vertices.put(index + 2, u);

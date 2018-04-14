@@ -5,7 +5,6 @@ import com.adrien.games.bagl.utils.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.stream.Collectors;
 
@@ -30,8 +29,8 @@ public class ShaderLoader {
      */
     public String loadSourceFromResource(final String resourceName) {
         LOG.trace("Loading shader source from resources file: {}", resourceName);
-        final String resourcePath = BASE_SHADER_DIRECTORY + resourceName.replaceAll("^/*", "");
-        try (final BufferedReader reader = FileUtils.getResourceAsBufferedReader(resourcePath)) {
+        final var resourcePath = BASE_SHADER_DIRECTORY + resourceName.replaceAll("^/*", "");
+        try (final var reader = FileUtils.getResourceAsBufferedReader(resourcePath)) {
             return reader.lines().collect(Collectors.joining("\n"));
         } catch (final IOException exception) {
             throw new EngineException("Failed to load shader source file", exception);

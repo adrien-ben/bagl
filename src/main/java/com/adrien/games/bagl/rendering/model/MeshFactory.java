@@ -11,7 +11,6 @@ import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
-import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
@@ -36,16 +35,16 @@ public class MeshFactory {
      * @return A {@link Mesh}
      */
     public static Mesh createPlane(final float width, final float depth) {
-        final float halfWidth = width * 0.5f;
-        final float halfDepth = depth * 0.5f;
+        final var halfWidth = width * 0.5f;
+        final var halfDepth = depth * 0.5f;
 
-        try (final MemoryStack stack = MemoryStack.stackPush()) {
-            final FloatBuffer vertices = stack.floats(-halfWidth, 0, halfDepth, 0, 1, 0,
+        try (final var stack = MemoryStack.stackPush()) {
+            final var vertices = stack.floats(-halfWidth, 0, halfDepth, 0, 1, 0,
                     halfWidth, 0, halfDepth, 0, 1, 0,
                     -halfWidth, 0, -halfDepth, 0, 1, 0,
                     halfWidth, 0, -halfDepth, 0, 1, 0);
 
-            final VertexBuffer vBuffer = new VertexBuffer(vertices, VertexBufferParams.builder()
+            final var vBuffer = new VertexBuffer(vertices, VertexBufferParams.builder()
                     .element(new VertexElement(Mesh.POSITION_INDEX, Mesh.ELEMENTS_PER_POSITION))
                     .element(new VertexElement(Mesh.NORMAL_INDEX, Mesh.ELEMENTS_PER_NORMAL))
                     .build());
@@ -63,13 +62,13 @@ public class MeshFactory {
      * @return A new {@link Mesh}
      */
     public static Mesh createScreenQuad() {
-        try (final MemoryStack stack = MemoryStack.stackPush()) {
-            final ByteBuffer positions = stack.bytes(
+        try (final var stack = MemoryStack.stackPush()) {
+            final var positions = stack.bytes(
                     (byte) -1, (byte) -1, (byte) 0, (byte) 0,
                     (byte) 1, (byte) -1, Byte.MAX_VALUE, (byte) 0,
                     (byte) -1, (byte) 1, (byte) 0, Byte.MAX_VALUE,
                     (byte) 1, (byte) 1, Byte.MAX_VALUE, Byte.MAX_VALUE);
-            final VertexBuffer vBuffer = new VertexBuffer(positions, VertexBufferParams.builder()
+            final var vBuffer = new VertexBuffer(positions, VertexBufferParams.builder()
                     .dataType(DataType.BYTE)
                     .element(new VertexElement(0, 2))
                     .element(new VertexElement(2, 2, true))
@@ -88,8 +87,8 @@ public class MeshFactory {
      */
     public static Mesh createCubeMapMesh() {
         final IndexBuffer iBuffer;
-        try (final MemoryStack stack = MemoryStack.stackPush()) {
-            final ByteBuffer indices = stack.bytes(
+        try (final var stack = MemoryStack.stackPush()) {
+            final var indices = stack.bytes(
                     (byte) 1, (byte) 0, (byte) 3, (byte) 3, (byte) 0, (byte) 2,
                     (byte) 5, (byte) 1, (byte) 7, (byte) 7, (byte) 1, (byte) 3,
                     (byte) 4, (byte) 5, (byte) 6, (byte) 6, (byte) 5, (byte) 7,
@@ -101,8 +100,8 @@ public class MeshFactory {
         }
 
         final VertexBuffer vBuffer;
-        try (final MemoryStack stack = MemoryStack.stackPush()) {
-            final ByteBuffer vertices = stack.bytes(
+        try (final var stack = MemoryStack.stackPush()) {
+            final var vertices = stack.bytes(
                     UNIT_CUBE_NEG_HALF_SIZE, UNIT_CUBE_NEG_HALF_SIZE, UNIT_CUBE_POS_HALF_SIZE,
                     UNIT_CUBE_POS_HALF_SIZE, UNIT_CUBE_NEG_HALF_SIZE, UNIT_CUBE_POS_HALF_SIZE,
                     UNIT_CUBE_NEG_HALF_SIZE, UNIT_CUBE_POS_HALF_SIZE, UNIT_CUBE_POS_HALF_SIZE,
@@ -130,11 +129,11 @@ public class MeshFactory {
      * @return A {@link Mesh}
      */
     public static Mesh createCube(final float size) {
-        final float halfSize = size * 0.5f;
+        final var halfSize = size * 0.5f;
 
         final IndexBuffer iBuffer;
-        try (final MemoryStack stack = MemoryStack.stackPush()) {
-            final ByteBuffer indices = stack.bytes(
+        try (final var stack = MemoryStack.stackPush()) {
+            final var indices = stack.bytes(
                     (byte) 0, (byte) 1, (byte) 2, (byte) 2, (byte) 3, (byte) 0, // back face
                     (byte) 4, (byte) 5, (byte) 6, (byte) 6, (byte) 7, (byte) 4, //right face
                     (byte) 8, (byte) 9, (byte) 10, (byte) 10, (byte) 11, (byte) 8, // front face
@@ -146,8 +145,8 @@ public class MeshFactory {
         }
 
         final VertexBuffer vBuffer;
-        try (final MemoryStack stack = MemoryStack.stackPush()) {
-            final FloatBuffer vertices = stack.floats(
+        try (final var stack = MemoryStack.stackPush()) {
+            final var vertices = stack.floats(
                     // back face
                     -halfSize, -halfSize, halfSize, 0, 0, 1,
                     halfSize, -halfSize, halfSize, 0, 0, 1,
@@ -206,16 +205,16 @@ public class MeshFactory {
      */
     public static Mesh createSphere(final float radius, final int rings, final int segments) {
 
-        final FloatBuffer vertices = MemoryUtil.memAllocFloat((rings * segments + 2) * 6);
-        int bufferIt = 0;
-        for (int i = 1; i <= rings; i++) {
-            for (int j = 0; j < segments; j++) {
-                final float theta = (float) Math.PI * i / (rings + 1);
-                final float phi = (float) Math.PI * 2 * j / segments;
+        final var vertices = MemoryUtil.memAllocFloat((rings * segments + 2) * 6);
+        var bufferIt = 0;
+        for (var i = 1; i <= rings; i++) {
+            for (var j = 0; j < segments; j++) {
+                final var theta = (float) Math.PI * i / (rings + 1);
+                final var phi = (float) Math.PI * 2 * j / segments;
 
-                final float x = (float) Math.sin(theta) * (float) Math.sin(phi);
-                final float y = (float) Math.cos(theta);
-                final float z = (float) Math.sin(theta) * (float) Math.cos(phi);
+                final var x = (float) Math.sin(theta) * (float) Math.sin(phi);
+                final var y = (float) Math.cos(theta);
+                final var z = (float) Math.sin(theta) * (float) Math.cos(phi);
 
                 bufferIt += MeshFactory.insertElement3f(vertices, bufferIt, radius * x, radius * y, radius * z);
                 bufferIt += MeshFactory.insertElement3f(vertices, bufferIt, x, y, z);
@@ -230,16 +229,16 @@ public class MeshFactory {
         bufferIt += MeshFactory.insertElement3f(vertices, bufferIt, 0, -radius, 0);
         MeshFactory.insertElement3f(vertices, bufferIt, 0, -1, 0);
 
-        final VertexBuffer vBuffer = new VertexBuffer(vertices, VertexBufferParams.builder()
+        final var vBuffer = new VertexBuffer(vertices, VertexBufferParams.builder()
                 .element(new VertexElement(Mesh.POSITION_INDEX, Mesh.ELEMENTS_PER_POSITION))
                 .element(new VertexElement(Mesh.NORMAL_INDEX, Mesh.ELEMENTS_PER_NORMAL))
                 .build());
         MemoryUtil.memFree(vertices);
 
-        final IntBuffer indices = MemoryUtil.memAllocInt(segments * (rings - 1) * 6 + 6 * segments);
+        final var indices = MemoryUtil.memAllocInt(segments * (rings - 1) * 6 + 6 * segments);
         bufferIt = 0;
-        for (int i = 0; i < rings - 1; i++) {
-            for (int j = 0; j < segments; j++) {
+        for (var i = 0; i < rings - 1; i++) {
+            for (var j = 0; j < segments; j++) {
                 final int index0 = rings * i + j;
                 final int index1 = rings * (i + 1) + j;
                 final int index2 = rings * (i + 1) + (j + 1) % segments;
@@ -250,9 +249,9 @@ public class MeshFactory {
             }
         }
 
-        final int topVertexIndex = rings * segments;
-        final int bottomVertexIndex = rings * segments + 1;
-        for (int i = 0; i < segments; i++) {
+        final var topVertexIndex = rings * segments;
+        final var bottomVertexIndex = rings * segments + 1;
+        for (var i = 0; i < segments; i++) {
             // top faces
             bufferIt += MeshFactory.insertElement3i(indices, bufferIt, topVertexIndex, i, (i + 1) % segments);
 
@@ -261,7 +260,7 @@ public class MeshFactory {
                     bottomVertexIndex, rings * (segments - 1) + (i + 1) % segments);
         }
 
-        final IndexBuffer iBuffer = new IndexBuffer(indices, BufferUsage.STATIC_DRAW);
+        final var iBuffer = new IndexBuffer(indices, BufferUsage.STATIC_DRAW);
         MemoryUtil.memFree(indices);
 
         return new Mesh(vBuffer, iBuffer);
@@ -280,32 +279,32 @@ public class MeshFactory {
      * @return A {@link Mesh}
      */
     public static Mesh createCylinder(final float baseRadius, final float topRadius, final float height, final int segments) {
-        final VertexBuffer vBuffer = MeshFactory.createConeVertices(baseRadius, topRadius, height, segments);
+        final var vBuffer = MeshFactory.createConeVertices(baseRadius, topRadius, height, segments);
 
         final IndexBuffer iBuffer;
-        int bufferIt = 0;
-        try (final MemoryStack stack = MemoryStack.stackPush()) {
-            final IntBuffer indices = stack.mallocInt(segments * 2 * 3 + segments * 6);
+        var bufferIt = 0;
+        try (final var stack = MemoryStack.stackPush()) {
+            final var indices = stack.mallocInt(segments * 2 * 3 + segments * 6);
 
             // base
-            for (int i = 0; i < segments; i++) {
-                final int offset = 2;
+            for (var i = 0; i < segments; i++) {
+                final var offset = 2;
                 bufferIt += MeshFactory.insertElement3i(indices, bufferIt, 0, offset + (i + 1) % segments, offset + i);
             }
 
             // top
-            for (int i = 0; i < segments; i++) {
-                final int offset = segments + 2;
+            for (var i = 0; i < segments; i++) {
+                final var offset = segments + 2;
                 bufferIt += MeshFactory.insertElement3i(indices, bufferIt, 1, offset + i, offset + (i + 1) % segments);
             }
 
             // side
-            for (int i = 0; i < segments; i++) {
-                final int offset = 2 * (segments + 1);
-                final int index0 = offset + i * 2;
-                final int index1 = offset + i * 2 + 1;
-                final int index2 = offset + (i * 2 + 3) % (2 * segments);
-                final int index3 = offset + (i * 2 + 2) % (2 * segments);
+            for (var i = 0; i < segments; i++) {
+                final var offset = 2 * (segments + 1);
+                final var index0 = offset + i * 2;
+                final var index1 = offset + i * 2 + 1;
+                final var index2 = offset + (i * 2 + 3) % (2 * segments);
+                final var index3 = offset + (i * 2 + 2) % (2 * segments);
 
                 bufferIt += MeshFactory.insertElement3i(indices, bufferIt, index0, index1, index2);
                 bufferIt += MeshFactory.insertElement3i(indices, bufferIt, index2, index3, index0);
@@ -326,10 +325,10 @@ public class MeshFactory {
      * @return A {@link VertexBuffer}
      */
     private static VertexBuffer createConeVertices(final float baseRadius, final float topRadius, final float height, final int segments) {
-        final float halfHeight = height * 0.5f;
-        int bufferIt = 0;
-        try (final MemoryStack stack = MemoryStack.stackPush()) {
-            final FloatBuffer vertices = stack.mallocFloat((segments * 4 + 2) * 6);
+        final var halfHeight = height * 0.5f;
+        var bufferIt = 0;
+        try (final var stack = MemoryStack.stackPush()) {
+            final var vertices = stack.mallocFloat((segments * 4 + 2) * 6);
             // base center
             bufferIt += MeshFactory.insertElement3f(vertices, bufferIt, 0, -halfHeight, 0);
             bufferIt += MeshFactory.insertElement3f(vertices, bufferIt, 0, -1, 0);
@@ -338,12 +337,12 @@ public class MeshFactory {
             bufferIt += MeshFactory.insertElement3f(vertices, bufferIt, 0, halfHeight, 0);
             bufferIt += MeshFactory.insertElement3f(vertices, bufferIt, 0, 1, 0);
 
-            int baseIt = 2 * 6;
-            int topIt = (2 + segments) * 6;
-            for (int i = 0; i < segments; i++) {
-                final float theta = 2 * (float) Math.PI * i / segments;
-                final float x = (float) Math.cos(theta);
-                final float z = -(float) Math.sin(theta);
+            var baseIt = 2 * 6;
+            var topIt = (2 + segments) * 6;
+            for (var i = 0; i < segments; i++) {
+                final var theta = 2 * (float) Math.PI * i / segments;
+                final var x = (float) Math.cos(theta);
+                final var z = -(float) Math.sin(theta);
 
                 // base vertex
                 baseIt += MeshFactory.insertElement3f(vertices, baseIt, x * baseRadius, -halfHeight, z * baseRadius);
@@ -356,19 +355,19 @@ public class MeshFactory {
                 bufferIt += 12;
             }
 
-            final Vector3f tangent = new Vector3f();
-            final Vector3f biTangent = new Vector3f();
-            final Vector3f normal = new Vector3f();
+            final var tangent = new Vector3f();
+            final var biTangent = new Vector3f();
+            final var normal = new Vector3f();
 
             // side vertices
-            for (int i = 0; i < segments; i++) {
-                final float theta = 2 * (float) Math.PI * i / segments;
-                final float x = (float) Math.cos(theta);
-                final float z = -(float) Math.sin(theta);
+            for (var i = 0; i < segments; i++) {
+                final var theta = 2 * (float) Math.PI * i / segments;
+                final var x = (float) Math.cos(theta);
+                final var z = -(float) Math.sin(theta);
 
                 // normal computation
-                final Vector3f top = new Vector3f(x * topRadius, halfHeight, z * topRadius);
-                final Vector3f bottom = new Vector3f(x * baseRadius, -halfHeight, z * baseRadius);
+                final var top = new Vector3f(x * topRadius, halfHeight, z * topRadius);
+                final var bottom = new Vector3f(x * baseRadius, -halfHeight, z * baseRadius);
                 top.sub(bottom, tangent);
                 new Vector3f(x, 0, z).cross(tangent, biTangent);
                 tangent.cross(biTangent, normal);

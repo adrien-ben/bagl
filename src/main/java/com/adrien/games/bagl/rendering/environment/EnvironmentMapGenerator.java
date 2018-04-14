@@ -9,7 +9,6 @@ import com.adrien.games.bagl.rendering.Shader;
 import com.adrien.games.bagl.rendering.model.Mesh;
 import com.adrien.games.bagl.rendering.model.MeshFactory;
 import com.adrien.games.bagl.rendering.texture.*;
-import com.adrien.games.bagl.rendering.vertex.IndexBuffer;
 import org.joml.Vector3f;
 
 import static org.lwjgl.opengl.GL11.*;
@@ -45,7 +44,7 @@ public class EnvironmentMapGenerator {
     public EnvironmentMapGenerator() {
         this.cubeMapMesh = MeshFactory.createCubeMapMesh();
 
-        final FrameBufferParameters frameBufferParameters = FrameBufferParameters.builder().hasDepthStencil(false).build();
+        final var frameBufferParameters = FrameBufferParameters.builder().hasDepthStencil(false).build();
         this.environmentFrameBuffer = new FrameBuffer(ENVIRONMENT_MAP_RESOLUTION, ENVIRONMENT_MAP_RESOLUTION, frameBufferParameters);
         this.irradianceFrameBuffer = new FrameBuffer(IRRADIANCE_MAP_RESOLUTION, IRRADIANCE_MAP_RESOLUTION, frameBufferParameters);
         this.preFilteredMapFrameBuffer = new FrameBuffer(PRE_FILTERED_MAP_RESOLUTION, PRE_FILTERED_MAP_RESOLUTION, frameBufferParameters);
@@ -86,16 +85,16 @@ public class EnvironmentMapGenerator {
      * @return An {@link Cubemap}
      */
     public Cubemap generateEnvironmentMap(final String filePath) {
-        final TextureParameters.Builder params = TextureParameters.builder()
+        final var params = TextureParameters.builder()
                 .sWrap(Wrap.CLAMP_TO_EDGE)
                 .tWrap(Wrap.CLAMP_TO_EDGE);
-        final Texture equirectangularMap = Texture.fromFile(filePath, true, params);
+        final var equirectangularMap = Texture.fromFile(filePath, true, params);
 
-        final TextureParameters cubemapParams = TextureParameters.builder()
+        final var cubemapParams = TextureParameters.builder()
                 .format(Format.RGB16F)
                 .minFilter(Filter.MIPMAP_LINEAR_LINEAR)
                 .build();
-        final Cubemap cubemap = new Cubemap(ENVIRONMENT_MAP_RESOLUTION, ENVIRONMENT_MAP_RESOLUTION, cubemapParams);
+        final var cubemap = new Cubemap(ENVIRONMENT_MAP_RESOLUTION, ENVIRONMENT_MAP_RESOLUTION, cubemapParams);
 
         equirectangularMap.bind();
         this.environmentSphericalShader.bind();
@@ -118,7 +117,7 @@ public class EnvironmentMapGenerator {
      * @return An {@link Cubemap}
      */
     public Cubemap generateIrradianceMap(final Cubemap environmentMap) {
-        final Cubemap cubemap = new Cubemap(IRRADIANCE_MAP_RESOLUTION, IRRADIANCE_MAP_RESOLUTION,
+        final var cubemap = new Cubemap(IRRADIANCE_MAP_RESOLUTION, IRRADIANCE_MAP_RESOLUTION,
                 TextureParameters.builder().format(Format.RGB16F).build());
         environmentMap.bind();
         this.irradianceShader.bind();
@@ -135,18 +134,18 @@ public class EnvironmentMapGenerator {
      * @return An {@link Cubemap}
      */
     public Cubemap generatePreFilteredMap(final Cubemap environmentMap) {
-        final TextureParameters cubemapParams = TextureParameters.builder()
+        final var cubemapParams = TextureParameters.builder()
                 .format(Format.RGB16F)
                 .mipmaps(true)
                 .minFilter(Filter.MIPMAP_LINEAR_LINEAR)
                 .build();
-        final Cubemap cubemap = new Cubemap(PRE_FILTERED_MAP_RESOLUTION, PRE_FILTERED_MAP_RESOLUTION, cubemapParams);
+        final var cubemap = new Cubemap(PRE_FILTERED_MAP_RESOLUTION, PRE_FILTERED_MAP_RESOLUTION, cubemapParams);
 
         this.preFilteredMapShader.bind();
         environmentMap.bind();
-        final int maxLod = 5;
+        final var maxLod = 5;
         for (int lod = 0; lod < maxLod; lod++) {
-            final float roughness = (float) lod / (float) (maxLod - 1);
+            final var roughness = (float) lod / (float) (maxLod - 1);
             this.preFilteredMapShader.setUniform("roughness", roughness);
             this.renderToCubemap(cubemap, lod, this.preFilteredMapShader, this.preFilteredMapFrameBuffer);
         }
@@ -168,11 +167,11 @@ public class EnvironmentMapGenerator {
         frameBuffer.bind();
         frameBuffer.enableColorOutputs(0);
 
-        final IndexBuffer iBuffer = this.cubeMapMesh.getIndexBuffer().orElseThrow(() -> new EngineException("Cube map mesh should have an index"));
+        final var iBuffer = this.cubeMapMesh.getIndexBuffer().orElseThrow(() -> new EngineException("Cube map mesh should have an index"));
         this.cubeMapMesh.getVertexArray().bind();
         iBuffer.bind();
 
-        final float mipFactor = 1f / (float) Math.pow(2, mipLevel);
+        final var mipFactor = 1f / (float) Math.pow(2, mipLevel);
         glViewport(0, 0, (int) (target.getWidth() * mipFactor), (int) (target.getHeight() * mipFactor));
         for (int i = 0; i < 6; i++) {
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
@@ -190,7 +189,7 @@ public class EnvironmentMapGenerator {
     }
 
     private Camera[] initCameras() {
-        final Camera[] cameras = new Camera[6];
+        final var cameras = new Camera[6];
         cameras[0] = this.createCamera(new Vector3f(1, 0, 0), new Vector3f(0, -1, 0)); // right
         cameras[1] = this.createCamera(new Vector3f(-1, 0, 0), new Vector3f(0, -1, 0)); // left
         cameras[2] = this.createCamera(new Vector3f(0, 1, 0), new Vector3f(0, 0, 1)); // top

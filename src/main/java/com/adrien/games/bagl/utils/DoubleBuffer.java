@@ -29,7 +29,7 @@ public class DoubleBuffer<T> {
      * Swaps the read and write buffers
      */
     public void swap() {
-        final T tmp = this.readBuffer;
+        final var tmp = this.readBuffer;
         this.readBuffer = this.writeBuffer;
         this.writeBuffer = tmp;
     }

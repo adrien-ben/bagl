@@ -35,8 +35,8 @@ public class UIRenderingSample implements Game {
         this.positions = new ArrayList<>();
         this.sizes = new ArrayList<>();
         this.colors = new ArrayList<>();
-        final Random random = new Random();
-        for (int i = 0; i < SHAPE_COUNT; i++) {
+        final var random = new Random();
+        for (var i = 0; i < SHAPE_COUNT; i++) {
             this.positions.add(new Vector2f(random.nextFloat(), random.nextFloat()));
             this.sizes.add(new Vector2f(random.nextFloat() * 0.3f, random.nextFloat() * 0.3f));
             this.colors.add(new Color(random.nextFloat(), random.nextFloat(), random.nextFloat(), random.nextFloat() * 0.4f + 0.6f));
@@ -55,7 +55,7 @@ public class UIRenderingSample implements Game {
     @Override
     public void render() {
         this.renderer.start();
-        for (int i = 0; i < SHAPE_COUNT; i++) {
+        for (var i = 0; i < SHAPE_COUNT; i++) {
             final Vector2f position = this.positions.get(i);
             final Vector2f size = this.sizes.get(i);
             final Color color = this.colors.get(i);

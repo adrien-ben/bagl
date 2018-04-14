@@ -25,7 +25,6 @@ import org.joml.Vector3f;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 import static org.lwjgl.opengl.GL11.*;
 
@@ -85,7 +84,7 @@ public class Renderer implements ComponentVisitor {
      * Construct the renderer
      */
     public Renderer() {
-        final Configuration config = Configuration.getInstance();
+        final var config = Configuration.getInstance();
         this.xResolution = config.getXResolution();
         this.yResolution = config.getYResolution();
         this.shadowMapResolution = config.getShadowMapResolution();
@@ -253,7 +252,7 @@ public class Renderer implements ComponentVisitor {
     private void renderShadowMap() {
         this.renderShadow = !this.directionalLights.isEmpty();
         if (this.renderShadow) {
-            final Vector3f position = new Vector3f(this.directionalLights.get(0).getDirection()).mul(-10f);
+            final var position = new Vector3f(this.directionalLights.get(0).getDirection()).mul(-10f);
 
             this.lightViewProj.setOrtho(-10, 10, -10, 10, 0.1f, 20f)
                     .lookAt(position, Vectors.VEC3_ZERO, Vectors.VEC3_UP);
@@ -286,7 +285,7 @@ public class Renderer implements ComponentVisitor {
      * @param node The node to render
      */
     private void renderModelNodeShadow(final ModelNode node) {
-        final Matrix4f nodeTransform = node.getTransform().getTransformMatrix();
+        final var nodeTransform = node.getTransform().getTransformMatrix();
         this.lightViewProj.mul(nodeTransform, this.wvpBuffer);
         this.shadowShader.setUniform("wvp", this.wvpBuffer);
         node.getMeshes().forEach(this::renderMeshShadow);
@@ -338,7 +337,7 @@ public class Renderer implements ComponentVisitor {
      * @param node The node to render
      */
     private void renderModelNodeToGBuffer(final ModelNode node) {
-        final Matrix4f nodeTransform = node.getTransform().getTransformMatrix();
+        final var nodeTransform = node.getTransform().getTransformMatrix();
         this.camera.getViewProj().mul(nodeTransform, this.wvpBuffer);
         this.gBufferShader
                 .setUniform("uMatrices.world", nodeTransform)
@@ -374,7 +373,7 @@ public class Renderer implements ComponentVisitor {
      */
     private void renderMesh(final Mesh mesh) {
         mesh.getVertexArray().bind();
-        final Optional<IndexBuffer> iBufferOpt = mesh.getIndexBuffer();
+        final var iBufferOpt = mesh.getIndexBuffer();
         if (iBufferOpt.isPresent()) {
             final IndexBuffer iBuffer = iBufferOpt.get();
             iBuffer.bind();
@@ -427,13 +426,13 @@ public class Renderer implements ComponentVisitor {
             this.deferredShader.setUniform("uShadow.lightViewProj", this.lightViewProj);
             this.shadowBuffer.getDepthTexture().bind(4);
         }
-        for (int i = 0; i < this.directionalLights.size(); i++) {
+        for (var i = 0; i < this.directionalLights.size(); i++) {
             this.setDirectionalLight(this.deferredShader, i, this.directionalLights.get(i));
         }
-        for (int i = 0; i < this.pointLights.size(); i++) {
+        for (var i = 0; i < this.pointLights.size(); i++) {
             this.setPointLight(this.deferredShader, i, this.pointLights.get(i));
         }
-        for (int i = 0; i < this.spotLights.size(); i++) {
+        for (var i = 0; i < this.spotLights.size(); i++) {
             this.setSpotLight(this.deferredShader, i, this.spotLights.get(i));
         }
 

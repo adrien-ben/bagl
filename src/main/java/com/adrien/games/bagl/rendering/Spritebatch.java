@@ -12,7 +12,6 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
-import java.nio.ShortBuffer;
 
 /**
  * Class allowing to render sprites in batch
@@ -105,11 +104,11 @@ public class Spritebatch {
      * Initialize the index buffer
      */
     private IndexBuffer initIndices() {
-        try (final MemoryStack stack = MemoryStack.stackPush()) {
-            final ShortBuffer indices = stack.mallocShort(this.size * INDICES_PER_SPRITE);
-            for (int i = 0; i < this.size; i++) {
-                final int offset = i * INDICES_PER_SPRITE;
-                final int firstIndex = i * VERTICES_PER_SPRITE;
+        try (final var stack = MemoryStack.stackPush()) {
+            final var indices = stack.mallocShort(this.size * INDICES_PER_SPRITE);
+            for (var i = 0; i < this.size; i++) {
+                final var offset = i * INDICES_PER_SPRITE;
+                final var firstIndex = i * VERTICES_PER_SPRITE;
                 indices.put(offset, (short) firstIndex);
                 indices.put(offset + 1, (short) (firstIndex + 1));
                 indices.put(offset + 2, (short) (firstIndex + 2));
@@ -275,16 +274,16 @@ public class Spritebatch {
 
         this.currentTexture = texture;
 
-        final float halfPixelWidth = HALF_PIXEL_SIZE / texture.getWidth();
-        final float halfPixelHeight = HALF_PIXEL_SIZE / texture.getHeight();
+        final var halfPixelWidth = HALF_PIXEL_SIZE / texture.getWidth();
+        final var halfPixelHeight = HALF_PIXEL_SIZE / texture.getHeight();
 
-        final float x = position.x();
-        final float y = position.y();
+        final var x = position.x();
+        final var y = position.y();
 
-        final float xCenter = x + width / 2;
-        final float yCenter = y + height / 2;
+        final var xCenter = x + width / 2;
+        final var yCenter = y + height / 2;
 
-        final int offset = this.drawnSprites * VERTICES_PER_SPRITE;
+        final var offset = this.drawnSprites * VERTICES_PER_SPRITE;
 
         this.computeVertex(offset, x, y, texRegionLeft + halfPixelWidth, texRegionBottom + halfPixelHeight,
                 rotation, xCenter, yCenter, color);
@@ -312,19 +311,19 @@ public class Spritebatch {
      */
     private void computeVertex(final int index, final float x, final float y, final float xCoord, final float yCoord,
                                final float rotation, final float xCenter, final float yCenter, final Color color) {
-        float finalX = x;
-        float finalY = y;
+        var finalX = x;
+        var finalY = y;
 
         if (rotation != 0) {
-            final float xOrigin = x - xCenter;
-            final float yOrigin = y - yCenter;
+            final var xOrigin = x - xCenter;
+            final var yOrigin = y - yCenter;
 
-            final double angleInRads = -(rotation * Math.PI / 180f);
-            final double cos = Math.cos(angleInRads);
-            final double sin = Math.sin(angleInRads);
+            final var angleInRads = -(rotation * Math.PI / 180f);
+            final var cos = Math.cos(angleInRads);
+            final var sin = Math.sin(angleInRads);
 
-            final double _x = xOrigin * cos - yOrigin * sin;
-            final double _y = xOrigin * sin + yOrigin * cos;
+            final var _x = xOrigin * cos - yOrigin * sin;
+            final var _y = xOrigin * sin + yOrigin * cos;
 
             finalX = (float) _x + xCenter;
             finalY = (float) _y + yCenter;

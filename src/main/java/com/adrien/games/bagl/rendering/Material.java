@@ -111,28 +111,28 @@ public class Material {
         shader.setUniform("uMaterial.roughness", this.roughness);
         shader.setUniform("uMaterial.metallic", this.metallic);
 
-        final boolean hasDiffuseMap = Objects.nonNull(this.diffuseMap);
+        final var hasDiffuseMap = Objects.nonNull(this.diffuseMap);
         shader.setUniform("uMaterial.hasDiffuseMap", hasDiffuseMap);
         if (hasDiffuseMap) {
             shader.setUniform("uMaterial.diffuseMap", DIFFUSE_MAP_CHANNEL);
             this.diffuseMap.bind(DIFFUSE_MAP_CHANNEL);
         }
 
-        final boolean hasEmissiveMap = Objects.nonNull(this.emissiveMap);
+        final var hasEmissiveMap = Objects.nonNull(this.emissiveMap);
         shader.setUniform("uMaterial.hasEmissiveMap", hasEmissiveMap);
         if (hasEmissiveMap) {
             shader.setUniform("uMaterial.emissiveMap", EMISSIVE_MAP_CHANNEL);
             this.emissiveMap.bind(EMISSIVE_MAP_CHANNEL);
         }
 
-        final boolean hasOrmMap = Objects.nonNull(this.ormMap);
+        final var hasOrmMap = Objects.nonNull(this.ormMap);
         shader.setUniform("uMaterial.hasOrmMap", hasOrmMap);
         if (hasOrmMap) {
             shader.setUniform("uMaterial.ormMap", ORM_MAP_CHANNEL);
             this.ormMap.bind(ORM_MAP_CHANNEL);
         }
 
-        final boolean hasNormalMap = Objects.nonNull(this.normalMap);
+        final var hasNormalMap = Objects.nonNull(this.normalMap);
         shader.setUniform("uMaterial.hasNormalMap", hasNormalMap);
         if (hasNormalMap) {
             shader.setUniform("uMaterial.normalMap", NORMAL_MAP_CHANNEL);

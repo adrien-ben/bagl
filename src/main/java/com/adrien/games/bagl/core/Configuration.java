@@ -5,7 +5,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -49,9 +48,9 @@ public class Configuration {
     }
 
     private void loadFile() {
-        try (final InputStream inStream = Configuration.class.getResourceAsStream(CONFIGURATION_FILE_PATH)) {
+        try (final var inStream = Configuration.class.getResourceAsStream(CONFIGURATION_FILE_PATH)) {
             this.properties.load(inStream);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             log.error("Failed to load properties file {}", CONFIGURATION_FILE_PATH, e);
             throw new EngineException("Failed to load properties file", e);
         }
@@ -60,14 +59,14 @@ public class Configuration {
     private int readRequiredInt(final String key) {
         try {
             return Integer.parseInt(this.properties.getProperty(key));
-        } catch (NumberFormatException e) {
+        } catch (final NumberFormatException e) {
             log.error("Property {} is not a integer or is missing", key);
             throw new EngineException("Property " + key + " is not a integer or is missing");
         }
     }
 
     private boolean readRequiredBool(final String key) {
-        final String property = this.properties.getProperty(key);
+        final var property = this.properties.getProperty(key);
         if (Objects.isNull(property)) {
             log.error("Property {} is missing", key);
             throw new EngineException("Property " + key + " is missing");

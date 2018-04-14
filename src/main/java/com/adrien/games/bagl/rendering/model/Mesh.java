@@ -82,7 +82,7 @@ public class Mesh {
      * @return The generate vertex array
      */
     private VertexArray generateVertexArray() {
-        final VertexArray vArray = new VertexArray();
+        final var vArray = new VertexArray();
         vArray.bind();
         this.vBuffers.forEach(vArray::attachVertexBuffer);
         vArray.unbind();

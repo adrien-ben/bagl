@@ -72,12 +72,12 @@ public class FrameBuffer {
      * @return An array of {@link Texture}
      */
     private Texture[] createColorOutputs() {
-        final int colorOutputs = this.parameters.getColorOutputs().size();
-        final Texture[] textures = new Texture[colorOutputs];
-        final TextureParameters.Builder params = TextureParameters.builder()
+        final var colorOutputs = this.parameters.getColorOutputs().size();
+        final var textures = new Texture[colorOutputs];
+        final var params = TextureParameters.builder()
                 .sWrap(Wrap.CLAMP_TO_EDGE)
                 .tWrap(Wrap.CLAMP_TO_EDGE);
-        for (int i = 0; i < colorOutputs; i++) {
+        for (var i = 0; i < colorOutputs; i++) {
             params.format(this.parameters.getColorOutputs().get(i));
             textures[i] = new Texture(this.width, this.height, params.build());
         }
@@ -92,7 +92,7 @@ public class FrameBuffer {
      * @return The handle of the OpenGL frame buffer
      */
     private int createBuffer() {
-        final int bufferHandle = glGenFramebuffers();
+        final var bufferHandle = glGenFramebuffers();
         glBindFramebuffer(GL_FRAMEBUFFER, bufferHandle);
         glDrawBuffer(GL_NONE);
 
@@ -175,7 +175,7 @@ public class FrameBuffer {
         if (!depth && !stencil) {
             throw new EngineException("Either depth or stencil has to be true if you want to blit a frame buffer");
         }
-        int flags = (depth ? GL_DEPTH_BUFFER_BIT : 0) | (stencil ? GL_STENCIL_BUFFER_BIT : 0);
+        final var flags = (depth ? GL_DEPTH_BUFFER_BIT : 0) | (stencil ? GL_STENCIL_BUFFER_BIT : 0);
         glBindFramebuffer(GL_READ_FRAMEBUFFER, frameBuffer.getHandle());
         glBlitFramebuffer(0, 0, frameBuffer.getWidth(), frameBuffer.getHeight(), 0, 0, this.width, this.height, flags, GL_NEAREST);
         glBindFramebuffer(GL_READ_FRAMEBUFFER, this.handle);

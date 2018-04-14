@@ -126,14 +126,14 @@ public class DeferredRenderingSample {
         private void initScene() {
             this.scene.getRoot().addComponent(new EnvironmentComponent(this.environmentMap, this.irradianceMap, this.preFilteredMap));
 
-            final GameObject cameraObj = this.scene.getRoot().createChild("camera");
+            final var cameraObj = this.scene.getRoot().createChild("camera");
             cameraObj.addComponent(new CameraComponent(this.camera));
 
-            final GameObject floorObj = this.scene.getRoot().createChild("floor");
+            final var floorObj = this.scene.getRoot().createChild("floor");
             floorObj.addComponent(new ModelComponent(this.floor));
             floorObj.getLocalTransform().setScale(new Vector3f(10f, 10f, 10f));
 
-            final GameObject gltfObj = floorObj.createChild("gltf");
+            final var gltfObj = floorObj.createChild("gltf");
             gltfObj.addComponent(new ModelComponent(this.boomBox));
             gltfObj.getLocalTransform().setTranslation(new Vector3f(0f, 0.1f, 0f))
                     .setScale(new Vector3f(0.1f, 0.1f, 0.1f));
@@ -142,51 +142,51 @@ public class DeferredRenderingSample {
         }
 
         private void setUpLights() {
-            final GameObject sunObj = this.scene.getRoot().createChild("sun");
+            final var sunObj = this.scene.getRoot().createChild("sun");
             sunObj.getLocalTransform().setRotation(new Quaternionf().rotation((float) Math.toRadians(45f), (float) Math.toRadians(45f), 0));
             sunObj.addComponent(new DirectionalLightComponent(new DirectionalLight(0.8f, Color.WHITE, new Vector3f())));
 
-            final GameObject parent = this.scene.getRoot();
+            final var parent = this.scene.getRoot();
 
-            final PointLight pointLight0 = new PointLight(8f, Color.GREEN, new Vector3f(), 3f);
+            final var pointLight0 = new PointLight(8f, Color.GREEN, new Vector3f(), 3f);
             this.addPointLight(parent, new Vector3f(4f, 0.5f, 2f), pointLight0, 0);
-            final PointLight pointLight1 = new PointLight(10f, Color.YELLOW, new Vector3f(), 2f);
+            final var pointLight1 = new PointLight(10f, Color.YELLOW, new Vector3f(), 2f);
             this.addPointLight(parent, new Vector3f(-4f, 0.2f, 2f), pointLight1, 1);
-            final PointLight pointLight2 = new PointLight(10f, Color.BLUE, new Vector3f(), 2f);
+            final var pointLight2 = new PointLight(10f, Color.BLUE, new Vector3f(), 2f);
             this.addPointLight(parent, new Vector3f(0f, 0.5f, 3f), pointLight2, 2);
-            final PointLight pointLight3 = new PointLight(10f, Color.TURQUOISE, new Vector3f(), 2f);
+            final var pointLight3 = new PointLight(10f, Color.TURQUOISE, new Vector3f(), 2f);
             this.addPointLight(parent, new Vector3f(-1f, 0.1f, 1f), pointLight3, 3);
-            final PointLight pointLight4 = new PointLight(10f, Color.CYAN, new Vector3f(), 2f);
+            final var pointLight4 = new PointLight(10f, Color.CYAN, new Vector3f(), 2f);
             this.addPointLight(parent, new Vector3f(3f, 0.6f, -3f), pointLight4, 4);
 
-            final SpotLight spotLight0 = new SpotLight(10f, Color.RED, new Vector3f(), 20f, new Vector3f(), 20f, 5f);
+            final var spotLight0 = new SpotLight(10f, Color.RED, new Vector3f(), 20f, new Vector3f(), 20f, 5f);
             this.addSpotLight(parent, new Vector3f(-3, 1f, -2), new Quaternionf().rotationX((float) Math.toRadians(45f)), spotLight0, 0);
-            final SpotLight spotLight1 = new SpotLight(2f, Color.WHITE, new Vector3f(), 7f, new Vector3f(), 10f, 4f);
+            final var spotLight1 = new SpotLight(2f, Color.WHITE, new Vector3f(), 7f, new Vector3f(), 10f, 4f);
             this.addSpotLight(parent, new Vector3f(2f, 2f, 2f), new Quaternionf().rotationX((float) Math.toRadians(90f)), spotLight1, 1);
         }
 
         private void addPointLight(final GameObject parent, final Vector3f position, final PointLight light, final int id) {
-            final String lightId = "point_light_" + id;
-            final GameObject lightObject = this.createLightObject(parent, position, new Quaternionf(), light.getColor(), this.pointBulb, lightId);
+            final var lightId = "point_light_" + id;
+            final var lightObject = this.createLightObject(parent, position, new Quaternionf(), light.getColor(), this.pointBulb, lightId);
             lightObject.addComponent(new PointLightComponent(light));
         }
 
         private void addSpotLight(final GameObject parent, final Vector3f position, final Quaternionf rotation, final SpotLight light, final int id) {
-            final String lightId = "spot_light_" + id;
-            final GameObject lightObject = this.createLightObject(parent, position, rotation, light.getColor(), this.spotBulb, lightId);
+            final var lightId = "spot_light_" + id;
+            final var lightObject = this.createLightObject(parent, position, rotation, light.getColor(), this.spotBulb, lightId);
             lightObject.addComponent(new SpotLightComponent(light));
         }
 
         private GameObject createLightObject(final GameObject parent, final Vector3f position, final Quaternionf rotation, final Color color,
                                              final Mesh mesh, final String id) {
-            final GameObject lightObject = parent.createChild("object_" + id, "light");
+            final var lightObject = parent.createChild("object_" + id, "light");
             lightObject.getLocalTransform().setTranslation(position).setRotation(rotation);
 
-            final GameObject modelObject = lightObject.createChild("bulb_" + id);
+            final var modelObject = lightObject.createChild("bulb_" + id);
             modelObject.getLocalTransform().setRotation(new Quaternionf().rotationX((float) Math.toRadians(-90f)));
 
-            final Material material = Material.builder().emissive(color).emissiveIntensity(10f).build();
-            final Model model = new Model();
+            final var material = Material.builder().emissive(color).emissiveIntensity(10f).build();
+            final var model = new Model();
             model.addNode().addMesh(mesh, material);
             modelObject.addComponent(new ModelComponent(model));
 
@@ -198,9 +198,9 @@ public class DeferredRenderingSample {
             this.scene.update(time);
 
             if (Input.isKeyPressed(GLFW.GLFW_KEY_1) || Input.isKeyPressed(GLFW.GLFW_KEY_2)) {
-                float speed = Input.isKeyPressed(GLFW.GLFW_KEY_1) ? 20 : -20;
+                final var speed = Input.isKeyPressed(GLFW.GLFW_KEY_1) ? 20 : -20;
                 this.scene.getObjectById("sun").ifPresent(sunObj -> {
-                    final Transform transform = new Transform()
+                    final var transform = new Transform()
                             .setRotation(new Quaternionf().setAngleAxis((float) Math.toRadians(speed * time.getElapsedTime()), 1f, 1f, 0f));
                     sunObj.getLocalTransform().transform(transform);
                 });
@@ -265,7 +265,7 @@ public class DeferredRenderingSample {
                 this.textRenderer.render(INSTRUCTIONS, this.font, new Vector2f(0.01f, 0.94f), 0.03f, Color.BLACK);
             }
 
-            final long lightCount = this.scene.getObjectsByTag("light").count();
+            final var lightCount = this.scene.getObjectsByTag("light").count();
             this.textRenderer.render("Lights: " + lightCount, this.font, new Vector2f(0.01f, 0.01f), 0.03f, Color.BLACK);
         }
     }

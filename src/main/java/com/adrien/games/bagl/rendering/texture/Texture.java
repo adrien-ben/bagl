@@ -94,7 +94,7 @@ public final class Texture {
      * @return A new texture
      */
     public static Texture fromFile(final String path, final boolean flipVertically, final TextureParameters.Builder params) {
-        try (final Image image = Image.fromFile(path, flipVertically)) {
+        try (final var image = Image.fromFile(path, flipVertically)) {
             params.format(Texture.getFormat(image.getChannelCount(), image.isHdr()));
             return new Texture(image.getWidth(), image.getHeight(), image.getData(), params.build());
         }
@@ -130,14 +130,14 @@ public final class Texture {
      * @return A new texture
      */
     public static Texture fromMemory(final ByteBuffer imageData, final boolean flipVertically, final TextureParameters.Builder params) {
-        try (final Image image = Image.fromMemory(imageData, flipVertically)) {
+        try (final var image = Image.fromMemory(imageData, flipVertically)) {
             params.format(Texture.getFormat(image.getChannelCount(), image.isHdr()));
             return new Texture(image.getWidth(), image.getHeight(), image.getData(), params.build());
         }
     }
 
     private int generateGlTexture(final ByteBuffer pixels) {
-        final int handle = glGenTextures();
+        final var handle = glGenTextures();
         glBindTexture(GL_TEXTURE_2D, handle);
         glTexImage2D(GL_TEXTURE_2D, 0, this.parameters.getFormat().getGlInternalFormat(), this.width, this.height, 0,
                 this.parameters.getFormat().getGlFormat(), this.parameters.getFormat().getGlDataType(), pixels);
@@ -147,7 +147,7 @@ public final class Texture {
     }
 
     private int generateGlTexture(final FloatBuffer pixels) {
-        final int handle = glGenTextures();
+        final var handle = glGenTextures();
         glBindTexture(GL_TEXTURE_2D, handle);
         glTexImage2D(GL_TEXTURE_2D, 0, this.parameters.getFormat().getGlInternalFormat(), this.width, this.height, 0,
                 this.parameters.getFormat().getGlFormat(), this.parameters.getFormat().getGlDataType(), pixels);

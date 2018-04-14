@@ -20,12 +20,12 @@ public class Noise {
      * @return The computed noise value.
      */
     public static float perlin(final float x, final float y, final float z, final int octaves, final float persistence) {
-        float total = 0;
-        float frequency = 1;
-        float amplitude = 1;
-        float maxValue = 0;
-        for (int i = 0; i < octaves; i++) {
-            final float noise = perlin(x * frequency, y * frequency, z * frequency);
+        var total = 0;
+        var frequency = 1;
+        var amplitude = 1;
+        var maxValue = 0;
+        for (var i = 0; i < octaves; i++) {
+            final var noise = perlin(x * frequency, y * frequency, z * frequency);
             total += noise * amplitude;
             maxValue += amplitude;
             amplitude *= persistence;
@@ -47,5 +47,4 @@ public class Noise {
     public static float perlin(final float x, final float y, final float z) {
         return STBPerlin.stb_perlin_noise3(x, y, z, 0, 0, 0) * 0.5f + 0.5f;
     }
-
 }

@@ -9,7 +9,6 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 
 /**
  * UI element renderer.
@@ -47,9 +46,9 @@ public class UIRenderer {
         this.vArray.attachVertexBuffer(this.vBuffer);
         this.vArray.unbind();
 
-        try (final MemoryStack stack = MemoryStack.stackPush()) {
-            final IntBuffer indices = stack.mallocInt(BUFFER_SIZE * INDICES_PER_SHAPE);
-            for (int i = 0; i < BUFFER_SIZE; i++) {
+        try (final var stack = MemoryStack.stackPush()) {
+            final var indices = stack.mallocInt(BUFFER_SIZE * INDICES_PER_SHAPE);
+            for (var i = 0; i < BUFFER_SIZE; i++) {
                 indices.put(i * INDICES_PER_SHAPE, i * VERTICES_PER_SHAPE);
                 indices.put(i * INDICES_PER_SHAPE + 1, i * VERTICES_PER_SHAPE + 1);
                 indices.put(i * INDICES_PER_SHAPE + 2, i * VERTICES_PER_SHAPE + 2);
@@ -136,7 +135,7 @@ public class UIRenderer {
             throw new IllegalStateException("ShaderRenderer#renderBox has already been called before ShaderRenderer#start.");
         }
 
-        final int bufferIndex = this.bufferedCount * VERTICES_PER_SHAPE;
+        final var bufferIndex = this.bufferedCount * VERTICES_PER_SHAPE;
         this.setVertexData(bufferIndex, x, y, color);
         this.setVertexData(bufferIndex + 1, x + width, y, color);
         this.setVertexData(bufferIndex + 2, x + width, y + height, color);

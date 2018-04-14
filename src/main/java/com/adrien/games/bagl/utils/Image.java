@@ -7,7 +7,6 @@ import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 import java.util.Objects;
 
 /**
@@ -52,15 +51,15 @@ public class Image implements AutoCloseable {
      * @return A new image
      */
     public static Image fromFile(final String filePath, final boolean flipVertically) {
-        try (final MemoryStack stack = MemoryStack.stackPush()) {
-            final IntBuffer width = stack.mallocInt(1);
-            final IntBuffer height = stack.mallocInt(1);
-            final IntBuffer comp = stack.mallocInt(1);
+        try (final var stack = MemoryStack.stackPush()) {
+            final var width = stack.mallocInt(1);
+            final var height = stack.mallocInt(1);
+            final var comp = stack.mallocInt(1);
 
             STBImage.stbi_set_flip_vertically_on_load(flipVertically);
 
-            final boolean isHdr = STBImage.stbi_is_hdr(filePath);
-            final FloatBuffer data = isHdr
+            final var isHdr = STBImage.stbi_is_hdr(filePath);
+            final var data = isHdr
                     ? STBImage.stbi_loadf(filePath, width, height, comp, 0)
                     : STBImage.stbi_load(filePath, width, height, comp, 0).asFloatBuffer();
 
@@ -69,7 +68,7 @@ public class Image implements AutoCloseable {
                         + STBImage.stbi_failure_reason());
             }
 
-            final FloatBuffer copy = Image.copyImageData(data);
+            final var copy = Image.copyImageData(data);
 
             return new Image(width.get(), height.get(), comp.get(), isHdr, copy);
         }
@@ -95,15 +94,15 @@ public class Image implements AutoCloseable {
      * @return A new image
      */
     public static Image fromMemory(final ByteBuffer image, final boolean flipVertically) {
-        try (final MemoryStack stack = MemoryStack.stackPush()) {
-            final IntBuffer width = stack.mallocInt(1);
-            final IntBuffer height = stack.mallocInt(1);
-            final IntBuffer comp = stack.mallocInt(1);
+        try (final var stack = MemoryStack.stackPush()) {
+            final var width = stack.mallocInt(1);
+            final var height = stack.mallocInt(1);
+            final var comp = stack.mallocInt(1);
 
             STBImage.stbi_set_flip_vertically_on_load(flipVertically);
 
-            final boolean isHdr = STBImage.stbi_is_hdr_from_memory(image);
-            final FloatBuffer data = isHdr
+            final var isHdr = STBImage.stbi_is_hdr_from_memory(image);
+            final var data = isHdr
                     ? STBImage.stbi_loadf_from_memory(image, width, height, comp, 0)
                     : STBImage.stbi_load_from_memory(image, width, height, comp, 0).asFloatBuffer();
 
@@ -112,7 +111,7 @@ public class Image implements AutoCloseable {
                         + STBImage.stbi_failure_reason());
             }
 
-            final FloatBuffer copy = Image.copyImageData(data);
+            final var copy = Image.copyImageData(data);
 
             return new Image(width.get(), height.get(), comp.get(), isHdr, copy);
         }
@@ -125,7 +124,7 @@ public class Image implements AutoCloseable {
      * @return A new float buffer
      */
     private static FloatBuffer copyImageData(final FloatBuffer toCopy) {
-        final FloatBuffer copy = MemoryUtil.memAllocFloat(toCopy.capacity());
+        final var copy = MemoryUtil.memAllocFloat(toCopy.capacity());
         MemoryUtil.memCopy(toCopy, copy);
         STBImage.stbi_image_free(toCopy);
         return copy;

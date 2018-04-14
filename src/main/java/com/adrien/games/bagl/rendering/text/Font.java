@@ -47,16 +47,16 @@ public class Font {
     }
 
     private void load(String filePath) {
-        final File file = new File(filePath);
+        final var file = new File(filePath);
         if (!file.exists()) {
             log.error("Font file '{}' does not exists.", filePath);
             throw new EngineException("Font file '" + filePath + "' does not exists.");
         }
 
-        try (final BufferedReader reader = new BufferedReader(new FileReader(file))) {
+        try (final var reader = new BufferedReader(new FileReader(file))) {
             this.parseHeader(reader);
             reader.lines().map(CHAR_LINE_PATTERN::matcher).filter(Matcher::matches).forEach(this::parseCharLine);
-        } catch (IOException | ParseException e) {
+        } catch (final IOException | ParseException e) {
             log.error("Failed to parse font file '{}'.", filePath, e);
             throw new EngineException("Failed to parse font file '" + filePath + "'.", e);
         }
@@ -73,7 +73,7 @@ public class Font {
     }
 
     private Matcher checkMatch(Pattern pattern, String line) throws ParseException {
-        final Matcher matcher = pattern.matcher(line);
+        final var matcher = pattern.matcher(line);
         if (!matcher.matches()) {
             throw new ParseException("Font file content is not correct");
         }
@@ -92,14 +92,14 @@ public class Font {
     }
 
     private void parseCharLine(Matcher matcher) {
-        final int id = Integer.parseInt(matcher.group(1));
-        final float x = Float.parseFloat(matcher.group(2)) / this.pageWidth;
-        final float y = Float.parseFloat(matcher.group(3)) / this.pageHeight;
-        final float width = Float.parseFloat(matcher.group(4)) / this.pageWidth;
-        final float height = Float.parseFloat(matcher.group(5)) / this.pageHeight;
-        final float xOffset = Float.parseFloat(matcher.group(6)) / this.pageWidth;
-        final float yOffset = Float.parseFloat(matcher.group(7)) / this.pageHeight;
-        final float xAdvance = Float.parseFloat(matcher.group(8)) / this.pageWidth;
+        final var id = Integer.parseInt(matcher.group(1));
+        final var x = Float.parseFloat(matcher.group(2)) / this.pageWidth;
+        final var y = Float.parseFloat(matcher.group(3)) / this.pageHeight;
+        final var width = Float.parseFloat(matcher.group(4)) / this.pageWidth;
+        final var height = Float.parseFloat(matcher.group(5)) / this.pageHeight;
+        final var xOffset = Float.parseFloat(matcher.group(6)) / this.pageWidth;
+        final var yOffset = Float.parseFloat(matcher.group(7)) / this.pageHeight;
+        final var xAdvance = Float.parseFloat(matcher.group(8)) / this.pageWidth;
 
         this.glyphs.put(id, new Glyph(
                 new TextureRegion(this.bitmap, x, 1f - y - height, x + width, 1f - y),
@@ -134,7 +134,7 @@ public class Font {
      * @return The smoothing factor to use at this given height.
      */
     public float computeSmoothing(float height) {
-        final float pixelScaling = height / lineGapInPixels;
+        final var pixelScaling = height / lineGapInPixels;
         return SMOOTHING_FACTOR / (FONT_SPREAD * pixelScaling);
     }
 

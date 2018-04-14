@@ -39,7 +39,7 @@ public class Cubemap {
         this.parameters = parameters;
 
         glBindTexture(GL_TEXTURE_CUBE_MAP, this.handle);
-        for (int i = 0; i < 6; i++) {
+        for (var i = 0; i < 6; i++) {
             this.initCubemapFace(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
         }
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, parameters.getMagFilter().getGlFilter());
@@ -59,7 +59,7 @@ public class Cubemap {
      * @param faceId The id of the face
      */
     private void initCubemapFace(final int faceId) {
-        final Format format = this.parameters.getFormat();
+        final var format = this.parameters.getFormat();
         if (format.getGlDataType() == GL_FLOAT) {
             glTexImage2D(faceId, 0, format.getGlInternalFormat(), this.width, this.height, 0, format.getGlFormat(), format.getGlDataType(), FloatBuffer.class.cast(null));
         } else if (format.getGlDataType() == GL_UNSIGNED_BYTE) {

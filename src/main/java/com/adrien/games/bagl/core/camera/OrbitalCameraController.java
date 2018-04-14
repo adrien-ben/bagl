@@ -31,11 +31,11 @@ public class OrbitalCameraController extends CameraController {
     public OrbitalCameraController(final Camera camera, final Vector3f target) {
         super(camera);
         this.target = target;
-        final Vector3f toTarget = new Vector3f(this.target).sub(camera.getPosition());
+        final var toTarget = new Vector3f(this.target).sub(camera.getPosition());
         this.distance = toTarget.length();
-        final float x = -toTarget.x();
-        final float y = -toTarget.y();
-        final float z = -toTarget.z();
+        final var x = -toTarget.x();
+        final var y = -toTarget.y();
+        final var z = -toTarget.z();
         this.phi = (float) Math.acos(y / this.distance);
         this.theta = (float) Math.atan(x / z);
         this.computeCameraPosition();

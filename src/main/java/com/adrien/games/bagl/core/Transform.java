@@ -50,7 +50,7 @@ public class Transform {
      * @param result      The transform where to store the result
      */
     public static void transform(final Transform toTransform, final Transform transform, final Transform result) {
-        final Matrix4f tm = transform.getTransformMatrix();
+        final var tm = transform.getTransformMatrix();
         toTransform.translation.mulPosition(tm, result.translation);
         toTransform.scale.mul(transform.scale, result.scale);
         toTransform.rotation.mul(transform.rotation, result.rotation);

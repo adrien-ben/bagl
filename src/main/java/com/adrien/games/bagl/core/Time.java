@@ -22,7 +22,7 @@ public final class Time {
      * Updates the timings
      */
     public void update() {
-        long newTime = time();
+        final var newTime = time();
         elapsed = newTime - time;
         total += elapsed;
         time = newTime;

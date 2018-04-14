@@ -43,7 +43,7 @@ public class Scene {
      * @throws EngineException If there is a duplicated id
      */
     public void storeObject(final GameObject object) {
-        final String id = object.getId();
+        final var id = object.getId();
         if (this.objectsById.containsKey(id)) {
             throw new EngineException("The id " + id + " is already used in this scene");
         }
@@ -94,7 +94,7 @@ public class Scene {
      * @return A stream of {@link GameObject}
      */
     public Stream<GameObject> getObjectsByTag(final String tag) {
-        final List<GameObject> gameObjects = this.objectsByTags.get(tag);
+        final var gameObjects = this.objectsByTags.get(tag);
         return Objects.isNull(gameObjects) ? Stream.empty() : gameObjects.stream();
     }
 

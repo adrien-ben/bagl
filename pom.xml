@@ -10,7 +10,7 @@
 
     <properties>
         <!-- Dependencies versions -->
-        <java.version>1.9</java.version>
+        <java.version>1.10</java.version>
         <lwjgl.version>3.1.5</lwjgl.version>
         <joml.version>1.9.8</joml.version>
         <gltf-loader.version>1.0.0-SNAPSHOT</gltf-loader.version>

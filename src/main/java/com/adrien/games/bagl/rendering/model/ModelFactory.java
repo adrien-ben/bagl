@@ -39,7 +39,7 @@ public final class ModelFactory {
      * @return A {@link Model}
      */
     public static Model createCube(final float size, final Material material) {
-        final Model model = new Model();
+        final var model = new Model();
         model.addNode().addMesh(MeshFactory.createCube(size), material);
         return model;
     }
@@ -57,7 +57,7 @@ public final class ModelFactory {
      * @return A {@link Model}
      */
     public static Model createSphere(final float radius, final int rings, final int segments, final Material material) {
-        final Model model = new Model();
+        final var model = new Model();
         model.addNode().addMesh(MeshFactory.createSphere(radius, rings, segments), material);
         return model;
     }
@@ -76,7 +76,7 @@ public final class ModelFactory {
      * @return A {@link Model}
      */
     public static Model createCone(final float baseRadius, final float topRadius, final float height, final int segments, final Material material) {
-        final Model model = new Model();
+        final var model = new Model();
         model.addNode().addMesh(MeshFactory.createCylinder(baseRadius, topRadius, height, segments), material);
         return model;
     }

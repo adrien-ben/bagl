@@ -84,7 +84,7 @@ public final class ModelNode {
      * @return The created child node
      */
     public ModelNode addChild(final Transform transform) {
-        final ModelNode child = new ModelNode(this.owner, this, transform);
+        final var child = new ModelNode(this.owner, this, transform);
         this.children.add(child);
         return child;
     }

@@ -38,8 +38,8 @@ public class Camera2D {
      * Compute the orthographic projection matrix
      */
     private void computeOrthographic(final Matrix4f orthographic) {
-        final int left = Math.round(position.x()) - this.width / 2;
-        final int bottom = Math.round(position.y()) - this.height / 2;
+        final var left = Math.round(position.x()) - this.width / 2;
+        final var bottom = Math.round(position.y()) - this.height / 2;
         orthographic.setOrtho2D(left, left + this.width, bottom, bottom + this.height);
     }
 

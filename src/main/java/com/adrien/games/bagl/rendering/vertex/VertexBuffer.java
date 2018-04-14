@@ -172,8 +172,8 @@ public class VertexBuffer {
             final DataType bufferDataType,
             final VertexBufferParams params
     ) {
-        final int capacity = buffer.capacity() / (params.getDataType().getSize() / bufferDataType.getSize());
-        final int vertexSize = params.getElements().stream().mapToInt(VertexElement::getSize).sum();
+        final var capacity = buffer.capacity() / (params.getDataType().getSize() / bufferDataType.getSize());
+        final var vertexSize = params.getElements().stream().mapToInt(VertexElement::getSize).sum();
         if (capacity % vertexSize != 0) {
             throw new EngineException("The number of elements in the buffer (" + capacity + ") is incorrect. It should be a multiple of "
                     + vertexSize + " (sum of the sizes of the vertex elements)");

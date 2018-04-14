@@ -5,7 +5,6 @@ import com.adrien.games.bagl.rendering.DataType;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -50,15 +49,15 @@ public class VertexArray {
     public void attachVertexBuffer(final VertexBuffer buffer) {
         this.checkIsBound("You cannot attach a vertex buffer to a vertex array which is not bound");
 
-        final VertexBufferParams params = buffer.getParams();
-        final DataType dataType = params.getDataType();
-        final AtomicInteger offset = new AtomicInteger(0);
-        final List<VertexElement> elements = params.getElements();
+        final var params = buffer.getParams();
+        final var dataType = params.getDataType();
+        final var offset = new AtomicInteger(0);
+        final var elements = params.getElements();
 
         buffer.bind();
         elements.forEach(element -> {
-            final int elementSize = params.isInterleaved() ? element.getSize() : element.getSize() * buffer.getVertexCount();
-            final int byteOffset = offset.getAndAdd(elementSize) * dataType.getSize();
+            final var elementSize = params.isInterleaved() ? element.getSize() : element.getSize() * buffer.getVertexCount();
+            final var byteOffset = offset.getAndAdd(elementSize) * dataType.getSize();
             this.enableVertexElement(element, dataType, buffer.getStride(), byteOffset);
         });
         buffer.unbind();

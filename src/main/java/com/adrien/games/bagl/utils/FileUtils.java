@@ -2,7 +2,10 @@ package com.adrien.games.bagl.utils;
 
 import com.adrien.games.bagl.exception.EngineException;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Paths;
@@ -28,7 +31,7 @@ public final class FileUtils {
      * @return A {@link ByteBuffer} filled with the file content
      */
     public static ByteBuffer loadAsByteBuffer(final String filePath) {
-        try (final FileChannel channel = FileChannel.open(Paths.get(filePath))) {
+        try (final var channel = FileChannel.open(Paths.get(filePath))) {
             return channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
         } catch (IOException e) {
             throw new EngineException("Failed to load file into the byte buffer", e);
@@ -53,7 +56,7 @@ public final class FileUtils {
      * @throws EngineException if the file does not exists
      */
     public static File checkFileExistence(final String filePath) {
-        final File file = new File(filePath);
+        final var file = new File(filePath);
         if (!file.exists()) {
             throw new EngineException("File not found: " + filePath);
         }
@@ -67,7 +70,7 @@ public final class FileUtils {
      * @return The opened buffered reader
      */
     public static BufferedReader getResourceAsBufferedReader(final String resourcePath) {
-        final InputStream inputStream = FileUtils.class.getResourceAsStream(resourcePath);
+        final var inputStream = FileUtils.class.getResourceAsStream(resourcePath);
         if (Objects.isNull(inputStream)) {
             throw new EngineException("Could not find resource file " + resourcePath);
         }

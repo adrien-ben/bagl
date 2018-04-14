@@ -4,7 +4,6 @@ import com.adrien.games.bagl.core.Input;
 import com.adrien.games.bagl.core.Time;
 import com.adrien.games.bagl.core.math.Vectors;
 import org.joml.Quaternionf;
-import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 
@@ -45,8 +44,8 @@ public class FPSCameraController extends CameraController {
      * @see CameraController#update(Time)
      */
     public void update(final Time time) {
-        float elapsed = time.getElapsedTime();
-        final Vector2f mouseDelta = Input.getMouseDelta();
+        final var elapsed = time.getElapsedTime();
+        final var mouseDelta = Input.getMouseDelta();
 
         this.forward.set(this.camera.getDirection()).normalize();
         this.side.set(this.camera.getSide()).normalize();

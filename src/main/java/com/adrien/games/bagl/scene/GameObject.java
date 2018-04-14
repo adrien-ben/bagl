@@ -86,7 +86,7 @@ public class GameObject {
         if (this.isRoot()) {
             this.transform.set(this.localTransform);
         } else {
-            final Transform parentTransform = this.parent.transform;
+            final var parentTransform = this.parent.transform;
             Transform.transform(this.localTransform, parentTransform, this.transform);
         }
     }
@@ -116,7 +116,7 @@ public class GameObject {
      * @return The created child
      */
     public GameObject createChild(final String id, final String... tags) {
-        final GameObject child = new GameObject(this.parentScene, id, tags);
+        final var child = new GameObject(this.parentScene, id, tags);
         this.children.add(child);
         child.parent = this;
         child.parentScene = this.parentScene;
@@ -131,7 +131,7 @@ public class GameObject {
      * @param component The component to add
      */
     public void addComponent(final Component component) {
-        final Component old = this.componentsByType.put(component.getClass(), component);
+        final var old = this.componentsByType.put(component.getClass(), component);
         component.setParentObject(this);
         if (Objects.nonNull(old)) {
             old.setParentObject(null);

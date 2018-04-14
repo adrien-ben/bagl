@@ -18,7 +18,10 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * Render particles using OpenGL geometry shaders
@@ -90,7 +93,7 @@ public class ParticleRenderer {
      * @param camera  The camera
      */
     public void render(final ParticleEmitter emitter, final Camera camera) {
-        int particleToRender = 0;
+        var particleToRender = 0;
 
         this.timer.update();
         this.particlesToRender.clear();
@@ -105,8 +108,8 @@ public class ParticleRenderer {
         }
 
         this.timer.update();
-        for (final Particle p : this.particlesToRender) {
-            final int index = particleToRender * ELEMENTS_PER_VERTEX;
+        for (final var p : this.particlesToRender) {
+            final var index = particleToRender * ELEMENTS_PER_VERTEX;
             this.vertices.put(index, p.getPosition().x());
             this.vertices.put(index + 1, p.getPosition().y());
             this.vertices.put(index + 2, p.getPosition().z());
@@ -120,7 +123,7 @@ public class ParticleRenderer {
         log.debug("Copying data to cpu buffer : {}", this.timer.getElapsedTime());
 
         boolean hasTexture;
-        final Optional<Texture> texture = emitter.getTexture();
+        final var texture = emitter.getTexture();
         if (hasTexture = texture.isPresent()) {
             texture.get().bind();
         }
@@ -167,8 +170,8 @@ public class ParticleRenderer {
         public int compare(final Particle p0, final Particle p1) {
             p0.getPosition().sub(this.camera.getPosition(), this.v0);
             p1.getPosition().sub(this.camera.getPosition(), this.v1);
-            final float dist0 = this.v0.lengthSquared();
-            final float dist1 = this.v1.lengthSquared();
+            final var dist0 = this.v0.lengthSquared();
+            final var dist1 = this.v1.lengthSquared();
             return (int) (dist1 - dist0);
         }
 

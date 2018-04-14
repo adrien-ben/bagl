@@ -44,7 +44,7 @@ public final class Model {
      * @return The new node
      */
     public ModelNode addNode(final Transform transform) {
-        final ModelNode node = new ModelNode(this, transform);
+        final var node = new ModelNode(this, transform);
         this.nodes.add(node);
         return node;
     }
