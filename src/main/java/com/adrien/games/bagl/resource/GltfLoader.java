@@ -184,16 +184,12 @@ public class GltfLoader {
      * @return A new index buffer
      */
     private IndexBuffer createIndexBuffer(final GltfAccessor accessor) {
-        final var byteBuffer = this.extractData(accessor);
-        if (!byteBuffer.isPresent()) {
-            return null;
-        }
-
-        final var indices = byteBuffer.get();
-        final var dataType = this.mapDataType(accessor.getComponentType());
-        final var indexBuffer = new IndexBuffer(indices, dataType, BufferUsage.STATIC_DRAW);
-        MemoryUtil.memFree(indices);
-        return indexBuffer;
+        return this.extractData(accessor).map(indices -> {
+            final var dataType = this.mapDataType(accessor.getComponentType());
+            final var indexBuffer = new IndexBuffer(indices, dataType, BufferUsage.STATIC_DRAW);
+            MemoryUtil.memFree(indices);
+            return indexBuffer;
+        }).orElse(null);
     }
 
     /**
