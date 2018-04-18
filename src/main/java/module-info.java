@@ -1,15 +1,15 @@
 module com.adrien.games.bagl {
 	requires java.base;
-	requires org.joml;
-	requires org.apache.logging.log4j;
+	requires transitive org.joml;
+	requires transitive org.apache.logging.log4j;
 	requires org.lwjgl;
 	requires org.lwjgl.natives;
-	requires org.lwjgl.glfw;
-	requires org.lwjgl.glfw.natives;
+	requires transitive org.lwjgl.glfw;
+	requires transitive org.lwjgl.glfw.natives;
 	requires org.lwjgl.jemalloc;
 	requires org.lwjgl.jemalloc.natives;
-	requires org.lwjgl.opengl;
-	requires org.lwjgl.opengl.natives;
+	requires transitive org.lwjgl.opengl;
+	requires transitive org.lwjgl.opengl.natives;
 	requires org.lwjgl.stb;
 	requires org.lwjgl.stb.natives;
 	requires gltf.loader;
