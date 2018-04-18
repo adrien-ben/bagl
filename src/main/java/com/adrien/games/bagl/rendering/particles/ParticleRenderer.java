@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Render particles using OpenGL geometry shaders
@@ -122,14 +123,14 @@ public class ParticleRenderer {
         }
         log.debug("Copying data to cpu buffer : {}", this.timer.getElapsedTime());
 
-        boolean hasTexture;
-        final var texture = emitter.getTexture();
-        if (hasTexture = texture.isPresent()) {
-            texture.get().bind();
-        }
+        final AtomicBoolean hasTexture = new AtomicBoolean(false);
+        emitter.getTexture().ifPresent(texture -> {
+            hasTexture.set(true);
+            texture.bind();
+        });
 
         this.shader.bind();
-        this.shader.setUniform("hasTexture", hasTexture);
+        this.shader.setUniform("hasTexture", hasTexture.get());
         this.shader.setUniform("camera.view", camera.getView());
         this.shader.setUniform("camera.viewProj", camera.getViewProj());
 
