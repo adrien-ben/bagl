@@ -167,8 +167,7 @@ public class GltfLoader {
                 .entrySet()
                 .stream()
                 .map(entry -> this.createVertexBuffer(entry.getKey(), entry.getValue()))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
+                .flatMap(Optional::stream)
                 .collect(Collectors.toList());
 
         final Mesh mesh = new Mesh(vBuffers, iBuffer, this.mapPrimitiveType(primitive.getMode()));
