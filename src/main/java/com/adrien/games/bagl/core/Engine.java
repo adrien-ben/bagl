@@ -46,6 +46,7 @@ public final class Engine {
         try {
             log.info("Starting engine");
             this.isRunning = true;
+            this.time.update();
             while (this.isRunning) {
                 if (this.window.isCloseRequested()) {
                     this.stop();
