@@ -15,7 +15,12 @@ module com.adrien.games.bagl {
 	requires gltf.loader;
 
 	exports com.adrien.games.bagl.core;
+	exports com.adrien.games.bagl.core.camera;
+	exports com.adrien.games.bagl.core.math;
 	exports com.adrien.games.bagl.rendering;
+	exports com.adrien.games.bagl.rendering.light;
+	exports com.adrien.games.bagl.rendering.vertex;
+	exports com.adrien.games.bagl.rendering.texture;
 	exports com.adrien.games.bagl.resource;
 	exports com.adrien.games.bagl.scene;
 	exports com.adrien.games.bagl.utils;
