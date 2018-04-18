@@ -15,7 +15,6 @@ import com.adrien.games.bagl.rendering.postprocess.PostProcessor;
 import com.adrien.games.bagl.rendering.texture.Cubemap;
 import com.adrien.games.bagl.rendering.texture.Format;
 import com.adrien.games.bagl.rendering.texture.Texture;
-import com.adrien.games.bagl.rendering.vertex.IndexBuffer;
 import com.adrien.games.bagl.scene.ComponentVisitor;
 import com.adrien.games.bagl.scene.Scene;
 import com.adrien.games.bagl.scene.components.*;
@@ -373,15 +372,14 @@ public class Renderer implements ComponentVisitor {
      */
     private void renderMesh(final Mesh mesh) {
         mesh.getVertexArray().bind();
-        final var iBufferOpt = mesh.getIndexBuffer();
-        if (iBufferOpt.isPresent()) {
-            final IndexBuffer iBuffer = iBufferOpt.get();
-            iBuffer.bind();
-            glDrawElements(mesh.getPrimitiveType().getGlCode(), iBuffer.getSize(), iBuffer.getDataType().getGlCode(), 0);
-            iBuffer.unbind();
-        } else {
-            glDrawArrays(mesh.getPrimitiveType().getGlCode(), 0, mesh.getVertexCount());
-        }
+        mesh.getIndexBuffer().ifPresentOrElse(
+                iBuffer -> {
+                    iBuffer.bind();
+                    glDrawElements(mesh.getPrimitiveType().getGlCode(), iBuffer.getSize(), iBuffer.getDataType().getGlCode(), 0);
+                    iBuffer.unbind();
+                },
+                () -> glDrawArrays(mesh.getPrimitiveType().getGlCode(), 0, mesh.getVertexCount())
+        );
         mesh.getVertexArray().unbind();
     }
 
