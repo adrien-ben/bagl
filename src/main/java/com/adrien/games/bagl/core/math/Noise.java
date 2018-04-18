@@ -20,10 +20,10 @@ public class Noise {
      * @return The computed noise value.
      */
     public static float perlin(final float x, final float y, final float z, final int octaves, final float persistence) {
-        var total = 0;
-        var frequency = 1;
-        var amplitude = 1;
-        var maxValue = 0;
+        var total = 0f;
+        var frequency = 1f;
+        var amplitude = 1f;
+        var maxValue = 0f;
         for (var i = 0; i < octaves; i++) {
             final var noise = perlin(x * frequency, y * frequency, z * frequency);
             total += noise * amplitude;
