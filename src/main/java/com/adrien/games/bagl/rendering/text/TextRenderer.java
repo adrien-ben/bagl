@@ -8,6 +8,7 @@ import com.adrien.games.bagl.rendering.BufferUsage;
 import com.adrien.games.bagl.rendering.Shader;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.vertex.*;
+import com.adrien.games.bagl.utils.FileUtils;
 import org.joml.Vector2f;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.system.MemoryStack;
@@ -57,8 +58,8 @@ public class TextRenderer {
 
         this.configuration = Configuration.getInstance();
         this.shader = Shader.builder()
-                .vertexPath("/ui/text.vert")
-                .fragmentPath("/ui/text.frag")
+                .vertexPath(FileUtils.getResourceAbsolutePath("/shaders/ui/text.vert"))
+                .fragmentPath(FileUtils.getResourceAbsolutePath("/shaders/ui/text.frag"))
                 .build();
 
         this.bufferedChar = 0;

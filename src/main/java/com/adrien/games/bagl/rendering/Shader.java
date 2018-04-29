@@ -81,16 +81,18 @@ public class Shader {
     }
 
     /**
-     * Load the source code of the shader. Create a new OpenGL shader object
-     * and compile it. Finally it attach the shader to the OpenGL program
-     * object and add the handle to the attached shaders list
+     * Load the source code of the shader.
+     * <p>
+     * Create a new OpenGL shader object and compile it. Finally
+     * it attaches the shader to the OpenGL program object and add
+     * the handle to the attached shaders list
      *
-     * @param resourceFile The name of the resource file
-     * @param type         The type of shader to load
+     * @param filePath The path file
+     * @param type     The type of shader to load
      * @throws EngineException If source loading or shader compilation fails
      */
-    private void addShader(final String resourceFile, final int type) {
-        final var source = new ShaderLoader().loadSourceFromResource(resourceFile);
+    private void addShader(final String filePath, final int type) {
+        final var source = new ShaderLoader().loadSource(filePath);
 
         final var shader = GL20.glCreateShader(type);
         GL20.glShaderSource(shader, source);

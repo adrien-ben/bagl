@@ -8,6 +8,7 @@ import com.adrien.games.bagl.rendering.model.MeshFactory;
 import com.adrien.games.bagl.rendering.texture.Format;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.utils.DoubleBuffer;
+import com.adrien.games.bagl.utils.FileUtils;
 
 import static org.lwjgl.opengl.GL11.glDrawArrays;
 
@@ -18,7 +19,7 @@ import static org.lwjgl.opengl.GL11.glDrawArrays;
  */
 public class PostProcessor {
 
-    private static final String POST_PROCESS_VERTEX_SHADER_FILE = "/post/post_process.vert";
+    private static final String POST_PROCESS_VERTEX_SHADER_FILE = "/shaders/post/post_process.vert";
 
     private FrameBuffer bloomBuffer;
     private DoubleBuffer<FrameBuffer> blurBuffer;
@@ -34,9 +35,18 @@ public class PostProcessor {
         this.bloomBuffer = new FrameBuffer(xResolution, yResolution, parameters);
         this.blurBuffer = new DoubleBuffer<>(() -> new FrameBuffer(xResolution, yResolution, parameters));
 
-        this.bloomShader = Shader.builder().vertexPath(POST_PROCESS_VERTEX_SHADER_FILE).fragmentPath("/post/bloom.frag").build();
-        this.blurShader = Shader.builder().vertexPath(POST_PROCESS_VERTEX_SHADER_FILE).fragmentPath("/post/blur.frag").build();
-        this.lastStageShader = Shader.builder().vertexPath(POST_PROCESS_VERTEX_SHADER_FILE).fragmentPath("/post/post_process.frag").build();
+        this.bloomShader = Shader.builder()
+                .vertexPath(FileUtils.getResourceAbsolutePath(POST_PROCESS_VERTEX_SHADER_FILE))
+                .fragmentPath(FileUtils.getResourceAbsolutePath("/shaders/post/bloom.frag"))
+                .build();
+        this.blurShader = Shader.builder()
+                .vertexPath(FileUtils.getResourceAbsolutePath(POST_PROCESS_VERTEX_SHADER_FILE))
+                .fragmentPath(FileUtils.getResourceAbsolutePath("/shaders/post/blur.frag"))
+                .build();
+        this.lastStageShader = Shader.builder()
+                .vertexPath(FileUtils.getResourceAbsolutePath(POST_PROCESS_VERTEX_SHADER_FILE))
+                .fragmentPath(FileUtils.getResourceAbsolutePath("/shaders/post/post_process.frag"))
+                .build();
         this.screenQuad = MeshFactory.createScreenQuad();
     }
 

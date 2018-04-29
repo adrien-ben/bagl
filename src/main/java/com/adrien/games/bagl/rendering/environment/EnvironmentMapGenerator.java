@@ -9,6 +9,7 @@ import com.adrien.games.bagl.rendering.Shader;
 import com.adrien.games.bagl.rendering.model.Mesh;
 import com.adrien.games.bagl.rendering.model.MeshFactory;
 import com.adrien.games.bagl.rendering.texture.*;
+import com.adrien.games.bagl.utils.FileUtils;
 import org.joml.Vector3f;
 
 import static org.lwjgl.opengl.GL11.*;
@@ -50,16 +51,16 @@ public class EnvironmentMapGenerator {
         this.preFilteredMapFrameBuffer = new FrameBuffer(PRE_FILTERED_MAP_RESOLUTION, PRE_FILTERED_MAP_RESOLUTION, frameBufferParameters);
 
         this.environmentSphericalShader = Shader.builder()
-                .vertexPath("/environment/environment.vert")
-                .fragmentPath("/environment/environment_spherical_sample.frag")
+                .vertexPath(FileUtils.getResourceAbsolutePath("/shaders/environment/environment.vert"))
+                .fragmentPath(FileUtils.getResourceAbsolutePath("/shaders/environment/environment_spherical_sample.frag"))
                 .build();
         this.irradianceShader = Shader.builder()
-                .vertexPath("/environment/environment.vert")
-                .fragmentPath("/environment/irradiance.frag")
+                .vertexPath(FileUtils.getResourceAbsolutePath("/shaders/environment/environment.vert"))
+                .fragmentPath(FileUtils.getResourceAbsolutePath("/shaders/environment/irradiance.frag"))
                 .build();
         this.preFilteredMapShader = Shader.builder()
-                .vertexPath("/environment/environment.vert")
-                .fragmentPath("/environment/pre_filtered_map.frag")
+                .vertexPath(FileUtils.getResourceAbsolutePath("/shaders/environment/environment.vert"))
+                .fragmentPath(FileUtils.getResourceAbsolutePath("/shaders/environment/pre_filtered_map.frag"))
                 .build();
 
         this.cameras = this.initCameras();

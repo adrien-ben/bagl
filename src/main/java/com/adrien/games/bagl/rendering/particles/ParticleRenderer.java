@@ -11,6 +11,7 @@ import com.adrien.games.bagl.rendering.vertex.VertexArray;
 import com.adrien.games.bagl.rendering.vertex.VertexBuffer;
 import com.adrien.games.bagl.rendering.vertex.VertexBufferParams;
 import com.adrien.games.bagl.rendering.vertex.VertexElement;
+import com.adrien.games.bagl.utils.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joml.Vector3f;
@@ -54,9 +55,9 @@ public class ParticleRenderer {
      */
     public ParticleRenderer() {
         this.shader = Shader.builder()
-                .vertexPath("/particles/particles.vert")
-                .fragmentPath("/particles/particles.frag")
-                .geometryPath("/particles/particles.geom")
+                .vertexPath(FileUtils.getResourceAbsolutePath("/shaders/particles/particles.vert"))
+                .fragmentPath(FileUtils.getResourceAbsolutePath("/shaders/particles/particles.frag"))
+                .geometryPath(FileUtils.getResourceAbsolutePath("/shaders/particles/particles.geom"))
                 .build();
 
         this.vertices = MemoryUtil.memAllocFloat(ParticleEmitter.MAX_PARTICLE_COUNT * ELEMENTS_PER_VERTEX);

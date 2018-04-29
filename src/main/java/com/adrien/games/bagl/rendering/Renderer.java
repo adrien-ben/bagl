@@ -18,6 +18,7 @@ import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.scene.ComponentVisitor;
 import com.adrien.games.bagl.scene.Scene;
 import com.adrien.games.bagl.scene.components.*;
+import com.adrien.games.bagl.utils.FileUtils;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
@@ -149,24 +150,24 @@ public class Renderer implements ComponentVisitor {
      */
     private void initShaders() {
         this.skyboxShader = Shader.builder()
-                .vertexPath("/environment/environment.vert")
-                .fragmentPath("/environment/environment_cubemap_sample.frag")
+                .vertexPath(FileUtils.getResourceAbsolutePath("/shaders/environment/environment.vert"))
+                .fragmentPath(FileUtils.getResourceAbsolutePath("/shaders/environment/environment_cubemap_sample.frag"))
                 .build();
         this.shadowShader = Shader.builder()
-                .vertexPath("/shadow/shadow.vert")
-                .fragmentPath("/shadow/shadow.frag")
+                .vertexPath(FileUtils.getResourceAbsolutePath("/shaders/shadow/shadow.vert"))
+                .fragmentPath(FileUtils.getResourceAbsolutePath("/shaders/shadow/shadow.frag"))
                 .build();
         this.gBufferShader = Shader.builder()
-                .vertexPath("/deferred/gbuffer.vert")
-                .fragmentPath("/deferred/gbuffer.frag")
+                .vertexPath(FileUtils.getResourceAbsolutePath("/shaders/deferred/gbuffer.vert"))
+                .fragmentPath(FileUtils.getResourceAbsolutePath("/shaders/deferred/gbuffer.frag"))
                 .build();
         this.deferredShader = Shader.builder()
-                .vertexPath("/deferred/deferred.vert")
-                .fragmentPath("/deferred/deferred.frag")
+                .vertexPath(FileUtils.getResourceAbsolutePath("/shaders/deferred/deferred.vert"))
+                .fragmentPath(FileUtils.getResourceAbsolutePath("/shaders/deferred/deferred.frag"))
                 .build();
         this.brdfShader = Shader.builder()
-                .vertexPath("/post/post_process.vert")
-                .fragmentPath("/environment/brdf_integration.frag")
+                .vertexPath(FileUtils.getResourceAbsolutePath("/shaders/post/post_process.vert"))
+                .fragmentPath(FileUtils.getResourceAbsolutePath("/shaders/environment/brdf_integration.frag"))
                 .build();
     }
 
