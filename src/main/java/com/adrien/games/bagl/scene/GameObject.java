@@ -105,6 +105,23 @@ public class GameObject {
     }
 
     /**
+     * Destroy this game object
+     * <p>
+     * Destroy all of its children first, then destroy all its components and
+     * finally detaches forget about its parent.
+     */
+    public void destroy() {
+        children.forEach(GameObject::destroy);
+        children.clear();
+        componentsByType.values().forEach(Component::destroy);
+        componentsByType.clear();
+        if (!isRoot()) {
+            parentScene = null;
+            parent = null;
+        }
+    }
+
+    /**
      * Create a new child object
      * <p>
      * This creates a new instance of a game object. It sets this as

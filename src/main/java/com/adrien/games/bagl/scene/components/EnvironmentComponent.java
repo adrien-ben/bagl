@@ -41,6 +41,20 @@ public class EnvironmentComponent extends Component {
         // does nothing
     }
 
+
+    /**
+     * {@inheritDoc}
+     *
+     * @see Component#destroy()
+     */
+    @Override
+    public void destroy() {
+        super.destroy();
+        environmentMap.destroy();
+        irradianceMap.destroy();
+        preFilteredMap.destroy();
+    }
+
     /**
      * {@inheritDoc}
      *

@@ -1,0 +1,296 @@
+{
+  "children": [
+    {
+      "id": "camera",
+      "components": [
+        {
+          "type": "camera",
+          "position": {
+            "x": 4.0,
+            "y": 2.5,
+            "z": 3.0
+          },
+          "direction": {
+            "x": -4.0,
+            "y": -2.5,
+            "z": -3.0
+          },
+          "up": {
+            "x": 0.0,
+            "y": 1.0,
+            "z": 0.0
+          },
+          "fov": 60.0,
+          "near": 0.1,
+          "far": 1000.0
+        }
+      ]
+    },
+    {
+      "id": "floor",
+      "tags": [
+        "floor"
+      ],
+      "transform": {
+        "scale": {
+          "x": 10.0,
+          "y": 10.0,
+          "z": 10.0
+        }
+      },
+      "components": [
+        {
+          "type": "model",
+          "path": "classpath:/models/floor/floor.gltf"
+        }
+      ],
+      "children": [
+        {
+          "id": "helmet",
+          "transform": {
+            "translation": {
+              "x": 0.0,
+              "y": 0.1,
+              "z": 0.0
+            },
+            "scale": {
+              "x": 0.1,
+              "y": 0.1,
+              "z": 0.1
+            }
+          },
+          "components": [
+            {
+              "type": "model",
+              "path": "classpath:/models/helmet/helmet.glb"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sun",
+      "transform": {
+        "rotation": {
+          "x": 45.0,
+          "y": 45.0,
+          "z": 0.0
+        },
+        "scale": {
+          "x": 10.0,
+          "y": 10.0,
+          "z": 10.0
+        }
+      },
+      "components": [
+        {
+          "type": "directional_light",
+          "intensity": 0.8,
+          "color": {
+            "r": 1.0,
+            "g": 1.0,
+            "b": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "id": "point_light_0",
+      "tags": [
+        "point_lights"
+      ],
+      "transform": {
+        "translation": {
+          "x": 4.0,
+          "y": 0.5,
+          "z": 2.0
+        }
+      },
+      "components": [
+        {
+          "type": "point_light",
+          "intensity": 0.8,
+          "color": {
+            "r": 0.0,
+            "g": 1.0,
+            "b": 0.0
+          },
+          "radius": 3.0
+        }
+      ]
+    },
+    {
+      "id": "point_light_1",
+      "tags": [
+        "point_lights"
+      ],
+      "transform": {
+        "translation": {
+          "x": -4.0,
+          "y": 0.2,
+          "z": 2.0
+        }
+      },
+      "components": [
+        {
+          "type": "point_light",
+          "intensity": 10.0,
+          "color": {
+            "r": 1.0,
+            "g": 1.0,
+            "b": 0.0
+          },
+          "radius": 2.0
+        }
+      ]
+    },
+    {
+      "id": "point_light_2",
+      "tags": [
+        "point_lights"
+      ],
+      "transform": {
+        "translation": {
+          "x": 0.0,
+          "y": 0.5,
+          "z": 3.0
+        }
+      },
+      "components": [
+        {
+          "type": "point_light",
+          "intensity": 10.0,
+          "color": {
+            "r": 0.0,
+            "g": 0.0,
+            "b": 1.0
+          },
+          "radius": 2.0
+        }
+      ]
+    },
+    {
+      "id": "point_light_3",
+      "tags": [
+        "point_lights"
+      ],
+      "transform": {
+        "translation": {
+          "x": -1.0,
+          "y": 0.1,
+          "z": 1.0
+        }
+      },
+      "components": [
+        {
+          "type": "point_light",
+          "intensity": 10.0,
+          "color": {
+            "r": 0.2509,
+            "g": 0.8784,
+            "b": 0.8039
+          },
+          "radius": 2.0
+        }
+      ]
+    },
+    {
+      "id": "point_light_4",
+      "tags": [
+        "point_lights"
+      ],
+      "transform": {
+        "translation": {
+          "x": 3.0,
+          "y": 0.6,
+          "z": -3.0
+        }
+      },
+      "components": [
+        {
+          "type": "point_light",
+          "intensity": 10.0,
+          "color": {
+            "r": 0.0,
+            "g": 1.0,
+            "b": 1.0
+          },
+          "radius": 2.0
+        }
+      ]
+    },
+    {
+      "id": "spot_light_0",
+      "tags": [
+        "spot_lights"
+      ],
+      "transform": {
+        "translation": {
+          "x": -3.0,
+          "y": 1.0,
+          "z": -2.0
+        },
+        "rotation": {
+          "x": 45.0,
+          "y": 0.0,
+          "z": 0.0
+        }
+      },
+      "components": [
+        {
+          "type": "spot_light",
+          "intensity": 10.0,
+          "color": {
+            "r": 1.0,
+            "g": 0.0,
+            "b": 0.0
+          },
+          "radius": 20.0,
+          "angle": 20.0,
+          "edge": 5.0
+        }
+      ]
+    },
+    {
+      "id": "spot_light_1",
+      "tags": [
+        "spot_lights"
+      ],
+      "transform": {
+        "translation": {
+          "x": 2.0,
+          "y": 2.0,
+          "z": 2.0
+        },
+        "rotation": {
+          "x": 90.0,
+          "y": 0.0,
+          "z": 0.0
+        }
+      },
+      "components": [
+        {
+          "type": "spot_light",
+          "intensity": 2.0,
+          "color": {
+            "r": 1.0,
+            "g": 1.0,
+            "b": 1.0
+          },
+          "radius": 7.0,
+          "angle": 10.0,
+          "edge": 4.0
+        }
+      ]
+    },
+    {
+      "id": "env",
+      "components": [
+        {
+          "type": "environment",
+          "path": "classpath:/envmaps/beach.hdr"
+        }
+      ]
+    }
+  ]
+}

@@ -13,6 +13,8 @@ module com.adrien.games.bagl {
 	requires org.lwjgl.stb;
 	requires org.lwjgl.stb.natives;
 	requires gltf.loader;
+	requires gson;
+	requires java.sql;
 
 	exports com.adrien.games.bagl.core;
 	exports com.adrien.games.bagl.core.camera;

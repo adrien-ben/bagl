@@ -1,31 +1,27 @@
 package com.adrien.games.bagl.sample;
 
 import com.adrien.games.bagl.core.*;
-import com.adrien.games.bagl.core.camera.Camera;
 import com.adrien.games.bagl.core.camera.CameraController;
 import com.adrien.games.bagl.core.camera.FPSCameraController;
 import com.adrien.games.bagl.rendering.Material;
 import com.adrien.games.bagl.rendering.Renderer;
 import com.adrien.games.bagl.rendering.Spritebatch;
-import com.adrien.games.bagl.rendering.environment.EnvironmentMapGenerator;
-import com.adrien.games.bagl.rendering.light.DirectionalLight;
-import com.adrien.games.bagl.rendering.light.PointLight;
-import com.adrien.games.bagl.rendering.light.SpotLight;
 import com.adrien.games.bagl.rendering.model.Mesh;
 import com.adrien.games.bagl.rendering.model.MeshFactory;
 import com.adrien.games.bagl.rendering.model.Model;
-import com.adrien.games.bagl.rendering.model.ModelFactory;
 import com.adrien.games.bagl.rendering.text.Font;
 import com.adrien.games.bagl.rendering.text.TextRenderer;
-import com.adrien.games.bagl.rendering.texture.Cubemap;
+import com.adrien.games.bagl.resource.scene.SceneLoader;
 import com.adrien.games.bagl.scene.GameObject;
 import com.adrien.games.bagl.scene.Scene;
-import com.adrien.games.bagl.scene.components.*;
+import com.adrien.games.bagl.scene.components.CameraComponent;
+import com.adrien.games.bagl.scene.components.ModelComponent;
+import com.adrien.games.bagl.scene.components.PointLightComponent;
+import com.adrien.games.bagl.scene.components.SpotLightComponent;
 import com.adrien.games.bagl.utils.FileUtils;
 import com.adrien.games.bagl.utils.MathUtils;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
-import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 
 public class DeferredRenderingSample {
@@ -50,22 +46,14 @@ public class DeferredRenderingSample {
 
         private TextRenderer textRenderer;
         private Renderer renderer;
-        private EnvironmentMapGenerator environmentMapGenerator;
 
         private Font font;
 
-        private Camera camera;
         private CameraController cameraController;
 
         private Scene scene;
-        private Cubemap environmentMap;
-        private Cubemap irradianceMap;
-        private Cubemap preFilteredMap;
-        private Model floor;
         private Mesh pointBulb;
         private Mesh spotBulb;
-
-        private Model boomBox;
 
         private Spritebatch spritebatch;
 
@@ -81,17 +69,20 @@ public class DeferredRenderingSample {
 
             this.textRenderer = new TextRenderer();
             this.renderer = new Renderer();
-            this.environmentMapGenerator = new EnvironmentMapGenerator();
 
             this.font = new Font(FileUtils.getResourceAbsolutePath("/fonts/segoe/segoe.fnt"));
 
-            this.camera = new Camera(new Vector3f(4f, 2.5f, 3f), new Vector3f(-4f, -2.5f, -3f), new Vector3f(0, 1, 0),
-                    (float) Math.toRadians(60f), (float) this.width / (float) this.height, 0.1f, 1000);
-            this.cameraController = new FPSCameraController(this.camera);
 
-            this.scene = new Scene();
+            this.scene = new SceneLoader().load(FileUtils.getResourceAbsolutePath("/scenes/demo_scene.json"));
             this.loadMeshes();
             this.initScene();
+
+            this.scene.getObjectById("camera").ifPresent(cam ->
+                    cam.getComponentOfType(CameraComponent.class).ifPresentOrElse(comp ->
+                                    cameraController = new FPSCameraController(comp.getCamera()),
+                            () -> {
+                                throw new IllegalStateException("A scene should a at least a camera");
+                            }));
 
             this.spritebatch = new Spritebatch(1024, this.width, this.height);
         }
@@ -100,97 +91,37 @@ public class DeferredRenderingSample {
         public void destroy() {
             this.textRenderer.destroy();
             this.renderer.destroy();
-            this.environmentMapGenerator.destroy();
             this.font.destroy();
-            this.environmentMap.destroy();
-            this.irradianceMap.destroy();
-            this.preFilteredMap.destroy();
-            this.floor.destroy();
+            this.scene.destroy();
             this.pointBulb.destroy();
             this.spotBulb.destroy();
-            this.boomBox.destroy();
         }
 
         private void loadMeshes() {
-            this.environmentMap = this.environmentMapGenerator.generateEnvironmentMap(FileUtils.getResourceAbsolutePath("/envmaps/beach.hdr"));
-            //            this.environmentMap = this.environmentMapGenerator.generateEnvironmentMap("D:/Images/HDRI/lookout.hdr");
-            this.irradianceMap = this.environmentMapGenerator.generateIrradianceMap(this.environmentMap);
-            this.preFilteredMap = this.environmentMapGenerator.generatePreFilteredMap(this.environmentMap);
-
-            this.floor = ModelFactory.fromFile(FileUtils.getResourceAbsolutePath("/models/floor/floor.gltf"));
             this.pointBulb = MeshFactory.createSphere(0.1f, 8, 8);
             this.spotBulb = MeshFactory.createCylinder(0.1f, 0.065f, 0.2f, 12);
-            this.boomBox = ModelFactory.fromFile(FileUtils.getResourceAbsolutePath("/models/helmet/helmet.glb"));
         }
 
         private void initScene() {
-            this.scene.getRoot().addComponent(new EnvironmentComponent(this.environmentMap, this.irradianceMap, this.preFilteredMap));
+            this.scene.getObjectsByTag("point_lights").forEach(parent ->
+                    parent.getComponentOfType(PointLightComponent.class).ifPresent(point ->
+                            createBulb(parent, point.getLight().getColor(), pointBulb)));
 
-            final var cameraObj = this.scene.getRoot().createChild("camera");
-            cameraObj.addComponent(new CameraComponent(this.camera));
-
-            final var floorObj = this.scene.getRoot().createChild("floor");
-            floorObj.addComponent(new ModelComponent(this.floor));
-            floorObj.getLocalTransform().setScale(new Vector3f(10f, 10f, 10f));
-
-            final var gltfObj = floorObj.createChild("gltf");
-            gltfObj.addComponent(new ModelComponent(this.boomBox));
-            gltfObj.getLocalTransform().setTranslation(new Vector3f(0f, 0.1f, 0f))
-                    .setScale(new Vector3f(0.1f, 0.1f, 0.1f));
-
-            this.setUpLights();
+            this.scene.getObjectsByTag("spot_lights").forEach(parent ->
+                    parent.getComponentOfType(SpotLightComponent.class).ifPresent(spot ->
+                            createBulb(parent, spot.getLight().getColor(), spotBulb)));
         }
 
-        private void setUpLights() {
-            final var sunObj = this.scene.getRoot().createChild("sun");
-            sunObj.getLocalTransform().setRotation(new Quaternionf().rotation((float) Math.toRadians(45f), (float) Math.toRadians(45f), 0));
-            sunObj.addComponent(new DirectionalLightComponent(new DirectionalLight(0.8f, Color.WHITE, new Vector3f())));
-
-            final var parent = this.scene.getRoot();
-
-            final var pointLight0 = new PointLight(8f, Color.GREEN, new Vector3f(), 3f);
-            this.addPointLight(parent, new Vector3f(4f, 0.5f, 2f), pointLight0, 0);
-            final var pointLight1 = new PointLight(10f, Color.YELLOW, new Vector3f(), 2f);
-            this.addPointLight(parent, new Vector3f(-4f, 0.2f, 2f), pointLight1, 1);
-            final var pointLight2 = new PointLight(10f, Color.BLUE, new Vector3f(), 2f);
-            this.addPointLight(parent, new Vector3f(0f, 0.5f, 3f), pointLight2, 2);
-            final var pointLight3 = new PointLight(10f, Color.TURQUOISE, new Vector3f(), 2f);
-            this.addPointLight(parent, new Vector3f(-1f, 0.1f, 1f), pointLight3, 3);
-            final var pointLight4 = new PointLight(10f, Color.CYAN, new Vector3f(), 2f);
-            this.addPointLight(parent, new Vector3f(3f, 0.6f, -3f), pointLight4, 4);
-
-            final var spotLight0 = new SpotLight(10f, Color.RED, new Vector3f(), 20f, new Vector3f(), 20f, 5f);
-            this.addSpotLight(parent, new Vector3f(-3, 1f, -2), new Quaternionf().rotationX((float) Math.toRadians(45f)), spotLight0, 0);
-            final var spotLight1 = new SpotLight(2f, Color.WHITE, new Vector3f(), 7f, new Vector3f(), 10f, 4f);
-            this.addSpotLight(parent, new Vector3f(2f, 2f, 2f), new Quaternionf().rotationX((float) Math.toRadians(90f)), spotLight1, 1);
-        }
-
-        private void addPointLight(final GameObject parent, final Vector3f position, final PointLight light, final int id) {
-            final var lightId = "point_light_" + id;
-            final var lightObject = this.createLightObject(parent, position, new Quaternionf(), light.getColor(), this.pointBulb, lightId);
-            lightObject.addComponent(new PointLightComponent(light));
-        }
-
-        private void addSpotLight(final GameObject parent, final Vector3f position, final Quaternionf rotation, final SpotLight light, final int id) {
-            final var lightId = "spot_light_" + id;
-            final var lightObject = this.createLightObject(parent, position, rotation, light.getColor(), this.spotBulb, lightId);
-            lightObject.addComponent(new SpotLightComponent(light));
-        }
-
-        private GameObject createLightObject(final GameObject parent, final Vector3f position, final Quaternionf rotation, final Color color,
-                                             final Mesh mesh, final String id) {
-            final var lightObject = parent.createChild("object_" + id, "light");
-            lightObject.getLocalTransform().setTranslation(position).setRotation(rotation);
-
-            final var modelObject = lightObject.createChild("bulb_" + id);
+        private GameObject createBulb(final GameObject parent, final Color color, final Mesh bulbModel) {
+            final var modelObject = parent.createChild("bulb_" + parent.getId());
             modelObject.getLocalTransform().setRotation(new Quaternionf().rotationX((float) Math.toRadians(-90f)));
 
             final var material = Material.builder().emissive(color).emissiveIntensity(10f).build();
             final var model = new Model();
-            model.addNode().addMesh(mesh, material);
-            modelObject.addComponent(new ModelComponent(model));
-
-            return lightObject;
+            model.addNode().addMesh(bulbModel, material);
+            final var modelComponent = new ModelComponent(model);
+            modelObject.addComponent(modelComponent);
+            return modelObject;
         }
 
         @Override

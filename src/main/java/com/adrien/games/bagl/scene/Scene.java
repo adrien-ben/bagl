@@ -78,6 +78,18 @@ public class Scene {
     }
 
     /**
+     * Destroy this scene
+     * <p>
+     * Destroy the root node that will then destroy its children. Then clear all caches.
+     * After being destroy your scene is in the same state as when its created so you can use it.
+     */
+    public void destroy() {
+        root.destroy();
+        objectsById.clear();
+        objectsByTags.clear();
+    }
+
+    /**
      * Retrieve a game object by its id
      *
      * @param id The id of the object to find

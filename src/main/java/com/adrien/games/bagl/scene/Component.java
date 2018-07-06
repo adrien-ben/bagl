@@ -32,6 +32,12 @@ public abstract class Component {
      */
     public abstract void accept(final ComponentVisitor visitor);
 
+    /**
+     * Destroy resources linked to this component
+     */
+    public void destroy() {
+    }
+
     public void setParentObject(final GameObject parentObject) {
         this.parentObject = parentObject;
     }

@@ -36,6 +36,17 @@ public class ModelComponent extends Component {
     /**
      * {@inheritDoc}
      *
+     * @see Component#destroy()
+     */
+    @Override
+    public void destroy() {
+        super.destroy();
+        model.destroy();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
      * @see Component#accept(ComponentVisitor)
      */
     @Override
