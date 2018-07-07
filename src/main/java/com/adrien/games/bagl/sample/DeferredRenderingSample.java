@@ -1,8 +1,6 @@
 package com.adrien.games.bagl.sample;
 
 import com.adrien.games.bagl.core.*;
-import com.adrien.games.bagl.core.camera.CameraController;
-import com.adrien.games.bagl.core.camera.FPSCameraController;
 import com.adrien.games.bagl.rendering.Material;
 import com.adrien.games.bagl.rendering.Renderer;
 import com.adrien.games.bagl.rendering.Spritebatch;
@@ -14,7 +12,6 @@ import com.adrien.games.bagl.rendering.text.TextRenderer;
 import com.adrien.games.bagl.resource.scene.SceneLoader;
 import com.adrien.games.bagl.scene.GameObject;
 import com.adrien.games.bagl.scene.Scene;
-import com.adrien.games.bagl.scene.components.CameraComponent;
 import com.adrien.games.bagl.scene.components.ModelComponent;
 import com.adrien.games.bagl.scene.components.PointLightComponent;
 import com.adrien.games.bagl.scene.components.SpotLightComponent;
@@ -49,8 +46,6 @@ public class DeferredRenderingSample {
 
         private Font font;
 
-        private CameraController cameraController;
-
         private Scene scene;
         private Mesh pointBulb;
         private Mesh spotBulb;
@@ -72,17 +67,9 @@ public class DeferredRenderingSample {
 
             this.font = new Font(FileUtils.getResourceAbsolutePath("/fonts/segoe/segoe.fnt"));
 
-
             this.scene = new SceneLoader().load(FileUtils.getResourceAbsolutePath("/scenes/demo_scene.json"));
             this.loadMeshes();
             this.initScene();
-
-            this.scene.getObjectById("camera").ifPresent(cam ->
-                    cam.getComponentOfType(CameraComponent.class).ifPresentOrElse(comp ->
-                                    cameraController = new FPSCameraController(comp.getCamera()),
-                            () -> {
-                                throw new IllegalStateException("A scene should a at least a camera");
-                            }));
 
             this.spritebatch = new Spritebatch(1024, this.width, this.height);
         }
@@ -103,6 +90,7 @@ public class DeferredRenderingSample {
         }
 
         private void initScene() {
+            // Add debug models for lights
             this.scene.getObjectsByTag("point_lights").forEach(parent ->
                     parent.getComponentOfType(PointLightComponent.class).ifPresent(point ->
                             createBulb(parent, point.getLight().getColor(), pointBulb)));
@@ -165,10 +153,6 @@ public class DeferredRenderingSample {
                     Input.setMouseMode(MouseMode.NORMAL);
                 }
             }
-
-            if (this.fpsCamera) {
-                this.cameraController.update(time);
-            }
         }
 
         @Override
@@ -195,9 +179,6 @@ public class DeferredRenderingSample {
             if (this.displayInstructions) {
                 this.textRenderer.render(INSTRUCTIONS, this.font, new Vector2f(0.01f, 0.94f), 0.03f, Color.BLACK);
             }
-
-            final var lightCount = this.scene.getObjectsByTag("light").count();
-            this.textRenderer.render("Lights: " + lightCount, this.font, new Vector2f(0.01f, 0.01f), 0.03f, Color.BLACK);
         }
     }
 

@@ -3,6 +3,7 @@ package com.adrien.games.bagl.resource.scene;
 import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.core.Configuration;
 import com.adrien.games.bagl.core.camera.Camera;
+import com.adrien.games.bagl.core.math.Vectors;
 import com.adrien.games.bagl.exception.EngineException;
 import com.adrien.games.bagl.rendering.environment.EnvironmentMapGenerator;
 import com.adrien.games.bagl.rendering.light.DirectionalLight;
@@ -74,17 +75,15 @@ public class ComponentFactory {
     }
 
     private CameraComponent createCameraComponent(final CameraDescriptor cameraDescriptor) {
-        final var position = validate(cameraDescriptor.getPosition(), Objects::nonNull, "Camera component should have a position field");
-        final var direction = validate(cameraDescriptor.getDirection(), Objects::nonNull, "Camera component should have a direction field");
-        final var up = validate(cameraDescriptor.getUp(), Objects::nonNull, "Camera component should have an up field");
         final var fov = validate(cameraDescriptor.getFov(), Objects::nonNull, "Camera component should have a fov field");
         final var near = validate(cameraDescriptor.getNear(), Objects::nonNull, "Camera component should have a near field");
         final var far = validate(cameraDescriptor.getFar(), Objects::nonNull, "Camera component should have a far field");
+        final var hasController = defaultIfNull(cameraDescriptor.isEnableController(), false);
 
         final var conf = Configuration.getInstance();
         final var aspectRatio = (float) conf.getXResolution() / (float) conf.getYResolution();
-        final var camera = new Camera(position, direction, up, (float) Math.toRadians(fov), aspectRatio, near, far);
-        return new CameraComponent(camera);
+        final var camera = new Camera(Vectors.VEC3_ZERO, Vectors.VEC3_ZERO, Vectors.VEC3_UP, (float) Math.toRadians(fov), aspectRatio, near, far);
+        return new CameraComponent(camera, hasController);
     }
 
     private EnvironmentComponent createEnvironmentComponent(final EnvironmentDescriptor environmentDescriptor) {
@@ -133,6 +132,10 @@ public class ComponentFactory {
         } else {
             throw new EngineException("Illegal model path. Should be [classpath:]<file_path>");
         }
+    }
+
+    private <T> T defaultIfNull(final T value, final T defaultValue) {
+        return Objects.isNull(value) ? defaultValue : value;
     }
 
     private Color mapColor(final ColorDescriptor color) {
