@@ -7,7 +7,7 @@
           "type": "camera",
           "position": {
             "x": 4.0,
-            "y": 2.5,
+            "y": 3.5,
             "z": 3.0
           },
           "direction": {
@@ -50,13 +50,16 @@
           "transform": {
             "translation": {
               "x": 0.0,
-              "y": 0.1,
+              "y": 0.2,
               "z": 0.0
             },
+            "rotation": {
+              "y": -90.0
+            },
             "scale": {
-              "x": 0.1,
-              "y": 0.1,
-              "z": 0.1
+              "x": 0.15,
+              "y": 0.15,
+              "z": 0.15
             }
           },
           "components": [
