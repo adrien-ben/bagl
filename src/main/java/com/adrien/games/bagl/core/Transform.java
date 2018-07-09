@@ -91,7 +91,7 @@ public class Transform {
      *
      * @return The transformation matrix
      */
-    public Matrix4f getTransformMatrix() {
+    public Matrix4fc getTransformMatrix() {
         return this.transform.get();
     }
 
