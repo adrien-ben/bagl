@@ -56,6 +56,7 @@ public class SceneLoader {
         } else {
             gameObject = parent.createChild(gameObjectDescriptor.getId());
         }
+        gameObject.setEnabled(gameObjectDescriptor.isEnabled());
         if (Objects.nonNull(gameObjectDescriptor.getTransform())) {
             updateTransform(gameObject.getLocalTransform(), gameObjectDescriptor.getTransform());
         }

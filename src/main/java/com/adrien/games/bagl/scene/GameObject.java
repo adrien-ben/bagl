@@ -26,6 +26,17 @@ import java.util.*;
  * have one component by type at most. The game object is responsible
  * for updating its components. It is also responsible for forwarding
  * visit request coming from a {@link ComponentVisitor}
+ * <p>
+ * A game object can be disabled. When it is disabled its {@link GameObject#update(Time)}
+ * and {@link GameObject#accept(ComponentVisitor)} methods have not effect. So its derived
+ * transform won't be computed, and its components not updated nor visited. Then a
+ * {@link ComponentVisitor} won't be able to 'see' the components of a disabled
+ * game object. Children of a disabled object are considered disabled too. By default
+ * game objects are enabled.
+ * <p>
+ * You still can add children and components to a disabled object. But they won't be
+ * processed until the object is enabled again. You can also call {@link GameObject#destroy()}
+ * on a disabled game object.
  *
  * @author adrien
  */
@@ -33,6 +44,7 @@ public class GameObject {
 
     private final String id;
     private final Set<String> tags;
+    private boolean enabled;
     private final Transform localTransform;
     private final Transform transform;
     private Scene parentScene;
@@ -53,6 +65,7 @@ public class GameObject {
     public GameObject(final Scene parent, final String id, final String... tags) {
         this.id = id;
         this.tags = Set.of(tags);
+        this.enabled = true;
         this.localTransform = new Transform();
         this.transform = new Transform();
         this.parentScene = parent;
@@ -72,6 +85,9 @@ public class GameObject {
      * @param time The time of the program
      */
     public void update(final Time time) {
+        if (!enabled) {
+            return;
+        }
         this.computeTransform();
         this.componentsByType.values().forEach(component -> component.update(time));
         this.children.forEach(child -> child.update(time));
@@ -100,6 +116,9 @@ public class GameObject {
      * @param visitor The visitor
      */
     public void accept(final ComponentVisitor visitor) {
+        if (!enabled) {
+            return;
+        }
         this.componentsByType.values().forEach(component -> component.accept(visitor));
         this.children.forEach(child -> child.accept(visitor));
     }
@@ -172,6 +191,14 @@ public class GameObject {
      */
     public <T extends Component> Optional<T> getComponentOfType(final Class<T> type) {
         return Optional.ofNullable(this.componentsByType.get(type)).map(type::cast);
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     public Transform getTransform() {

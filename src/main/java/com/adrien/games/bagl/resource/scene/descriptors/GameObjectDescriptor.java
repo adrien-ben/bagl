@@ -7,6 +7,7 @@ public class GameObjectDescriptor {
 
     private String id;
     private List<String> tags;
+    private boolean enabled = true;
     private TransformDescriptor transform;
     private List<Map<String, Object>> components;
     private List<GameObjectDescriptor> children;
@@ -17,6 +18,10 @@ public class GameObjectDescriptor {
 
     public List<String> getTags() {
         return tags;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
     }
 
     public TransformDescriptor getTransform() {
