@@ -288,7 +288,7 @@
       "components": [
         {
           "type": "environment",
-          "path": "classpath:/envmaps/beach.hdr"
+          "path": "classpath:/envmaps/flat.hdr"
         }
       ]
     }

@@ -34,9 +34,9 @@ public class DeferredRenderingSample {
                 + "Display Emissive : F6\n"
                 + "Display Shadow Map : F7\n"
                 + "Display Scene before post process : F8\n"
-                + "Switch Camera Mode : TAB\n"
                 + "Move camera : Z, Q, S, D, LCTRL, SPACE\n"
-                + "Advance time: 1, 2";
+                + "Advance time: 1, 2"
+                + "Toggle debug info: A";
 
         private int width;
         private int height;
@@ -101,7 +101,7 @@ public class DeferredRenderingSample {
         }
 
         private GameObject createBulb(final GameObject parent, final Color color, final Mesh bulbModel) {
-            final var modelObject = parent.createChild("bulb_" + parent.getId());
+            final var modelObject = parent.createChild("bulb_" + parent.getId(), "debug");
             modelObject.getLocalTransform().setRotation(new Quaternionf().rotationX((float) Math.toRadians(-90f)));
 
             final var material = Material.builder().emissive(color).emissiveIntensity(10f).build();
@@ -127,6 +127,10 @@ public class DeferredRenderingSample {
 
             if (Input.wasKeyPressed(GLFW.GLFW_KEY_F1)) {
                 this.displayInstructions = !this.displayInstructions;
+            }
+
+            if (Input.wasKeyPressed(GLFW.GLFW_KEY_Q)) {
+                this.scene.getObjectsByTag("debug").forEach(obj -> obj.setEnabled(!obj.isEnabled()));
             }
 
             if (Input.wasKeyPressed(GLFW.GLFW_KEY_F2)) {
