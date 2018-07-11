@@ -9,6 +9,7 @@ import com.adrien.games.bagl.rendering.texture.Format;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.utils.DoubleBuffer;
 import com.adrien.games.bagl.utils.FileUtils;
+import org.joml.Vector2f;
 
 import static org.lwjgl.opengl.GL11.glDrawArrays;
 
@@ -23,10 +24,12 @@ public class PostProcessor {
 
     private FrameBuffer bloomBuffer;
     private DoubleBuffer<FrameBuffer> blurBuffer;
+    private FrameBuffer finalBuffer;
 
     private final Shader bloomShader;
     private final Shader blurShader;
     private final Shader lastStageShader;
+    private final Shader fxaaShader;
 
     private Mesh screenQuad;
 
@@ -34,6 +37,7 @@ public class PostProcessor {
         final var parameters = FrameBufferParameters.builder().hasDepthStencil(false).colorOutputFormat(Format.RGB16F).build();
         this.bloomBuffer = new FrameBuffer(xResolution, yResolution, parameters);
         this.blurBuffer = new DoubleBuffer<>(() -> new FrameBuffer(xResolution, yResolution, parameters));
+        this.finalBuffer = new FrameBuffer(xResolution, yResolution, FrameBufferParameters.builder().hasDepthStencil(false).colorOutputFormat(Format.RGBA8).build());
 
         this.bloomShader = Shader.builder()
                 .vertexPath(FileUtils.getResourceAbsolutePath(POST_PROCESS_VERTEX_SHADER_FILE))
@@ -47,6 +51,12 @@ public class PostProcessor {
                 .vertexPath(FileUtils.getResourceAbsolutePath(POST_PROCESS_VERTEX_SHADER_FILE))
                 .fragmentPath(FileUtils.getResourceAbsolutePath("/shaders/post/post_process.frag"))
                 .build();
+        this.fxaaShader = Shader.builder()
+                .vertexPath(FileUtils.getResourceAbsolutePath(POST_PROCESS_VERTEX_SHADER_FILE))
+                .fragmentPath(FileUtils.getResourceAbsolutePath("/shaders/post/fxaa.frag"))
+                .build()
+                .bind()
+                .setUniform("fxaaQualityRcpFrame", new Vector2f(1f / xResolution, 1f / yResolution));
         this.screenQuad = MeshFactory.createScreenQuad();
     }
 
@@ -56,9 +66,11 @@ public class PostProcessor {
     public void destroy() {
         this.bloomBuffer.destroy();
         this.blurBuffer.apply(FrameBuffer::destroy);
+        this.finalBuffer.destroy();
         this.bloomShader.destroy();
         this.blurShader.destroy();
         this.lastStageShader.destroy();
+        this.fxaaShader.destroy();
         this.screenQuad.destroy();
     }
 
@@ -74,6 +86,7 @@ public class PostProcessor {
         this.performBloomPass(image);
         this.performGaussianBlur(this.bloomBuffer.getColorTexture(0));
         this.performFinalPass(image);
+        this.performFxaaPass(this.finalBuffer.getColorTexture(0));
         this.screenQuad.getVertexArray().bind();
     }
 
@@ -113,6 +126,9 @@ public class PostProcessor {
     }
 
     private void performFinalPass(final Texture baseImage) {
+        this.finalBuffer.bind();
+        this.finalBuffer.clear();
+
         this.lastStageShader.bind();
         this.lastStageShader.setUniform("image", 0);
         this.lastStageShader.setUniform("bloom", 1);
@@ -123,6 +139,18 @@ public class PostProcessor {
 
         Texture.unbind(1);
         Texture.unbind(0);
+        Shader.unbind();
+
+        this.finalBuffer.unbind();
+    }
+
+    private void performFxaaPass(final Texture finalImage) {
+        this.fxaaShader.bind();
+        finalImage.bind();
+
+        glDrawArrays(this.screenQuad.getPrimitiveType().getGlCode(), 0, this.screenQuad.getVertexCount());
+
+        Texture.unbind();
         Shader.unbind();
     }
 }

@@ -10,7 +10,7 @@ baGL is an OpenGL framework that I use for educational purpose. It uses [LWJGL 3
 - Physically Based Rendering. See [Epic's paper](http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf)
 - IBL
 - Shadow mapping
-- Post processing (bloom, gamma correction and tone mapping)
+- Post processing (bloom, gamma correction and tone mapping, anti aliasing)
 - Lights (directional lights, point lights and spot lights)
 - HDR environment maps (from .hdr equirectangular images)
 - Partial [glTF 2.0](https://github.com/KhronosGroup/glTF) support
@@ -24,7 +24,7 @@ baGL is an OpenGL framework that I use for educational purpose. It uses [LWJGL 3
 This framework uses a deferred renderer. Geometry and material data is first rendered into a frame buffer called the GBuffer (Geometry Buffer).
 Then in a second pass the GBuffer is used to perform lighting calculations. The renderer uses physically based rendering with IBL.
 The renderer supports directional, point, and spot lights.
-The renderer performs a post processing pass to apply bloom on bright spots, gamma correction and tone map from HDR to SDR.
+The renderer performs a post processing pass to apply bloom on bright spots, gamma correction, tone map from HDR to SDR and apply fxaa.
 
 ### GBuffer breakdown
 
@@ -78,6 +78,17 @@ The lights attenuation in computed using inverse square function as described in
 
 Basic shadow mapping is implemented. It only works for one directional light (The first found in the scene but it will be improved).
 
+### Post Processing
+
+The renderer uses a simple post processing pipeline that apply bloom, anti-aliasing, tone mapping and gamma correction.
+
+#### Anti Aliasing
+
+The algorithm used for anti aliasing is the Fast Approximate Anti Aliasing (FXAA) in its version 3.11. 
+
+I use nvidia's [FXAA 3.11 source code](https://gist.github.com/kosua20/0c506b81b3812ac900048059d2383126) from which I removed all the thing I do not need
+(console and DX implementations for example).
+
 ## TODO
 
 - Rendering
@@ -85,7 +96,6 @@ Basic shadow mapping is implemented. It only works for one directional light (Th
     - Sprites in 3D environment (debug icons, ...)
     - Area lights (sphere and tubes)
     - Fixing shadows
-    - Some form of anti-aliasing
     - UI (third party ?)
 - Assets management
 - OpenGL state manager
@@ -102,5 +112,6 @@ Basic shadow mapping is implemented. It only works for one directional light (Th
 - [Valve's paper](http://www.valvesoftware.com/publications/2007/SIGGRAPH2007_AlphaTestedMagnification.pdf) on SDF font rendering
 - [OpenGL reference pages](https://www.khronos.org/registry/OpenGL-Refpages/gl4/)
 - [Wikipedia](https://www.wikipedia.org/)
+- [NVidia's FXAA's paper](https://developer.download.nvidia.com/assets/gamedev/files/sdk/11/FXAA_WhitePaper.pdf) and [FXAA 3.11 source code](https://gist.github.com/kosua20/0c506b81b3812ac900048059d2383126)
 
 

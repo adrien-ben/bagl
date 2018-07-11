@@ -6,6 +6,7 @@ import com.adrien.games.bagl.resource.ShaderLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joml.Matrix4fc;
+import org.joml.Vector2fc;
 import org.joml.Vector3fc;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
@@ -171,6 +172,20 @@ public class Shader {
         this.checkIsShaderBound();
         final var location = this.getLocation(name);
         GL20.glUniformMatrix4fv(location, false, matrix.get(this.matrix4fBuffer));
+        return this;
+    }
+
+    /**
+     * Set the value of a Vector2 uniform
+     *
+     * @param name   The name of the uniform
+     * @param vector The value of the uniform
+     * @return This for chaining
+     */
+    public Shader setUniform(final String name, final Vector2fc vector) {
+        this.checkIsShaderBound();
+        final var location = this.getLocation(name);
+        GL20.glUniform2f(location, vector.x(), vector.y());
         return this;
     }
 
