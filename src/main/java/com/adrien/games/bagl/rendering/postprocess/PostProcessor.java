@@ -5,6 +5,7 @@ import com.adrien.games.bagl.rendering.FrameBufferParameters;
 import com.adrien.games.bagl.rendering.Shader;
 import com.adrien.games.bagl.rendering.model.Mesh;
 import com.adrien.games.bagl.rendering.model.MeshFactory;
+import com.adrien.games.bagl.rendering.postprocess.fxaa.FxaaPresets;
 import com.adrien.games.bagl.rendering.texture.Format;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.utils.DoubleBuffer;
@@ -33,7 +34,7 @@ public class PostProcessor {
 
     private Mesh screenQuad;
 
-    public PostProcessor(final int xResolution, final int yResolution) {
+    public PostProcessor(final int xResolution, final int yResolution, final FxaaPresets fxaaQuality) {
         final var parameters = FrameBufferParameters.builder().hasDepthStencil(false).colorOutputFormat(Format.RGB16F).build();
         this.bloomBuffer = new FrameBuffer(xResolution, yResolution, parameters);
         this.blurBuffer = new DoubleBuffer<>(() -> new FrameBuffer(xResolution, yResolution, parameters));
@@ -56,7 +57,10 @@ public class PostProcessor {
                 .fragmentPath(FileUtils.getResourceAbsolutePath("/shaders/post/fxaa.frag"))
                 .build()
                 .bind()
-                .setUniform("fxaaQualityRcpFrame", new Vector2f(1f / xResolution, 1f / yResolution));
+                .setUniform("fxaaQualityRcpFrame", new Vector2f(1f / xResolution, 1f / yResolution))
+                .setUniform("fxaaQualitySubpix", fxaaQuality.getFxaaQualitySubpix())
+                .setUniform("fxaaQualityEdgeThreshold", fxaaQuality.getFxaaQualityEdgeThreshold())
+                .setUniform("fxaaQualityEdgeThresholdMin", fxaaQuality.getFxaaQualityEdgeThresholdMin());
         this.screenQuad = MeshFactory.createScreenQuad();
     }
 

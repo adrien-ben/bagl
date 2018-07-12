@@ -6,11 +6,10 @@
         "translation": {
           "x": 3.5,
           "y": 2.0,
-          "z": 0.0
+          "z": 2.0
         },
         "rotation": {
-          "x": 0.0,
-          "y": -90.0
+          "y": -120.0
         }
       },
       "components": [
@@ -19,7 +18,7 @@
           "fov": 60.0,
           "near": 0.1,
           "far": 1000.0,
-          "enableController": true
+          "enableController": false
         }
       ]
     },

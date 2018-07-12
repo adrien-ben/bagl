@@ -1,24 +1,27 @@
 package com.adrien.games.bagl.core;
 
 import com.adrien.games.bagl.exception.EngineException;
+import com.adrien.games.bagl.rendering.postprocess.fxaa.FxaaPresets;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.function.Function;
 
 /**
  * Engine configuration class. This singleton class is used to load engine
  * configuration. The instantiation fails if one of the required property
  * is missing. Required properties are :
  * <ul>
- * <li>resolution.x (integer): resolution of the window alongside the x-axis.
- * <li>resolution.y (integer): resolution of the window alongside the y-axis.
+ * <li>resolution.x (integer) : resolution of the window alongside the x-axis.
+ * <li>resolution.y (integer) : resolution of the window alongside the y-axis.
  * <li>vsync (boolean) : flag indicating if vsync should be enabled.
  * <li>fullscreen (boolean) : flag indicating if full screen should be enabled.
- * <li>anisotropic (integer): level of anisotropic filtering.
- * <li>shadow_map_resolution : the resolution of the shadow map.
+ * <li>anisotropic (integer) : level of anisotropic filtering.
+ * <li>shadow_map_resolution (integer) : the resolution of the shadow map.
+ * <li>fxaa_quality (String) : the preset quality of the fxaa. Should be LOW, MEDIUM or HIGH.
  */
 public class Configuration {
 
@@ -35,6 +38,7 @@ public class Configuration {
     private final boolean fullscreen;
     private final int anisotropicLevel;
     private final int shadowMapResolution;
+    private final FxaaPresets fxaaPresets;
 
     private Configuration() {
         this.properties = new Properties();
@@ -45,6 +49,7 @@ public class Configuration {
         this.fullscreen = this.readRequiredBool("fullscreen");
         this.anisotropicLevel = this.readRequiredInt("anisotropic");
         this.shadowMapResolution = this.readRequiredInt("shadow_map_resolution");
+        this.fxaaPresets = this.readRequiredAndMap("fxaa_quality", FxaaPresets::valueOf);
     }
 
     private void loadFile() {
@@ -58,20 +63,22 @@ public class Configuration {
 
     private int readRequiredInt(final String key) {
         try {
-            return Integer.parseInt(this.properties.getProperty(key));
+            return readRequiredAndMap(key, Integer::parseInt);
         } catch (final NumberFormatException e) {
-            log.error("Property {} is not a integer or is missing", key);
-            throw new EngineException("Property " + key + " is not a integer or is missing");
+            throw new EngineException("Property " + key + " is not a valid integer");
         }
     }
 
     private boolean readRequiredBool(final String key) {
-        final var property = this.properties.getProperty(key);
+        return readRequiredAndMap(key, Boolean::parseBoolean);
+    }
+
+    private <T> T readRequiredAndMap(final String key, final Function<String, T> mapper) {
+        final var property = this.getProperty(key);
         if (Objects.isNull(property)) {
-            log.error("Property {} is missing", key);
             throw new EngineException("Property " + key + " is missing");
         }
-        return Boolean.parseBoolean(property);
+        return mapper.apply(property);
     }
 
     /**
@@ -120,4 +127,7 @@ public class Configuration {
         return this.shadowMapResolution;
     }
 
+    public FxaaPresets getFxaaPresets() {
+        return fxaaPresets;
+    }
 }

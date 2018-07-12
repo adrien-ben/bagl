@@ -602,7 +602,7 @@ uniform vec2 fxaaQualityRcpFrame;
 //   0.50 - lower limit (sharper, less sub-pixel aliasing removal)
 //   0.25 - almost off
 //   0.00 - completely off
-const float FXAA_QUALITY_SUBPIX = 0.75;
+uniform float fxaaQualitySubpix;
 
 // The minimum amount of local contrast required to apply algorithm.
 //   0.333 - too little (faster)
@@ -610,14 +610,14 @@ const float FXAA_QUALITY_SUBPIX = 0.75;
 //   0.166 - default
 //   0.125 - high quality
 //   0.063 - overkill (slower)
-const float FXAA_QUALITY_EDGE_THRESHOLD = 0.125;
+uniform float fxaaQualityEdgeThreshold;
 
 // Trims the algorithm from processing darks.
 //   0.0833 - upper limit (default, the start of visible unfiltered edges)
 //   0.0625 - high quality (faster)
 //   0.0312 - visible limit (slower)
-const float FXAA_QUALITY_EDGE_THRESHOLD_MIN = 0.0625;
+uniform float fxaaQualityEdgeThresholdMin;
 
 void main() {
-    finalColor = FxaaPixelShader(passCoords, texture, fxaaQualityRcpFrame, FXAA_QUALITY_SUBPIX, FXAA_QUALITY_EDGE_THRESHOLD, FXAA_QUALITY_EDGE_THRESHOLD_MIN);
+    finalColor = FxaaPixelShader(passCoords, texture, fxaaQualityRcpFrame, fxaaQualitySubpix, fxaaQualityEdgeThreshold, fxaaQualityEdgeThresholdMin);
 }

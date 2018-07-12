@@ -105,7 +105,7 @@ public class Renderer implements ComponentVisitor {
         this.initShaders();
         this.bakeBRDFIntegration();
 
-        this.postProcessor = new PostProcessor(this.xResolution, this.yResolution);
+        this.postProcessor = new PostProcessor(this.xResolution, this.yResolution, config.getFxaaPresets());
     }
 
     /**
