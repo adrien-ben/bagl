@@ -42,4 +42,8 @@ public final class MathUtils {
         return a > b ? a : b;
     }
 
+    public static float toRadians(float angleInDegrees) {
+        return (float) Math.toRadians(angleInDegrees);
+    }
+
 }

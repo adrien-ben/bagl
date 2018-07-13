@@ -15,8 +15,11 @@ import org.joml.Vector3f;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+
+import static com.adrien.games.bagl.utils.MathUtils.toRadians;
 
 /**
  * The scene loader is responsible for loading scenes from files.
@@ -58,7 +61,7 @@ public class SceneLoader {
         }
         gameObject.setEnabled(gameObjectDescriptor.isEnabled());
         if (Objects.nonNull(gameObjectDescriptor.getTransform())) {
-            updateTransform(gameObject.getLocalTransform(), gameObjectDescriptor.getTransform());
+            setTransform(gameObject.getLocalTransform(), gameObjectDescriptor.getTransform());
         }
         if (CollectionUtils.isNotEmpty(gameObjectDescriptor.getComponents())) {
             gameObjectDescriptor.getComponents().forEach(component -> mapComponent(gameObject, component));
@@ -68,11 +71,19 @@ public class SceneLoader {
         }
     }
 
-    private void updateTransform(final Transform transform, final TransformDescriptor transformDescriptor) {
+    private void setTransform(final Transform transform, final TransformDescriptor transformDescriptor) {
         transform
                 .setTranslation(mapTranslation(transformDescriptor.getTranslation()))
-                .setRotation(quaternionFromRotation(transformDescriptor.getRotation()))
+                .setRotation(mapRotations(transformDescriptor.getRotations()))
                 .setScale(mapScale(transformDescriptor.getScale()));
+    }
+
+    private Quaternionf mapRotations(final List<Vector3f> rotations) {
+        final var result = new Quaternionf();
+        if (CollectionUtils.isNotEmpty(rotations)) {
+            rotations.forEach(r -> result.rotate(toRadians(r.x()), toRadians(r.y()), toRadians(r.z())));
+        }
+        return result;
     }
 
     private Vector3f mapTranslation(final Vector3f translation) {
@@ -87,16 +98,6 @@ public class SceneLoader {
             return new Vector3f(1.0f, 1.0f, 1.0f);
         }
         return new Vector3f(scale);
-    }
-
-    private Quaternionf quaternionFromRotation(final Vector3f rotation) {
-        if (Objects.isNull(rotation)) {
-            return new Quaternionf();
-        }
-        return new Quaternionf().rotation(
-                (float) Math.toRadians(rotation.x),
-                (float) Math.toRadians(rotation.y),
-                (float) Math.toRadians(rotation.z));
     }
 
     private void mapComponent(final GameObject gameObject, final Map<String, Object> componentData) {

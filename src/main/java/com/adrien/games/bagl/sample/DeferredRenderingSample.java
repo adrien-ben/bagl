@@ -1,6 +1,7 @@
 package com.adrien.games.bagl.sample;
 
 import com.adrien.games.bagl.core.*;
+import com.adrien.games.bagl.core.Transform;
 import com.adrien.games.bagl.rendering.Material;
 import com.adrien.games.bagl.rendering.Renderer;
 import com.adrien.games.bagl.rendering.Spritebatch;
