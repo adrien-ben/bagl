@@ -1,5 +1,6 @@
 package com.adrien.games.bagl.core.math;
 
+import org.joml.Quaternionf;
 import org.joml.Quaternionfc;
 import org.joml.Vector3f;
 
@@ -9,6 +10,8 @@ import org.joml.Vector3f;
  * @author adrien
  */
 public class Quaternions {
+
+    public static final Quaternionfc UNIT = new Quaternionf();
 
     /**
      * Private constructor to prevent initialization
