@@ -1,4 +1,4 @@
-#version 330
+#version 400
 
 // Choose the quality preset.
 // This needs to be compiled into the shader as it effects code.
