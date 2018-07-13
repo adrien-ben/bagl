@@ -1,6 +1,7 @@
 package com.adrien.games.bagl.rendering.light;
 
 import com.adrien.games.bagl.core.Color;
+import com.adrien.games.bagl.utils.MathUtils;
 import org.joml.Vector3f;
 
 public class SpotLight extends PointLight {
@@ -21,7 +22,7 @@ public class SpotLight extends PointLight {
     }
 
     private static float computeCutOff(float angle) {
-        return (float) Math.cos(Math.toRadians(angle));
+        return (float) Math.cos(MathUtils.toRadians(angle));
     }
 
     private void updateCutOffs() {

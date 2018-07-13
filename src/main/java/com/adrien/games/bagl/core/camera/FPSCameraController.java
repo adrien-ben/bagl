@@ -3,6 +3,7 @@ package com.adrien.games.bagl.core.camera;
 import com.adrien.games.bagl.core.Input;
 import com.adrien.games.bagl.core.Time;
 import com.adrien.games.bagl.core.math.Vectors;
+import com.adrien.games.bagl.utils.MathUtils;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
@@ -53,11 +54,11 @@ public class FPSCameraController extends CameraController {
 
         if (!Vectors.isZero(mouseDelta)) {
             if (mouseDelta.y() != 0) {
-                float vAngle = (float) Math.toRadians(mouseDelta.y() * DEFAULT_DEGREES_PER_PIXEL);
+                float vAngle = MathUtils.toRadians(mouseDelta.y() * DEFAULT_DEGREES_PER_PIXEL);
                 this.camera.rotate(new Quaternionf().setAngleAxis(vAngle, this.side.x(), this.side.y(), this.side.z()));
             }
             if (mouseDelta.x() != 0) {
-                float hAngle = -(float) Math.toRadians(mouseDelta.x() * DEFAULT_DEGREES_PER_PIXEL);
+                float hAngle = -MathUtils.toRadians(mouseDelta.x() * DEFAULT_DEGREES_PER_PIXEL);
                 this.camera.rotate(new Quaternionf().setAngleAxis(hAngle, this.up.x(), this.up.y(), this.up.z()));
             }
         }

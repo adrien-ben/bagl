@@ -10,6 +10,7 @@ import com.adrien.games.bagl.rendering.model.Mesh;
 import com.adrien.games.bagl.rendering.model.MeshFactory;
 import com.adrien.games.bagl.rendering.texture.*;
 import com.adrien.games.bagl.utils.FileUtils;
+import com.adrien.games.bagl.utils.MathUtils;
 import org.joml.Vector3f;
 
 import static org.lwjgl.opengl.GL11.*;
@@ -25,7 +26,7 @@ public class EnvironmentMapGenerator {
     private final static int ENVIRONMENT_MAP_RESOLUTION = 1024;
     private final static int IRRADIANCE_MAP_RESOLUTION = 64;
     private final static int PRE_FILTERED_MAP_RESOLUTION = 256;
-    private final static float FIELD_OF_VIEW = (float) Math.toRadians(90);
+    private final static float FIELD_OF_VIEW = MathUtils.toRadians(90);
     private final static float ASPECT_RATIO = 1f;
     private final static float NEAR_PLANE = 0.1f;
     private final static float FAR_PLANE = 10f;

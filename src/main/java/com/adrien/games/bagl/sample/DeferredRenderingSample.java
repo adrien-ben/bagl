@@ -1,7 +1,6 @@
 package com.adrien.games.bagl.sample;
 
 import com.adrien.games.bagl.core.*;
-import com.adrien.games.bagl.core.Transform;
 import com.adrien.games.bagl.rendering.Material;
 import com.adrien.games.bagl.rendering.Renderer;
 import com.adrien.games.bagl.rendering.Spritebatch;
@@ -103,7 +102,7 @@ public class DeferredRenderingSample {
 
         private GameObject createBulb(final GameObject parent, final Color color, final Mesh bulbModel) {
             final var modelObject = parent.createChild("bulb_" + parent.getId(), "debug");
-            modelObject.getLocalTransform().setRotation(new Quaternionf().rotationX((float) Math.toRadians(-90f)));
+            modelObject.getLocalTransform().setRotation(new Quaternionf().rotationX(MathUtils.toRadians(-90f)));
 
             final var material = Material.builder().emissive(color).emissiveIntensity(10f).build();
             final var model = new Model();
@@ -121,7 +120,7 @@ public class DeferredRenderingSample {
                 final var speed = Input.isKeyPressed(GLFW.GLFW_KEY_1) ? 20 : -20;
                 this.scene.getObjectById("sun").ifPresent(sunObj -> {
                     final var transform = new Transform()
-                            .setRotation(new Quaternionf().setAngleAxis((float) Math.toRadians(speed * time.getElapsedTime()), 1f, 1f, 0f));
+                            .setRotation(new Quaternionf().setAngleAxis(MathUtils.toRadians(speed * time.getElapsedTime()), 1f, 1f, 0f));
                     sunObj.getLocalTransform().transform(transform);
                 });
             }

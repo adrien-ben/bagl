@@ -14,6 +14,7 @@ import com.adrien.games.bagl.resource.scene.descriptors.*;
 import com.adrien.games.bagl.scene.Component;
 import com.adrien.games.bagl.scene.components.*;
 import com.adrien.games.bagl.utils.FileUtils;
+import com.adrien.games.bagl.utils.MathUtils;
 import com.google.gson.Gson;
 import org.joml.Vector3f;
 
@@ -82,7 +83,7 @@ public class ComponentFactory {
 
         final var conf = Configuration.getInstance();
         final var aspectRatio = (float) conf.getXResolution() / (float) conf.getYResolution();
-        final var camera = new Camera(Vectors.VEC3_ZERO, Vectors.VEC3_ZERO, Vectors.VEC3_UP, (float) Math.toRadians(fov), aspectRatio, near, far);
+        final var camera = new Camera(Vectors.VEC3_ZERO, Vectors.VEC3_ZERO, Vectors.VEC3_UP, MathUtils.toRadians(fov), aspectRatio, near, far);
         return new CameraComponent(camera, hasController);
     }
 
