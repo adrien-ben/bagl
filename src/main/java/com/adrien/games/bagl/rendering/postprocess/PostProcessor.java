@@ -14,7 +14,7 @@ import java.util.List;
  */
 public class PostProcessor {
 
-    public static final String POST_PROCESS_VERTEX_SHADER_FILE = "/shaders/post/post_process.vert";
+    public static final String POST_PROCESS_VERTEX_SHADER_FILE = "classpath:/shaders/post/post_process.vert";
 
     private List<PostProcessorStep> steps;
 

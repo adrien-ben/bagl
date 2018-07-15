@@ -7,7 +7,6 @@ import com.adrien.games.bagl.rendering.postprocess.PostProcessorStep;
 import com.adrien.games.bagl.rendering.postprocess.fxaa.FxaaPresets;
 import com.adrien.games.bagl.rendering.texture.Format;
 import com.adrien.games.bagl.rendering.texture.Texture;
-import com.adrien.games.bagl.utils.FileUtils;
 import org.joml.Vector2f;
 
 import static com.adrien.games.bagl.rendering.postprocess.PostProcessor.POST_PROCESS_VERTEX_SHADER_FILE;
@@ -26,8 +25,8 @@ public class FxaaStep extends PostProcessorStep {
         final var parameters = FrameBufferParameters.builder().hasDepthStencil(false).colorOutputFormat(Format.RGBA8).build();
         frameBuffer = new FrameBuffer(xResolution, yResolution, parameters);
         fxaaShader = Shader.builder()
-                .vertexPath(FileUtils.getResourceAbsolutePath(POST_PROCESS_VERTEX_SHADER_FILE))
-                .fragmentPath(FileUtils.getResourceAbsolutePath("/shaders/post/fxaa.frag"))
+                .vertexPath(POST_PROCESS_VERTEX_SHADER_FILE)
+                .fragmentPath("classpath:/shaders/post/fxaa.frag")
                 .build()
                 .bind()
                 .setUniform("fxaaQualityRcpFrame", new Vector2f(1f / xResolution, 1f / yResolution))

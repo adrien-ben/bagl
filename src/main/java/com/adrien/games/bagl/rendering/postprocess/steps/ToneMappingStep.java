@@ -6,7 +6,6 @@ import com.adrien.games.bagl.rendering.Shader;
 import com.adrien.games.bagl.rendering.postprocess.PostProcessorStep;
 import com.adrien.games.bagl.rendering.texture.Format;
 import com.adrien.games.bagl.rendering.texture.Texture;
-import com.adrien.games.bagl.utils.FileUtils;
 
 import static com.adrien.games.bagl.rendering.postprocess.PostProcessor.POST_PROCESS_VERTEX_SHADER_FILE;
 
@@ -24,8 +23,8 @@ public class ToneMappingStep extends PostProcessorStep {
         final var parameters = FrameBufferParameters.builder().hasDepthStencil(false).colorOutputFormat(Format.RGBA8).build();
         this.frameBuffer = new FrameBuffer(xResolution, yResolution, parameters);
         this.toneMappingShader = Shader.builder()
-                .vertexPath(FileUtils.getResourceAbsolutePath(POST_PROCESS_VERTEX_SHADER_FILE))
-                .fragmentPath(FileUtils.getResourceAbsolutePath("/shaders/post/tone_mapping.frag"))
+                .vertexPath(POST_PROCESS_VERTEX_SHADER_FILE)
+                .fragmentPath("classpath:/shaders/post/tone_mapping.frag")
                 .build();
     }
 

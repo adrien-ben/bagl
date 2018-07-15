@@ -7,7 +7,6 @@ import com.adrien.games.bagl.rendering.postprocess.PostProcessorStep;
 import com.adrien.games.bagl.rendering.texture.Format;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.utils.DoubleBuffer;
-import com.adrien.games.bagl.utils.FileUtils;
 
 import static com.adrien.games.bagl.rendering.postprocess.PostProcessor.POST_PROCESS_VERTEX_SHADER_FILE;
 
@@ -32,16 +31,16 @@ public class BloomStep extends PostProcessorStep {
         this.finalBuffer = new FrameBuffer(xResolution, yResolution, parameters);
 
         this.bloomShader = Shader.builder()
-                .vertexPath(FileUtils.getResourceAbsolutePath(POST_PROCESS_VERTEX_SHADER_FILE))
-                .fragmentPath(FileUtils.getResourceAbsolutePath("/shaders/post/bloom.frag"))
+                .vertexPath(POST_PROCESS_VERTEX_SHADER_FILE)
+                .fragmentPath("classpath:/shaders/post/bloom.frag")
                 .build();
         this.blurShader = Shader.builder()
-                .vertexPath(FileUtils.getResourceAbsolutePath(POST_PROCESS_VERTEX_SHADER_FILE))
-                .fragmentPath(FileUtils.getResourceAbsolutePath("/shaders/post/blur.frag"))
+                .vertexPath(POST_PROCESS_VERTEX_SHADER_FILE)
+                .fragmentPath("classpath:/shaders/post/blur.frag")
                 .build();
         this.lastStageShader = Shader.builder()
-                .vertexPath(FileUtils.getResourceAbsolutePath(POST_PROCESS_VERTEX_SHADER_FILE))
-                .fragmentPath(FileUtils.getResourceAbsolutePath("/shaders/post/bloom_final.frag"))
+                .vertexPath(POST_PROCESS_VERTEX_SHADER_FILE)
+                .fragmentPath("classpath:/shaders/post/bloom_final.frag")
                 .build();
     }
 

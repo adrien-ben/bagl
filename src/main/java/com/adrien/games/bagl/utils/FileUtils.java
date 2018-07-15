@@ -77,4 +77,10 @@ public final class FileUtils {
         return new BufferedReader(new InputStreamReader(inputStream));
     }
 
+    public static String resolvePath(final String filePath) {
+        if (filePath.startsWith("classpath:")) {
+            return FileUtils.getResourceAbsolutePath(filePath.replace("classpath:", ""));
+        }
+        return filePath;
+    }
 }

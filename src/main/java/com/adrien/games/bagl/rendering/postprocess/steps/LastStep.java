@@ -3,7 +3,6 @@ package com.adrien.games.bagl.rendering.postprocess.steps;
 import com.adrien.games.bagl.rendering.Shader;
 import com.adrien.games.bagl.rendering.postprocess.PostProcessorStep;
 import com.adrien.games.bagl.rendering.texture.Texture;
-import com.adrien.games.bagl.utils.FileUtils;
 
 import static com.adrien.games.bagl.rendering.postprocess.PostProcessor.POST_PROCESS_VERTEX_SHADER_FILE;
 
@@ -22,8 +21,8 @@ public class LastStep extends PostProcessorStep {
 
     public LastStep() {
         this.shader = Shader.builder()
-                .vertexPath(FileUtils.getResourceAbsolutePath(POST_PROCESS_VERTEX_SHADER_FILE))
-                .fragmentPath(FileUtils.getResourceAbsolutePath("/shaders/post/post_process.frag"))
+                .vertexPath(POST_PROCESS_VERTEX_SHADER_FILE)
+                .fragmentPath("classpath:/shaders/post/post_process.frag")
                 .build();
     }
 
