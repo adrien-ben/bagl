@@ -16,7 +16,6 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
-import java.util.Objects;
 
 /**
  * Text renderer
@@ -152,10 +151,7 @@ public class TextRenderer implements Renderer<Text> {
             if (c == '\n' || c == '\r') {
                 caret.nextLine();
             } else {
-                final var glyph = font.getGlyph(c);
-                if (Objects.nonNull(glyph)) {
-                    this.generateGlyphVertices(glyph, caret, hScale, vScale, color);
-                }
+                font.getGlyph(c).ifPresent(glyph -> this.generateGlyphVertices(glyph, caret, hScale, vScale, color));
             }
         }
         this.renderText(font, scale);

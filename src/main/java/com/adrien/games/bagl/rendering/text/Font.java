@@ -14,7 +14,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -113,7 +113,7 @@ public class Font {
      * @return The length of the text in pixels.
      */
     public float getTextWidth(String text) {
-        return (float) text.chars().boxed().map(i -> (char) i.intValue()).map(this::getGlyph).filter(Objects::nonNull)
+        return (float) text.chars().boxed().map(i -> (char) i.intValue()).map(this::getGlyph).flatMap(Optional::stream)
                 .mapToDouble(c -> c.getXAdvance() + c.getXOffset()).sum();
     }
 
@@ -121,10 +121,10 @@ public class Font {
      * Gets the glyph information for a given character.
      *
      * @param c The char to look for.
-     * @return The glyph information as a {@link Glyph} or null if no glyph is found.
+     * @return The glyph information as a {@link Glyph} or an empty optional if no glyph is found.
      */
-    public Glyph getGlyph(char c) {
-        return this.glyphs.get((int) c);
+    public Optional<Glyph> getGlyph(char c) {
+        return Optional.ofNullable(this.glyphs.get((int) c));
     }
 
     /**
