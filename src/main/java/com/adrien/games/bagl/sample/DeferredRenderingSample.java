@@ -2,11 +2,11 @@ package com.adrien.games.bagl.sample;
 
 import com.adrien.games.bagl.core.*;
 import com.adrien.games.bagl.rendering.Material;
-import com.adrien.games.bagl.rendering.Renderer;
 import com.adrien.games.bagl.rendering.Spritebatch;
 import com.adrien.games.bagl.rendering.model.Mesh;
 import com.adrien.games.bagl.rendering.model.MeshFactory;
 import com.adrien.games.bagl.rendering.model.Model;
+import com.adrien.games.bagl.rendering.renderer.PBRDeferredSceneRenderer;
 import com.adrien.games.bagl.rendering.text.Font;
 import com.adrien.games.bagl.rendering.text.TextRenderer;
 import com.adrien.games.bagl.resource.scene.SceneLoader;
@@ -42,7 +42,7 @@ public class DeferredRenderingSample {
         private int height;
 
         private TextRenderer textRenderer;
-        private Renderer renderer;
+        private PBRDeferredSceneRenderer renderer;
 
         private Font font;
 
@@ -63,7 +63,7 @@ public class DeferredRenderingSample {
             this.height = Configuration.getInstance().getYResolution();
 
             this.textRenderer = new TextRenderer();
-            this.renderer = new Renderer();
+            this.renderer = new PBRDeferredSceneRenderer();
 
             this.font = new Font(FileUtils.getResourceAbsolutePath("/fonts/segoe/segoe.fnt"));
 

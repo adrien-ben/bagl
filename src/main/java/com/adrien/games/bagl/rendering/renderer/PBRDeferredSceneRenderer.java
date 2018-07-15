@@ -1,9 +1,13 @@
-package com.adrien.games.bagl.rendering;
+package com.adrien.games.bagl.rendering.renderer;
 
 import com.adrien.games.bagl.core.Configuration;
 import com.adrien.games.bagl.core.camera.Camera;
 import com.adrien.games.bagl.core.math.Vectors;
 import com.adrien.games.bagl.exception.EngineException;
+import com.adrien.games.bagl.rendering.FrameBuffer;
+import com.adrien.games.bagl.rendering.FrameBufferParameters;
+import com.adrien.games.bagl.rendering.Material;
+import com.adrien.games.bagl.rendering.Shader;
 import com.adrien.games.bagl.rendering.light.DirectionalLight;
 import com.adrien.games.bagl.rendering.light.PointLight;
 import com.adrien.games.bagl.rendering.light.SpotLight;
@@ -37,12 +41,12 @@ import static org.lwjgl.opengl.GL11.*;
  * <li>PBR rendering with IBL</li>
  * <li>Post processing pass (bloom/gamma correction/tone mapping from HDR to SDR</li>
  * <p>
- * When {@link Renderer#render(Scene)} is called, the renderer visits the scene and collects
+ * When {@link PBRDeferredSceneRenderer#render(Scene)} is called, the renderer visits the scene and collects
  * scene date required for rendering
  *
  * @author adrien
  */
-public class Renderer implements ComponentVisitor {
+public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisitor {
 
     private static final int BRDF_RESOLUTION = 512;
 
@@ -78,12 +82,13 @@ public class Renderer implements ComponentVisitor {
     private Shader deferredShader;
     private Shader brdfShader;
 
+    private MeshRenderer meshRenderer;
     private PostProcessor postProcessor;
 
     /**
      * Construct the renderer
      */
-    public Renderer() {
+    public PBRDeferredSceneRenderer() {
         final var config = Configuration.getInstance();
         this.xResolution = config.getXResolution();
         this.yResolution = config.getYResolution();
@@ -101,11 +106,12 @@ public class Renderer implements ComponentVisitor {
         this.screenQuad = MeshFactory.createScreenQuad();
         this.cubeMapMesh = MeshFactory.createCubeMapMesh();
 
+        this.meshRenderer = new MeshRenderer();
+        this.postProcessor = new PostProcessor(this.xResolution, this.yResolution, config.getFxaaPresets());
+
         this.initFrameBuffers();
         this.initShaders();
         this.bakeBRDFIntegration();
-
-        this.postProcessor = new PostProcessor(this.xResolution, this.yResolution, config.getFxaaPresets());
     }
 
     /**
@@ -179,7 +185,7 @@ public class Renderer implements ComponentVisitor {
         this.brdfShader.bind();
 
         glViewport(0, 0, BRDF_RESOLUTION, BRDF_RESOLUTION);
-        this.renderMesh(this.screenQuad);
+        this.meshRenderer.render(this.screenQuad);
         glViewport(0, 0, this.xResolution, this.yResolution);
 
         Shader.unbind();
@@ -237,7 +243,7 @@ public class Renderer implements ComponentVisitor {
             this.skyboxShader.setUniform("viewProj", this.camera.getViewProjAtOrigin());
 
             glDepthFunc(GL_LEQUAL);
-            this.renderMesh(this.cubeMapMesh);
+            this.meshRenderer.render(this.cubeMapMesh);
             glDepthFunc(GL_LESS);
 
             Shader.unbind();
@@ -302,7 +308,7 @@ public class Renderer implements ComponentVisitor {
         if (material.isDoubleSided()) {
             glDisable(GL_CULL_FACE);
         }
-        this.renderMesh(mesh);
+        this.meshRenderer.render(mesh);
         if (material.isDoubleSided()) {
             glEnable(GL_CULL_FACE);
         }
@@ -357,31 +363,13 @@ public class Renderer implements ComponentVisitor {
             glDisable(GL_CULL_FACE);
         }
         material.applyTo(this.gBufferShader);
-        this.renderMesh(mesh);
+        this.meshRenderer.render(mesh);
         Texture.unbind();
         Texture.unbind(1);
         Texture.unbind(2);
         if (material.isDoubleSided()) {
             glEnable(GL_CULL_FACE);
         }
-    }
-
-    /**
-     * Render a mesh
-     *
-     * @param mesh The mesh to render
-     */
-    private void renderMesh(final Mesh mesh) {
-        mesh.getVertexArray().bind();
-        mesh.getIndexBuffer().ifPresentOrElse(
-                iBuffer -> {
-                    iBuffer.bind();
-                    glDrawElements(mesh.getPrimitiveType().getGlCode(), iBuffer.getSize(), iBuffer.getDataType().getGlCode(), 0);
-                    iBuffer.unbind();
-                },
-                () -> glDrawArrays(mesh.getPrimitiveType().getGlCode(), 0, mesh.getVertexCount())
-        );
-        mesh.getVertexArray().unbind();
     }
 
     /**
@@ -437,7 +425,7 @@ public class Renderer implements ComponentVisitor {
 
         glDepthFunc(GL_NOTEQUAL);
         glDepthMask(false);
-        this.renderMesh(this.screenQuad);
+        this.meshRenderer.render(this.screenQuad);
         glDepthMask(true);
         glDepthFunc(GL_LESS);
 
