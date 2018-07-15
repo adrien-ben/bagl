@@ -16,6 +16,9 @@ import com.adrien.games.bagl.rendering.model.MeshFactory;
 import com.adrien.games.bagl.rendering.model.Model;
 import com.adrien.games.bagl.rendering.model.ModelNode;
 import com.adrien.games.bagl.rendering.postprocess.PostProcessor;
+import com.adrien.games.bagl.rendering.postprocess.steps.BloomStep;
+import com.adrien.games.bagl.rendering.postprocess.steps.FxaaStep;
+import com.adrien.games.bagl.rendering.postprocess.steps.ToneMappingStep;
 import com.adrien.games.bagl.rendering.texture.Cubemap;
 import com.adrien.games.bagl.rendering.texture.Format;
 import com.adrien.games.bagl.rendering.texture.Texture;
@@ -107,7 +110,11 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisit
         this.cubeMapMesh = MeshFactory.createCubeMapMesh();
 
         this.meshRenderer = new MeshRenderer();
-        this.postProcessor = new PostProcessor(this.xResolution, this.yResolution, config.getFxaaPresets());
+        this.postProcessor = new PostProcessor(
+                new BloomStep(xResolution, yResolution),
+                new ToneMappingStep(xResolution, yResolution),
+                new FxaaStep(xResolution, yResolution, config.getFxaaPresets())
+        );
 
         this.initFrameBuffers();
         this.initShaders();
