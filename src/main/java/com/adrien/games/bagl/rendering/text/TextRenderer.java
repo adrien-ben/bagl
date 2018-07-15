@@ -6,10 +6,11 @@ import com.adrien.games.bagl.core.Engine;
 import com.adrien.games.bagl.rendering.BlendMode;
 import com.adrien.games.bagl.rendering.BufferUsage;
 import com.adrien.games.bagl.rendering.Shader;
+import com.adrien.games.bagl.rendering.renderer.Renderer;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.vertex.*;
 import com.adrien.games.bagl.utils.FileUtils;
-import org.joml.Vector2f;
+import org.joml.Vector2fc;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
@@ -22,7 +23,7 @@ import java.util.Objects;
  *
  * @author adrien
  */
-public class TextRenderer {
+public class TextRenderer implements Renderer<Text> {
 
     private static final int MAX_TEXT_LENGTH = 1000;
     private static final float HALF_SCREEN_SIZE = 1f;
@@ -113,6 +114,14 @@ public class TextRenderer {
     }
 
     /**
+     * Render {@code text}.
+     */
+    @Override
+    public void render(final Text text) {
+        render(text.getValue(), text.getFont(), text.getPosition(), text.getScale(), text.getColor());
+    }
+
+    /**
      * Render a {@link String} on screen
      * <p>
      * The text is renderer at a given position with a given font, color and size.
@@ -129,7 +138,7 @@ public class TextRenderer {
      * @param scale    The scale of the text
      * @param color    The color of the text
      */
-    public void render(final String text, final Font font, final Vector2f position, final float scale, final Color color) {
+    private void render(final String text, final Font font, final Vector2fc position, final float scale, final Color color) {
         final var aspectRatio = (float) this.configuration.getXResolution() / this.configuration.getYResolution();
         final var vScale = scale / font.getLineGap() * 2;
         final var hScale = vScale / aspectRatio;

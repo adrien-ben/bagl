@@ -8,6 +8,7 @@ import com.adrien.games.bagl.rendering.model.MeshFactory;
 import com.adrien.games.bagl.rendering.model.Model;
 import com.adrien.games.bagl.rendering.renderer.PBRDeferredSceneRenderer;
 import com.adrien.games.bagl.rendering.text.Font;
+import com.adrien.games.bagl.rendering.text.Text;
 import com.adrien.games.bagl.rendering.text.TextRenderer;
 import com.adrien.games.bagl.resource.scene.SceneLoader;
 import com.adrien.games.bagl.scene.GameObject;
@@ -35,7 +36,7 @@ public class DeferredRenderingSample {
                 + "Display Shadow Map : F7\n"
                 + "Display Scene before post process : F8\n"
                 + "Move camera : Z, Q, S, D, LCTRL, SPACE\n"
-                + "Advance time: 1, 2"
+                + "Advance time: 1, 2\n"
                 + "Toggle debug info: A";
 
         private int width;
@@ -50,6 +51,9 @@ public class DeferredRenderingSample {
         private Mesh pointBulb;
         private Mesh spotBulb;
 
+        private Text toggleInstructionsText;
+        private Text instructionsText;
+
         private Spritebatch spritebatch;
 
         private DisplayMode displayMode = DisplayMode.SCENE;
@@ -59,43 +63,46 @@ public class DeferredRenderingSample {
 
         @Override
         public void init() {
-            this.width = Configuration.getInstance().getXResolution();
-            this.height = Configuration.getInstance().getYResolution();
+            width = Configuration.getInstance().getXResolution();
+            height = Configuration.getInstance().getYResolution();
 
-            this.textRenderer = new TextRenderer();
-            this.renderer = new PBRDeferredSceneRenderer();
+            textRenderer = new TextRenderer();
+            renderer = new PBRDeferredSceneRenderer();
 
-            this.font = new Font(FileUtils.getResourceAbsolutePath("/fonts/segoe/segoe.fnt"));
+            font = new Font(FileUtils.getResourceAbsolutePath("/fonts/segoe/segoe.fnt"));
 
-            this.scene = new SceneLoader().load(FileUtils.getResourceAbsolutePath("/scenes/demo_scene.json"));
-            this.loadMeshes();
-            this.initScene();
+            scene = new SceneLoader().load(FileUtils.getResourceAbsolutePath("/scenes/demo_scene.json"));
+            loadMeshes();
+            initScene();
 
-            this.spritebatch = new Spritebatch(1024, this.width, this.height);
+            toggleInstructionsText = Text.create("Toggle instructions : F1", font, 0.01f, 0.97f, 0.03f, Color.BLACK);
+            instructionsText = Text.create(INSTRUCTIONS, font, 0.01f, 0.94f, 0.03f, Color.BLACK);
+
+            spritebatch = new Spritebatch(1024, width, height);
         }
 
         @Override
         public void destroy() {
-            this.textRenderer.destroy();
-            this.renderer.destroy();
-            this.font.destroy();
-            this.scene.destroy();
-            this.pointBulb.destroy();
-            this.spotBulb.destroy();
+            textRenderer.destroy();
+            renderer.destroy();
+            font.destroy();
+            scene.destroy();
+            pointBulb.destroy();
+            spotBulb.destroy();
         }
 
         private void loadMeshes() {
-            this.pointBulb = MeshFactory.createSphere(0.1f, 8, 8);
-            this.spotBulb = MeshFactory.createCylinder(0.1f, 0.065f, 0.2f, 12);
+            pointBulb = MeshFactory.createSphere(0.1f, 8, 8);
+            spotBulb = MeshFactory.createCylinder(0.1f, 0.065f, 0.2f, 12);
         }
 
         private void initScene() {
             // Add debug models for lights
-            this.scene.getObjectsByTag("point_lights").forEach(parent ->
+            scene.getObjectsByTag("point_lights").forEach(parent ->
                     parent.getComponentOfType(PointLightComponent.class).ifPresent(point ->
                             createBulb(parent, point.getLight().getColor(), pointBulb)));
 
-            this.scene.getObjectsByTag("spot_lights").forEach(parent ->
+            scene.getObjectsByTag("spot_lights").forEach(parent ->
                     parent.getComponentOfType(SpotLightComponent.class).ifPresent(spot ->
                             createBulb(parent, spot.getLight().getColor(), spotBulb)));
         }
@@ -114,44 +121,59 @@ public class DeferredRenderingSample {
 
         @Override
         public void update(final Time time) {
-            this.scene.update(time);
+            scene.update(time);
+            rotateSun(time);
+            toggleInstructions();
+            toggleDebug();
+            selectDisplayMode();
+            selectCameraMode();
+        }
 
+        private void rotateSun(final Time time) {
             if (Input.isKeyPressed(GLFW.GLFW_KEY_1) || Input.isKeyPressed(GLFW.GLFW_KEY_2)) {
                 final var speed = Input.isKeyPressed(GLFW.GLFW_KEY_1) ? 20 : -20;
-                this.scene.getObjectById("sun").ifPresent(sunObj -> {
+                scene.getObjectById("sun").ifPresent(sunObj -> {
                     final var transform = new Transform()
                             .setRotation(new Quaternionf().setAngleAxis(MathUtils.toRadians(speed * time.getElapsedTime()), 1f, 1f, 0f));
                     sunObj.getLocalTransform().transform(transform);
                 });
             }
+        }
 
+        private void toggleInstructions() {
             if (Input.wasKeyPressed(GLFW.GLFW_KEY_F1)) {
-                this.displayInstructions = !this.displayInstructions;
+                displayInstructions = !displayInstructions;
             }
+        }
 
+        private void toggleDebug() {
             if (Input.wasKeyPressed(GLFW.GLFW_KEY_Q)) {
-                this.scene.getObjectsByTag("debug").forEach(obj -> obj.setEnabled(!obj.isEnabled()));
+                scene.getObjectsByTag("debug").forEach(obj -> obj.setEnabled(!obj.isEnabled()));
             }
+        }
 
+        private void selectDisplayMode() {
             if (Input.wasKeyPressed(GLFW.GLFW_KEY_F2)) {
                 displayMode = DisplayMode.SCENE;
             } else if (Input.wasKeyPressed(GLFW.GLFW_KEY_F3)) {
-                this.displayMode = DisplayMode.ALBEDO;
+                displayMode = DisplayMode.ALBEDO;
             } else if (Input.wasKeyPressed(GLFW.GLFW_KEY_F4)) {
-                this.displayMode = DisplayMode.NORMALS;
+                displayMode = DisplayMode.NORMALS;
             } else if (Input.wasKeyPressed(GLFW.GLFW_KEY_F5)) {
-                this.displayMode = DisplayMode.DEPTH;
+                displayMode = DisplayMode.DEPTH;
             } else if (Input.wasKeyPressed(GLFW.GLFW_KEY_F6)) {
-                this.displayMode = DisplayMode.EMISSIVE;
+                displayMode = DisplayMode.EMISSIVE;
             } else if (Input.wasKeyPressed(GLFW.GLFW_KEY_F7)) {
-                this.displayMode = DisplayMode.SHADOW;
+                displayMode = DisplayMode.SHADOW;
             } else if (Input.wasKeyPressed(GLFW.GLFW_KEY_F8)) {
-                this.displayMode = DisplayMode.UNPROCESSED;
+                displayMode = DisplayMode.UNPROCESSED;
             }
+        }
 
+        private void selectCameraMode() {
             if (Input.wasKeyPressed(GLFW.GLFW_KEY_TAB)) {
-                this.fpsCamera = !this.fpsCamera;
-                if (this.fpsCamera) {
+                fpsCamera = !fpsCamera;
+                if (fpsCamera) {
                     Input.setMouseMode(MouseMode.DISABLED);
                 } else {
                     Input.setMouseMode(MouseMode.NORMAL);
@@ -161,27 +183,33 @@ public class DeferredRenderingSample {
 
         @Override
         public void render() {
-            this.renderer.render(this.scene);
+            renderer.render(scene);
+            renderDisplayMode();
+            renderInstructions();
+        }
 
-            this.spritebatch.start();
-            if (this.displayMode == DisplayMode.ALBEDO) {
-                this.spritebatch.draw(this.renderer.getGBuffer().getColorTexture(0), new Vector2f());
-            } else if (this.displayMode == DisplayMode.NORMALS) {
-                this.spritebatch.draw(this.renderer.getGBuffer().getColorTexture(1), new Vector2f());
-            } else if (this.displayMode == DisplayMode.DEPTH) {
-                this.spritebatch.draw(this.renderer.getGBuffer().getDepthTexture(), new Vector2f());
-            } else if (this.displayMode == DisplayMode.EMISSIVE) {
-                this.spritebatch.draw(this.renderer.getGBuffer().getColorTexture(2), new Vector2f());
-            } else if (this.displayMode == DisplayMode.SHADOW) {
-                this.spritebatch.draw(this.renderer.getShadowBuffer().getDepthTexture(), new Vector2f(), MathUtils.min(this.width, this.height), MathUtils.min(this.width, this.height));
-            } else if (this.displayMode == DisplayMode.UNPROCESSED) {
-                this.spritebatch.draw(this.renderer.getFinalBuffer().getColorTexture(0), new Vector2f());
+        private void renderDisplayMode() {
+            spritebatch.start();
+            if (displayMode == DisplayMode.ALBEDO) {
+                spritebatch.draw(renderer.getGBuffer().getColorTexture(0), new Vector2f());
+            } else if (displayMode == DisplayMode.NORMALS) {
+                spritebatch.draw(renderer.getGBuffer().getColorTexture(1), new Vector2f());
+            } else if (displayMode == DisplayMode.DEPTH) {
+                spritebatch.draw(renderer.getGBuffer().getDepthTexture(), new Vector2f());
+            } else if (displayMode == DisplayMode.EMISSIVE) {
+                spritebatch.draw(renderer.getGBuffer().getColorTexture(2), new Vector2f());
+            } else if (displayMode == DisplayMode.SHADOW) {
+                spritebatch.draw(renderer.getShadowBuffer().getDepthTexture(), new Vector2f(), MathUtils.min(width, height), MathUtils.min(width, height));
+            } else if (displayMode == DisplayMode.UNPROCESSED) {
+                spritebatch.draw(renderer.getFinalBuffer().getColorTexture(0), new Vector2f());
             }
-            this.spritebatch.end();
+            spritebatch.end();
+        }
 
-            this.textRenderer.render("Toggle instructions : F1", this.font, new Vector2f(0.01f, 0.97f), 0.03f, Color.BLACK);
-            if (this.displayInstructions) {
-                this.textRenderer.render(INSTRUCTIONS, this.font, new Vector2f(0.01f, 0.94f), 0.03f, Color.BLACK);
+        private void renderInstructions() {
+            textRenderer.render(toggleInstructionsText);
+            if (displayInstructions) {
+                textRenderer.render(instructionsText);
             }
         }
     }
