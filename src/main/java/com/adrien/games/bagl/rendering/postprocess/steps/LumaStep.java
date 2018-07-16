@@ -3,7 +3,6 @@ package com.adrien.games.bagl.rendering.postprocess.steps;
 import com.adrien.games.bagl.rendering.FrameBuffer;
 import com.adrien.games.bagl.rendering.FrameBufferParameters;
 import com.adrien.games.bagl.rendering.Shader;
-import com.adrien.games.bagl.rendering.postprocess.PostProcessor;
 import com.adrien.games.bagl.rendering.postprocess.PostProcessorStep;
 import com.adrien.games.bagl.rendering.texture.Format;
 import com.adrien.games.bagl.rendering.texture.Texture;
@@ -26,10 +25,7 @@ public class LumaStep extends PostProcessorStep {
 
     public LumaStep(final int xResolution, final int yResolution) {
         this.frameBuffer = new FrameBuffer(xResolution, yResolution, FrameBufferParameters.builder().hasDepthStencil(false).colorOutputFormat(Format.RGBA8).build());
-        this.lumaShader = Shader.builder()
-                .vertexPath(PostProcessor.POST_PROCESS_VERTEX_SHADER_FILE)
-                .fragmentPath("classpath:/shaders/post/luma.frag")
-                .build();
+        this.lumaShader = buildProcessShader("classpath:/shaders/post/luma.frag");
     }
 
     /**
