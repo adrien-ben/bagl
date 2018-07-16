@@ -26,4 +26,19 @@ module com.adrien.games.bagl {
 	exports com.adrien.games.bagl.resource;
 	exports com.adrien.games.bagl.scene;
 	exports com.adrien.games.bagl.utils;
+
+    // Open resource folders
+    opens shaders.ui;
+    opens shaders.deferred;
+    opens shaders.environment;
+    opens shaders.particles;
+    opens shaders.post;
+    opens shaders.shadow;
+    opens shaders.sprite;
+    opens envmaps;
+    opens fonts.arial;
+    opens fonts.segoe;
+    opens models.floor;
+    opens models.helmet;
+    opens scenes;
 }

@@ -2,12 +2,10 @@ package com.adrien.games.bagl.utils;
 
 import com.adrien.games.bagl.exception.EngineException;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Objects;
 
@@ -18,6 +16,8 @@ import java.util.Objects;
  */
 public final class FileUtils {
 
+    private static final String CLASSPATH_PREFIX = "classpath:";
+
     /**
      * Private constructor to prevent instantiation
      */
@@ -25,17 +25,19 @@ public final class FileUtils {
     }
 
     /**
-     * Load the content of a file into a byte buffer
+     * Get the absolute path of a resource
      *
-     * @param filePath The path of the file to load
-     * @return A {@link ByteBuffer} filled with the file content
+     * @param resource The name of the resource
+     * @return The absolute path of the resource as a {@link String}
      */
-    public static ByteBuffer loadAsByteBuffer(final String filePath) {
-        try (final var channel = FileChannel.open(Paths.get(filePath))) {
-            return channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
-        } catch (IOException e) {
-            throw new EngineException("Failed to load file into the byte buffer", e);
+    public static InputStream getResourceAsStream(final String resource) {
+        final var correctResourcePath = resource.startsWith("/") ? resource.replaceFirst("/", "") : resource;
+        final var classLoader = Thread.currentThread().getContextClassLoader();
+        final var resourceUrl = classLoader.getResourceAsStream(correctResourcePath);
+        if (Objects.isNull(resourceUrl)) {
+            throw new EngineException(String.format("Resource %s does not exist.", correctResourcePath));
         }
+        return resourceUrl;
     }
 
     /**
@@ -49,37 +51,33 @@ public final class FileUtils {
     }
 
     /**
-     * Checks if a file exists
-     *
-     * @param filePath The path of the file
-     * @return The {@link File} if found
-     * @throws EngineException if the file does not exists
+     * Open a stream to the file at {@code filePath}.
+     * <p>
+     * If the path is prefixed with {@value CLASSPATH_PREFIX} it will open a stream to a
+     * resource file.
      */
-    public static File checkFileExistence(final String filePath) {
-        final var file = new File(filePath);
-        if (!file.exists()) {
-            throw new EngineException("File not found: " + filePath);
+    public static InputStream openStream(final String filePath) {
+        if (filePath.startsWith(CLASSPATH_PREFIX)) {
+            return FileUtils.getResourceAsStream(filePath.replace(CLASSPATH_PREFIX, ""));
         }
-        return file;
+        try {
+            return Files.newInputStream(Paths.get(filePath));
+        } catch (final IOException exception) {
+            throw new EngineException(String.format("Failed to open stream from %s.", filePath), exception);
+        }
     }
 
     /**
-     * Opens a {@link BufferedReader} to a resource file
-     *
-     * @param resourcePath The path of the resource
-     * @return The opened buffered reader
+     * Resolve the actual value of {@code filePath}.
+     * <p>
+     * If {@code filePath} is prefixed with {@value CLASSPATH_PREFIX} it will return
+     * the absolute path of the resource whose name is specified after the prefix.
+     * <p>
+     * Otherwise it will simply return {@code filePath}.
      */
-    public static BufferedReader getResourceAsBufferedReader(final String resourcePath) {
-        final var inputStream = FileUtils.class.getResourceAsStream(resourcePath);
-        if (Objects.isNull(inputStream)) {
-            throw new EngineException("Could not find resource file " + resourcePath);
-        }
-        return new BufferedReader(new InputStreamReader(inputStream));
-    }
-
     public static String resolvePath(final String filePath) {
-        if (filePath.startsWith("classpath:")) {
-            return FileUtils.getResourceAbsolutePath(filePath.replace("classpath:", ""));
+        if (filePath.startsWith(CLASSPATH_PREFIX)) {
+            return FileUtils.getResourceAbsolutePath(filePath.replace(CLASSPATH_PREFIX, ""));
         }
         return filePath;
     }

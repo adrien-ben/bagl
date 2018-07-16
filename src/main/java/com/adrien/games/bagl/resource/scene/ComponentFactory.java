@@ -4,7 +4,6 @@ import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.core.Configuration;
 import com.adrien.games.bagl.core.camera.Camera;
 import com.adrien.games.bagl.core.math.Vectors;
-import com.adrien.games.bagl.exception.EngineException;
 import com.adrien.games.bagl.rendering.environment.EnvironmentMapGenerator;
 import com.adrien.games.bagl.rendering.light.DirectionalLight;
 import com.adrien.games.bagl.rendering.light.PointLight;
@@ -71,7 +70,7 @@ public class ComponentFactory {
     private ModelComponent createModelComponent(final ModelDescriptor modelDescriptor) {
         final var path = validate(modelDescriptor.getPath(), Objects::nonNull, "Model component should have a path field");
 
-        final var model = ModelFactory.fromFile(getAbsolutePath(path));
+        final var model = ModelFactory.fromFile(FileUtils.resolvePath(path));
         return new ModelComponent(model);
     }
 
@@ -90,7 +89,7 @@ public class ComponentFactory {
     private EnvironmentComponent createEnvironmentComponent(final EnvironmentDescriptor environmentDescriptor) {
         final var path = validate(environmentDescriptor.getPath(), Objects::nonNull, "Environment component should have a path field");
 
-        final var environmentMap = environmentMapGenerator.generateEnvironmentMap(getAbsolutePath(path));
+        final var environmentMap = environmentMapGenerator.generateEnvironmentMap(FileUtils.resolvePath(path));
         final var irradianceMap = environmentMapGenerator.generateIrradianceMap(environmentMap);
         final var preFilteredMap = environmentMapGenerator.generatePreFilteredMap(environmentMap);
         return new EnvironmentComponent(environmentMap, irradianceMap, preFilteredMap);
@@ -122,17 +121,6 @@ public class ComponentFactory {
 
         final var light = new SpotLight(intensity, mapColor(color), new Vector3f(), radius, new Vector3f(), angle, edge);
         return new SpotLightComponent(light);
-    }
-
-    private String getAbsolutePath(final String abstractPath) {
-        final var split = abstractPath.split(":");
-        if (split.length == 1) {
-            return split[0];
-        } else if (split.length == 2 && "classpath".equals(split[0])) {
-            return FileUtils.getResourceAbsolutePath(split[1]);
-        } else {
-            throw new EngineException("Illegal model path. Should be [classpath:]<file_path>");
-        }
     }
 
     private <T> T defaultIfNull(final T value, final T defaultValue) {
