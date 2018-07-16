@@ -35,10 +35,4 @@ module com.adrien.games.bagl {
     opens shaders.post;
     opens shaders.shadow;
     opens shaders.sprite;
-    opens envmaps;
-    opens fonts.arial;
-    opens fonts.segoe;
-    opens models.floor;
-    opens models.helmet;
-    opens scenes;
 }
