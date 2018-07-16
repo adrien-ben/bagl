@@ -20,6 +20,7 @@ public class Caret {
 
     /**
      * Advances the x position of the caret.
+     *
      * @param amount The amount to advance.
      */
     public void advance(float amount) {

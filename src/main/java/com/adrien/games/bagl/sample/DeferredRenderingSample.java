@@ -1,27 +1,26 @@
 package com.adrien.games.bagl.sample;
 
 import com.adrien.games.bagl.core.*;
-import com.adrien.games.bagl.core.math.Matrix4;
-import com.adrien.games.bagl.core.math.Quaternion;
-import com.adrien.games.bagl.core.math.Vector2;
-import com.adrien.games.bagl.core.math.Vector3;
-import com.adrien.games.bagl.rendering.Model;
-import com.adrien.games.bagl.rendering.Renderer;
-import com.adrien.games.bagl.rendering.Skybox;
+import com.adrien.games.bagl.rendering.Material;
 import com.adrien.games.bagl.rendering.Spritebatch;
-import com.adrien.games.bagl.rendering.light.DirectionalLight;
-import com.adrien.games.bagl.rendering.light.Light;
-import com.adrien.games.bagl.rendering.light.PointLight;
-import com.adrien.games.bagl.rendering.light.SpotLight;
-import com.adrien.games.bagl.rendering.scene.Scene;
-import com.adrien.games.bagl.rendering.scene.SceneNode;
+import com.adrien.games.bagl.rendering.model.Mesh;
+import com.adrien.games.bagl.rendering.model.MeshFactory;
+import com.adrien.games.bagl.rendering.model.Model;
+import com.adrien.games.bagl.rendering.renderer.PBRDeferredSceneRenderer;
 import com.adrien.games.bagl.rendering.text.Font;
+import com.adrien.games.bagl.rendering.text.Text;
 import com.adrien.games.bagl.rendering.text.TextRenderer;
+import com.adrien.games.bagl.resource.scene.SceneLoader;
+import com.adrien.games.bagl.scene.GameObject;
+import com.adrien.games.bagl.scene.Scene;
+import com.adrien.games.bagl.scene.components.ModelComponent;
+import com.adrien.games.bagl.scene.components.PointLightComponent;
+import com.adrien.games.bagl.scene.components.SpotLightComponent;
 import com.adrien.games.bagl.utils.FileUtils;
-import com.adrien.games.bagl.utils.MeshFactory;
+import com.adrien.games.bagl.utils.MathUtils;
+import org.joml.Quaternionf;
+import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
-
-import static org.lwjgl.opengl.GL11.*;
 
 public class DeferredRenderingSample {
 
@@ -29,153 +28,197 @@ public class DeferredRenderingSample {
 
         private static final String TITLE = "Deferred Rendering";
 
-        private static final String INSTRUCTIONS = "Display debug infos : G\n" +
-                "Move camera : Z, Q, S, D, LCTRL, SPACE\nAdvance time: 1, 2";
+        private static final String INSTRUCTIONS = "Display scene : F2\n"
+                + "Display Albedo : F3\n"
+                + "Display Normals : F4\n"
+                + "Display Depth : F5\n"
+                + "Display Emissive : F6\n"
+                + "Display Shadow Map : F7\n"
+                + "Display Scene before post process : F8\n"
+                + "Move camera : Z, Q, S, D, LCTRL, SPACE\n"
+                + "Advance time: 1, 2\n"
+                + "Toggle debug info: A";
 
         private int width;
         private int height;
 
         private TextRenderer textRenderer;
-        private Renderer renderer;
+        private PBRDeferredSceneRenderer renderer;
 
         private Font font;
 
         private Scene scene;
-        private Skybox skybox;
-        private Model floor;
-        private Model cube;
-        private Model tree;
+        private Mesh pointBulb;
+        private Mesh spotBulb;
 
-        private Camera camera;
-        private CameraController cameraController;
+        private Text toggleInstructionsText;
+        private Text instructionsText;
 
         private Spritebatch spritebatch;
 
-        private boolean isKeyPressed = false;
-        private boolean displayGbuffer = false;
+        private DisplayMode displayMode = DisplayMode.SCENE;
+
+        private boolean displayInstructions = false;
+        private boolean fpsCamera = false;
 
         @Override
         public void init() {
-            this.width = Configuration.getInstance().getXResolution();
-            this.height = Configuration.getInstance().getYResolution();
+            width = Configuration.getInstance().getXResolution();
+            height = Configuration.getInstance().getYResolution();
 
-            this.textRenderer = new TextRenderer();
-            this.renderer = new Renderer();
+            textRenderer = new TextRenderer();
+            renderer = new PBRDeferredSceneRenderer();
 
-            this.font = new Font(FileUtils.getResourceAbsolutePath("/fonts/segoe/segoe.fnt"));
+            font = new Font(FileUtils.getResourceAbsolutePath("/fonts/segoe/segoe.fnt"));
 
-            this.scene = new Scene();
-            this.loadMeshes();
-            this.initSceneGraph();
-            this.setUpLights();
+            scene = new SceneLoader().load(FileUtils.getResourceAbsolutePath("/scenes/demo_scene.json"));
+            loadMeshes();
+            initScene();
 
-            this.camera = new Camera(new Vector3(5f, 4f, 6f), new Vector3(-5f, -4f, -6f), new Vector3(Vector3.UP),
-                    (float)Math.toRadians(60f), (float)this.width/(float)this.height, 0.1f, 1000);
-            this.cameraController = new CameraController(this.camera);
+            toggleInstructionsText = Text.create("Toggle instructions : F1", font, 0.01f, 0.97f, 0.03f, Color.BLACK);
+            instructionsText = Text.create(INSTRUCTIONS, font, 0.01f, 0.94f, 0.03f, Color.BLACK);
 
-            this.spritebatch = new Spritebatch(1024, this.width, this.height);
-
-            glEnable(GL_DEPTH_TEST);
-            glEnable(GL_CULL_FACE);
+            spritebatch = new Spritebatch(1024, width, height);
         }
 
         @Override
         public void destroy() {
-            this.textRenderer.destroy();
-            this.renderer.destroy();
-            this.font.destroy();
-            this.skybox.destroy();
-            this.floor.destroy();
-            this.cube.destroy();
-            this.tree.destroy();
+            textRenderer.destroy();
+            renderer.destroy();
+            font.destroy();
+            scene.destroy();
+            pointBulb.destroy();
+            spotBulb.destroy();
         }
 
         private void loadMeshes() {
-            this.skybox = new Skybox(FileUtils.getResourceAbsolutePath("/skybox/left.png"),
-                    FileUtils.getResourceAbsolutePath("/skybox/right.png"),
-                    FileUtils.getResourceAbsolutePath("/skybox/bottom.png"),
-                    FileUtils.getResourceAbsolutePath("/skybox/top.png"),
-                    FileUtils.getResourceAbsolutePath("/skybox/back.png"),
-                    FileUtils.getResourceAbsolutePath("/skybox/front.png"));
-            this.scene.setSkybox(this.skybox);
-
-            this.floor = MeshFactory.fromResourceFile("/models/floor/floor.obj");
-            this.cube = MeshFactory.fromResourceFile("/models/cube/cube.obj");
-//            this.cube = MeshFactory.fromFile("D:/Documents/3D Models/sphere/sphere.obj");
-            this.tree = MeshFactory.fromResourceFile("/models/tree/tree.obj");
+            pointBulb = MeshFactory.createSphere(0.1f, 8, 8);
+            spotBulb = MeshFactory.createCylinder(0.1f, 0.065f, 0.2f, 12);
         }
 
-        private void initSceneGraph() {
-            this.scene.getRoot().set(this.floor);
-            final SceneNode<Model> cubeNode = new SceneNode<>(this.cube);
-            cubeNode.getLocalTransform().setTranslation(new Vector3(0, 1f, 0)).setScale(new Vector3(0.5f, 0.5f, 0.5f));
-            final SceneNode<Model> treeNode = new SceneNode<>(this.tree);
-            treeNode.getLocalTransform().setTranslation(new Vector3(2f, 0f, 0));
-            this.scene.getRoot().addChild(treeNode);
-            this.scene.getRoot().addChild(cubeNode);
+        private void initScene() {
+            // Add debug models for lights
+            scene.getObjectsByTag("point_lights").forEach(parent ->
+                    parent.getComponentOfType(PointLightComponent.class).ifPresent(point ->
+                            createBulb(parent, point.getLight().getColor(), pointBulb)));
+
+            scene.getObjectsByTag("spot_lights").forEach(parent ->
+                    parent.getComponentOfType(SpotLightComponent.class).ifPresent(spot ->
+                            createBulb(parent, spot.getLight().getColor(), spotBulb)));
         }
 
-        private void setUpLights() {
-            this.scene.setAmbient(new Light(0.01f));
-            this.scene.getDirectionals().add(new DirectionalLight(0.5f, Color.WHITE, new Vector3(3f, -2, 4)));
-            this.scene.getDirectionals().add(new DirectionalLight(0.3f, Color.ORANGE, new Vector3(0.5f, -2, 4)));
-            this.scene.getPoints().add(new PointLight(10f, Color.GREEN, new Vector3(4f, 0.5f, 2f), 2f));
-            this.scene.getPoints().add(new PointLight(10f, Color.YELLOW, new Vector3(-4f, 0.2f, 2f), 3f));
-            this.scene.getPoints().add(new PointLight(10f, Color.BLUE, new Vector3(0f, 0.5f, 3f), 2f));
-            this.scene.getPoints().add(new PointLight(10f, Color.PURPLE, new Vector3(0f, 3f, 0f), 2f));
-            this.scene.getPoints().add(new PointLight(10f, Color.TURQUOISE, new Vector3(-1f, 0.1f, 1f), 2f));
-            this.scene.getPoints().add(new PointLight(10f, Color.CYAN, new Vector3(3f, 0.6f, -3f), 2f));
-            this.scene.getSpots().add(new SpotLight(10f, Color.RED, new Vector3(-2f, 0.5f, -3f), 20f,
-                    new Vector3(0f, -1f, 1.2f), 20f, 5f));
-            this.scene.getSpots().add(new SpotLight(2f, Color.WHITE, new Vector3(2f, 2f, 2f), 7f,
-                    new Vector3(0f, -1f, -0f), 10f, 5f));
+        private GameObject createBulb(final GameObject parent, final Color color, final Mesh bulbModel) {
+            final var modelObject = parent.createChild("bulb_" + parent.getId(), "debug");
+            modelObject.getLocalTransform().setRotation(new Quaternionf().rotationX(MathUtils.toRadians(-90f)));
+
+            final var material = Material.builder().emissive(color).emissiveIntensity(10f).build();
+            final var model = new Model();
+            model.addNode().addMesh(bulbModel, material);
+            final var modelComponent = new ModelComponent(model);
+            modelObject.addComponent(modelComponent);
+            return modelObject;
         }
 
         @Override
-        public void update(Time time) {
-            this.scene.getRoot().getChildren().forEach(meshSceneNode ->
-                    meshSceneNode.getLocalTransform().getRotation().mul(Quaternion.fromAngleAndVector(
-                    (float) Math.toRadians(10 * time.getElapsedTime()), Vector3.UP)));
+        public void update(final Time time) {
+            scene.update(time);
+            rotateSun(time);
+            toggleInstructions();
+            toggleDebug();
+            selectDisplayMode();
+            selectCameraMode();
+        }
 
-            if(Input.isKeyPressed(GLFW.GLFW_KEY_1) || Input.isKeyPressed(GLFW.GLFW_KEY_2)) {
-                float speed = Input.isKeyPressed(GLFW.GLFW_KEY_1) ? 20 : -20;
-                this.scene.getDirectionals().get(0).getDirection().transform(Matrix4.createRotation(Quaternion.fromAngleAndVector(
-                        (float)Math.toRadians(speed*time.getElapsedTime()), new Vector3(1f, 1f, 0f).normalise())), 0);
+        private void rotateSun(final Time time) {
+            if (Input.isKeyPressed(GLFW.GLFW_KEY_1) || Input.isKeyPressed(GLFW.GLFW_KEY_2)) {
+                final var speed = Input.isKeyPressed(GLFW.GLFW_KEY_1) ? 20 : -20;
+                scene.getObjectById("sun").ifPresent(sunObj -> {
+                    final var transform = new Transform()
+                            .setRotation(new Quaternionf().setAngleAxis(MathUtils.toRadians(speed * time.getElapsedTime()), 1f, 1f, 0f));
+                    sunObj.getLocalTransform().transform(transform);
+                });
             }
+        }
 
-            if(Input.isKeyPressed(GLFW.GLFW_KEY_G) && !this.isKeyPressed) {
-                this.displayGbuffer = !this.displayGbuffer;
-                this.isKeyPressed = true;
+        private void toggleInstructions() {
+            if (Input.wasKeyPressed(GLFW.GLFW_KEY_F1)) {
+                displayInstructions = !displayInstructions;
             }
-            if(!Input.isKeyPressed(GLFW.GLFW_KEY_G) && this.isKeyPressed) {
-                this.isKeyPressed = false;
-            }
+        }
 
-            this.cameraController.update(time);
+        private void toggleDebug() {
+            if (Input.wasKeyPressed(GLFW.GLFW_KEY_Q)) {
+                scene.getObjectsByTag("debug").forEach(obj -> obj.setEnabled(!obj.isEnabled()));
+            }
+        }
+
+        private void selectDisplayMode() {
+            if (Input.wasKeyPressed(GLFW.GLFW_KEY_F2)) {
+                displayMode = DisplayMode.SCENE;
+            } else if (Input.wasKeyPressed(GLFW.GLFW_KEY_F3)) {
+                displayMode = DisplayMode.ALBEDO;
+            } else if (Input.wasKeyPressed(GLFW.GLFW_KEY_F4)) {
+                displayMode = DisplayMode.NORMALS;
+            } else if (Input.wasKeyPressed(GLFW.GLFW_KEY_F5)) {
+                displayMode = DisplayMode.DEPTH;
+            } else if (Input.wasKeyPressed(GLFW.GLFW_KEY_F6)) {
+                displayMode = DisplayMode.EMISSIVE;
+            } else if (Input.wasKeyPressed(GLFW.GLFW_KEY_F7)) {
+                displayMode = DisplayMode.SHADOW;
+            } else if (Input.wasKeyPressed(GLFW.GLFW_KEY_F8)) {
+                displayMode = DisplayMode.UNPROCESSED;
+            }
+        }
+
+        private void selectCameraMode() {
+            if (Input.wasKeyPressed(GLFW.GLFW_KEY_TAB)) {
+                fpsCamera = !fpsCamera;
+                if (fpsCamera) {
+                    Input.setMouseMode(MouseMode.DISABLED);
+                } else {
+                    Input.setMouseMode(MouseMode.NORMAL);
+                }
+            }
         }
 
         @Override
         public void render() {
-            this.renderer.render(this.scene, this.camera);
-            if(this.displayGbuffer) {
-                this.spritebatch.start();
-                this.spritebatch.draw(this.renderer.getGBuffer().getDepthTexture(),
-                        new Vector2(4*this.width/5, 2*this.height/5), this.width/5, this.height/5);
-                this.spritebatch.draw(this.renderer.getGBuffer().getColorTexture(0),
-                        new Vector2(4*this.width/5, 0), this.width/5, this.height/5);
-                this.spritebatch.draw(this.renderer.getGBuffer().getColorTexture(1),
-                        new Vector2(4*this.width/5, this.height/5), this.width/5, this.height/5);
-                this.spritebatch.draw(this.renderer.getShadowBuffer().getDepthTexture(),
-                        new Vector2(4*this.width/5, 3*this.height/5), this.width/5, this.width/5);
-                this.spritebatch.end();
-            }
-            this.textRenderer.render(INSTRUCTIONS, this.font, new Vector2(0.01f, 0.97f), 0.03f, Color.RED);
+            renderer.render(scene);
+            renderDisplayMode();
+            renderInstructions();
         }
 
+        private void renderDisplayMode() {
+            spritebatch.start();
+            if (displayMode == DisplayMode.ALBEDO) {
+                spritebatch.draw(renderer.getGBuffer().getColorTexture(0), new Vector2f());
+            } else if (displayMode == DisplayMode.NORMALS) {
+                spritebatch.draw(renderer.getGBuffer().getColorTexture(1), new Vector2f());
+            } else if (displayMode == DisplayMode.DEPTH) {
+                spritebatch.draw(renderer.getGBuffer().getDepthTexture(), new Vector2f());
+            } else if (displayMode == DisplayMode.EMISSIVE) {
+                spritebatch.draw(renderer.getGBuffer().getColorTexture(2), new Vector2f());
+            } else if (displayMode == DisplayMode.SHADOW) {
+                spritebatch.draw(renderer.getShadowBuffer().getDepthTexture(), new Vector2f(), MathUtils.min(width, height), MathUtils.min(width, height));
+            } else if (displayMode == DisplayMode.UNPROCESSED) {
+                spritebatch.draw(renderer.getFinalBuffer().getColorTexture(0), new Vector2f());
+            }
+            spritebatch.end();
+        }
+
+        private void renderInstructions() {
+            textRenderer.render(toggleInstructionsText);
+            if (displayInstructions) {
+                textRenderer.render(instructionsText);
+            }
+        }
     }
 
-    public static void main(String [] args) {
+    private enum DisplayMode {
+        SCENE, ALBEDO, NORMALS, DEPTH, EMISSIVE, SHADOW, UNPROCESSED
+    }
+
+    public static void main(String[] args) {
         new Engine(new TestGame(), TestGame.TITLE).start();
     }
-
 }

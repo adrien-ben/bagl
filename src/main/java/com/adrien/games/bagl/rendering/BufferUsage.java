@@ -4,7 +4,6 @@ import static org.lwjgl.opengl.GL15.*;
 
 /**
  * Usage of OpenGL buffer.
- *
  */
 public enum BufferUsage {
 

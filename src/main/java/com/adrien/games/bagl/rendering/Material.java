@@ -2,85 +2,141 @@ package com.adrien.games.bagl.rendering;
 
 import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.rendering.texture.Texture;
+import com.adrien.games.bagl.utils.AssertUtils;
 
 import java.util.Objects;
 
+/**
+ * Material class
+ * <p>
+ * Represents the material of a mesh. It contains:
+ * <ul>
+ * <li>The diffuse color (default: {@link Color#WHITE}
+ * <li>An emissive color (default {@link Color#WHITE}
+ * <li>An emissive intensity (default: 0f)
+ * <li>A roughness factor (default: 0.5f)
+ * <li>A metalness factor (default: 0f)
+ * <p>
+ * <li>A diffuse texture (default: null)
+ * <li>An emissive texture (default: null)
+ * <li>An ORM (Occlusion/Roughness/Metalness) texture (default: null)
+ * <li>A normal texture (default: null)
+ * <p>
+ * <li>A double sided flag (default: false)
+ * </ul>
+ * <p>
+ * To construct a material you have to use a material builder :
+ * <pre>
+ *     final Material material = Material.builder()
+ *         .diffuse(Color.RED)
+ *         .metallic(1f)
+ *         .roughness(0.1f)
+ *         .build();
+ * </pre>
+ * Once built, a material cannot be changed
+ *
+ * @author adrien
+ */
 public class Material {
 
-    private static final String DIFFUSE_COLOR_SHADER_UNIFORM = "uMaterial.diffuseColor";
-    private static final String DIFFUSE_MAP_SHADER_UNIFORM = "uMaterial.diffuseMap";
-    private static final String DIFFUSE_MAP_FLAG_SHADER_UNIFORM = "uMaterial.hasDiffuseMap";
-    private static final String ROUGHNESS_SHADER_UNIFORM = "uMaterial.roughness";
-    private static final String ROUGHNESS_MAP_SHADER_UNIFORM = "uMaterial.roughnessMap";
-    private static final String ROUGHNESS_MAP_FLAG_SHADER_UNIFORM = "uMaterial.hasRoughnessMap";
-    private static final String METALLIC_SHADER_UNIFORM = "uMaterial.metallic";
-    private static final String METALLIC_MAP_SHADER_UNIFORM = "uMaterial.metallicMap";
-    private static final String METALLIC_MAP_FLAG_SHADER_UNIFORM = "uMaterial.hasMetallicMap";
-    private static final String NORMAL_MAP_SHADER_UNIFORM = "uMaterial.normalMap";
-    private static final String NORMAL_MAP_FLAG_SHADER_UNIFORM = "uMaterial.hasNormalMap";
-
     private static final int DIFFUSE_MAP_CHANNEL = 0;
-    private static final int ROUGHNESS_MAP_CHANNEL = 1;
-    private static final int METALLIC_MAP_CHANNEL = 2;
+    private static final int EMISSIVE_MAP_CHANNEL = 1;
+    private static final int ORM_MAP_CHANNEL = 2;
     private static final int NORMAL_MAP_CHANNEL = 3;
 
-    private Color diffuseColor = new Color(1, 1, 1);
-    private Texture diffuseMap = null;
-    private float roughness = 0.5f;
-    private Texture roughnessMap = null;
-    private float metallic = 0f;
-    private Texture metallicMap = null;
-    private Texture normalMap = null;
+    private final Color diffuseColor;
+    private final Color emissiveColor;
+    private final float emissiveIntensity;
+    private final float roughness;
+    private final float metallic;
+
+    private final Texture diffuseMap;
+    private final Texture emissiveMap;
+    private final Texture ormMap;
+    private final Texture normalMap;
+
+    private final boolean doubleSided;
+
+    private Material(final Builder builder) {
+        this.diffuseColor = builder.diffuseColor;
+        this.emissiveColor = builder.emissiveColor;
+        this.emissiveIntensity = builder.emissiveIntensity;
+        this.roughness = builder.roughness;
+        this.metallic = builder.metallic;
+
+        this.diffuseMap = builder.diffuseMap;
+        this.emissiveMap = builder.emissiveMap;
+        this.ormMap = builder.ormMap;
+        this.normalMap = builder.normalMap;
+
+        this.doubleSided = builder.doubleSided;
+    }
 
     /**
-     * Apply the current material to a shader.
-     * @param shader The shader to apply the material to.
+     * Return a material builder
+     *
+     * @return A new builder
      */
-    public void applyTo(Shader shader) {
-        shader.setUniform(DIFFUSE_COLOR_SHADER_UNIFORM, this.diffuseColor);
-        final boolean hasDiffuseMap = Objects.nonNull(this.diffuseMap);
-        shader.setUniform(DIFFUSE_MAP_FLAG_SHADER_UNIFORM, hasDiffuseMap);
-        if(hasDiffuseMap) {
-            shader.setUniform(DIFFUSE_MAP_SHADER_UNIFORM, DIFFUSE_MAP_CHANNEL);
-            this.diffuseMap.bind(DIFFUSE_MAP_CHANNEL);
-        }
+    public static Builder builder() {
+        return new Builder();
+    }
 
-        shader.setUniform(ROUGHNESS_SHADER_UNIFORM, this.roughness);
-        final boolean hasRoughnessMap = Objects.nonNull(this.roughnessMap);
-        shader.setUniform(ROUGHNESS_MAP_FLAG_SHADER_UNIFORM, hasRoughnessMap);
-        if(hasRoughnessMap) {
-            shader.setUniform(ROUGHNESS_MAP_SHADER_UNIFORM, ROUGHNESS_MAP_CHANNEL);
-            this.roughnessMap.bind(ROUGHNESS_MAP_CHANNEL);
+    /**
+     * Release resources
+     */
+    public void destroy() {
+        if (Objects.nonNull(this.diffuseMap)) {
+            this.diffuseMap.destroy();
         }
-
-        shader.setUniform(METALLIC_SHADER_UNIFORM, this.metallic);
-        final boolean hasMetallicMap = Objects.nonNull(this.metallicMap);
-        shader.setUniform(METALLIC_MAP_FLAG_SHADER_UNIFORM, hasMetallicMap);
-        if(hasMetallicMap) {
-            shader.setUniform(METALLIC_MAP_SHADER_UNIFORM, METALLIC_MAP_CHANNEL);
-            this.metallicMap.bind(METALLIC_MAP_CHANNEL);
+        if (Objects.nonNull(this.emissiveMap)) {
+            this.emissiveMap.destroy();
         }
-
-        final boolean hasNormalMap = Objects.nonNull(this.normalMap);
-        shader.setUniform(NORMAL_MAP_FLAG_SHADER_UNIFORM, hasNormalMap);
-        if(hasNormalMap) {
-            shader.setUniform(NORMAL_MAP_SHADER_UNIFORM, NORMAL_MAP_CHANNEL);
-            this.normalMap.bind(NORMAL_MAP_CHANNEL);
+        if (Objects.nonNull(this.ormMap)) {
+            this.ormMap.destroy();
+        }
+        if (Objects.nonNull(this.normalMap)) {
+            this.normalMap.destroy();
         }
     }
 
-    public void destroy() {
-        if(Objects.nonNull(this.diffuseMap)) {
-            this.diffuseMap.destroy();
+    /**
+     * Apply the current material to a shader
+     *
+     * @param shader The shader to apply the material to
+     */
+    public void applyTo(final Shader shader) {
+        shader.setUniform("uMaterial.diffuseColor", this.diffuseColor);
+        shader.setUniform("uMaterial.emissiveColor", this.emissiveColor);
+        shader.setUniform("uMaterial.emissiveIntensity", this.emissiveIntensity);
+        shader.setUniform("uMaterial.roughness", this.roughness);
+        shader.setUniform("uMaterial.metallic", this.metallic);
+
+        final var hasDiffuseMap = Objects.nonNull(this.diffuseMap);
+        shader.setUniform("uMaterial.hasDiffuseMap", hasDiffuseMap);
+        if (hasDiffuseMap) {
+            shader.setUniform("uMaterial.diffuseMap", DIFFUSE_MAP_CHANNEL);
+            this.diffuseMap.bind(DIFFUSE_MAP_CHANNEL);
         }
-        if(Objects.nonNull(this.roughnessMap)) {
-            this.roughnessMap.destroy();
+
+        final var hasEmissiveMap = Objects.nonNull(this.emissiveMap);
+        shader.setUniform("uMaterial.hasEmissiveMap", hasEmissiveMap);
+        if (hasEmissiveMap) {
+            shader.setUniform("uMaterial.emissiveMap", EMISSIVE_MAP_CHANNEL);
+            this.emissiveMap.bind(EMISSIVE_MAP_CHANNEL);
         }
-        if(Objects.nonNull(this.metallicMap)) {
-            this.metallicMap.destroy();
+
+        final var hasOrmMap = Objects.nonNull(this.ormMap);
+        shader.setUniform("uMaterial.hasOrmMap", hasOrmMap);
+        if (hasOrmMap) {
+            shader.setUniform("uMaterial.ormMap", ORM_MAP_CHANNEL);
+            this.ormMap.bind(ORM_MAP_CHANNEL);
         }
-        if(Objects.nonNull(this.normalMap)) {
-            this.normalMap.destroy();
+
+        final var hasNormalMap = Objects.nonNull(this.normalMap);
+        shader.setUniform("uMaterial.hasNormalMap", hasNormalMap);
+        if (hasNormalMap) {
+            shader.setUniform("uMaterial.normalMap", NORMAL_MAP_CHANNEL);
+            this.normalMap.bind(NORMAL_MAP_CHANNEL);
         }
     }
 
@@ -92,56 +148,125 @@ public class Material {
         return diffuseColor;
     }
 
-    public void setDiffuseColor(Color diffuseColor) {
-        this.diffuseColor = diffuseColor;
+    public Color getEmissiveColor() {
+        return this.emissiveColor;
     }
 
-    public Texture getDiffuseMap() {
-        return diffuseMap;
-    }
-
-    public void setDiffuseMap(Texture diffuseMap) {
-        this.diffuseMap = diffuseMap;
+    public float getEmissiveIntensity() {
+        return this.emissiveIntensity;
     }
 
     public float getRoughness() {
         return roughness;
     }
 
-    public void setRoughness(float roughness) {
-        this.roughness = roughness;
-    }
-
-    public Texture getRoughnessMap() {
-        return roughnessMap;
-    }
-
-    public void setRoughnessMap(Texture roughnessMap) {
-        this.roughnessMap = roughnessMap;
-    }
-
     public float getMetallic() {
         return metallic;
     }
 
-    public void setMetallic(float metallic) {
-        this.metallic = metallic;
+    public Texture getDiffuseMap() {
+        return diffuseMap;
     }
 
-    public Texture getMetallicMap() {
-        return metallicMap;
+    public Texture getEmissiveMap() {
+        return this.emissiveMap;
     }
 
-    public void setMetallicMap(Texture metallicMap) {
-        this.metallicMap = metallicMap;
+    public Texture getOrmMap() {
+        return this.ormMap;
     }
 
     public Texture getNormalMap() {
         return normalMap;
     }
 
-    public void setNormalMap(Texture normalMap) {
-        this.normalMap = normalMap;
+    public boolean isDoubleSided() {
+        return this.doubleSided;
     }
 
+    /**
+     * Material builder
+     */
+    public static class Builder {
+        private Color diffuseColor = Color.WHITE;
+        private Color emissiveColor = Color.BLACK;
+        private float emissiveIntensity = 0f;
+        private float roughness = 1.0f;
+        private float metallic = 1.0f;
+
+        private Texture diffuseMap = null;
+        private Texture emissiveMap = null;
+        private Texture ormMap = null;
+        private Texture normalMap = null;
+
+        private boolean doubleSided = false;
+
+        /**
+         * Private constructor to private instantiation
+         */
+        private Builder() {
+        }
+
+        /**
+         * Build a new material
+         *
+         * @return A new material
+         */
+        public Material build() {
+            return new Material(this);
+        }
+
+        public Builder diffuse(final Color color) {
+            this.diffuseColor = Objects.requireNonNull(color, "color cannot be null");
+            return this;
+        }
+
+        public Builder emissive(final Color color) {
+            this.emissiveColor = Objects.requireNonNull(color, "color cannot be null");
+            return this;
+        }
+
+        public Builder emissiveIntensity(final float intensity) {
+            this.emissiveIntensity = AssertUtils.validate(intensity, v -> v >= 0,
+                    "intensity must be positive");
+            return this;
+        }
+
+        public Builder roughness(final float roughness) {
+            this.roughness = AssertUtils.validate(roughness, v -> v >= 0 && v <= 1,
+                    "roughness must be in [0..1]");
+            return this;
+        }
+
+        public Builder metallic(final float metallic) {
+            this.metallic = AssertUtils.validate(metallic, v -> v >= 0 && v <= 1,
+                    "metallic must be in [0..1]");
+            return this;
+        }
+
+        public Builder diffuse(final Texture diffuseMap) {
+            this.diffuseMap = diffuseMap;
+            return this;
+        }
+
+        public Builder emissive(final Texture emissiveMap) {
+            this.emissiveMap = emissiveMap;
+            return this;
+        }
+
+        public Builder orm(final Texture ormMap) {
+            this.ormMap = ormMap;
+            return this;
+        }
+
+        public Builder normals(final Texture normalMap) {
+            this.normalMap = normalMap;
+            return this;
+        }
+
+        public Builder doubleSided(final boolean doubleSided) {
+            this.doubleSided = doubleSided;
+            return this;
+        }
+    }
 }

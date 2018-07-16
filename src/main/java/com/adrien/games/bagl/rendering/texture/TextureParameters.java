@@ -1,5 +1,9 @@
 package com.adrien.games.bagl.rendering.texture;
 
+import com.adrien.games.bagl.utils.AssertUtils;
+
+import java.util.Objects;
+
 /**
  * <p>Parameters for textures. The different parameters are :
  * <ul>
@@ -10,87 +14,133 @@ package com.adrien.games.bagl.rendering.texture;
  * <li>tWrap : The wrapping of the texture for the v component. Default is REPEAT.
  * <li>anisotropic : The level of anisotropic filtering (should be 0, 2, 4, 8 or 16). Default is 0;
  * <li>mipmaps : Flag indicating if mimaps must be generated. Default is false.
- * <br><br>
- * <p>Texture parameters objects can be created in a fluent way. ex: new TextureParameters().anisotropic(16).mipmaps(true);
+ * </ul>
+ * <p>
+ * Too construct an instance of this class you must use the provided builder as follows:
+ * <pre>
+ * final TextureParameters params = TextureParameters.builder().format(Format.RGBA8).mipmaps().build();
+ * </pre>
+ * Once built, the parameters can't be changed
  *
+ * @author Adrien
  * @see Format
  * @see Filter
  * @see Wrap
- *
- * @author Adrien
- *
  */
-public class TextureParameters {
+public final class TextureParameters {
 
-    private Format format = Format.RGBA8;
-    private Filter minFilter = Filter.LINEAR;
-    private Filter magFilter = Filter.LINEAR;
-    private Wrap sWrap = Wrap.REPEAT;
-    private Wrap tWrap = Wrap.REPEAT;
-    private int anisotropic = 0;
-    private boolean mipmaps = false;
+    private final Format format;
+    private final Filter minFilter;
+    private final Filter magFilter;
+    private final Wrap sWrap;
+    private final Wrap tWrap;
+    private final int anisotropic;
+    private final boolean mipmaps;
 
-    public TextureParameters format(Format format) {
-        this.format = format;
-        return this;
+    private TextureParameters(final Builder builder) {
+        this.format = builder.format;
+        this.minFilter = builder.minFilter;
+        this.magFilter = builder.magFilter;
+        this.sWrap = builder.sWrap;
+        this.tWrap = builder.tWrap;
+        this.anisotropic = builder.anisotropic;
+        this.mipmaps = builder.mipmaps;
     }
 
-    public TextureParameters minFilter(Filter filter) {
-        this.minFilter = filter;
-        return this;
-    }
-
-    public TextureParameters magFilter(Filter filter) {
-        this.magFilter = filter;
-        return this;
-    }
-
-    public TextureParameters sWrap(Wrap wrap) {
-        this.sWrap = wrap;
-        return this;
-    }
-
-    public TextureParameters tWrap(Wrap wrap) {
-        this.tWrap = wrap;
-        return this;
-    }
-
-    public TextureParameters anisotropic(int anisotropic) {
-        this.anisotropic = anisotropic;
-        return this;
-    }
-
-    public TextureParameters mipmaps(boolean generate) {
-        this.mipmaps = generate;
-        return this;
+    /**
+     * Retrieve a texture builder
+     *
+     * @return A new builder
+     */
+    public static Builder builder() {
+        return new Builder();
     }
 
     public Format getFormat() {
-        return format;
+        return this.format;
     }
 
     public Filter getMinFilter() {
-        return minFilter;
+        return this.minFilter;
     }
 
     public Filter getMagFilter() {
-        return magFilter;
+        return this.magFilter;
     }
 
     public Wrap getsWrap() {
-        return sWrap;
+        return this.sWrap;
     }
 
     public Wrap gettWrap() {
-        return tWrap;
+        return this.tWrap;
     }
 
     public int getAnisotropic() {
-        return anisotropic;
+        return this.anisotropic;
     }
 
     public boolean getMipmaps() {
-        return mipmaps;
+        return this.mipmaps;
     }
 
+    /**
+     * Texture parameters builder
+     */
+    public static class Builder {
+
+        private Format format = Format.RGBA8;
+        private Filter minFilter = Filter.LINEAR;
+        private Filter magFilter = Filter.LINEAR;
+        private Wrap sWrap = Wrap.REPEAT;
+        private Wrap tWrap = Wrap.REPEAT;
+        private int anisotropic = 0;
+        private boolean mipmaps = false;
+
+        /**
+         * Private constructor to private instantiation
+         */
+        private Builder() {
+        }
+
+        public TextureParameters build() {
+            return new TextureParameters(this);
+        }
+
+        public Builder format(final Format format) {
+            this.format = Objects.requireNonNull(format, "format cannot be null");
+            return this;
+        }
+
+        public Builder minFilter(final Filter filter) {
+            this.minFilter = Objects.requireNonNull(filter, "filter cannot be null");
+            return this;
+        }
+
+        public Builder magFilter(final Filter filter) {
+            this.magFilter = Objects.requireNonNull(filter, "filter cannot be null");
+            return this;
+        }
+
+        public Builder sWrap(final Wrap wrap) {
+            this.sWrap = Objects.requireNonNull(wrap, "wrap cannot be null");
+            return this;
+        }
+
+        public Builder tWrap(final Wrap wrap) {
+            this.tWrap = Objects.requireNonNull(wrap, "wrap cannot be null");
+            return this;
+        }
+
+        public Builder anisotropic(final int anisotropic) {
+            this.anisotropic = AssertUtils.validate(anisotropic, v -> v >= 0,
+                    "anisotropic must be at least 0");
+            return this;
+        }
+
+        public Builder mipmaps(final boolean mipmaps) {
+            this.mipmaps = mipmaps;
+            return this;
+        }
+    }
 }

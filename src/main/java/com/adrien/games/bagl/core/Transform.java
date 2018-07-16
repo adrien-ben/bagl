@@ -1,152 +1,148 @@
 package com.adrien.games.bagl.core;
 
-import com.adrien.games.bagl.core.math.Matrix4;
-import com.adrien.games.bagl.core.math.Quaternion;
-import com.adrien.games.bagl.core.math.Vector3;
+import com.adrien.games.bagl.utils.Dirtiable;
+import org.joml.*;
 
 /**
- * A transform represents a translation, rotation and scaling in space.
+ * A transform represents a translation, rotation and scaling in space
  *
+ * @author adrien
  */
 public class Transform {
 
-    private Vector3 translation;
-    private Quaternion rotation;
-    private Vector3 scale;
-    private final Matrix4 transform;
-    private boolean isDirty;
+    private final Vector3f translation;
+    private final Quaternionf rotation;
+    private final Vector3f scale;
+    private final Dirtiable<Matrix4f> transform;
 
-    private final Matrix4 transBuff;
-    private final Matrix4 rotBuff;
-    private final Matrix4 scaleBuff;
-
+    /**
+     * Construct a transform
+     * <p>
+     * By default their is no translation nor rotation and scale
+     * is set to (1, 1, 1)
+     */
     public Transform() {
-        this.translation = new Vector3();
-        this.rotation = new Quaternion(1, 0, 0, 0);
-        this.scale = new Vector3(1, 1, 1);
-        this.transform = Matrix4.createIdentity();
-        this.isDirty = false;
-
-        this.transBuff = Matrix4.createZero();
-        this.rotBuff = Matrix4.createZero();
-        this.scaleBuff = Matrix4.createZero();
+        this.translation = new Vector3f();
+        this.rotation = new Quaternionf();
+        this.scale = new Vector3f(1, 1, 1);
+        this.transform = new Dirtiable<>(new Matrix4f(), this::computeTransform);
     }
 
     /**
-     * Transforms this transform relatively to another transform.
-     * This transform is 'sent' to the space of the other transform.
-     * @param transform The transform to apply.
-     * @return This for chaining.
+     * Transform this transform relatively to another transform.
+     * This transform is 'sent' to the space of the other transform
+     *
+     * @param transform The transform to apply
+     * @return This for chaining
      */
-    public Transform transform(Transform transform) {
-        final Matrix4 tm = transform.getTransformMatrix();
-        this.translation.transform(tm, 1);
-        this.scale.transform(tm, 0);
-        this.rotation.mul(transform.getRotation());
-        this.isDirty = true;
+    public Transform transform(final Transform transform) {
+        Transform.transform(this, transform, this);
         return this;
     }
 
     /**
-     * Transforms a transform relatively to another transform.
+     * Transform a transform relatively to another transform.
      * The transform <code>toTransform</code> is 'sent' to the
-     * space of the other transform.
-     * @param toTransform The transform to apply a transform to. Will not be changed.
-     * @param transform The transform to apply. Will not be changed.
-     * @param result The transform where to store the result.
+     * space of the other transform
+     *
+     * @param toTransform The transform to apply a transform to. Will not be changed
+     * @param transform   The transform to apply. Will not be changed
+     * @param result      The transform where to store the result
      */
-    public static void transform(Transform toTransform, Transform transform, Transform result) {
-        final Matrix4 tm = transform.getTransformMatrix();
-        Vector3.transform(tm, toTransform.translation, 1, result.translation);
-        Vector3.mul(toTransform.scale, transform.scale, result.scale);
-        Quaternion.mul(toTransform.rotation, transform.rotation, result.rotation);
-        result.isDirty = true;
-    }
-
-    private void computeTransform() {
-        this.transBuff.setTranslation(this.translation);
-        this.rotBuff.setRotation(this.rotation);
-        this.scaleBuff.setScale(this.scale);
-
-        Matrix4.mul(this.transBuff, this.rotBuff, this.transform);
-        Matrix4.mul(this.transform, this.scaleBuff, this.transform);
-
-        this.isDirty = false;
+    public static void transform(final Transform toTransform, final Transform transform, final Transform result) {
+        final var tm = transform.getTransformMatrix();
+        toTransform.translation.mulPosition(tm, result.translation);
+        toTransform.scale.mul(transform.scale, result.scale);
+        toTransform.rotation.mul(transform.rotation, result.rotation);
+        result.transform.dirty();
     }
 
     /**
-     * Copies the values of another transform.
-     * @param other The transform to copy.
-     * @return This form chaining.
+     * Compute the transform matrix
+     *
+     * @param transform The result of the computation.
      */
-    public Transform set(Transform other) {
+    private void computeTransform(final Matrix4f transform) {
+        transform.translation(this.translation)
+                .rotate(this.rotation)
+                .scale(this.scale);
+    }
+
+    /**
+     * Copy the values of another transform
+     *
+     * @param other The transform to copy
+     * @return This form chaining
+     */
+    public Transform set(final Transform other) {
         this.translation.set(other.translation);
         this.rotation.set(other.rotation);
         this.scale.set(other.scale);
-        this.isDirty = true;
+        this.transform.dirty();
         return this;
     }
 
     /**
-     * Returns the matrix of the transform.
-     * <p>This matrix contains the combination of translation,
+     * Return the matrix of the transform
+     * <p>
+     * This matrix contains the combination of translation,
      * rotation and scaling. The matrix is computed here if
-     * needed.
-     * @return A matrix.
+     * needed
+     *
+     * @return The transformation matrix
      */
-    public Matrix4 getTransformMatrix() {
-        if(this.isDirty) {
-            this.computeTransform();
-        }
-        return this.transform;
+    public Matrix4fc getTransformMatrix() {
+        return this.transform.get();
     }
 
-    public Vector3 getTranslation() {
+    /**
+     * Set the translation. Flags the transform as dirty
+     * so the transform matrix is recomputed when needed
+     *
+     * @param translation The translation vector to set
+     * @return This for chaining
+     */
+    public Transform setTranslation(final Vector3fc translation) {
+        this.translation.set(translation);
+        this.transform.dirty();
+        return this;
+    }
+
+    /**
+     * Set the rotation. Flags the transform as dirty
+     * so the transform matrix is recomputed when needed
+     *
+     * @param rotation The rotation to set
+     * @return This for chaining
+     */
+    public Transform setRotation(final Quaternionfc rotation) {
+        this.rotation.set(rotation);
+        this.transform.dirty();
+        return this;
+    }
+
+    /**
+     * Set the scaling. Flags the transform as dirty
+     * so the transform matrix is recomputed when needed
+     *
+     * @param scale The scale vector to set
+     * @return This for chaining
+     */
+    public Transform setScale(final Vector3fc scale) {
+        this.scale.set(scale);
+        this.transform.dirty();
+        return this;
+    }
+
+    public Vector3fc getTranslation() {
         return translation;
     }
 
-    public Quaternion getRotation() {
+    public Quaternionfc getRotation() {
         return rotation;
     }
 
-    public Vector3 getScale() {
+    public Vector3fc getScale() {
         return scale;
     }
-
-    /**
-     * Sets the translation. Flags the transform as dirty
-     * so the transform matrix is recomputed when needed.
-     * @param translation The translation vector to set.
-     * @return This for chaining.
-     */
-    public Transform setTranslation(Vector3 translation) {
-        this.translation = translation;
-        this.isDirty = true;
-        return this;
-    }
-
-    /**
-     * Sets the rotation. Flags the transform as dirty
-     * so the transform matrix is recomputed when needed.
-     * @param rotation The rotation to set.
-     * @return This for chaining.
-     */
-    public Transform setRotation(Quaternion rotation) {
-        this.rotation = rotation;
-        this.isDirty = true;
-        return this;
-    }
-
-    /**
-     * Sets the scaling. Flags the transform as dirty
-     * so the transform matrix is recomputed when needed.
-     * @param scale The scale vector to set.
-     * @return This for chaining.
-     */
-    public Transform setScale(Vector3 scale) {
-        this.scale = scale;
-        this.isDirty = true;
-        return this;
-    }
-
 }

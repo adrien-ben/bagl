@@ -2,45 +2,44 @@ package com.adrien.games.bagl.rendering.particles;
 
 import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.core.Time;
-import com.adrien.games.bagl.core.math.Vector3;
+import org.joml.Vector3f;
 
 public class Particle {
 
-    private Vector3 position;
-    private Vector3 direction;
+    private Vector3f position;
+    private Vector3f direction;
     private float size;
     private float speed;
     private Color startColor;
     private Color endColor;
     private float ttl;
 
-    private final Color color = new Color(0, 0, 0,0);
+    private final Color color = new Color(0, 0, 0, 0);
     private float timeLeft;
     private boolean alive;
 
-    public Particle(Vector3 position, Vector3 direction, float size, float speed, Color startColor, Color endColor, float ttl) {
+    public Particle(Vector3f position, Vector3f direction, float size, float speed, Color startColor, Color endColor, float ttl) {
         this.reset(position, direction, size, speed, startColor, endColor, ttl);
     }
 
     public Particle() {
-        this(new Vector3(), new Vector3(), 1, 0, Color.WHITE, Color.WHITE, 0);
+        this(new Vector3f(), new Vector3f(), 1, 0, Color.WHITE, Color.WHITE, 0);
     }
 
     public void update(Time time) {
         this.alive = this.timeLeft > 0;
-        if(this.alive) {
-            final float elapsedTime = time.getElapsedTime();
+        if (this.alive) {
+            final var elapsedTime = time.getElapsedTime();
             this.timeLeft -= elapsedTime;
-            this.direction.normalise();
-            this.direction.scale(elapsedTime*this.speed);
+            this.direction.normalize().mul(elapsedTime * this.speed);
             this.position.add(this.direction);
 
-            final float life = this.timeLeft/this.ttl;
+            final var life = this.timeLeft / this.ttl;
             Color.blend(this.startColor, this.endColor, life, this.color);
         }
     }
 
-    public void reset(Vector3 position, Vector3 direction, float size, float speed, Color startColor, Color endColor, float ttl) {
+    public void reset(Vector3f position, Vector3f direction, float size, float speed, Color startColor, Color endColor, float ttl) {
         this.position = position;
         this.direction = direction;
         this.size = size;
@@ -58,11 +57,11 @@ public class Particle {
         return alive;
     }
 
-    public Vector3 getPosition() {
+    public Vector3f getPosition() {
         return position;
     }
 
-    public void setPosition(Vector3 position) {
+    public void setPosition(Vector3f position) {
         this.position = position;
     }
 
@@ -78,11 +77,11 @@ public class Particle {
         return color;
     }
 
-    public Vector3 getDirection() {
+    public Vector3f getDirection() {
         return direction;
     }
 
-    public void setDirection(Vector3 direction) {
+    public void setDirection(Vector3f direction) {
         this.direction = direction;
     }
 

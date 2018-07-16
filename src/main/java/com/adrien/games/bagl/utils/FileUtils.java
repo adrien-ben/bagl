@@ -1,36 +1,84 @@
 package com.adrien.games.bagl.utils;
 
+import com.adrien.games.bagl.exception.EngineException;
+
 import java.io.File;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Objects;
 
+/**
+ * File utility methods
+ *
+ * @author adrien
+ */
 public final class FileUtils {
 
+    private static final String CLASSPATH_PREFIX = "classpath:";
+
+    /**
+     * Private constructor to prevent instantiation
+     */
     private FileUtils() {
     }
 
     /**
-     * Load the content of a file into a byte buffer.
-     * @param filePath The path of the file to load.
-     * @return A {@link ByteBuffer} filled with the file content.
+     * Get the absolute path of a resource
+     *
+     * @param resource The name of the resource
+     * @return The absolute path of the resource as a {@link String}
      */
-    public static ByteBuffer loadAsByteBuffer(String filePath) {
-        try (final FileChannel channel = FileChannel.open(Paths.get(filePath))) {
-            return channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to load file into the byte buffer", e);
+    public static InputStream getResourceAsStream(final String resource) {
+        final var correctResourcePath = resource.startsWith("/") ? resource.replaceFirst("/", "") : resource;
+        final var classLoader = Thread.currentThread().getContextClassLoader();
+        final var resourceUrl = classLoader.getResourceAsStream(correctResourcePath);
+        if (Objects.isNull(resourceUrl)) {
+            throw new EngineException(String.format("Resource %s does not exist.", correctResourcePath));
+        }
+        return resourceUrl;
+    }
+
+    /**
+     * Get the absolute path of a resource
+     *
+     * @param resource The name of the resource
+     * @return The absolute path of the resource as a {@link String}
+     */
+    public static String getResourceAbsolutePath(final String resource) {
+        return new File(FileUtils.class.getResource(resource).getFile()).getAbsolutePath();
+    }
+
+    /**
+     * Open a stream to the file at {@code filePath}.
+     * <p>
+     * If the path is prefixed with {@value CLASSPATH_PREFIX} it will open a stream to a
+     * resource file.
+     */
+    public static InputStream openStream(final String filePath) {
+        if (filePath.startsWith(CLASSPATH_PREFIX)) {
+            return FileUtils.getResourceAsStream(filePath.replace(CLASSPATH_PREFIX, ""));
+        }
+        try {
+            return Files.newInputStream(Paths.get(filePath));
+        } catch (final IOException exception) {
+            throw new EngineException(String.format("Failed to open stream from %s.", filePath), exception);
         }
     }
 
     /**
-     * Gets the absolute path of a resource.
-     * @param resource The name of the resource.
-     * @return The absolute path of the resource as a {@link String}.
+     * Resolve the actual value of {@code filePath}.
+     * <p>
+     * If {@code filePath} is prefixed with {@value CLASSPATH_PREFIX} it will return
+     * the absolute path of the resource whose name is specified after the prefix.
+     * <p>
+     * Otherwise it will simply return {@code filePath}.
      */
-    public static String getResourceAbsolutePath(String resource) {
-        return new File(FileUtils.class.getResource(resource).getFile()).getAbsolutePath();
+    public static String resolvePath(final String filePath) {
+        if (filePath.startsWith(CLASSPATH_PREFIX)) {
+            return FileUtils.getResourceAbsolutePath(filePath.replace(CLASSPATH_PREFIX, ""));
+        }
+        return filePath;
     }
-
 }

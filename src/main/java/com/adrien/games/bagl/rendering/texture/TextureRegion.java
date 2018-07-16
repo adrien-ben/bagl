@@ -1,9 +1,8 @@
 package com.adrien.games.bagl.rendering.texture;
 
 /**
- * This class represents the region of a texture. The bottom-left 
- * corner of a texture is (0, 0), the top-right corner is (1, 1). 
- *
+ * This class represents the region of a texture. The bottom-left
+ * corner of a texture is (0, 0), the top-right corner is (1, 1).
  */
 public class TextureRegion {
 

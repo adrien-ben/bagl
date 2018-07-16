@@ -1,86 +1,93 @@
 package com.adrien.games.bagl.core;
 
+import com.adrien.games.bagl.exception.EngineException;
+import com.adrien.games.bagl.rendering.postprocess.fxaa.FxaaPresets;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.function.Function;
 
 /**
  * Engine configuration class. This singleton class is used to load engine
- * configuration. The instantiation fails if one of the required property 
+ * configuration. The instantiation fails if one of the required property
  * is missing. Required properties are :
  * <ul>
- * <li>resolution.x (integer): resolution of the window alongside the x-axis.
- * <li>resolution.y (integer): resolution of the window alongside the y-axis.
- * <li>anisotropic (integer): level of anisotropic filtering.
- *
+ * <li>resolution.x (integer) : resolution of the window alongside the x-axis.
+ * <li>resolution.y (integer) : resolution of the window alongside the y-axis.
+ * <li>vsync (boolean) : flag indicating if vsync should be enabled.
+ * <li>fullscreen (boolean) : flag indicating if full screen should be enabled.
+ * <li>anisotropic (integer) : level of anisotropic filtering.
+ * <li>shadow_map_resolution (integer) : the resolution of the shadow map.
+ * <li>fxaa_quality (String) : the preset quality of the fxaa. Should be LOW, MEDIUM or HIGH.
  */
 public class Configuration {
 
     private static final Logger log = LogManager.getLogger(Configuration.class);
 
     private static final String CONFIGURATION_FILE_PATH = "/config.properties";
-    private static final String X_RESOLUTION_KEY = "resolution.x";
-    private static final String Y_RESOLUTION_KEY = "resolution.y";
-    private static final String VSYNC_KEY = "vsync";
-    private static final String FULLSCREEN_KEY = "fullscreen";
-    private static final String ANISOTROPIC_KEY = "anisotropic";
+
+    private static Configuration instance;
 
     private final Properties properties;
     private final int xResolution;
     private final int yResolution;
-    private final  boolean vsync;
+    private final boolean vsync;
     private final boolean fullscreen;
     private final int anisotropicLevel;
-
-    private static Configuration instance;
+    private final int shadowMapResolution;
+    private final FxaaPresets fxaaPresets;
 
     private Configuration() {
         this.properties = new Properties();
         this.loadFile();
-        this.xResolution = this.readRequiredInt(X_RESOLUTION_KEY);
-        this.yResolution = this.readRequiredInt(Y_RESOLUTION_KEY);
-        this.vsync = this.readRequiredBool(VSYNC_KEY);
-        this.fullscreen = this.readRequiredBool(FULLSCREEN_KEY);
-        this.anisotropicLevel = this.readRequiredInt(ANISOTROPIC_KEY);
+        this.xResolution = this.readRequiredInt("resolution.x");
+        this.yResolution = this.readRequiredInt("resolution.y");
+        this.vsync = this.readRequiredBool("vsync");
+        this.fullscreen = this.readRequiredBool("fullscreen");
+        this.anisotropicLevel = this.readRequiredInt("anisotropic");
+        this.shadowMapResolution = this.readRequiredInt("shadow_map_resolution");
+        this.fxaaPresets = this.readRequiredAndMap("fxaa_quality", FxaaPresets::valueOf);
     }
 
     private void loadFile() {
-        try (final InputStream inStream = Configuration.class.getResourceAsStream(CONFIGURATION_FILE_PATH)) {
+        try (final var inStream = Configuration.class.getResourceAsStream(CONFIGURATION_FILE_PATH)) {
             this.properties.load(inStream);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             log.error("Failed to load properties file {}", CONFIGURATION_FILE_PATH, e);
-            throw new RuntimeException("Failed to load properties file", e);
+            throw new EngineException("Failed to load properties file", e);
         }
     }
 
     private int readRequiredInt(final String key) {
         try {
-            return Integer.parseInt(this.properties.getProperty(key));
-        } catch (NumberFormatException e) {
-            log.error("Property {} is not a integer or is missing", key);
-            throw new RuntimeException("Property " + key + " is not a integer or is missing");
+            return readRequiredAndMap(key, Integer::parseInt);
+        } catch (final NumberFormatException e) {
+            throw new EngineException("Property " + key + " is not a valid integer");
         }
     }
 
     private boolean readRequiredBool(final String key) {
-        final String property = this.properties.getProperty(key);
-        if(Objects.isNull(property)) {
-            log.error("Property {} is missing", key);
-            throw new RuntimeException("Property " + key + " is missing");
+        return readRequiredAndMap(key, Boolean::parseBoolean);
+    }
+
+    private <T> T readRequiredAndMap(final String key, final Function<String, T> mapper) {
+        final var property = this.getProperty(key);
+        if (Objects.isNull(property)) {
+            throw new EngineException("Property " + key + " is missing");
         }
-        return Boolean.parseBoolean(property);
+        return mapper.apply(property);
     }
 
     /**
      * Returns the instance of the engine configuration.
+     *
      * @return A {@link Configuration} instance.
      */
     public static Configuration getInstance() {
-        if(Objects.isNull(instance)) {
+        if (Objects.isNull(instance)) {
             instance = new Configuration();
         }
         return instance;
@@ -88,6 +95,7 @@ public class Configuration {
 
     /**
      * Gets a property by name.
+     *
      * @param key The name/key of the property.
      * @return The value of the property as a {@link String}.
      */
@@ -115,4 +123,11 @@ public class Configuration {
         return anisotropicLevel;
     }
 
+    public int getShadowMapResolution() {
+        return this.shadowMapResolution;
+    }
+
+    public FxaaPresets getFxaaPresets() {
+        return fxaaPresets;
+    }
 }

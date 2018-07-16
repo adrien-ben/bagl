@@ -1,9 +1,8 @@
 package com.adrien.games.bagl.core;
 
 /**
- * Simple time class allowing retrieval of elapsed time since 
+ * Simple time class allowing retrieval of elapsed time since
  * last frame and total program time.
- *
  */
 public final class Time {
 
@@ -23,7 +22,7 @@ public final class Time {
      * Updates the timings
      */
     public void update() {
-        long newTime = time();
+        final var newTime = time();
         elapsed = newTime - time;
         total += elapsed;
         time = newTime;
@@ -35,18 +34,20 @@ public final class Time {
 
     /**
      * Returns the time of the last frame in seconds.
+     *
      * @return The time of the last frame.
      */
     public float getElapsedTime() {
-        return (float)elapsed/NS_PER_SEC;
+        return (float) elapsed / NS_PER_SEC;
     }
 
     /**
      * Returns the total time of the program in seconds.
+     *
      * @return The total time of the program.
      */
     public float getTotalTime() {
-        return (float)total/NS_PER_SEC;
+        return (float) total / NS_PER_SEC;
     }
 
 }

@@ -29,7 +29,7 @@ public enum BlendMode {
     }
 
     private static class Constants {
-        static final int NONE_VALUE = -1;
+        private static final int NONE_VALUE = -1;
     }
 
 }
