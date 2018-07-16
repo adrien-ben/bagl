@@ -173,7 +173,7 @@ public class ParticleRenderer {
             p1.getPosition().sub(this.camera.getPosition(), this.v1);
             final var dist0 = this.v0.lengthSquared();
             final var dist1 = this.v1.lengthSquared();
-            return (int) (dist1 - dist0);
+            return Float.compare(dist1, dist0);
         }
 
         public void setCamera(final Camera camera) {
