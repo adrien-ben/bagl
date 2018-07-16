@@ -15,6 +15,8 @@ import com.adrien.games.bagl.rendering.model.Mesh;
 import com.adrien.games.bagl.rendering.model.MeshFactory;
 import com.adrien.games.bagl.rendering.model.Model;
 import com.adrien.games.bagl.rendering.model.ModelNode;
+import com.adrien.games.bagl.rendering.particles.ParticleEmitter;
+import com.adrien.games.bagl.rendering.particles.ParticleRenderer;
 import com.adrien.games.bagl.rendering.postprocess.PostProcessor;
 import com.adrien.games.bagl.rendering.postprocess.steps.BloomStep;
 import com.adrien.games.bagl.rendering.postprocess.steps.FxaaStep;
@@ -35,7 +37,9 @@ import java.util.Objects;
 import static org.lwjgl.opengl.GL11.*;
 
 /**
- * Deferred renderer
+ * PBR Deferred Scene Renderer
+ * <p>
+ * It is responsible for rendering a {@link Scene}.
  * <p>
  * This renderer supports :
  * <li>HDR Skybox</li>
@@ -44,7 +48,7 @@ import static org.lwjgl.opengl.GL11.*;
  * <li>Post processing pass (bloom/gamma correction/tone mapping from HDR to SDR</li>
  * <p>
  * When {@link PBRDeferredSceneRenderer#render(Scene)} is called, the renderer visits the scene and collects
- * scene date required for rendering
+ * scene data required for rendering
  *
  * @author adrien
  */
@@ -64,6 +68,7 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisit
     private final List<PointLight> pointLights;
     private final List<SpotLight> spotLights;
     private final List<Model> models;
+    private final List<ParticleEmitter> particleEmitters;
 
     private final Matrix4f wvpBuffer;
     private final Matrix4f lightViewProj;
@@ -84,6 +89,7 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisit
     private Shader deferredShader;
     private Shader brdfShader;
 
+    private ParticleRenderer particleRenderer;
     private MeshRenderer meshRenderer;
     private PostProcessor postProcessor;
 
@@ -101,6 +107,7 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisit
         this.pointLights = new ArrayList<>();
         this.spotLights = new ArrayList<>();
         this.models = new ArrayList<>();
+        this.particleEmitters = new ArrayList<>();
 
         this.wvpBuffer = new Matrix4f();
         this.lightViewProj = new Matrix4f();
@@ -108,6 +115,7 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisit
         this.screenQuad = MeshFactory.createScreenQuad();
         this.cubeMapMesh = MeshFactory.createCubeMapMesh();
 
+        this.particleRenderer = new ParticleRenderer();
         this.meshRenderer = new MeshRenderer();
         this.postProcessor = new PostProcessor(
                 new BloomStep(xResolution, yResolution),
@@ -135,6 +143,7 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisit
         this.brdfBuffer.destroy();
         this.screenQuad.destroy();
         this.cubeMapMesh.destroy();
+        this.particleRenderer.destroy();
         this.postProcessor.destroy();
     }
 
@@ -201,10 +210,19 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisit
     /**
      * Render a scene from the camera point of view
      * <p>
-     * First, if a skybox is present it is renderer to the default frame buffer.
-     * Then, the shadow map is generated for the first available directional light
-     * of the scene. After that, the scene is rendered to the gBuffer and finally,
-     * the final scene is renderer
+     * The method first visit {@code scene} to collect data to use for rendering.
+     * <p>
+     * Then if the scene contains at least one {@link DirectionalLightComponent}, it
+     * will generate the shadow map for the point of view of the first light found.
+     * <p>
+     * Then it will perform the actual scene rendering by first generating the GBuffer
+     * and then by computing the scene lighting.
+     * <p>
+     * After that it render the skybox and finally the particles.
+     * <p>
+     * Once the final image is generated, it passes it through a {@link PostProcessor}.
+     * <p>
+     * An {@link EngineException} will be thrown if the camera has no scene set up.
      *
      * @param scene The scene to render
      */
@@ -221,6 +239,11 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisit
         this.performGeometryPass();
         this.performLightingPass();
         this.renderSkybox();
+
+        this.finalBuffer.bind();
+        this.particleEmitters.forEach(e -> this.particleRenderer.render(e, this.camera));
+        this.finalBuffer.unbind();
+
         this.postProcessor.process(this.finalBuffer.getColorTexture(0));
     }
 
@@ -236,6 +259,7 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisit
         this.pointLights.clear();
         this.spotLights.clear();
         this.models.clear();
+        this.particleEmitters.clear();
     }
 
     /**
@@ -549,6 +573,19 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisit
     @Override
     public void visit(final SpotLightComponent component) {
         this.spotLights.add(component.getLight());
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Add the particle emitter contained in component to the list of emitter
+     * to render.
+     *
+     * @see ComponentVisitor#visit(SpotLightComponent)
+     */
+    @Override
+    public void visit(final ParticleComponent component) {
+        this.particleEmitters.add(component.getEmitter());
     }
 
     public FrameBuffer getShadowBuffer() {
