@@ -241,7 +241,7 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisit
         this.renderSkybox();
 
         this.finalBuffer.bind();
-        this.particleEmitters.forEach(e -> this.particleRenderer.render(e, this.camera));
+        this.particleEmitters.forEach(e -> this.particleRenderer.render(e, this.camera, this.directionalLights, this.pointLights, this.spotLights));
         this.finalBuffer.unbind();
 
         this.postProcessor.process(this.finalBuffer.getColorTexture(0));

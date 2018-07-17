@@ -6,6 +6,9 @@ import com.adrien.games.bagl.core.camera.Camera;
 import com.adrien.games.bagl.rendering.BlendMode;
 import com.adrien.games.bagl.rendering.BufferUsage;
 import com.adrien.games.bagl.rendering.Shader;
+import com.adrien.games.bagl.rendering.light.DirectionalLight;
+import com.adrien.games.bagl.rendering.light.PointLight;
+import com.adrien.games.bagl.rendering.light.SpotLight;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.vertex.VertexArray;
 import com.adrien.games.bagl.rendering.vertex.VertexBuffer;
@@ -93,7 +96,13 @@ public class ParticleRenderer {
      * @param emitter The emitter to render
      * @param camera  The camera
      */
-    public void render(final ParticleEmitter emitter, final Camera camera) {
+    public void render(
+            final ParticleEmitter emitter,
+            final Camera camera,
+            final List<DirectionalLight> directionalLights,
+            final List<PointLight> pointLights,
+            final List<SpotLight> spotLights
+    ) {
         var particleToRender = 0;
 
         this.timer.update();
@@ -131,8 +140,21 @@ public class ParticleRenderer {
 
         this.shader.bind();
         this.shader.setUniform("hasTexture", hasTexture.get());
-        this.shader.setUniform("camera.view", camera.getView());
-        this.shader.setUniform("camera.viewProj", camera.getViewProj());
+        this.shader.setUniform("uCamera.view", camera.getView());
+        this.shader.setUniform("uCamera.viewProj", camera.getViewProj());
+
+        this.shader.setUniform("uLights.directionalCount", directionalLights.size());
+        for (int i = 0; i < directionalLights.size(); i++) {
+            this.setDirectionalLight(this.shader, i, directionalLights.get(i));
+        }
+        this.shader.setUniform("uLights.pointCount", pointLights.size());
+        for (int i = 0; i < pointLights.size(); i++) {
+            this.setPointLight(this.shader, i, pointLights.get(i));
+        }
+        this.shader.setUniform("uLights.spotCount", spotLights.size());
+        for (int i = 0; i < spotLights.size(); i++) {
+            this.setSpotLight(this.shader, i, spotLights.get(i));
+        }
 
         this.timer.update();
         this.vBuffer.bind();
@@ -155,6 +177,29 @@ public class ParticleRenderer {
         this.vArray.unbind();
         Shader.unbind();
         Texture.unbind();
+    }
+
+    private void setDirectionalLight(final Shader shader, final int index, final DirectionalLight light) {
+        shader.setUniform("uLights.directionals[" + index + "].base.intensity", light.getIntensity())
+                .setUniform("uLights.directionals[" + index + "].base.color", light.getColor())
+                .setUniform("uLights.directionals[" + index + "].direction", light.getDirection());
+    }
+
+    private void setPointLight(Shader shader, int index, PointLight light) {
+        shader.setUniform("uLights.points[" + index + "].base.intensity", light.getIntensity())
+                .setUniform("uLights.points[" + index + "].base.color", light.getColor())
+                .setUniform("uLights.points[" + index + "].position", light.getPosition())
+                .setUniform("uLights.points[" + index + "].radius", light.getRadius());
+    }
+
+    private void setSpotLight(Shader shader, int index, SpotLight light) {
+        shader.setUniform("uLights.spots[" + index + "].point.base.intensity", light.getIntensity())
+                .setUniform("uLights.spots[" + index + "].point.base.color", light.getColor())
+                .setUniform("uLights.spots[" + index + "].point.position", light.getPosition())
+                .setUniform("uLights.spots[" + index + "].point.radius", light.getRadius())
+                .setUniform("uLights.spots[" + index + "].direction", light.getDirection())
+                .setUniform("uLights.spots[" + index + "].cutOff", light.getCutOff())
+                .setUniform("uLights.spots[" + index + "].outerCutOff", light.getOuterCutOff());
     }
 
     /**
