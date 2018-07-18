@@ -239,10 +239,7 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisit
         this.performGeometryPass();
         this.performLightingPass();
         this.renderSkybox();
-
-        this.finalBuffer.bind();
-        this.particleEmitters.forEach(e -> this.particleRenderer.render(e, this.camera, this.directionalLights, this.pointLights, this.spotLights));
-        this.finalBuffer.unbind();
+        this.renderParticles();
 
         this.postProcessor.process(this.finalBuffer.getColorTexture(0));
     }
@@ -492,6 +489,19 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisit
                 .setUniform("uLights.spots[" + index + "].direction", light.getDirection())
                 .setUniform("uLights.spots[" + index + "].cutOff", light.getCutOff())
                 .setUniform("uLights.spots[" + index + "].outerCutOff", light.getOuterCutOff());
+    }
+
+    private void renderParticles() {
+
+        this.finalBuffer.bind();
+        this.particleEmitters.forEach(emitter -> {
+            this.particleRenderer.setCamera(this.camera);
+            this.particleRenderer.setDirectionalLights(this.directionalLights);
+            this.particleRenderer.setPointLights(this.pointLights);
+            this.particleRenderer.setSpotLights(this.spotLights);
+            this.particleRenderer.render(emitter);
+        });
+        this.finalBuffer.unbind();
     }
 
     /**
