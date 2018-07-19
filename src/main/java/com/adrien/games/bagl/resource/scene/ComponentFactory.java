@@ -12,8 +12,8 @@ import com.adrien.games.bagl.rendering.model.ModelFactory;
 import com.adrien.games.bagl.resource.scene.descriptors.*;
 import com.adrien.games.bagl.scene.Component;
 import com.adrien.games.bagl.scene.components.*;
-import com.adrien.games.bagl.utils.FileUtils;
 import com.adrien.games.bagl.utils.MathUtils;
+import com.adrien.games.bagl.utils.ResourcePath;
 import com.google.gson.Gson;
 import org.joml.Vector3f;
 
@@ -70,7 +70,7 @@ public class ComponentFactory {
     private ModelComponent createModelComponent(final ModelDescriptor modelDescriptor) {
         final var path = validate(modelDescriptor.getPath(), Objects::nonNull, "Model component should have a path field");
 
-        final var model = ModelFactory.fromFile(FileUtils.resolvePath(path));
+        final var model = ModelFactory.fromFile(ResourcePath.get(path));
         return new ModelComponent(model);
     }
 
@@ -89,7 +89,7 @@ public class ComponentFactory {
     private EnvironmentComponent createEnvironmentComponent(final EnvironmentDescriptor environmentDescriptor) {
         final var path = validate(environmentDescriptor.getPath(), Objects::nonNull, "Environment component should have a path field");
 
-        final var environmentMap = environmentMapGenerator.generateEnvironmentMap(FileUtils.resolvePath(path));
+        final var environmentMap = environmentMapGenerator.generateEnvironmentMap(ResourcePath.get(path));
         final var irradianceMap = environmentMapGenerator.generateIrradianceMap(environmentMap);
         final var preFilteredMap = environmentMapGenerator.generatePreFilteredMap(environmentMap);
         return new EnvironmentComponent(environmentMap, irradianceMap, preFilteredMap);

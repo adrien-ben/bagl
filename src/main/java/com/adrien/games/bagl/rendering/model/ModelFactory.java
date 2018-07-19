@@ -2,6 +2,7 @@ package com.adrien.games.bagl.rendering.model;
 
 import com.adrien.games.bagl.rendering.Material;
 import com.adrien.games.bagl.resource.GltfLoader;
+import com.adrien.games.bagl.utils.ResourcePath;
 
 /**
  * {@link Model} factory
@@ -10,7 +11,7 @@ import com.adrien.games.bagl.resource.GltfLoader;
  */
 public final class ModelFactory {
 
-    private static final GltfLoader loader = new GltfLoader();
+    private static final GltfLoader LOADER = new GltfLoader();
 
     /**
      * Private constructor to prevent instantiation
@@ -21,11 +22,11 @@ public final class ModelFactory {
     /**
      * Load a model from a file
      *
-     * @param filePath The path of the file to load
+     * @param path The path of the file to load
      * @return A {@link Model}
      */
-    public static Model fromFile(final String filePath) {
-        return ModelFactory.loader.load(filePath);
+    public static Model fromFile(final ResourcePath path) {
+        return LOADER.load(path);
     }
 
     /**

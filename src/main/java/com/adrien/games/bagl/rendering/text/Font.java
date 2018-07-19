@@ -5,13 +5,13 @@ import com.adrien.games.bagl.exception.ParseException;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.texture.TextureParameters;
 import com.adrien.games.bagl.rendering.texture.TextureRegion;
+import com.adrien.games.bagl.utils.ResourcePath;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -42,18 +42,12 @@ public class Font {
     private final Map<Integer, Glyph> glyphs = new HashMap<>();
     private Texture bitmap;
 
-    public Font(String filePath) {
+    public Font(final ResourcePath filePath) {
         this.load(filePath);
     }
 
-    private void load(String filePath) {
-        final var file = new File(filePath);
-        if (!file.exists()) {
-            log.error("Font file '{}' does not exists.", filePath);
-            throw new EngineException("Font file '" + filePath + "' does not exists.");
-        }
-
-        try (final var reader = new BufferedReader(new FileReader(file))) {
+    private void load(final ResourcePath filePath) {
+        try (final var reader = new BufferedReader(new InputStreamReader(filePath.openInputStream()))) {
             this.parseHeader(reader);
             reader.lines().map(CHAR_LINE_PATTERN::matcher).filter(Matcher::matches).forEach(this::parseCharLine);
         } catch (final IOException | ParseException e) {
@@ -61,8 +55,8 @@ public class Font {
             throw new EngineException("Failed to parse font file '" + filePath + "'.", e);
         }
 
-        this.bitmap = Texture.fromFile(file.getParentFile().getAbsolutePath() + File.separator + this.atlasName,
-                true, TextureParameters.builder());
+        final var bitmapPath = ResourcePath.get(filePath.getParent().getAbsolutePath(), this.atlasName);
+        this.bitmap = Texture.fromFile(bitmapPath, true, TextureParameters.builder());
     }
 
     private void parseHeader(BufferedReader reader) throws IOException, ParseException {

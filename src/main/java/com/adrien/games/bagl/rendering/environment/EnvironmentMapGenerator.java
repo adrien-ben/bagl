@@ -10,6 +10,7 @@ import com.adrien.games.bagl.rendering.model.Mesh;
 import com.adrien.games.bagl.rendering.model.MeshFactory;
 import com.adrien.games.bagl.rendering.texture.*;
 import com.adrien.games.bagl.utils.MathUtils;
+import com.adrien.games.bagl.utils.ResourcePath;
 import org.joml.Vector3f;
 
 import static org.lwjgl.opengl.GL11.*;
@@ -82,14 +83,14 @@ public class EnvironmentMapGenerator {
     /**
      * Generate an environment map from a HDR equirectangular image
      *
-     * @param filePath The path of the HDR image file
+     * @param path The path of the HDR image file
      * @return An {@link Cubemap}
      */
-    public Cubemap generateEnvironmentMap(final String filePath) {
+    public Cubemap generateEnvironmentMap(final ResourcePath path) {
         final var params = TextureParameters.builder()
                 .sWrap(Wrap.CLAMP_TO_EDGE)
                 .tWrap(Wrap.CLAMP_TO_EDGE);
-        final var equirectangularMap = Texture.fromFile(filePath, true, params);
+        final var equirectangularMap = Texture.fromFile(path, true, params);
 
         final var cubemapParams = TextureParameters.builder()
                 .format(Format.RGB16F)

@@ -1,7 +1,7 @@
 package com.adrien.games.bagl.resource;
 
 import com.adrien.games.bagl.exception.EngineException;
-import com.adrien.games.bagl.utils.FileUtils;
+import com.adrien.games.bagl.utils.ResourcePath;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -29,7 +29,8 @@ public class ShaderLoader {
      */
     public String loadSource(final String filePath) {
         LOG.trace("Loading shader source from resources file: {}", filePath);
-        try (final var reader = new BufferedReader(new InputStreamReader(FileUtils.openStream(filePath)))) {
+        final var path = ResourcePath.get(filePath);
+        try (final var reader = new BufferedReader(new InputStreamReader(path.openInputStream()))) {
             return reader.lines().collect(Collectors.joining("\n"));
         } catch (final IOException exception) {
             throw new EngineException("Failed to load shader source file", exception);
