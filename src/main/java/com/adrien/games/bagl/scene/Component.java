@@ -30,7 +30,8 @@ public abstract class Component {
      *
      * @param visitor THe visitor to accept
      */
-    public abstract void accept(final ComponentVisitor visitor);
+    public void accept(final ComponentVisitor visitor) {
+    }
 
     /**
      * Destroy resources linked to this component
