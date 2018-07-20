@@ -81,7 +81,7 @@ public class SceneLoader {
     private Quaternionf mapRotations(final List<Vector3f> rotations) {
         final var result = new Quaternionf();
         if (CollectionUtils.isNotEmpty(rotations)) {
-            rotations.forEach(r -> result.rotate(toRadians(r.x()), toRadians(r.y()), toRadians(r.z())));
+            rotations.forEach(r -> result.rotateXYZ(toRadians(r.x()), toRadians(r.y()), toRadians(r.z())));
         }
         return result;
     }
