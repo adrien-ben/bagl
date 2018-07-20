@@ -1,9 +1,6 @@
 #version 330
 
-struct Camera {
-	mat4 viewProj;
-	mat4 view;
-};
+#import "classpath:/shaders/common/camera.glsl"
 
 in VertOut {
 	vec4 color;
