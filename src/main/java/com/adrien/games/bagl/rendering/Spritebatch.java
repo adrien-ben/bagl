@@ -6,6 +6,7 @@ import com.adrien.games.bagl.exception.EngineException;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.texture.TextureRegion;
 import com.adrien.games.bagl.rendering.vertex.*;
+import com.adrien.games.bagl.utils.ResourcePath;
 import org.joml.Vector2f;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.system.MemoryStack;
@@ -71,8 +72,8 @@ public class Spritebatch {
 
         this.camera = new Camera2D(new Vector2f(width / 2, height / 2), width, height);
         this.spriteShader = Shader.builder()
-                .vertexPath("classpath:/shaders/sprite/sprite.vert")
-                .fragmentPath("classpath:/shaders/sprite/sprite.frag")
+                .vertexPath(ResourcePath.get("classpath:/shaders/sprite/sprite.vert"))
+                .fragmentPath(ResourcePath.get("classpath:/shaders/sprite/sprite.frag"))
                 .build();
 
         this.vertices = MemoryUtil.memAllocFloat(this.size * VERTICES_PER_SPRITE * ELEMENTS_PER_VERTICES);

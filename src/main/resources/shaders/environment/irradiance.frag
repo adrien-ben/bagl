@@ -1,12 +1,12 @@
 #version 330
 
+#import "classpath:/shaders/common/maths.glsl"
+
 in vec3 passPosition;
 
 out vec4 finalColor;
 
 uniform samplerCube cubemap;
-
-const float PI = 3.14159265359;
 
 void main() {
     vec3 irradiance = vec3(0.0);

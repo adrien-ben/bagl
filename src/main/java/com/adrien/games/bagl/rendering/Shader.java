@@ -2,7 +2,8 @@ package com.adrien.games.bagl.rendering;
 
 import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.exception.EngineException;
-import com.adrien.games.bagl.resource.ShaderLoader;
+import com.adrien.games.bagl.resource.shader.ShaderSourceParser;
+import com.adrien.games.bagl.utils.ResourcePath;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joml.Matrix4fc;
@@ -92,8 +93,8 @@ public class Shader {
      * @param type     The type of shader to load
      * @throws EngineException If source loading or shader compilation fails
      */
-    private void addShader(final String filePath, final int type) {
-        final var source = new ShaderLoader().loadSource(filePath);
+    private void addShader(final ResourcePath filePath, final int type) {
+        final var source = loadSource(filePath);
 
         final var shader = GL20.glCreateShader(type);
         GL20.glShaderSource(shader, source);
@@ -106,6 +107,10 @@ public class Shader {
         }
         GL20.glAttachShader(this.handle, shader);
         this.attachedShaders.add(shader);
+    }
+
+    private String loadSource(final ResourcePath filePath) {
+        return new ShaderSourceParser().parse(filePath);
     }
 
     /**
@@ -281,9 +286,9 @@ public class Shader {
      */
     public static class Builder {
 
-        private String vertexPath;
-        private String fragmentPath;
-        private String geometryPath;
+        private ResourcePath vertexPath;
+        private ResourcePath fragmentPath;
+        private ResourcePath geometryPath;
 
         /**
          * Private constructor to prevent instantiation
@@ -309,7 +314,7 @@ public class Shader {
          * @param path The path of the resource
          * @return This
          */
-        public Builder vertexPath(final String path) {
+        public Builder vertexPath(final ResourcePath path) {
             this.vertexPath = path;
             return this;
         }
@@ -323,7 +328,7 @@ public class Shader {
          * @param path The path of the resource
          * @return This
          */
-        public Builder fragmentPath(final String path) {
+        public Builder fragmentPath(final ResourcePath path) {
             this.fragmentPath = path;
             return this;
         }
@@ -337,7 +342,7 @@ public class Shader {
          * @param path The path of the resource
          * @return This
          */
-        public Builder geometryPath(final String path) {
+        public Builder geometryPath(final ResourcePath path) {
             this.geometryPath = path;
             return this;
         }

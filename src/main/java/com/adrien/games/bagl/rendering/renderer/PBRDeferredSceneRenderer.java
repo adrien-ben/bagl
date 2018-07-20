@@ -27,6 +27,7 @@ import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.scene.ComponentVisitor;
 import com.adrien.games.bagl.scene.Scene;
 import com.adrien.games.bagl.scene.components.*;
+import com.adrien.games.bagl.utils.ResourcePath;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
@@ -171,24 +172,24 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisit
      */
     private void initShaders() {
         this.skyboxShader = Shader.builder()
-                .vertexPath("classpath:/shaders/environment/environment.vert")
-                .fragmentPath("classpath:/shaders/environment/environment_cubemap_sample.frag")
+                .vertexPath(ResourcePath.get("classpath:/shaders/environment/environment.vert"))
+                .fragmentPath(ResourcePath.get("classpath:/shaders/environment/environment_cubemap_sample.frag"))
                 .build();
         this.shadowShader = Shader.builder()
-                .vertexPath("classpath:/shaders/shadow/shadow.vert")
-                .fragmentPath("classpath:/shaders/shadow/shadow.frag")
+                .vertexPath(ResourcePath.get("classpath:/shaders/shadow/shadow.vert"))
+                .fragmentPath(ResourcePath.get("classpath:/shaders/shadow/shadow.frag"))
                 .build();
         this.gBufferShader = Shader.builder()
-                .vertexPath("classpath:/shaders/deferred/gbuffer.vert")
-                .fragmentPath("classpath:/shaders/deferred/gbuffer.frag")
+                .vertexPath(ResourcePath.get("classpath:/shaders/deferred/gbuffer.vert"))
+                .fragmentPath(ResourcePath.get("classpath:/shaders/deferred/gbuffer.frag"))
                 .build();
         this.deferredShader = Shader.builder()
-                .vertexPath("classpath:/shaders/deferred/deferred.vert")
-                .fragmentPath("classpath:/shaders/deferred/deferred.frag")
+                .vertexPath(ResourcePath.get("classpath:/shaders/deferred/deferred.vert"))
+                .fragmentPath(ResourcePath.get("classpath:/shaders/deferred/deferred.frag"))
                 .build();
         this.brdfShader = Shader.builder()
-                .vertexPath("classpath:/shaders/post/post_process.vert")
-                .fragmentPath("classpath:/shaders/environment/brdf_integration.frag")
+                .vertexPath(ResourcePath.get("classpath:/shaders/post/post_process.vert"))
+                .fragmentPath(ResourcePath.get("classpath:/shaders/environment/brdf_integration.frag"))
                 .build();
     }
 

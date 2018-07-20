@@ -6,6 +6,7 @@ import com.adrien.games.bagl.rendering.Shader;
 import com.adrien.games.bagl.rendering.postprocess.PostProcessorStep;
 import com.adrien.games.bagl.rendering.texture.Format;
 import com.adrien.games.bagl.rendering.texture.Texture;
+import com.adrien.games.bagl.utils.ResourcePath;
 
 /**
  * Luma post processing step.
@@ -25,7 +26,7 @@ public class LumaStep extends PostProcessorStep {
 
     public LumaStep(final int xResolution, final int yResolution) {
         this.frameBuffer = new FrameBuffer(xResolution, yResolution, FrameBufferParameters.builder().hasDepthStencil(false).colorOutputFormat(Format.RGBA8).build());
-        this.lumaShader = buildProcessShader("classpath:/shaders/post/luma.frag");
+        this.lumaShader = buildProcessShader(ResourcePath.get("classpath:/shaders/post/luma.frag"));
     }
 
     /**

@@ -1,10 +1,10 @@
 #version 330
 
-const int MAX_DIR_LIGHTS = 50;
-const int MAX_POINT_LIGHTS = 50;
-const int MAX_SPOT_LIGHTS = 50;
+#import "classpath:/shaders/common/lights.glsl"
+#import "classpath:/shaders/common/maths.glsl"
+#import "classpath:/shaders/common/camera.glsl"
+
 const float SHADOW_BIAS = 0.005;
-const float PI = 3.14159265359;
 const float MAX_REFLECTION_LOD = 4.0;
 
 struct Shadow {
@@ -18,47 +18,6 @@ struct GBuffer {
 	sampler2D normals;
 	sampler2D depth;
 	sampler2D emissive;
-};
-
-struct Camera {
-	mat4 invertedViewProj;
-	vec3 position;
-};
-
-struct Light {
-	float intensity;
-	vec4 color;
-};
-
-struct DirectionalLight {
-	Light base;
-	vec3 direction;
-};
-
-struct PointLight {
-	Light base;
-	vec3 position;
-	float radius;
-};
-
-struct SpotLight {
-	PointLight point;
-	vec3 direction;
-	float cutOff;
-	float outerCutOff;
-};
-
-
-struct Lights {
-    samplerCube irradiance;
-    samplerCube preFilteredMap;
-    sampler2D brdf;
-    DirectionalLight directionals[MAX_DIR_LIGHTS];
-    int directionalCount;
-    PointLight points[MAX_POINT_LIGHTS];
-    int pointCount;
-    SpotLight spots[MAX_SPOT_LIGHTS];
-    int spotCount;
 };
 
 in vec2 passCoords;

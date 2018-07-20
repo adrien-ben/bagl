@@ -4,6 +4,7 @@ import com.adrien.games.bagl.rendering.Shader;
 import com.adrien.games.bagl.rendering.model.Mesh;
 import com.adrien.games.bagl.rendering.model.MeshFactory;
 import com.adrien.games.bagl.rendering.texture.Texture;
+import com.adrien.games.bagl.utils.ResourcePath;
 
 import static org.lwjgl.opengl.GL11.glDrawArrays;
 
@@ -34,9 +35,9 @@ public abstract class PostProcessorStep {
      * the fragment shader to you by passing the path to that shader file as
      * {@code fragmentPath}.
      */
-    protected Shader buildProcessShader(final String fragmentPath) {
+    protected Shader buildProcessShader(final ResourcePath fragmentPath) {
         return Shader.builder()
-                .vertexPath(POST_PROCESS_VERTEX_SHADER_FILE)
+                .vertexPath(ResourcePath.get(POST_PROCESS_VERTEX_SHADER_FILE))
                 .fragmentPath(fragmentPath)
                 .build();
     }

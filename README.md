@@ -18,6 +18,7 @@ baGL is an OpenGL framework that I use for educational purpose. It uses [LWJGL 3
 - Sprite batching
 - Scalable text using Signed Distance Field fonts. See [Valve's paper](http://www.valvesoftware.com/publications/2007/SIGGRAPH2007_AlphaTestedMagnification.pdf)
 - Simple scene graph
+- Shader #import directive
 
 ## Rendering
 
@@ -89,6 +90,42 @@ The algorithm used for anti aliasing is the Fast Approximate Anti Aliasing (FXAA
 I use nvidia's [FXAA 3.11 source code](https://gist.github.com/kosua20/0c506b81b3812ac900048059d2383126) from which I removed all the thing I do not need
 (console and DX implementations for example).
 
+## Files
+
+### ResourcePath
+
+baGl provides a common interface to access regular files and resource path with the `ResourcePath` class.
+
+```java
+class Example {
+    public static void main() {
+        // Create a ResourcePath to a file
+        var path = ResourcePath.get("/path_to_file/file.ext");
+        // Create a ResourcePath to a resource
+        var path = ResourcePath.get("classpath:/file.ext");
+        // Then you can access the content with 
+        var inputStream = path.openInputStream();
+    }
+}
+```
+
+### Shader files
+
+Shader file are regular GLSL file except you can reference other files by using the #import directive.
+
+```glsl
+#version 330
+
+#import "/shaders/common/maths.glsl"
+#import "classpath:/library.glsl"
+
+void main() {
+}
+```
+
+You need to specify the absolute path of the referenced file for now. And you can use the `classpath:` prefix to 
+reference resource files. The shader parser will take care of not including the same files several times.
+
 ## TODO
 
 - Rendering
@@ -99,7 +136,6 @@ I use nvidia's [FXAA 3.11 source code](https://gist.github.com/kosua20/0c506b81b
     - UI (third party ?)
 - Assets management
 - OpenGL state manager
-- Composed shaders (#import library.glsl)
 - Complete glTF 2.0 support
 - An overall review, some refactoring and code cleanup
 - And much more... :)
@@ -113,5 +149,3 @@ I use nvidia's [FXAA 3.11 source code](https://gist.github.com/kosua20/0c506b81b
 - [OpenGL reference pages](https://www.khronos.org/registry/OpenGL-Refpages/gl4/)
 - [Wikipedia](https://www.wikipedia.org/)
 - [NVidia's FXAA's paper](https://developer.download.nvidia.com/assets/gamedev/files/sdk/11/FXAA_WhitePaper.pdf) and [FXAA 3.11 source code](https://gist.github.com/kosua20/0c506b81b3812ac900048059d2383126)
-
-
