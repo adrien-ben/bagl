@@ -1,6 +1,7 @@
 package com.adrien.games.bagl.rendering.texture;
 
 import com.adrien.games.bagl.utils.Image;
+import com.adrien.games.bagl.utils.ResourcePath;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
@@ -78,7 +79,7 @@ public final class Texture {
      * @param params The parameters builder
      * @return A new texture
      */
-    public static Texture fromFile(final String path, final TextureParameters.Builder params) {
+    public static Texture fromFile(final ResourcePath path, final TextureParameters.Builder params) {
         return Texture.fromFile(path, false, params);
     }
 
@@ -93,7 +94,7 @@ public final class Texture {
      * @param params         The parameters builder
      * @return A new texture
      */
-    public static Texture fromFile(final String path, final boolean flipVertically, final TextureParameters.Builder params) {
+    public static Texture fromFile(final ResourcePath path, final boolean flipVertically, final TextureParameters.Builder params) {
         try (final var image = Image.fromFile(path, flipVertically)) {
             params.format(Texture.getFormat(image.getChannelCount(), image.isHdr()));
             return new Texture(image.getWidth(), image.getHeight(), image.getData(), params.build());

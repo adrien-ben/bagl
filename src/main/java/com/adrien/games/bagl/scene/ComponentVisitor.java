@@ -52,4 +52,11 @@ public interface ComponentVisitor {
      * @param component The component to visit
      */
     void visit(SpotLightComponent component);
+
+    /**
+     * Action to perform when visiting a {@link ParticleComponent}
+     *
+     * @param component The component to visit
+     */
+    void visit(ParticleComponent component);
 }

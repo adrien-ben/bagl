@@ -19,6 +19,7 @@ import com.adrien.games.bagl.rendering.vertex.VertexBuffer;
 import com.adrien.games.bagl.rendering.vertex.VertexBufferParams;
 import com.adrien.games.bagl.rendering.vertex.VertexElement;
 import com.adrien.games.bagl.utils.CollectionUtils;
+import com.adrien.games.bagl.utils.ResourcePath;
 import com.adrien.games.bagl.utils.Tuple2;
 import com.adrienben.tools.gltf.models.*;
 import org.joml.Quaternionf;
@@ -26,7 +27,6 @@ import org.joml.Vector3f;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -52,10 +52,10 @@ public class GltfLoader {
      * @param path The path of the file
      * @return The loaded model
      */
-    public Model load(final String path) {
-        this.directory = Paths.get(path).getParent().toString();
+    public Model load(final ResourcePath path) {
+        this.directory = path.getParent().toString();
 
-        final var gltfAsset = GltfAsset.Factory.fromFile(path);
+        final var gltfAsset = GltfAsset.Factory.fromFile(path.getAbsolutePath());
         if (Objects.isNull(gltfAsset)) {
             throw new IllegalStateException("Failed to load gltf " + path);
         }
@@ -409,8 +409,7 @@ public class GltfLoader {
             tex = Texture.fromMemory(imageData, params);
             MemoryUtil.memFree(imageData);
         } else {
-            final var path = Paths.get(this.directory, gltfImage.getUri()).toString();
-            tex = Texture.fromFile(path, params);
+            tex = Texture.fromFile(ResourcePath.get(this.directory, gltfImage.getUri()), params);
         }
         return tex;
     }

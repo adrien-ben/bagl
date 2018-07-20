@@ -7,6 +7,7 @@ import com.adrien.games.bagl.rendering.postprocess.PostProcessorStep;
 import com.adrien.games.bagl.rendering.texture.Format;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.utils.DoubleBuffer;
+import com.adrien.games.bagl.utils.ResourcePath;
 
 /**
  * Gaussian blur post processing step.
@@ -23,7 +24,7 @@ public class BlurStep extends PostProcessorStep {
     public BlurStep(final int xResolution, final int yResolution) {
         final var parameters = FrameBufferParameters.builder().hasDepthStencil(false).colorOutputFormat(Format.RGB16F).build();
         this.blurBuffer = new DoubleBuffer<>(() -> new FrameBuffer(xResolution, yResolution, parameters));
-        this.blurShader = buildProcessShader("classpath:/shaders/post/blur.frag");
+        this.blurShader = buildProcessShader(ResourcePath.get("classpath:/shaders/post/blur.frag"));
     }
 
     @Override

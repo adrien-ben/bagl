@@ -7,7 +7,9 @@ import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * This class represents a image
@@ -34,11 +36,11 @@ public class Image implements AutoCloseable {
     /**
      * Load an image from a file
      *
-     * @param filePath The path of the file
+     * @param path The path of the file
      * @return A new image
      */
-    public static Image fromFile(final String filePath) {
-        return Image.fromFile(filePath, false);
+    public static Image fromFile(final ResourcePath path) {
+        return Image.fromFile(path, false);
     }
 
     /**
@@ -46,11 +48,11 @@ public class Image implements AutoCloseable {
      * <p>
      * You can choose to flip the image vertically
      *
-     * @param filePath       The path to the image
+     * @param path       The path to the image
      * @param flipVertically Should the image be flipped vertically
      * @return A new image
      */
-    public static Image fromFile(final String filePath, final boolean flipVertically) {
+    public static Image fromFile(final ResourcePath path, final boolean flipVertically) {
         try (final var stack = MemoryStack.stackPush()) {
             final var width = stack.mallocInt(1);
             final var height = stack.mallocInt(1);
@@ -58,20 +60,32 @@ public class Image implements AutoCloseable {
 
             STBImage.stbi_set_flip_vertically_on_load(flipVertically);
 
-            final var isHdr = STBImage.stbi_is_hdr(filePath);
-            final var data = isHdr
-                    ? STBImage.stbi_loadf(filePath, width, height, comp, 0)
-                    : STBImage.stbi_load(filePath, width, height, comp, 0).asFloatBuffer();
+            final var absoluteFilePath = path.getAbsolutePath();
+            final var isHdr = STBImage.stbi_is_hdr(absoluteFilePath);
 
-            if (Objects.isNull(data)) {
-                throw new EngineException("Failed to load image : '" + filePath + "'. Cause: "
-                        + STBImage.stbi_failure_reason());
+
+            final var data = isHdr ? loadHDRImage(absoluteFilePath, width, height, comp) : loadSDRImage(absoluteFilePath, width, height, comp);
+
+            if (!data.isPresent()) {
+                throw new EngineException(String.format("Failed to load image : '%s'. Cause: %s", absoluteFilePath, STBImage.stbi_failure_reason()));
             }
 
-            final var copy = Image.copyImageData(data);
+            final var copy = Image.copyImageData(data.get());
 
             return new Image(width.get(), height.get(), comp.get(), isHdr, copy);
         }
+    }
+
+    private static Optional<FloatBuffer> loadSDRImage(final String absoluteFilePath, final IntBuffer width, final IntBuffer height, final IntBuffer componentCount) {
+        final var byteBuffer = STBImage.stbi_load(absoluteFilePath, width, height, componentCount, 0);
+        if (Objects.isNull(byteBuffer)) {
+            return Optional.empty();
+        }
+        return Optional.of(byteBuffer.asFloatBuffer());
+    }
+
+    private static Optional<FloatBuffer> loadHDRImage(final String absoluteFilePath, final IntBuffer width, final IntBuffer height, final IntBuffer componentCount) {
+        return Optional.ofNullable(STBImage.stbi_loadf(absoluteFilePath, width, height, componentCount, 0));
     }
 
     /**
