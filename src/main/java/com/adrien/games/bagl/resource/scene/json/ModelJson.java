@@ -1,6 +1,6 @@
-package com.adrien.games.bagl.resource.scene.descriptors;
+package com.adrien.games.bagl.resource.scene.json;
 
-public class ModelDescriptor {
+public class ModelJson {
 
     private String path;
     

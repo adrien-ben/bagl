@@ -1,6 +1,6 @@
-package com.adrien.games.bagl.resource.scene.descriptors;
+package com.adrien.games.bagl.resource.scene.json;
 
-public class ColorDescriptor {
+public class ColorJson {
 
     private float r;
     private float g;

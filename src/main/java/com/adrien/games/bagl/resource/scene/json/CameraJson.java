@@ -1,6 +1,6 @@
-package com.adrien.games.bagl.resource.scene.descriptors;
+package com.adrien.games.bagl.resource.scene.json;
 
-public class CameraDescriptor {
+public class CameraJson {
 
     private float fov;
     private float near;
