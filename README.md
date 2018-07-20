@@ -1,5 +1,7 @@
 # baGL
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/50b75bdb99474b3d8c6f47e49876d90b)](https://www.codacy.com/app/adrien.bennadji/bagl?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=adrien-ben/bagl&amp;utm_campaign=Badge_Grade)
+
 baGL is an OpenGL framework that I use for educational purpose. It uses [LWJGL 3](https://www.lwjgl.org/) and [JOML](https://github.com/JOML-CI/JOML).
 
 ![Screenshot](images/screenshot_720p.bmp "Screenshot")
