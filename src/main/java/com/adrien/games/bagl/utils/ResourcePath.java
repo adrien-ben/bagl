@@ -108,6 +108,9 @@ public class ResourcePath {
 
     public ResourcePath getParent() {
         final var parentPath = path.getParent();
+        if (Objects.isNull(parentPath)) {
+            throw new EngineException(String.format("The path %s has no parent", path));
+        }
         return get(getPathString(parentPath));
     }
 
