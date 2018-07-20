@@ -4,6 +4,7 @@ import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.rendering.BufferUsage;
 import com.adrien.games.bagl.rendering.Shader;
 import com.adrien.games.bagl.rendering.vertex.*;
+import com.adrien.games.bagl.utils.ResourcePath;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
@@ -35,8 +36,8 @@ public class UIRenderer {
         this.bufferedCount = 0;
         this.vertices = MemoryUtil.memAllocFloat(BUFFER_SIZE * VERTICES_PER_SHAPE * ELEMENT_PER_VERTEX);
         this.shader = Shader.builder()
-                .vertexPath("classpath:/shaders/ui/shape.vert")
-                .fragmentPath("classpath:/shaders/ui/shape.frag")
+                .vertexPath(ResourcePath.get("classpath:/shaders/ui/shape.vert"))
+                .fragmentPath(ResourcePath.get("classpath:/shaders/ui/shape.frag"))
                 .build();
 
         this.vBuffer = new VertexBuffer(this.vertices, VertexBufferParams.builder()

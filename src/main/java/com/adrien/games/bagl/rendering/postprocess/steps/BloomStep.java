@@ -7,6 +7,7 @@ import com.adrien.games.bagl.rendering.postprocess.PostProcessorStep;
 import com.adrien.games.bagl.rendering.texture.Format;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.utils.DoubleBuffer;
+import com.adrien.games.bagl.utils.ResourcePath;
 
 /**
  * Bloom post processing step.
@@ -28,9 +29,9 @@ public class BloomStep extends PostProcessorStep {
         this.blurBuffer = new DoubleBuffer<>(() -> new FrameBuffer(xResolution, yResolution, parameters));
         this.finalBuffer = new FrameBuffer(xResolution, yResolution, parameters);
 
-        this.bloomShader = buildProcessShader("classpath:/shaders/post/bloom.frag");
-        this.blurShader = buildProcessShader("classpath:/shaders/post/blur.frag");
-        this.lastStageShader = buildProcessShader("classpath:/shaders/post/bloom_final.frag");
+        this.bloomShader = buildProcessShader(ResourcePath.get("classpath:/shaders/post/bloom.frag"));
+        this.blurShader = buildProcessShader(ResourcePath.get("classpath:/shaders/post/blur.frag"));
+        this.lastStageShader = buildProcessShader(ResourcePath.get("classpath:/shaders/post/bloom_final.frag"));
     }
 
     /**

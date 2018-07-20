@@ -3,6 +3,7 @@ package com.adrien.games.bagl.rendering.postprocess.steps;
 import com.adrien.games.bagl.rendering.Shader;
 import com.adrien.games.bagl.rendering.postprocess.PostProcessorStep;
 import com.adrien.games.bagl.rendering.texture.Texture;
+import com.adrien.games.bagl.utils.ResourcePath;
 
 /**
  * Last step of the post processing pipeline.
@@ -18,7 +19,7 @@ public class LastStep extends PostProcessorStep {
     private Shader shader;
 
     public LastStep() {
-        this.shader = buildProcessShader("classpath:/shaders/post/post_process.frag");
+        this.shader = buildProcessShader(ResourcePath.get("classpath:/shaders/post/post_process.frag"));
     }
 
     /**

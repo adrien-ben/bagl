@@ -27,10 +27,9 @@ public class ShaderLoader {
      * @param filePath The path of the shader to load
      * @return The source code of the shader
      */
-    public String loadSource(final String filePath) {
+    public String loadSource(final ResourcePath filePath) {
         LOG.trace("Loading shader source from resources file: {}", filePath);
-        final var path = ResourcePath.get(filePath);
-        try (final var reader = new BufferedReader(new InputStreamReader(path.openInputStream()))) {
+        try (final var reader = new BufferedReader(new InputStreamReader(filePath.openInputStream()))) {
             return reader.lines().collect(Collectors.joining("\n"));
         } catch (final IOException exception) {
             throw new EngineException("Failed to load shader source file", exception);

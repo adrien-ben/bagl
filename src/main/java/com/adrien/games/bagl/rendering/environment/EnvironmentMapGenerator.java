@@ -52,16 +52,16 @@ public class EnvironmentMapGenerator {
         this.preFilteredMapFrameBuffer = new FrameBuffer(PRE_FILTERED_MAP_RESOLUTION, PRE_FILTERED_MAP_RESOLUTION, frameBufferParameters);
 
         this.environmentSphericalShader = Shader.builder()
-                .vertexPath("classpath:/shaders/environment/environment.vert")
-                .fragmentPath("classpath:/shaders/environment/environment_spherical_sample.frag")
+                .vertexPath(ResourcePath.get("classpath:/shaders/environment/environment.vert"))
+                .fragmentPath(ResourcePath.get("classpath:/shaders/environment/environment_spherical_sample.frag"))
                 .build();
         this.irradianceShader = Shader.builder()
-                .vertexPath("classpath:/shaders/environment/environment.vert")
-                .fragmentPath("classpath:/shaders/environment/irradiance.frag")
+                .vertexPath(ResourcePath.get("classpath:/shaders/environment/environment.vert"))
+                .fragmentPath(ResourcePath.get("classpath:/shaders/environment/irradiance.frag"))
                 .build();
         this.preFilteredMapShader = Shader.builder()
-                .vertexPath("classpath:/shaders/environment/environment.vert")
-                .fragmentPath("classpath:/shaders/environment/pre_filtered_map.frag")
+                .vertexPath(ResourcePath.get("classpath:/shaders/environment/environment.vert"))
+                .fragmentPath(ResourcePath.get("classpath:/shaders/environment/pre_filtered_map.frag"))
                 .build();
 
         this.cameras = this.initCameras();
