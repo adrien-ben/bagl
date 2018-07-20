@@ -90,6 +90,230 @@ The algorithm used for anti aliasing is the Fast Approximate Anti Aliasing (FXAA
 I use nvidia's [FXAA 3.11 source code](https://gist.github.com/kosua20/0c506b81b3812ac900048059d2383126) from which I removed all the thing I do not need
 (console and DX implementations for example).
 
+## Scene model
+
+This section details the scene model.
+
+### Game Object
+
+A scene is composed of game objects. A game object is an entity which is represented by :
+
+- An Id (used for querying objects)
+- A set of tags (used for querying objects)
+- A transform
+- A set of components
+- A set of child objects
+
+### Components
+
+A component represent a facet of a game object. Each component will hold data and or logic that will 
+have an effect on its parent game object. baGL provides a set of components. They are used for scene
+rendering :
+
+- CameraComponent : hold the camera that will be used as the point of view when rendering the scene
+- DirectionalLightComponent : hold a directional light
+- PointLightComponent : hold a point light
+- SpotLightComponent : hold a spot light
+- EnvironmentComponent : hold the environment maps that will be used for IBL computing
+- ModelComponent : hold a 3D model
+- ParticleComponent : hold a particle emitter
+
+### Scene
+
+A scene is an acyclic graph of game objects. When updated, the graph is traversed from the root to the 
+leaves and each node is updated. When a node is updated its transform is recomputed relatively to the
+transform of its parent.
+
+### Json Model
+
+Scenes can be loaded from json files. Here is an example of a scene file without components and no children.
+
+```json
+{
+  "children": [
+    {
+      "id": "main_camera",
+      "tags": ["camera", "required"],
+      "transform": {
+        "translation": {
+          "x": -1.8,
+          "y": 3.0,
+          "z": -3.2
+        },
+        "rotations": [
+          {
+            "x": 0.0,
+            "y": 30.0,
+            "z": 0.0
+          }
+        ],
+        "scale": {
+          "x": 1.0,
+          "y": 1.0,
+          "z": 1.0
+        }
+      },
+      "children": [],
+      "components": []
+    }
+  ]
+}
+```
+
+#### CameraComponent model
+
+```json
+{
+  "type": "camera",
+  "fov": 60.0,
+  "near": 0.1,
+  "far": 1000.0,
+  "enableController": true
+}
+```
+
+#### DirectionalLightComponent model
+
+```json
+{
+  "type": "directional_light",
+  "intensity": 0.8,
+  "color": {
+    "r": 1.0,
+    "g": 1.0,
+    "b": 1.0
+  }
+}
+
+```
+
+#### PointLightComponent model
+
+```json
+{
+  "type": "point_light",
+  "intensity": 0.8,
+  "color": {
+    "r": 0.0,
+    "g": 1.0,
+    "b": 0.0
+  },
+  "radius": 3.0
+}
+```
+
+#### SpotLightComponent model
+
+```json
+{
+  "type": "spot_light",
+  "intensity": 10.0,
+  "color": {
+    "r": 1.0,
+    "g": 0.0,
+    "b": 0.0
+  },
+  "radius": 20.0,
+  "angle": 20.0,
+  "edge": 5.0
+}
+```
+
+#### EnvironmentComponent model
+
+```json
+{
+  "type": "environment",
+  "path": "classpath:/envmaps/beach.hdr"
+}
+```
+
+#### ModelComponent model
+
+```json
+{
+  "type": "model",
+  "path": "classpath:/models/helmet/helmet.glb"
+}
+```
+
+#### Extending the model
+
+You can extend the scene model by creating new components and extending the `SceneLoader` class.
+
+To add a new component you will need to create a class that extend `Component` and implement the `update` method. 
+For example let's create a teleporter component that will teleport its parent object at a fixed interval.
+
+```java
+public class TeleporterComponent extends Component {
+
+    private final float rate;
+    private final float radius;
+    private float timeSinceLastTeleportation = 0.0f;
+
+    // Constructor
+
+    @Override
+    public void update(final Time time) {
+        timeSinceLastTeleportation += time.getElapsedTime();
+        if (timeSinceLastTeleportation >= rate) {
+            final var newPosition = generateNewPosition();
+            getParentObject().getLocalTransform().setTranslation(newPosition);
+            timeSinceLastTeleportation -= rate;
+        }
+    }
+}
+```
+
+Then you will need to create a class representing the json model.
+
+```java
+public class TeleporterJson {
+    private final float rate;
+    private final float radius;
+    // Getters
+}
+```
+
+Finally you will have to tell the SceneLoader how to generate the Component from the Json model.
+
+```java
+class ComponentExample {
+    public void loadScene() {
+        final var sceneLoader = new SceneLoader();
+        sceneLoader.getComponentFactory().addComponentCreationCommand("teleporter", TeleporterJson.class, this::mapTeleporter);
+        final var scene = sceneLoader.load(ResourcePath.get("..."));
+    }
+    
+    private TeleporterComponent mapTeleporter(final TeleporterJson teleporterJson) {
+        return new TeleporterComponent(teleporterJson.getRate(), teleporterJson.getRadius());
+    }
+}
+```
+
+Since the fields of `TeleporterComponent` and `TeleporterJson` are the same you could have skipped the json model class
+creation. Then you would have called the `addComponentCreationCommand` as follows :
+
+```java
+class ComponentExample {
+    public void loadScene() {
+        final var sceneLoader = new SceneLoader();
+        sceneLoader.getComponentFactory().addComponentCreationCommand("teleporter", TeleporterComponent.class);
+        final var scene = sceneLoader.load(ResourcePath.get("..."));
+    }
+}
+```
+
+You can now declare the teleporter component in the json file.
+
+```json
+{
+  "type": "teleporter",
+  "rate": 2.0,
+  "radius": 1.0
+}
+```
+
 ## Files
 
 ### ResourcePath

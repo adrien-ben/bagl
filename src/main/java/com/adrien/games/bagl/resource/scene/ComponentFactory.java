@@ -69,7 +69,8 @@ public class ComponentFactory {
      * Add a component creation command.
      * <p>
      * This method is used to extend the scene model so user can add component types
-     * to the json scene model. {@code jsonClass} is the class representing the json model.
+     * to the json scene model. {@code jsonClass} is the class representing the json model
+     * which extends {@link Component}.
      * <p>
      * Use this method if the json model matches the component model.
      */
