@@ -2,6 +2,7 @@ package com.adrien.games.bagl.rendering;
 
 import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.exception.EngineException;
+import com.adrien.games.bagl.resource.shader.ShaderSourceParser;
 import com.adrien.games.bagl.utils.ResourcePath;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -14,7 +15,6 @@ import org.lwjgl.opengl.GL32;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
-import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -110,11 +110,7 @@ public class Shader {
     }
 
     private String loadSource(final ResourcePath filePath) {
-        try {
-            return new String(filePath.openInputStream().readAllBytes());
-        } catch (final IOException exception) {
-            throw new EngineException(String.format("Failed to load shader source file %s", filePath), exception);
-        }
+        return new ShaderSourceParser().parse(filePath);
     }
 
     /**

@@ -162,7 +162,10 @@
                     </dependency>
                 </dependencies>
                 <configuration>
-                    <argLine>--add-opens com.adrien.games.bagl/com.adrien.games.bagl.utils=ALL-UNNAMED</argLine>
+                    <argLine>
+                        --add-opens com.adrien.games.bagl/com.adrien.games.bagl.utils=ALL-UNNAMED
+                        --add-opens com.adrien.games.bagl/com.adrien.games.bagl.resource.shader=ALL-UNNAMED
+                    </argLine>
                 </configuration>
             </plugin>
         </plugins>

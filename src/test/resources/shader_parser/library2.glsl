@@ -1,0 +1,1 @@
+const int VALUE2 = 2;
