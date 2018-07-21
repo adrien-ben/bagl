@@ -239,6 +239,68 @@ Scenes can be loaded from json files. Here is an example of a scene file without
 }
 ```
 
+#### ParticleComponent model
+
+```json
+{
+    "type": "particles",
+    "texture": "classpath:/smoke.png",
+    "startColor": {
+        "r": 1.0,
+        "g": 1.0,
+        "b": 1.0,
+        "a": 1.0
+    },
+    "endColor": {
+        "r": 1.0,
+        "g": 1.0,
+        "b": 1.0,
+        "a": 0.0
+    },
+    "blendMode": "ADDITIVE",
+    "rate": 0.05,
+    "batchSize": 5,
+    "initializer": {
+        "position": {
+            "min": {
+                "x": -1.0,
+                "y": 0.0,
+                "z": -1.0
+            },
+            "max": {
+                "x": 1.0,
+                "y": 0.0,
+                "z": 1.0
+            }
+        },
+        "direction": {
+            "min": {
+                "x": -1.0,
+                "y": 1.0,
+                "z": -1.0
+            },
+            "max": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            }
+        },
+        "size": {
+            "min": 0.5,
+            "max": 1.0
+        },
+        "speed": {
+            "min": 4.0,
+            "max": 5.0
+        },
+        "ttl": {
+            "min": 1.6,
+            "max": 2.0
+        }
+    }
+}
+```
+
 #### Extending the model
 
 You can extend the scene model by creating new components and extending the `SceneLoader` class.

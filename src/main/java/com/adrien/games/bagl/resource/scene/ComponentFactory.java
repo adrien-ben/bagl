@@ -9,6 +9,10 @@ import com.adrien.games.bagl.rendering.light.DirectionalLight;
 import com.adrien.games.bagl.rendering.light.PointLight;
 import com.adrien.games.bagl.rendering.light.SpotLight;
 import com.adrien.games.bagl.rendering.model.ModelFactory;
+import com.adrien.games.bagl.rendering.particles.Particle;
+import com.adrien.games.bagl.rendering.particles.ParticleEmitter;
+import com.adrien.games.bagl.rendering.texture.Texture;
+import com.adrien.games.bagl.rendering.texture.TextureParameters;
 import com.adrien.games.bagl.resource.scene.json.*;
 import com.adrien.games.bagl.scene.Component;
 import com.adrien.games.bagl.scene.components.*;
@@ -20,9 +24,11 @@ import org.joml.Vector3f;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static com.adrien.games.bagl.utils.AssertUtils.validate;
+import static com.adrien.games.bagl.utils.MathUtils.random;
 
 /**
  * This class is responsible for creating game component.
@@ -50,6 +56,7 @@ public class ComponentFactory {
         addComponentCreationCommand("directional_light", DirectionalLightJson.class, this::createDirectionalLightComponent);
         addComponentCreationCommand("point_light", PointLightJson.class, this::createPointLightComponent);
         addComponentCreationCommand("spot_light", SpotLightJson.class, this::createSpotLightComponent);
+        addComponentCreationCommand("particles", ParticleJson.class, this::createParticleComponent);
     }
 
     /**
@@ -160,5 +167,33 @@ public class ComponentFactory {
 
     private Color mapColor(final ColorJson color) {
         return new Color(color.getR(), color.getG(), color.getB());
+    }
+
+    private ParticleComponent createParticleComponent(final ParticleJson particleJson) {
+        final var texturePath = particleJson.getTexture();
+        final var blendMode = validate(particleJson.getBlendMode(), Objects::nonNull, "Particle component should have a blendMode field");
+        final var rate = validate(particleJson.getRate(), v -> v > 0, "Particle component should have a rate superior to 0");
+        final var batchSize = validate(particleJson.getBatchSize(), v -> v > 0, "Particle component should have a batchSize superior to 0");
+        final var initializer = mapParticleInitializer(particleJson);
+
+        final var builder = ParticleEmitter.builder().blendMode(blendMode).rate(rate).batchSize(batchSize).initializer(initializer);
+        if (Objects.nonNull(texturePath)) {
+            builder.texture(Texture.fromFile(ResourcePath.get(texturePath), TextureParameters.builder()));
+        }
+        return new ParticleComponent(builder.build());
+    }
+
+    private Consumer<Particle> mapParticleInitializer(final ParticleJson particleJson) {
+        final var initializer = validate(particleJson.getInitializer(), Objects::nonNull, "Particle component should have an initializer field");
+        final var position = validate(initializer.getPosition(), Objects::nonNull, "Particle component's initializer should have a position field");
+        final var direction = validate(initializer.getDirection(), Objects::nonNull, "Particle component's initializer should have a direction field");
+        final var size = validate(initializer.getSize(), Objects::nonNull, "Particle component's initializer should have a size field");
+        final var speed = validate(initializer.getSpeed(), Objects::nonNull, "Particle component's initializer should have a speed field");
+        final var startColor = validate(particleJson.getStartColor(), Objects::nonNull, "Particle component should have a startColor field");
+        final var endColor = validate(particleJson.getEndColor(), Objects::nonNull, "Particle component should have an endColor field");
+        final var ttl = validate(initializer.getTtl(), Objects::nonNull, "Particle component's initializer should have a ttl field");
+
+        return particle -> particle.reset(Vectors.randomInRange(position), Vectors.randomInRange(direction).normalize(),
+                random(size), random(speed), mapColor(startColor), mapColor(endColor), random(ttl));
     }
 }

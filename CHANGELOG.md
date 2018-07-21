@@ -9,3 +9,4 @@
 
 ## 0.0.3
 - [NEW] Scene json model is now extensible
+- [NEW] Scene json model can now contain particle component

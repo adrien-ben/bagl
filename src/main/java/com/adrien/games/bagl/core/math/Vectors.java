@@ -1,5 +1,7 @@
 package com.adrien.games.bagl.core.math;
 
+import com.adrien.games.bagl.utils.MathUtils;
+import com.adrien.games.bagl.utils.Range;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
@@ -39,6 +41,16 @@ public class Vectors {
      */
     public static boolean isZero(final Vector2f vector) {
         return vector.x() == 0 && vector.y() == 0;
+    }
+
+    /**
+     * Generate a random {@link Vector3f} in a range.
+     */
+    public static Vector3f randomInRange(final Range<Vector3f> range) {
+        final var x = MathUtils.random(range.getMin().x(), range.getMax().x());
+        final var y = MathUtils.random(range.getMin().y(), range.getMax().y());
+        final var z = MathUtils.random(range.getMin().z(), range.getMax().z());
+        return new Vector3f(x, y, z);
     }
 
 }
