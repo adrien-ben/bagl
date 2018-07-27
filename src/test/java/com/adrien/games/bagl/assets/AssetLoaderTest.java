@@ -5,6 +5,7 @@ import com.adrien.games.bagl.extensions.OGLExtension;
 import com.adrien.games.bagl.rendering.model.Model;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.utils.ResourcePath;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -17,9 +18,10 @@ import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(OGLExtension.class)
 class AssetLoaderTest {
 
-    private final AssetLoader assetLoader;
+    private AssetLoader assetLoader;
 
-    AssetLoaderTest() {
+    @BeforeEach
+    void beforeEach() {
         final var assetDescriptorRepository = createTestAssetDescriptorRepo();
         final var assetFactory = new AssetFactory(null);
         assetLoader = new AssetLoader(assetDescriptorRepository, assetFactory);
@@ -50,6 +52,14 @@ class AssetLoaderTest {
         final Texture texture0 = assetLoader.load("test", Texture.class);
         final Texture texture1 = assetLoader.load("test", Texture.class);
         assertSame(texture0, texture1);
+    }
+
+    @Test
+    void itShouldDestroyLoadedAssets() {
+        final Texture texture0 = assetLoader.load("test", Texture.class);
+        assetLoader.destroyAssets();
+        final Texture texture1 = assetLoader.load("test", Texture.class);
+        assertNotSame(texture0, texture1);
     }
 
     @Test

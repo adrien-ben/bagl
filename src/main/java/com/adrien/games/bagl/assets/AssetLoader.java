@@ -54,4 +54,12 @@ public class AssetLoader {
         return targetClass.cast(asset);
     }
 
+    /**
+     * Destroy all loaded assets.
+     */
+    public void destroyAssets() {
+        assetRepository.getAll().forEach(Asset::destroy);
+        assetRepository.clear();
+    }
+
 }
