@@ -5,6 +5,8 @@ import com.adrien.games.bagl.rendering.model.Model;
 import com.adrien.games.bagl.rendering.texture.Filter;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.texture.Wrap;
+import com.adrien.games.bagl.resource.scene.SceneLoader;
+import com.adrien.games.bagl.scene.Scene;
 import com.adrien.games.bagl.utils.ResourcePath;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(OGLExtension.class)
 class AssetFactoryTest {
 
-    private final AssetFactory assetFactory = new AssetFactory();
+    private final AssetFactory assetFactory = new AssetFactory(new SceneLoader());
     private AssetDescriptor assetDescriptor;
     private Asset createdAsset;
 
@@ -59,16 +61,32 @@ class AssetFactoryTest {
     void itShouldCreateModel() {
         givenAModelDescriptor();
         whenCreatingAsset();
-        assertIsModelIsCreated();
+        assertModelIsCreated();
     }
 
     private void givenAModelDescriptor() {
         assetDescriptor = new AssetDescriptor("test", "model", ResourcePath.get("classpath:/test.glb"), false);
     }
 
-    private void assertIsModelIsCreated() {
+    private void assertModelIsCreated() {
         assertNotNull(createdAsset);
         assertTrue(createdAsset instanceof Model);
+    }
+
+    @Test
+    void itShouldCreateScene() {
+        givenASceneDescriptor();
+        whenCreatingAsset();
+        assertSceneIsCreated();
+    }
+
+    private void givenASceneDescriptor() {
+        assetDescriptor = new AssetDescriptor("test", "scene", ResourcePath.get("classpath:/test_scene.json"), false);
+    }
+
+    private void assertSceneIsCreated() {
+        assertNotNull(createdAsset);
+        assertTrue(createdAsset instanceof Scene);
     }
 
     private void whenCreatingAsset() {

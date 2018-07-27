@@ -7,6 +7,8 @@ import com.adrien.games.bagl.rendering.texture.Filter;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.texture.TextureParameters;
 import com.adrien.games.bagl.rendering.texture.Wrap;
+import com.adrien.games.bagl.resource.scene.SceneLoader;
+import com.adrien.games.bagl.scene.Scene;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,15 +19,18 @@ import java.util.function.Function;
 public class AssetFactory {
 
     private final Map<String, Function<AssetDescriptor, Asset>> assetCreationCommands;
+    private final SceneLoader sceneLoader;
 
-    public AssetFactory() {
-        assetCreationCommands = new HashMap<>();
+    public AssetFactory(final SceneLoader sceneLoader) {
+        this.assetCreationCommands = new HashMap<>();
+        this.sceneLoader = sceneLoader;
         initAssetCreationCommands();
     }
 
     private void initAssetCreationCommands() {
         assetCreationCommands.put("texture", this::createTexture);
         assetCreationCommands.put("model", this::createModel);
+        assetCreationCommands.put("scene", this::createScene);
     }
 
     public Asset createAsset(final AssetDescriptor assetDescriptor) {
@@ -61,8 +66,12 @@ public class AssetFactory {
         return Optional.of(mapped);
     }
 
-    public Model createModel(final AssetDescriptor assetDescriptor) {
+    private Model createModel(final AssetDescriptor assetDescriptor) {
         return ModelFactory.fromFile(assetDescriptor.getPath());
+    }
+
+    private Scene createScene(final AssetDescriptor assetDescriptor) {
+        return sceneLoader.load(assetDescriptor.getPath());
     }
 
 }

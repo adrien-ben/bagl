@@ -1,5 +1,6 @@
 package com.adrien.games.bagl.scene;
 
+import com.adrien.games.bagl.assets.Asset;
 import com.adrien.games.bagl.core.Time;
 import com.adrien.games.bagl.exception.EngineException;
 
@@ -15,7 +16,7 @@ import java.util.stream.Stream;
  *
  * @author adrien
  */
-public class Scene {
+public class Scene implements Asset {
 
     private final GameObject root;
     private final Map<String, GameObject> objectsById;
