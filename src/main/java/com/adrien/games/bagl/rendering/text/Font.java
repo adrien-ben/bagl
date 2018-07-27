@@ -1,5 +1,6 @@
 package com.adrien.games.bagl.rendering.text;
 
+import com.adrien.games.bagl.assets.Asset;
 import com.adrien.games.bagl.exception.EngineException;
 import com.adrien.games.bagl.exception.ParseException;
 import com.adrien.games.bagl.rendering.texture.Texture;
@@ -21,7 +22,7 @@ import java.util.regex.Pattern;
 /**
  * Text font used to render text.
  */
-public class Font {
+public class Font implements Asset {
 
     private static final Logger log = LogManager.getLogger(Font.class);
 

@@ -3,6 +3,7 @@ package com.adrien.games.bagl.assets;
 import com.adrien.games.bagl.exception.EngineException;
 import com.adrien.games.bagl.rendering.model.Model;
 import com.adrien.games.bagl.rendering.model.ModelFactory;
+import com.adrien.games.bagl.rendering.text.Font;
 import com.adrien.games.bagl.rendering.texture.Filter;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.texture.TextureParameters;
@@ -31,6 +32,7 @@ public class AssetFactory {
         assetCreationCommands.put("texture", this::createTexture);
         assetCreationCommands.put("model", this::createModel);
         assetCreationCommands.put("scene", this::createScene);
+        assetCreationCommands.put("font", this::createFont);
     }
 
     public Asset createAsset(final AssetDescriptor assetDescriptor) {
@@ -72,6 +74,10 @@ public class AssetFactory {
 
     private Scene createScene(final AssetDescriptor assetDescriptor) {
         return sceneLoader.load(assetDescriptor.getPath());
+    }
+
+    private Font createFont(final AssetDescriptor assetDescriptor) {
+        return new Font(assetDescriptor.getPath());
     }
 
 }

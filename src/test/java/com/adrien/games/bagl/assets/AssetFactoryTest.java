@@ -1,7 +1,9 @@
 package com.adrien.games.bagl.assets;
 
+import com.adrien.games.bagl.exception.EngineException;
 import com.adrien.games.bagl.extensions.OGLExtension;
 import com.adrien.games.bagl.rendering.model.Model;
+import com.adrien.games.bagl.rendering.text.Font;
 import com.adrien.games.bagl.rendering.texture.Filter;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.texture.Wrap;
@@ -89,8 +91,34 @@ class AssetFactoryTest {
         assertTrue(createdAsset instanceof Scene);
     }
 
+    @Test
+    void itShouldCreateFont() {
+        givenAFontDescriptor();
+        whenCreatingAsset();
+        assertFontIsLoaded();
+    }
+
+    private void givenAFontDescriptor() {
+        assetDescriptor = new AssetDescriptor("test", "font", ResourcePath.get("classpath:/test_font/segoe.fnt"), false);
+    }
+
+    private void assertFontIsLoaded() {
+        assertNotNull(createdAsset);
+        assertTrue(createdAsset instanceof Font);
+    }
+
     private void whenCreatingAsset() {
         createdAsset = assetFactory.createAsset(assetDescriptor);
+    }
+
+    @Test
+    void itShouldFailToLoadUnsupportedAssetType() {
+        givenAnUnsupportedAssetDescriptor();
+        assertThrows(EngineException.class, this::whenCreatingAsset);
+    }
+
+    private void givenAnUnsupportedAssetDescriptor() {
+        assetDescriptor = new AssetDescriptor("test", "unsupported", ResourcePath.get(""), false);
     }
 
 }
