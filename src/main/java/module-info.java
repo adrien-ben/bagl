@@ -28,6 +28,7 @@ module com.adrien.games.bagl {
 	exports com.adrien.games.bagl.utils;
 
     // Open resource folders
+	opens shaders.common;
     opens shaders.ui;
     opens shaders.deferred;
     opens shaders.environment;
