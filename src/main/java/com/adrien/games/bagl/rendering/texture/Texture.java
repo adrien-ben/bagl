@@ -1,5 +1,6 @@
 package com.adrien.games.bagl.rendering.texture;
 
+import com.adrien.games.bagl.assets.Asset;
 import com.adrien.games.bagl.utils.Image;
 import com.adrien.games.bagl.utils.ResourcePath;
 
@@ -17,7 +18,7 @@ import static org.lwjgl.opengl.GL30.glGenerateMipmap;
  *
  * @author adrien
  */
-public final class Texture {
+public final class Texture implements Asset {
 
     private final int width;
     private final int height;
