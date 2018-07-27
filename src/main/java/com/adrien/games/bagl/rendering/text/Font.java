@@ -133,6 +133,12 @@ public class Font implements Asset {
         return SMOOTHING_FACTOR / (FONT_SPREAD * pixelScaling);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @see Asset#destroy()
+     */
+    @Override
     public void destroy() {
         this.bitmap.destroy();
     }

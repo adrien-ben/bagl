@@ -21,8 +21,11 @@ public final class Model implements Asset {
     private final Set<Mesh> meshes = new HashSet<>();
 
     /**
-     * Release resources
+     * {@inheritDoc}
+     *
+     * @see Asset#destroy()
      */
+    @Override
     public void destroy() {
         this.meshes.forEach(Mesh::destroy);
     }

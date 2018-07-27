@@ -84,6 +84,7 @@ public class Scene implements Asset {
      * Destroy the root node that will then destroy its children. Then clear all caches.
      * After being destroy your scene is in the same state as when its created so you can use it.
      */
+    @Override
     public void destroy() {
         root.destroy();
         objectsById.clear();

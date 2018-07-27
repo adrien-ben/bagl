@@ -187,8 +187,11 @@ public final class Texture implements Asset {
     }
 
     /**
-     * Release resources
+     * {@inheritDoc}
+     *
+     * @see Asset#destroy()
      */
+    @Override
     public void destroy() {
         glDeleteTextures(handle);
     }
