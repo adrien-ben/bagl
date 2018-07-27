@@ -20,6 +20,10 @@ public class AssetDescriptor {
     private final boolean lazyLoading;
     private final Map<String, Object> parameters;
 
+    public AssetDescriptor(final String id, final String type, final ResourcePath path, final boolean lazyLoading) {
+        this(id, type, path, lazyLoading, null);
+    }
+
     public AssetDescriptor(final String id, final String type, final ResourcePath path, final boolean lazyLoading, final Map<String, Object> parameters) {
         this.id = id;
         this.type = type;
@@ -27,6 +31,7 @@ public class AssetDescriptor {
         this.lazyLoading = lazyLoading;
         this.parameters = parameters;
     }
+
 
     public String getId() {
         return id;

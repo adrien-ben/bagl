@@ -1,6 +1,8 @@
 package com.adrien.games.bagl.assets;
 
 import com.adrien.games.bagl.exception.EngineException;
+import com.adrien.games.bagl.rendering.model.Model;
+import com.adrien.games.bagl.rendering.model.ModelFactory;
 import com.adrien.games.bagl.rendering.texture.Filter;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.texture.TextureParameters;
@@ -23,6 +25,7 @@ public class AssetFactory {
 
     private void initAssetCreationCommands() {
         assetCreationCommands.put("texture", this::createTexture);
+        assetCreationCommands.put("model", this::createModel);
     }
 
     public Asset createAsset(final AssetDescriptor assetDescriptor) {
@@ -56,6 +59,10 @@ public class AssetFactory {
         }
         final var mapped = mapper.apply(actualType.cast(toMap));
         return Optional.of(mapped);
+    }
+
+    public Model createModel(final AssetDescriptor assetDescriptor) {
+        return ModelFactory.fromFile(assetDescriptor.getPath());
     }
 
 }

@@ -1,6 +1,7 @@
 package com.adrien.games.bagl.assets;
 
 import com.adrien.games.bagl.extensions.OGLExtension;
+import com.adrien.games.bagl.rendering.model.Model;
 import com.adrien.games.bagl.rendering.texture.Filter;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.texture.Wrap;
@@ -20,10 +21,10 @@ class AssetFactoryTest {
     private Asset createdAsset;
 
     @Test
-    void test() {
+    void itShouldCreateTexture() {
         givenATextureDescriptor();
         whenCreatingAsset();
-        assertIsTexture();
+        assertTextureIsCreated();
     }
 
     private void givenATextureDescriptor() {
@@ -37,11 +38,7 @@ class AssetFactoryTest {
         assetDescriptor = new AssetDescriptor("test", "texture", ResourcePath.get("classpath:/test.png"), false, parameters);
     }
 
-    private void whenCreatingAsset() {
-        createdAsset = assetFactory.createAsset(assetDescriptor);
-    }
-
-    private void assertIsTexture() {
+    private void assertTextureIsCreated() {
         assertNotNull(createdAsset);
         assertTrue(createdAsset instanceof Texture);
 
@@ -56,6 +53,26 @@ class AssetFactoryTest {
         assertEquals(Wrap.CLAMP_TO_EDGE, parameters.gettWrap());
         assertEquals(8, parameters.getAnisotropic());
         assertTrue(parameters.getMipmaps());
+    }
+
+    @Test
+    void itShouldCreateModel() {
+        givenAModelDescriptor();
+        whenCreatingAsset();
+        assertIsModelIsCreated();
+    }
+
+    private void givenAModelDescriptor() {
+        assetDescriptor = new AssetDescriptor("test", "model", ResourcePath.get("classpath:/test.glb"), false);
+    }
+
+    private void assertIsModelIsCreated() {
+        assertNotNull(createdAsset);
+        assertTrue(createdAsset instanceof Model);
+    }
+
+    private void whenCreatingAsset() {
+        createdAsset = assetFactory.createAsset(assetDescriptor);
     }
 
 }
