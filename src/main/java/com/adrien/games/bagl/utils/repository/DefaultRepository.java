@@ -9,7 +9,7 @@ import java.util.Optional;
  *
  * @author adrien
  */
-public abstract class DefaultRepository<ID, T> implements Repository<ID, T> {
+public class DefaultRepository<ID, T> implements Repository<ID, T> {
 
     private Map<ID, T> data;
 

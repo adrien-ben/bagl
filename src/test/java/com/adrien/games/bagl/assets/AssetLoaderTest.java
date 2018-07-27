@@ -12,8 +12,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(OGLExtension.class)
 class AssetLoaderTest {
@@ -44,6 +43,13 @@ class AssetLoaderTest {
     void itShouldLoadAsset() {
         final Texture texture = assetLoader.load("test", Texture.class);
         assertNotNull(texture);
+    }
+
+    @Test
+    void itShouldLoadAssetsOnlyOnce() {
+        final Texture texture0 = assetLoader.load("test", Texture.class);
+        final Texture texture1 = assetLoader.load("test", Texture.class);
+        assertSame(texture0, texture1);
     }
 
     @Test
