@@ -3,6 +3,7 @@ package com.adrien.games.bagl.utils.repository;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * Default repository implementation where data are stored in a map.
@@ -48,5 +49,35 @@ public class DefaultRepository<ID, T> implements Repository<ID, T> {
     @Override
     public Optional<T> getById(final ID id) {
         return Optional.ofNullable(data.get(id));
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @see Repository#getAll()
+     */
+    @Override
+    public Stream<T> getAll() {
+        return data.values().stream();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @see Repository#clear()
+     */
+    @Override
+    public void clear() {
+        data.clear();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @see Repository#count()
+     */
+    @Override
+    public int count() {
+        return data.size();
     }
 }

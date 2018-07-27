@@ -1,6 +1,7 @@
 package com.adrien.games.bagl.utils.repository;
 
 import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * Repository interface.
@@ -27,5 +28,20 @@ public interface Repository<ID, T> {
      * Get the entry with id {@code id}.
      */
     Optional<T> getById(ID id);
+
+    /**
+     * Get a {@link Stream} of all stored entries.
+     */
+    Stream<T> getAll();
+
+    /**
+     * Remove all entries.
+     */
+    void clear();
+
+    /**
+     * Count the number of stored elements.
+     */
+    int count();
 
 }
