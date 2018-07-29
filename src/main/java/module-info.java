@@ -16,6 +16,7 @@ module com.adrien.games.bagl {
 	requires gson;
 	requires java.sql;
 
+    exports com.adrien.games.bagl.assets;
 	exports com.adrien.games.bagl.core;
 	exports com.adrien.games.bagl.core.camera;
 	exports com.adrien.games.bagl.core.math;
