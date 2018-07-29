@@ -6,7 +6,6 @@ import com.adrien.games.bagl.rendering.environment.EnvironmentMapGenerator;
 import com.adrien.games.bagl.resource.asset.AssetsDescriptorLoader;
 import com.adrien.games.bagl.resource.scene.ComponentFactory;
 import com.adrien.games.bagl.resource.scene.SceneLoader;
-import com.adrien.games.bagl.utils.ResourcePath;
 
 /**
  * Default implementation of {@link Game}.
@@ -14,8 +13,6 @@ import com.adrien.games.bagl.utils.ResourcePath;
  * Takes care of initializing the {@link AssetStore}.
  */
 public abstract class DefaultGame implements Game {
-
-    private static final String DEFAULT_ASSETS_DESCRIPTOR_PATH = "classpath:/assets.json";
 
     private EnvironmentMapGenerator environmentMapGenerator;
     private ComponentFactory componentFactory;
@@ -34,7 +31,8 @@ public abstract class DefaultGame implements Game {
     }
 
     private void initAssetStore() {
-        final var assetDescriptorRepo = new AssetsDescriptorLoader().load(ResourcePath.get(DEFAULT_ASSETS_DESCRIPTOR_PATH));
+        final var config = Configuration.getInstance();
+        final var assetDescriptorRepo = new AssetsDescriptorLoader().load(config.getAssetDescriptorFilePath());
         final var sceneLoader = new SceneLoader(componentFactory);
         final var assetFactory = new AssetFactory(sceneLoader);
         assetStore = new AssetStore(assetDescriptorRepo, assetFactory);

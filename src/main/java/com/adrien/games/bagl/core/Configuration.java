@@ -2,11 +2,13 @@ package com.adrien.games.bagl.core;
 
 import com.adrien.games.bagl.exception.EngineException;
 import com.adrien.games.bagl.rendering.postprocess.fxaa.FxaaPresets;
+import com.adrien.games.bagl.utils.ResourcePath;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Function;
 
@@ -22,12 +24,14 @@ import java.util.function.Function;
  * <li>anisotropic (integer) : level of anisotropic filtering.
  * <li>shadow_map_resolution (integer) : the resolution of the shadow map.
  * <li>fxaa_quality (String) : the preset quality of the fxaa. Should be LOW, MEDIUM or HIGH.
+ * <li>assets_descriptor_path (String) : the path of the asset descriptor json file.
  */
 public class Configuration {
 
     private static final Logger log = LogManager.getLogger(Configuration.class);
 
     private static final String CONFIGURATION_FILE_PATH = "/config.properties";
+    private static final String DEFAULT_ASSETS_DESCRIPTOR_PATH = "classpath:/assets.json";
 
     private static Configuration instance;
 
@@ -39,17 +43,20 @@ public class Configuration {
     private final int anisotropicLevel;
     private final int shadowMapResolution;
     private final FxaaPresets fxaaPresets;
+    private final ResourcePath assetDescriptorFilePath;
 
     private Configuration() {
         this.properties = new Properties();
         this.loadFile();
-        this.xResolution = this.readRequiredInt("resolution.x");
-        this.yResolution = this.readRequiredInt("resolution.y");
-        this.vsync = this.readRequiredBool("vsync");
-        this.fullscreen = this.readRequiredBool("fullscreen");
-        this.anisotropicLevel = this.readRequiredInt("anisotropic");
-        this.shadowMapResolution = this.readRequiredInt("shadow_map_resolution");
-        this.fxaaPresets = this.readRequiredAndMap("fxaa_quality", FxaaPresets::valueOf);
+        this.xResolution = readRequiredInt("resolution.x");
+        this.yResolution = readRequiredInt("resolution.y");
+        this.vsync = readRequiredBool("vsync");
+        this.fullscreen = readRequiredBool("fullscreen");
+        this.anisotropicLevel = readRequiredInt("anisotropic");
+        this.shadowMapResolution = readRequiredInt("shadow_map_resolution");
+        this.fxaaPresets = readRequiredAndMap("fxaa_quality", FxaaPresets::valueOf);
+        this.assetDescriptorFilePath = readAndMapIfPresent("assets_descriptor_path", ResourcePath::get)
+                .orElse(ResourcePath.get(DEFAULT_ASSETS_DESCRIPTOR_PATH));
     }
 
     private void loadFile() {
@@ -60,6 +67,7 @@ public class Configuration {
             throw new EngineException("Failed to load properties file", e);
         }
     }
+
 
     private int readRequiredInt(final String key) {
         try {
@@ -79,6 +87,14 @@ public class Configuration {
             throw new EngineException("Property " + key + " is missing");
         }
         return mapper.apply(property);
+    }
+
+    private <T> Optional<T> readAndMapIfPresent(final String key, final Function<String, T> mapper) {
+        final var property = this.getProperty(key);
+        if (Objects.isNull(property)) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(mapper.apply(property));
     }
 
     /**
@@ -129,5 +145,9 @@ public class Configuration {
 
     public FxaaPresets getFxaaPresets() {
         return fxaaPresets;
+    }
+
+    public ResourcePath getAssetDescriptorFilePath() {
+        return assetDescriptorFilePath;
     }
 }

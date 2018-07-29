@@ -98,6 +98,8 @@ I use nvidia's [FXAA 3.11 source code](https://gist.github.com/kosua20/0c506b81b
 baGL includes basic asset management. You can declare all assets in a json file and use the `AssetStore` class the handle them. Each asset is loaded when 
 requested for the first time. By default the file loaded is `classpath:/assets.json`.
 
+You can change the asset descriptor file path by setting the `assets_descriptor_path` in the config.properties file.
+
 ### Asset types
 
 There are several types of assets.
