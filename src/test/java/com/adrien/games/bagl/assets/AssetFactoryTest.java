@@ -2,11 +2,13 @@ package com.adrien.games.bagl.assets;
 
 import com.adrien.games.bagl.exception.EngineException;
 import com.adrien.games.bagl.extensions.OGLExtension;
+import com.adrien.games.bagl.rendering.environment.EnvironmentMapGenerator;
 import com.adrien.games.bagl.rendering.model.Model;
 import com.adrien.games.bagl.rendering.text.Font;
 import com.adrien.games.bagl.rendering.texture.Filter;
 import com.adrien.games.bagl.rendering.texture.Texture;
 import com.adrien.games.bagl.rendering.texture.Wrap;
+import com.adrien.games.bagl.resource.scene.ComponentFactory;
 import com.adrien.games.bagl.resource.scene.SceneLoader;
 import com.adrien.games.bagl.scene.Scene;
 import com.adrien.games.bagl.utils.ResourcePath;
@@ -20,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(OGLExtension.class)
 class AssetFactoryTest {
 
-    private final AssetFactory assetFactory = new AssetFactory(new SceneLoader());
+    private final AssetFactory assetFactory = new AssetFactory(new SceneLoader(new ComponentFactory(new EnvironmentMapGenerator())));
     private AssetDescriptor assetDescriptor;
     private Asset createdAsset;
 

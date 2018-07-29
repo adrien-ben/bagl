@@ -29,9 +29,9 @@ public class SceneLoader {
     private Gson gson;
     private ComponentFactory componentFactory;
 
-    public SceneLoader() {
+    public SceneLoader(final ComponentFactory componentFactory) {
         this.gson = new Gson();
-        this.componentFactory = new ComponentFactory();
+        this.componentFactory = componentFactory;
     }
 
     public Scene load(final ResourcePath path) {
