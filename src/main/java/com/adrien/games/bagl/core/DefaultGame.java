@@ -1,11 +1,14 @@
 package com.adrien.games.bagl.core;
 
+import com.adrien.games.bagl.assets.AssetDescriptorRepository;
 import com.adrien.games.bagl.assets.AssetFactory;
 import com.adrien.games.bagl.assets.AssetStore;
 import com.adrien.games.bagl.rendering.environment.EnvironmentMapGenerator;
 import com.adrien.games.bagl.resource.asset.AssetsDescriptorLoader;
 import com.adrien.games.bagl.resource.scene.ComponentFactory;
 import com.adrien.games.bagl.resource.scene.SceneLoader;
+
+import java.util.HashMap;
 
 /**
  * Default implementation of {@link Game}.
@@ -31,12 +34,19 @@ public abstract class DefaultGame implements Game {
     }
 
     private void initAssetStore() {
-        final var config = Configuration.getInstance();
-        final var assetDescriptorRepo = new AssetsDescriptorLoader().load(config.getAssetDescriptorFilePath());
+        final var assetDescriptorRepo = getAssetDescriptorRepository();
         final var sceneLoader = new SceneLoader(componentFactory);
         final var assetFactory = new AssetFactory(sceneLoader);
         assetStore = new AssetStore(assetDescriptorRepo, assetFactory);
         componentFactory.setAssetStore(assetStore);
+    }
+
+    private AssetDescriptorRepository getAssetDescriptorRepository() {
+        final var assetDescriptorFilePath = Configuration.getInstance().getAssetDescriptorFilePath();
+        if (assetDescriptorFilePath.exists()) {
+            return new AssetsDescriptorLoader().load(assetDescriptorFilePath);
+        }
+        return new AssetDescriptorRepository(new HashMap<>());
     }
 
     /**
