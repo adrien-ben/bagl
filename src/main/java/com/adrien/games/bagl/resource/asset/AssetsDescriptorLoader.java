@@ -38,10 +38,9 @@ public class AssetsDescriptorLoader {
         final var id = checkAssetDescriptorMissingField(assetDescriptorJson.getId(), "id");
         final var type = checkAssetDescriptorMissingField(assetDescriptorJson.getType(), "type");
         final var path = checkAssetDescriptorMissingField(assetDescriptorJson.getPath(), "path");
-        final var isLazyLoading = assetDescriptorJson.isLazyLoading();
         final var parameters = assetDescriptorJson.getParameters();
 
-        return new AssetDescriptor(id, type, ResourcePath.get(path), isLazyLoading, parameters);
+        return new AssetDescriptor(id, type, ResourcePath.get(path), parameters);
     }
 
     private <T> T checkAssetDescriptorMissingField(final T field, final String fieldName) {

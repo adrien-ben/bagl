@@ -37,8 +37,7 @@ class AssetStoreTest {
     }
 
     private AssetDescriptor createTestAssetDescriptor() {
-        return new AssetDescriptor("test", AssetType.TEXTURE, ResourcePath.get("classpath:/test.png"),
-                false, new HashMap<>());
+        return new AssetDescriptor("test", AssetType.TEXTURE, ResourcePath.get("classpath:/test.png"), new HashMap<>());
     }
 
     @Test

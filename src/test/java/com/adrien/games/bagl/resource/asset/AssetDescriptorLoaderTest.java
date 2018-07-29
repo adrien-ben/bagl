@@ -23,7 +23,6 @@ class AssetDescriptorLoaderTest {
         assertNotNull(testAssetDescriptor);
         assertEquals("test_asset", testAssetDescriptor.getId());
         assertEquals(AssetType.TEXTURE, testAssetDescriptor.getType());
-        assertFalse(testAssetDescriptor.isLazyLoading());
         assertEquals(Paths.get(getTestFilePath()).toAbsolutePath().toString(), testAssetDescriptor.getPath().getAbsolutePath());
         assertEquals("NEAREST", testAssetDescriptor.getParameters().get("minFilter"));
     }
