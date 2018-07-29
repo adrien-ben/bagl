@@ -10,9 +10,9 @@ import java.util.stream.Stream;
  *
  * @author adrien
  */
-public class DefaultRepository<ID, T> implements Repository<ID, T> {
+public class DefaultRepository<I, T> implements Repository<I, T> {
 
-    private Map<ID, T> data;
+    private Map<I, T> data;
 
     /**
      * Construct a new {@link DefaultRepository} where data are stored in an {@link HashMap}.
@@ -27,7 +27,7 @@ public class DefaultRepository<ID, T> implements Repository<ID, T> {
      * @see Repository#put(Object, Object)
      */
     @Override
-    public void put(final ID id, final T entry) {
+    public void put(final I id, final T entry) {
         data.put(id, entry);
     }
 
@@ -37,7 +37,7 @@ public class DefaultRepository<ID, T> implements Repository<ID, T> {
      * @see Repository#remove(Object)
      */
     @Override
-    public void remove(final ID id) {
+    public void remove(final I id) {
         data.remove(id);
     }
 
@@ -47,7 +47,7 @@ public class DefaultRepository<ID, T> implements Repository<ID, T> {
      * @see Repository#getById(Object)
      */
     @Override
-    public Optional<T> getById(final ID id) {
+    public Optional<T> getById(final I id) {
         return Optional.ofNullable(data.get(id));
     }
 
