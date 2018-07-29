@@ -16,15 +16,15 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(OGLExtension.class)
-class AssetLoaderTest {
+class AssetStoreTest {
 
-    private AssetLoader assetLoader;
+    private AssetStore assetStore;
 
     @BeforeEach
     void beforeEach() {
         final var assetDescriptorRepository = createTestAssetDescriptorRepo();
         final var assetFactory = new AssetFactory(null);
-        assetLoader = new AssetLoader(assetDescriptorRepository, assetFactory);
+        assetStore = new AssetStore(assetDescriptorRepository, assetFactory);
     }
 
     private AssetDescriptorRepository createTestAssetDescriptorRepo() {
@@ -43,33 +43,33 @@ class AssetLoaderTest {
 
     @Test
     void itShouldLoadAsset() {
-        final Texture texture = assetLoader.load("test", Texture.class);
+        final Texture texture = assetStore.getAsset("test", Texture.class);
         assertNotNull(texture);
     }
 
     @Test
     void itShouldLoadAssetsOnlyOnce() {
-        final Texture texture0 = assetLoader.load("test", Texture.class);
-        final Texture texture1 = assetLoader.load("test", Texture.class);
+        final Texture texture0 = assetStore.getAsset("test", Texture.class);
+        final Texture texture1 = assetStore.getAsset("test", Texture.class);
         assertSame(texture0, texture1);
     }
 
     @Test
     void itShouldDestroyLoadedAssets() {
-        final Texture texture0 = assetLoader.load("test", Texture.class);
-        assetLoader.destroyAssets();
-        final Texture texture1 = assetLoader.load("test", Texture.class);
+        final Texture texture0 = assetStore.getAsset("test", Texture.class);
+        assetStore.destroyAssets();
+        final Texture texture1 = assetStore.getAsset("test", Texture.class);
         assertNotSame(texture0, texture1);
     }
 
     @Test
     void itShouldFailToLoadNonExistingAsset() {
-        assertThrows(EngineException.class, () -> assetLoader.load("unknown", Texture.class));
+        assertThrows(EngineException.class, () -> assetStore.getAsset("unknown", Texture.class));
     }
 
     @Test
     void itShouldFailToLoadAssetIfTypeDoesNotMatch() {
-        assertThrows(EngineException.class, () -> assetLoader.load("test", Model.class));
+        assertThrows(EngineException.class, () -> assetStore.getAsset("test", Model.class));
     }
 
 }
