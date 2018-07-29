@@ -51,12 +51,14 @@ public class AssetFactory {
 
     private TextureParameters.Builder createTextureParametersBuilder(final Map<String, Object> parametersMap) {
         final var builder = TextureParameters.builder();
-        mapIfNotNull(parametersMap.get("minFilter"), String.class, Filter::valueOf).ifPresent(builder::minFilter);
-        mapIfNotNull(parametersMap.get("magFilter"), String.class, Filter::valueOf).ifPresent(builder::magFilter);
-        mapIfNotNull(parametersMap.get("sWrap"), String.class, Wrap::valueOf).ifPresent(builder::sWrap);
-        mapIfNotNull(parametersMap.get("tWrap"), String.class, Wrap::valueOf).ifPresent(builder::tWrap);
-        mapIfNotNull(parametersMap.get("anisotropic"), Integer.class, Function.identity()).ifPresent(builder::anisotropic);
-        mapIfNotNull(parametersMap.get("mipmaps"), Boolean.class, Function.identity()).ifPresent(builder::mipmaps);
+        if (Objects.nonNull(parametersMap)) {
+            mapIfNotNull(parametersMap.get("minFilter"), String.class, Filter::valueOf).ifPresent(builder::minFilter);
+            mapIfNotNull(parametersMap.get("magFilter"), String.class, Filter::valueOf).ifPresent(builder::magFilter);
+            mapIfNotNull(parametersMap.get("sWrap"), String.class, Wrap::valueOf).ifPresent(builder::sWrap);
+            mapIfNotNull(parametersMap.get("tWrap"), String.class, Wrap::valueOf).ifPresent(builder::tWrap);
+            mapIfNotNull(parametersMap.get("anisotropic"), Integer.class, Function.identity()).ifPresent(builder::anisotropic);
+            mapIfNotNull(parametersMap.get("mipmaps"), Boolean.class, Function.identity()).ifPresent(builder::mipmaps);
+        }
         return builder;
     }
 
