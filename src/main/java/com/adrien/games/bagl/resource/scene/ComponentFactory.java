@@ -1,5 +1,6 @@
 package com.adrien.games.bagl.resource.scene;
 
+import com.adrien.games.bagl.assets.AssetStore;
 import com.adrien.games.bagl.core.Color;
 import com.adrien.games.bagl.core.Configuration;
 import com.adrien.games.bagl.core.camera.Camera;
@@ -8,6 +9,7 @@ import com.adrien.games.bagl.rendering.environment.EnvironmentMapGenerator;
 import com.adrien.games.bagl.rendering.light.DirectionalLight;
 import com.adrien.games.bagl.rendering.light.PointLight;
 import com.adrien.games.bagl.rendering.light.SpotLight;
+import com.adrien.games.bagl.rendering.model.Model;
 import com.adrien.games.bagl.rendering.model.ModelFactory;
 import com.adrien.games.bagl.rendering.particles.Particle;
 import com.adrien.games.bagl.rendering.particles.ParticleEmitter;
@@ -37,19 +39,20 @@ import static com.adrien.games.bagl.utils.MathUtils.random;
  */
 public class ComponentFactory {
 
-    private final Map<String, Function<Object, Component>> commands;
+    private final Map<String, Function<Object, Component>> componentCreationCommands;
     private final EnvironmentMapGenerator environmentMapGenerator;
+    private AssetStore assetStore;
     private final Gson gson;
 
-    public ComponentFactory() {
-        this.commands = new HashMap<>();
-        this.environmentMapGenerator = new EnvironmentMapGenerator();
+    public ComponentFactory(final EnvironmentMapGenerator environmentMapGenerator) {
+        this.componentCreationCommands = new HashMap<>();
+        this.environmentMapGenerator = environmentMapGenerator;
         this.gson = new Gson();
 
-        initCommands();
+        initComponentCreationCommands();
     }
 
-    private void initCommands() {
+    private void initComponentCreationCommands() {
         addComponentCreationCommand("model", ModelJson.class, this::createModelComponent);
         addComponentCreationCommand("camera", CameraJson.class, this::createCameraComponent);
         addComponentCreationCommand("environment", EnvironmentJson.class, this::createEnvironmentComponent);
@@ -69,7 +72,7 @@ public class ComponentFactory {
      */
     public <T> void addComponentCreationCommand(final String type, final Class<T> jsonClass, final Function<T, Component> mapper) {
         final Function<Object, T> deserializer = obj -> convertValue(obj, jsonClass);
-        commands.put(type, deserializer.andThen(mapper));
+        componentCreationCommands.put(type, deserializer.andThen(mapper));
     }
 
     /**
@@ -82,7 +85,7 @@ public class ComponentFactory {
      * Use this method if the json model matches the component model.
      */
     public <T extends Component> void addComponentCreationCommand(final String type, final Class<T> jsonClass) {
-        commands.put(type, obj -> convertValue(obj, jsonClass));
+        componentCreationCommands.put(type, obj -> convertValue(obj, jsonClass));
     }
 
     /**
@@ -94,7 +97,7 @@ public class ComponentFactory {
      * is missing required fields.
      */
     public Component createComponent(final String type, final Object componentData) {
-        final var command = commands.get(type);
+        final var command = componentCreationCommands.get(type);
         if (Objects.isNull(command)) {
             throw new IllegalArgumentException(String.format("This component type is not supported: %s", type));
         }
@@ -106,10 +109,25 @@ public class ComponentFactory {
     }
 
     private ModelComponent createModelComponent(final ModelJson modelJson) {
-        final var path = validate(modelJson.getPath(), Objects::nonNull, "Model component should have a path field");
+        checkModelData(modelJson);
 
-        final var model = ModelFactory.fromFile(ResourcePath.get(path));
-        return new ModelComponent(model);
+        return getModelComponent(modelJson);
+    }
+
+    private void checkModelData(final ModelJson modelJson) {
+        final var path = modelJson.getPath();
+        final var id = modelJson.getId();
+        if (Objects.isNull(path) && Objects.isNull(id) || Objects.nonNull(path) && Objects.nonNull(id)) {
+            throw new IllegalArgumentException("Model component should have a path OR id field");
+        }
+    }
+
+    private ModelComponent getModelComponent(final ModelJson modelJson) {
+        if (Objects.nonNull(modelJson.getPath())) {
+            return new ModelComponent(ModelFactory.fromFile(ResourcePath.get(modelJson.getPath())), true);
+        } else {
+            return new ModelComponent(assetStore.getAsset(modelJson.getId(), Model.class), false);
+        }
     }
 
     private CameraComponent createCameraComponent(final CameraJson cameraJson) {
@@ -170,17 +188,33 @@ public class ComponentFactory {
     }
 
     private ParticleComponent createParticleComponent(final ParticleJson particleJson) {
-        final var texturePath = particleJson.getTexture();
+        final var texture = getParticleTexture(particleJson);
         final var blendMode = validate(particleJson.getBlendMode(), Objects::nonNull, "Particle component should have a blendMode field");
         final var rate = validate(particleJson.getRate(), v -> v > 0, "Particle component should have a rate superior to 0");
         final var batchSize = validate(particleJson.getBatchSize(), v -> v > 0, "Particle component should have a batchSize superior to 0");
         final var initializer = mapParticleInitializer(particleJson);
 
-        final var builder = ParticleEmitter.builder().blendMode(blendMode).rate(rate).batchSize(batchSize).initializer(initializer);
-        if (Objects.nonNull(texturePath)) {
-            builder.texture(Texture.fromFile(ResourcePath.get(texturePath), TextureParameters.builder()));
-        }
+        final var builder = ParticleEmitter.builder().texture(texture).blendMode(blendMode).rate(rate).batchSize(batchSize).initializer(initializer);
         return new ParticleComponent(builder.build());
+    }
+
+    private Texture getParticleTexture(final ParticleJson particleJson) {
+        checkParticleTextureLink(particleJson);
+        final var texturePath = particleJson.getTexturePath();
+        final var textureId = particleJson.getTextureId();
+
+        if (Objects.nonNull(texturePath)) {
+            return Texture.fromFile(ResourcePath.get(texturePath), TextureParameters.builder());
+        } else if (Objects.nonNull(textureId)) {
+            return assetStore.getAsset(textureId, Texture.class);
+        }
+        return null;
+    }
+
+    private void checkParticleTextureLink(final ParticleJson particleJson) {
+        if (Objects.nonNull(particleJson.getTexturePath()) && Objects.nonNull(particleJson.getTextureId())) {
+            throw new IllegalArgumentException("Particle component can only have 'texturePath', 'textureId' or none defined. Both are defined.");
+        }
     }
 
     private Consumer<Particle> mapParticleInitializer(final ParticleJson particleJson) {
@@ -195,5 +229,9 @@ public class ComponentFactory {
 
         return particle -> particle.reset(Vectors.randomInRange(position), Vectors.randomInRange(direction).normalize(),
                 random(size), random(speed), mapColor(startColor), mapColor(endColor), random(ttl));
+    }
+
+    public void setAssetStore(final AssetStore assetStore) {
+        this.assetStore = assetStore;
     }
 }

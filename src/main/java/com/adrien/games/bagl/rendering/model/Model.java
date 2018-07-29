@@ -1,5 +1,6 @@
 package com.adrien.games.bagl.rendering.model;
 
+import com.adrien.games.bagl.assets.Asset;
 import com.adrien.games.bagl.core.Transform;
 
 import java.util.ArrayList;
@@ -14,14 +15,17 @@ import java.util.Set;
  *
  * @author adrien
  */
-public final class Model {
+public final class Model implements Asset {
 
     private final List<ModelNode> nodes = new ArrayList<>();
     private final Set<Mesh> meshes = new HashSet<>();
 
     /**
-     * Release resources
+     * {@inheritDoc}
+     *
+     * @see Asset#destroy()
      */
+    @Override
     public void destroy() {
         this.meshes.forEach(Mesh::destroy);
     }

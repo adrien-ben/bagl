@@ -13,14 +13,17 @@ import com.adrien.games.bagl.scene.ComponentVisitor;
 public class ModelComponent extends Component {
 
     private final Model model;
+    private final boolean selfDestruction;
 
     /**
      * Construct a direction light component
      *
      * @param model The model to link to this component
+     * @param selfDestruction Indicate whether the component is responsible for destroying its model
      */
-    public ModelComponent(final Model model) {
+    public ModelComponent(final Model model, final boolean selfDestruction) {
         this.model = model;
+        this.selfDestruction = selfDestruction;
     }
 
     /**
@@ -35,13 +38,17 @@ public class ModelComponent extends Component {
 
     /**
      * {@inheritDoc}
+     * <p>
+     * Will destroy its model if its {@code selfDestruction} flag is set to true
      *
      * @see Component#destroy()
      */
     @Override
     public void destroy() {
         super.destroy();
-        model.destroy();
+        if (selfDestruction) {
+            model.destroy();
+        }
     }
 
     /**

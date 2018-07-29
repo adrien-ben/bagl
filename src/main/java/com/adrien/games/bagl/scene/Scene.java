@@ -1,5 +1,6 @@
 package com.adrien.games.bagl.scene;
 
+import com.adrien.games.bagl.assets.Asset;
 import com.adrien.games.bagl.core.Time;
 import com.adrien.games.bagl.exception.EngineException;
 
@@ -15,7 +16,7 @@ import java.util.stream.Stream;
  *
  * @author adrien
  */
-public class Scene {
+public class Scene implements Asset {
 
     private final GameObject root;
     private final Map<String, GameObject> objectsById;
@@ -83,6 +84,7 @@ public class Scene {
      * Destroy the root node that will then destroy its children. Then clear all caches.
      * After being destroy your scene is in the same state as when its created so you can use it.
      */
+    @Override
     public void destroy() {
         root.destroy();
         objectsById.clear();

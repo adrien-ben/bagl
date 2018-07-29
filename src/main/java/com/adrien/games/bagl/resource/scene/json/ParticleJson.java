@@ -4,7 +4,8 @@ import com.adrien.games.bagl.rendering.BlendMode;
 
 public class ParticleJson {
 
-    private String texture;
+    private String texturePath;
+    private String textureId;
     private ColorJson startColor;
     private ColorJson endColor;
     private BlendMode blendMode;
@@ -12,8 +13,12 @@ public class ParticleJson {
     private int batchSize;
     private ParticleInitializerJson initializer;
 
-    public String getTexture() {
-        return texture;
+    public String getTexturePath() {
+        return texturePath;
+    }
+
+    public String getTextureId() {
+        return textureId;
     }
 
     public ColorJson getStartColor() {
