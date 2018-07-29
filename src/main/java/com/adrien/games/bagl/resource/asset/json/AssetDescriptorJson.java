@@ -1,11 +1,13 @@
 package com.adrien.games.bagl.resource.asset.json;
 
+import com.adrien.games.bagl.assets.AssetType;
+
 import java.util.Map;
 
 public class AssetDescriptorJson {
 
     private String id;
-    private String type;
+    private AssetType type;
     private String path;
     private boolean lazyLoading;
     private Map<String, Object> parameters;
@@ -14,7 +16,7 @@ public class AssetDescriptorJson {
         return id;
     }
 
-    public String getType() {
+    public AssetType getType() {
         return type;
     }
 

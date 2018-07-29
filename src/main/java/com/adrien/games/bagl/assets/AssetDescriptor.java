@@ -15,16 +15,16 @@ import java.util.Map;
 public class AssetDescriptor {
 
     private final String id;
-    private final String type;
+    private final AssetType type;
     private final ResourcePath path;
     private final boolean lazyLoading;
     private final Map<String, Object> parameters;
 
-    public AssetDescriptor(final String id, final String type, final ResourcePath path, final boolean lazyLoading) {
+    public AssetDescriptor(final String id, final AssetType type, final ResourcePath path, final boolean lazyLoading) {
         this(id, type, path, lazyLoading, null);
     }
 
-    public AssetDescriptor(final String id, final String type, final ResourcePath path, final boolean lazyLoading, final Map<String, Object> parameters) {
+    public AssetDescriptor(final String id, final AssetType type, final ResourcePath path, final boolean lazyLoading, final Map<String, Object> parameters) {
         this.id = id;
         this.type = type;
         this.path = path;
@@ -37,7 +37,7 @@ public class AssetDescriptor {
         return id;
     }
 
-    public String getType() {
+    public AssetType getType() {
         return type;
     }
 

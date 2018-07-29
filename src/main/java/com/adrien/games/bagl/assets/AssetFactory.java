@@ -19,7 +19,7 @@ import java.util.function.Function;
 
 public class AssetFactory {
 
-    private final Map<String, Function<AssetDescriptor, Asset>> assetCreationCommands;
+    private final Map<AssetType, Function<AssetDescriptor, Asset>> assetCreationCommands;
     private final SceneLoader sceneLoader;
 
     public AssetFactory(final SceneLoader sceneLoader) {
@@ -29,10 +29,10 @@ public class AssetFactory {
     }
 
     private void initAssetCreationCommands() {
-        assetCreationCommands.put("texture", this::createTexture);
-        assetCreationCommands.put("model", this::createModel);
-        assetCreationCommands.put("scene", this::createScene);
-        assetCreationCommands.put("font", this::createFont);
+        assetCreationCommands.put(AssetType.TEXTURE, this::createTexture);
+        assetCreationCommands.put(AssetType.MODEL, this::createModel);
+        assetCreationCommands.put(AssetType.SCENE, this::createScene);
+        assetCreationCommands.put(AssetType.FONT, this::createFont);
     }
 
     public Asset createAsset(final AssetDescriptor assetDescriptor) {

@@ -2,7 +2,7 @@
   "assets": [
     {
       "id": "test_asset",
-      "type": "texture",
+      "type": "TEXTURE",
       "path": "classpath:/test.png",
       "parameters": {
         "minFilter": "NEAREST"

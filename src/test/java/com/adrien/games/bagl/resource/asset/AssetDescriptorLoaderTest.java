@@ -1,5 +1,6 @@
 package com.adrien.games.bagl.resource.asset;
 
+import com.adrien.games.bagl.assets.AssetType;
 import com.adrien.games.bagl.exception.EngineException;
 import com.adrien.games.bagl.utils.ResourcePath;
 import org.junit.jupiter.api.Test;
@@ -21,7 +22,7 @@ class AssetDescriptorLoaderTest {
         assertNotNull(assetsDescriptor);
         assertNotNull(testAssetDescriptor);
         assertEquals("test_asset", testAssetDescriptor.getId());
-        assertEquals("texture", testAssetDescriptor.getType());
+        assertEquals(AssetType.TEXTURE, testAssetDescriptor.getType());
         assertFalse(testAssetDescriptor.isLazyLoading());
         assertEquals(Paths.get(getTestFilePath()).toAbsolutePath().toString(), testAssetDescriptor.getPath().getAbsolutePath());
         assertEquals("NEAREST", testAssetDescriptor.getParameters().get("minFilter"));

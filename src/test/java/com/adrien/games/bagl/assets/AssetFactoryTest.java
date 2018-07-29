@@ -41,7 +41,7 @@ class AssetFactoryTest {
         parameters.put("tWrap", "CLAMP_TO_EDGE");
         parameters.put("anisotropic", 8);
         parameters.put("mipmaps", true);
-        assetDescriptor = new AssetDescriptor("test", "texture", ResourcePath.get("classpath:/test.png"), false, parameters);
+        assetDescriptor = new AssetDescriptor("test", AssetType.TEXTURE, ResourcePath.get("classpath:/test.png"), false, parameters);
     }
 
     private void assertTextureIsCreated() {
@@ -69,7 +69,7 @@ class AssetFactoryTest {
     }
 
     private void givenAModelDescriptor() {
-        assetDescriptor = new AssetDescriptor("test", "model", ResourcePath.get("classpath:/test.glb"), false);
+        assetDescriptor = new AssetDescriptor("test", AssetType.MODEL, ResourcePath.get("classpath:/test.glb"), false);
     }
 
     private void assertModelIsCreated() {
@@ -85,7 +85,7 @@ class AssetFactoryTest {
     }
 
     private void givenASceneDescriptor() {
-        assetDescriptor = new AssetDescriptor("test", "scene", ResourcePath.get("classpath:/test_scene.json"), false);
+        assetDescriptor = new AssetDescriptor("test", AssetType.SCENE, ResourcePath.get("classpath:/test_scene.json"), false);
     }
 
     private void assertSceneIsCreated() {
@@ -101,7 +101,7 @@ class AssetFactoryTest {
     }
 
     private void givenAFontDescriptor() {
-        assetDescriptor = new AssetDescriptor("test", "font", ResourcePath.get("classpath:/test_font/segoe.fnt"), false);
+        assetDescriptor = new AssetDescriptor("test", AssetType.FONT, ResourcePath.get("classpath:/test_font/segoe.fnt"), false);
     }
 
     private void assertFontIsLoaded() {
@@ -120,7 +120,7 @@ class AssetFactoryTest {
     }
 
     private void givenAnUnsupportedAssetDescriptor() {
-        assetDescriptor = new AssetDescriptor("test", "unsupported", ResourcePath.get(""), false);
+        assetDescriptor = new AssetDescriptor("test", null, ResourcePath.get(""), false);
     }
 
 }
