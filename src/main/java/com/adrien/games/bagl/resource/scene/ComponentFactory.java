@@ -188,17 +188,33 @@ public class ComponentFactory {
     }
 
     private ParticleComponent createParticleComponent(final ParticleJson particleJson) {
-        final var texturePath = particleJson.getTexture();
+        final var texture = getParticleTexture(particleJson);
         final var blendMode = validate(particleJson.getBlendMode(), Objects::nonNull, "Particle component should have a blendMode field");
         final var rate = validate(particleJson.getRate(), v -> v > 0, "Particle component should have a rate superior to 0");
         final var batchSize = validate(particleJson.getBatchSize(), v -> v > 0, "Particle component should have a batchSize superior to 0");
         final var initializer = mapParticleInitializer(particleJson);
 
-        final var builder = ParticleEmitter.builder().blendMode(blendMode).rate(rate).batchSize(batchSize).initializer(initializer);
-        if (Objects.nonNull(texturePath)) {
-            builder.texture(Texture.fromFile(ResourcePath.get(texturePath), TextureParameters.builder()));
-        }
+        final var builder = ParticleEmitter.builder().texture(texture).blendMode(blendMode).rate(rate).batchSize(batchSize).initializer(initializer);
         return new ParticleComponent(builder.build());
+    }
+
+    private Texture getParticleTexture(final ParticleJson particleJson) {
+        checkParticleTextureLink(particleJson);
+        final var texturePath = particleJson.getTexturePath();
+        final var textureId = particleJson.getTextureId();
+
+        if (Objects.nonNull(texturePath)) {
+            return Texture.fromFile(ResourcePath.get(texturePath), TextureParameters.builder());
+        } else if (Objects.nonNull(textureId)) {
+            return assetStore.getAsset(textureId, Texture.class);
+        }
+        return null;
+    }
+
+    private void checkParticleTextureLink(final ParticleJson particleJson) {
+        if (Objects.nonNull(particleJson.getTexturePath()) && Objects.nonNull(particleJson.getTextureId())) {
+            throw new IllegalArgumentException("Particle component can only have 'texturePath', 'textureId' or none defined. Both are defined.");
+        }
     }
 
     private Consumer<Particle> mapParticleInitializer(final ParticleJson particleJson) {
