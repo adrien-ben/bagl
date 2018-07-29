@@ -21,6 +21,7 @@ baGL is an OpenGL framework that I use for educational purpose. It uses [LWJGL 3
 - Scalable text using Signed Distance Field fonts. See [Valve's paper](http://www.valvesoftware.com/publications/2007/SIGGRAPH2007_AlphaTestedMagnification.pdf)
 - Simple scene graph
 - Shader #import directive
+- Basic assets management
 
 ## Rendering
 
@@ -91,6 +92,68 @@ The algorithm used for anti aliasing is the Fast Approximate Anti Aliasing (FXAA
 
 I use nvidia's [FXAA 3.11 source code](https://gist.github.com/kosua20/0c506b81b3812ac900048059d2383126) from which I removed all the thing I do not need
 (console and DX implementations for example).
+
+## Assets management
+
+baGL includes basic asset management. You can declare all assets in a json file and use the `AssetStore` class the handle them. Each asset is loaded when 
+requested for the first time. By default the file loaded is `classpath:/assets.json`.
+
+### Asset types
+
+There are several types of assets.
+
+- TEXTURE
+- FONT
+- MODEL
+- SCENE
+
+### Assets descriptor syntax 
+
+Here is an example of the json file containing the assets description.
+
+```json
+{
+  "assets": [
+    {
+      "id": "texture_0",
+      "type": "TEXTURE",
+      "path": "classpath:/texture_0.png",
+      "parameters": {
+        "minFilter": "NEAREST",
+        "magFilter": "NEAREST"
+      }
+    }
+  ]
+}
+```
+
+Asset will always need an id, a type and a path. For some asset types you will be able to define parameters.
+
+### Asset parameters
+
+This section contains the details of the possible parameters for asset which accept them.
+
+#### Texture parameters
+
+- minFilter : [Filter](src/main/java/com/adrien/games/bagl/rendering/texture/Filter.java)
+- magFilter : [Filter](src/main/java/com/adrien/games/bagl/rendering/texture/Filter.java)
+- sWrap : [Wrap](src/main/java/com/adrien/games/bagl/rendering/texture/Wrap.java)
+- tWrap - [Wrap](src/main/java/com/adrien/games/bagl/rendering/texture/Wrap.java)
+- anisotropic : int - level of anisotropic filtering
+- mipmaps : boolean - if true mipmaps are generated for the textures
+
+### Requesting an asset
+
+```java
+class Example extends DefaultGame {
+    private Font font;
+    @Override public void init() {
+        font = getAssetStore().getAsset("segoe", Font.class);
+    }
+}
+```
+
+> Note that the class extends DefaultGame. This is important because getAssetStore is a protected method of DefaultGame.
 
 ## Scene model
 
@@ -239,12 +302,14 @@ Scenes can be loaded from json files. Here is an example of a scene file without
 }
 ```
 
+> path can be replaced by id. id must contain the id of an asset that as been declared in the asset descriptor file.
+
 #### ParticleComponent model
 
 ```json
 {
     "type": "particles",
-    "texture": "classpath:/smoke.png",
+    "texturePath": "classpath:/smoke.png",
     "startColor": {
         "r": 1.0,
         "g": 1.0,
@@ -300,6 +365,8 @@ Scenes can be loaded from json files. Here is an example of a scene file without
     }
 }
 ```
+
+> texturePath can be replaced by textureId. textureId must contain the id of a texture that as been declared in the asset descriptor file.
 
 #### Extending the model
 
@@ -422,7 +489,6 @@ reference resource files. The shader parser will take care of not including the 
     - Area lights (sphere and tubes)
     - Fixing shadows
     - UI (third party ?)
-- Assets management
 - OpenGL state manager
 - Complete glTF 2.0 support
 - An overall review, some refactoring and code cleanup
