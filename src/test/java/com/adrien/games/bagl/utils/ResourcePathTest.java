@@ -104,6 +104,30 @@ class ResourcePathTest {
         assertThrows(EngineException.class, path::getParent);
     }
 
+    @Test
+    void itShouldReturnTrueWhenCallingExistsOnExistingResource() {
+        final var resourcePath = ResourcePath.get("classpath:/test.txt");
+        assertTrue(resourcePath.exists());
+    }
+
+    @Test
+    void itShouldReturnFalseWhenCallingExistsOnNonExistingResource() {
+        final var resourcePath = ResourcePath.get("classpath:/not_here.txt");
+        assertFalse(resourcePath.exists());
+    }
+
+    @Test
+    void itShouldReturnTrueWhenCallingExistsOnExistingFile() {
+        final var resourcePath = ResourcePath.get(getTestFilePath());
+        assertTrue(resourcePath.exists());
+    }
+
+    @Test
+    void itShouldReturnFalseWhenCallingExistsOnNonExistingFile() {
+        final var resourcePath = ResourcePath.get("P:/not_here.txt");
+        assertFalse(resourcePath.exists());
+    }
+
     private String getTestFilePath() {
         return getExecutionPath() + File.separator + "target/test-classes/test.txt";
     }

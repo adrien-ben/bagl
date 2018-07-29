@@ -99,11 +99,15 @@ public class ResourcePath {
     }
 
     private URL getResourceAsUrl() {
-        final URL url = getClassLoader().getResource(getFormattedResourcePath());
+        final URL url = getResource();
         if (Objects.isNull(url)) {
             throw new EngineException(String.format("Resource %s does not exist.", path));
         }
         return url;
+    }
+
+    private URL getResource() {
+        return getClassLoader().getResource(getFormattedResourcePath());
     }
 
     public ResourcePath getParent() {
@@ -112,6 +116,21 @@ public class ResourcePath {
             throw new EngineException(String.format("The path %s has no parent", path));
         }
         return get(getPathString(parentPath));
+    }
+
+    /**
+     * Check if the pointed resource exists.
+     */
+    public boolean exists() {
+        return isResource() ? resourceExists() : fileExists();
+    }
+
+    private boolean resourceExists() {
+        return Objects.nonNull(getResource());
+    }
+
+    private boolean fileExists() {
+        return Files.exists(path);
     }
 
     @Override
