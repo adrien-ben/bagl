@@ -1,6 +1,6 @@
 package com.adrien.games.bagl.extensions;
 
-import com.adrien.games.bagl.exception.EngineException;
+import com.adrien.games.bagl.core.exception.EngineException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.extension.AfterAllCallback;

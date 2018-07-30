@@ -1,7 +1,5 @@
 package com.adrien.games.bagl.core.math;
 
-import com.adrien.games.bagl.utils.MathUtils;
-import com.adrien.games.bagl.utils.Range;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;

@@ -1,4 +1,5 @@
 module com.adrien.games.bagl {
+    // REQUIRES
 	requires java.base;
 	requires transitive org.joml;
 	requires transitive org.apache.logging.log4j;
@@ -16,19 +17,47 @@ module com.adrien.games.bagl {
 	requires gson;
 	requires java.sql;
 
-    exports com.adrien.games.bagl.assets;
+    // EXPORTS
 	exports com.adrien.games.bagl.core;
-	exports com.adrien.games.bagl.core.camera;
 	exports com.adrien.games.bagl.core.math;
-	exports com.adrien.games.bagl.rendering;
-	exports com.adrien.games.bagl.rendering.light;
-	exports com.adrien.games.bagl.rendering.vertex;
-	exports com.adrien.games.bagl.rendering.texture;
-	exports com.adrien.games.bagl.resource;
-	exports com.adrien.games.bagl.scene;
-	exports com.adrien.games.bagl.utils;
+    exports com.adrien.games.bagl.core.exception;
+    exports com.adrien.games.bagl.core.io;
+    exports com.adrien.games.bagl.core.utils;
+    exports com.adrien.games.bagl.core.validation;
 
-    // Open resource folders
+    exports com.adrien.games.bagl.opengl;
+    exports com.adrien.games.bagl.opengl.shader;
+    exports com.adrien.games.bagl.opengl.texture;
+    exports com.adrien.games.bagl.opengl.vertex;
+
+    exports com.adrien.games.bagl.engine;
+    exports com.adrien.games.bagl.engine.camera;
+    exports com.adrien.games.bagl.engine.game;
+    exports com.adrien.games.bagl.engine.scene;
+    exports com.adrien.games.bagl.engine.scene.components;
+    exports com.adrien.games.bagl.engine.rendering;
+    exports com.adrien.games.bagl.engine.rendering.environment;
+    exports com.adrien.games.bagl.engine.rendering.light;
+    exports com.adrien.games.bagl.engine.rendering.model;
+    exports com.adrien.games.bagl.engine.rendering.particles;
+    exports com.adrien.games.bagl.engine.rendering.postprocess;
+    exports com.adrien.games.bagl.engine.rendering.postprocess.fxaa;
+    exports com.adrien.games.bagl.engine.rendering.postprocess.steps;
+    exports com.adrien.games.bagl.engine.rendering.renderer;
+    exports com.adrien.games.bagl.engine.rendering.shape;
+    exports com.adrien.games.bagl.engine.rendering.sprite;
+    exports com.adrien.games.bagl.engine.rendering.text;
+    exports com.adrien.games.bagl.engine.assets;
+    exports com.adrien.games.bagl.engine.resource;
+    exports com.adrien.games.bagl.engine.resource.asset;
+    exports com.adrien.games.bagl.engine.resource.asset.json;
+    exports com.adrien.games.bagl.engine.resource.scene;
+    exports com.adrien.games.bagl.engine.resource.scene.json;
+
+
+    exports com.adrien.games.bagl.deferred;
+
+    // OPENS
 	opens shaders.common;
     opens shaders.ui;
     opens shaders.deferred;

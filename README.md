@@ -137,10 +137,10 @@ This section contains the details of the possible parameters for asset which acc
 
 #### Texture parameters
 
-- minFilter : [Filter](src/main/java/com/adrien/games/bagl/rendering/texture/Filter.java)
-- magFilter : [Filter](src/main/java/com/adrien/games/bagl/rendering/texture/Filter.java)
-- sWrap : [Wrap](src/main/java/com/adrien/games/bagl/rendering/texture/Wrap.java)
-- tWrap - [Wrap](src/main/java/com/adrien/games/bagl/rendering/texture/Wrap.java)
+- minFilter : [Filter](src/main/java/com/adrien/games/bagl/opengl/texture/Filter.java)
+- magFilter : [Filter](src/main/java/com/adrien/games/bagl/opengl/texture/Filter.java)
+- sWrap : [Wrap](src/main/java/com/adrien/games/bagl/opengl/texture/Wrap.java)
+- tWrap - [Wrap](src/main/java/com/adrien/games/bagl/opengl/texture/Wrap.java)
 - anisotropic : int - level of anisotropic filtering
 - mipmaps : boolean - if true mipmaps are generated for the textures
 

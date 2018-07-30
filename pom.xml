@@ -5,6 +5,7 @@
     <groupId>com.adrien.games</groupId>
     <artifactId>bagl</artifactId>
     <version>0.0.4</version>
+
     <name>BAGL</name>
     <description>OpenGL framework that I use for educational purpose.</description>
 
@@ -163,10 +164,10 @@
                 </dependencies>
                 <configuration>
                     <argLine>
-                        --add-opens com.adrien.games.bagl/com.adrien.games.bagl.utils=ALL-UNNAMED
-                        --add-opens com.adrien.games.bagl/com.adrien.games.bagl.resource.asset=ALL-UNNAMED
-                        --add-opens com.adrien.games.bagl/com.adrien.games.bagl.resource.shader=ALL-UNNAMED
-                        --add-opens com.adrien.games.bagl/com.adrien.games.bagl.assets=ALL-UNNAMED
+                        --add-opens com.adrien.games.bagl/com.adrien.games.bagl.core.io=ALL-UNNAMED
+                        --add-opens com.adrien.games.bagl/com.adrien.games.bagl.engine.resource.asset=ALL-UNNAMED
+                        --add-opens com.adrien.games.bagl/com.adrien.games.bagl.opengl.shader=ALL-UNNAMED
+                        --add-opens com.adrien.games.bagl/com.adrien.games.bagl.engine.assets=ALL-UNNAMED
                         --add-opens com.adrien.games.bagl/com.adrien.games.bagl.extensions=ALL-UNNAMED
                     </argLine>
                 </configuration>

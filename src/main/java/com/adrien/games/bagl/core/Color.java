@@ -1,6 +1,6 @@
 package com.adrien.games.bagl.core;
 
-import com.adrien.games.bagl.utils.MathUtils;
+import com.adrien.games.bagl.core.math.MathUtils;
 
 public class Color {
 
