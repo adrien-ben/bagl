@@ -1,0 +1,12 @@
+{
+  "assets": [
+    {
+      "id": "test_asset",
+      "type": "TEXTURE",
+      "path": "classpath:/test.png",
+      "parameters": {
+        "minFilter": "NEAREST"
+      }
+    }
+  ]
+}

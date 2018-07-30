@@ -1,16 +1,16 @@
-package com.adrien.games.bagl.resource.scene.descriptors;
+package com.adrien.games.bagl.resource.scene.json;
 
 import java.util.List;
 import java.util.Map;
 
-public class GameObjectDescriptor {
+public class GameObjectJson {
 
     private String id;
     private List<String> tags;
     private boolean enabled = true;
-    private TransformDescriptor transform;
+    private TransformJson transform;
     private List<Map<String, Object>> components;
-    private List<GameObjectDescriptor> children;
+    private List<GameObjectJson> children;
 
     public String getId() {
         return id;
@@ -24,7 +24,7 @@ public class GameObjectDescriptor {
         return enabled;
     }
 
-    public TransformDescriptor getTransform() {
+    public TransformJson getTransform() {
         return transform;
     }
 
@@ -32,7 +32,7 @@ public class GameObjectDescriptor {
         return components;
     }
 
-    public List<GameObjectDescriptor> getChildren() {
+    public List<GameObjectJson> getChildren() {
         return children;
     }
 }

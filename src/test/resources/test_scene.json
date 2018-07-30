@@ -1,0 +1,11 @@
+{
+  "children": [
+    {
+      "id": "child",
+      "transform": {
+      },
+      "components": [
+      ]
+    }
+  ]
+}

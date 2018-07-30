@@ -1,20 +1,18 @@
 package com.adrien.games.bagl.resource.scene;
 
 import com.adrien.games.bagl.core.Transform;
-import com.adrien.games.bagl.exception.EngineException;
-import com.adrien.games.bagl.resource.scene.descriptors.GameObjectDescriptor;
-import com.adrien.games.bagl.resource.scene.descriptors.SceneDescriptor;
-import com.adrien.games.bagl.resource.scene.descriptors.TransformDescriptor;
+import com.adrien.games.bagl.resource.scene.json.GameObjectJson;
+import com.adrien.games.bagl.resource.scene.json.SceneJson;
+import com.adrien.games.bagl.resource.scene.json.TransformJson;
 import com.adrien.games.bagl.scene.GameObject;
 import com.adrien.games.bagl.scene.Scene;
 import com.adrien.games.bagl.utils.CollectionUtils;
+import com.adrien.games.bagl.utils.ResourcePath;
 import com.google.gson.Gson;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -31,57 +29,55 @@ public class SceneLoader {
     private Gson gson;
     private ComponentFactory componentFactory;
 
-    public SceneLoader() {
+    public SceneLoader(final ComponentFactory componentFactory) {
         this.gson = new Gson();
-        this.componentFactory = new ComponentFactory(this.gson);
+        this.componentFactory = componentFactory;
     }
 
-    public Scene load(final String filePath) {
-        final var sceneDescriptor = loadFile(filePath);
+    public Scene load(final ResourcePath path) {
+        final var sceneDescriptor = loadFile(path);
         final var scene = new Scene();
         sceneDescriptor.getChildren().forEach(child -> mapGameObject(scene.getRoot(), child));
         return scene;
     }
 
-    private SceneDescriptor loadFile(final String filePath) {
-        try {
-            return gson.fromJson(Files.newBufferedReader(Paths.get(filePath)), SceneDescriptor.class);
-        } catch (final IOException exception) {
-            throw new EngineException("Failed to load scene file " + filePath, exception);
+    private SceneJson loadFile(final ResourcePath path) {
+        return gson.fromJson(new InputStreamReader(path.openInputStream()), SceneJson.class);
+    }
+
+    private void mapGameObject(final GameObject parent, final GameObjectJson gameObjectJson) {
+        final GameObject gameObject = createGameObject(parent, gameObjectJson);
+        gameObject.setEnabled(gameObjectJson.isEnabled());
+        if (Objects.nonNull(gameObjectJson.getTransform())) {
+            setTransform(gameObject.getLocalTransform(), gameObjectJson.getTransform());
+        }
+        if (CollectionUtils.isNotEmpty(gameObjectJson.getComponents())) {
+            gameObjectJson.getComponents().forEach(component -> mapComponent(gameObject, component));
+        }
+        if (CollectionUtils.isNotEmpty(gameObjectJson.getChildren())) {
+            gameObjectJson.getChildren().forEach(child -> mapGameObject(gameObject, child));
         }
     }
 
-    private void mapGameObject(final GameObject parent, final GameObjectDescriptor gameObjectDescriptor) {
-        final GameObject gameObject;
-        if (Objects.nonNull(gameObjectDescriptor.getTags())) {
-            final var tagArray = gameObjectDescriptor.getTags().toArray(new String[0]);
-            gameObject = parent.createChild(gameObjectDescriptor.getId(), tagArray);
-        } else {
-            gameObject = parent.createChild(gameObjectDescriptor.getId());
+    private GameObject createGameObject(GameObject parent, GameObjectJson gameObjectJson) {
+        if (Objects.nonNull(gameObjectJson.getTags())) {
+            final var tagArray = gameObjectJson.getTags().toArray(new String[0]);
+            return parent.createChild(gameObjectJson.getId(), tagArray);
         }
-        gameObject.setEnabled(gameObjectDescriptor.isEnabled());
-        if (Objects.nonNull(gameObjectDescriptor.getTransform())) {
-            setTransform(gameObject.getLocalTransform(), gameObjectDescriptor.getTransform());
-        }
-        if (CollectionUtils.isNotEmpty(gameObjectDescriptor.getComponents())) {
-            gameObjectDescriptor.getComponents().forEach(component -> mapComponent(gameObject, component));
-        }
-        if (CollectionUtils.isNotEmpty(gameObjectDescriptor.getChildren())) {
-            gameObjectDescriptor.getChildren().forEach(child -> mapGameObject(gameObject, child));
-        }
+        return parent.createChild(gameObjectJson.getId());
     }
 
-    private void setTransform(final Transform transform, final TransformDescriptor transformDescriptor) {
+    private void setTransform(final Transform transform, final TransformJson transformJson) {
         transform
-                .setTranslation(mapTranslation(transformDescriptor.getTranslation()))
-                .setRotation(mapRotations(transformDescriptor.getRotations()))
-                .setScale(mapScale(transformDescriptor.getScale()));
+                .setTranslation(mapTranslation(transformJson.getTranslation()))
+                .setRotation(mapRotations(transformJson.getRotations()))
+                .setScale(mapScale(transformJson.getScale()));
     }
 
     private Quaternionf mapRotations(final List<Vector3f> rotations) {
         final var result = new Quaternionf();
         if (CollectionUtils.isNotEmpty(rotations)) {
-            rotations.forEach(r -> result.rotate(toRadians(r.x()), toRadians(r.y()), toRadians(r.z())));
+            rotations.forEach(r -> result.rotateXYZ(toRadians(r.x()), toRadians(r.y()), toRadians(r.z())));
         }
         return result;
     }
@@ -106,5 +102,9 @@ public class SceneLoader {
             throw new IllegalArgumentException("A component should have a type");
         }
         gameObject.addComponent(componentFactory.createComponent(type, componentData));
+    }
+
+    public ComponentFactory getComponentFactory() {
+        return componentFactory;
     }
 }

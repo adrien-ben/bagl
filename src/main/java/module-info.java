@@ -16,6 +16,7 @@ module com.adrien.games.bagl {
 	requires gson;
 	requires java.sql;
 
+    exports com.adrien.games.bagl.assets;
 	exports com.adrien.games.bagl.core;
 	exports com.adrien.games.bagl.core.camera;
 	exports com.adrien.games.bagl.core.math;
@@ -28,6 +29,7 @@ module com.adrien.games.bagl {
 	exports com.adrien.games.bagl.utils;
 
     // Open resource folders
+	opens shaders.common;
     opens shaders.ui;
     opens shaders.deferred;
     opens shaders.environment;

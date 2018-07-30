@@ -1,10 +1,11 @@
-package com.adrien.games.bagl.resource.scene.descriptors;
+package com.adrien.games.bagl.resource.scene.json;
 
-public class ColorDescriptor {
+public class ColorJson {
 
     private float r;
     private float g;
     private float b;
+    private float a;
 
     public float getR() {
         return r;
@@ -16,5 +17,9 @@ public class ColorDescriptor {
 
     public float getB() {
         return b;
+    }
+
+    public float getA() {
+        return a;
     }
 }

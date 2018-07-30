@@ -1,10 +1,10 @@
-package com.adrien.games.bagl.resource.scene.descriptors;
+package com.adrien.games.bagl.resource.scene.json;
 
 import org.joml.Vector3f;
 
 import java.util.List;
 
-public class TransformDescriptor {
+public class TransformJson {
 
     private Vector3f translation;
     private List<Vector3f> rotations;

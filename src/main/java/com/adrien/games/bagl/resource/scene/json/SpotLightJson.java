@@ -1,9 +1,9 @@
-package com.adrien.games.bagl.resource.scene.descriptors;
+package com.adrien.games.bagl.resource.scene.json;
 
-public class SpotLightDescriptor {
+public class SpotLightJson {
 
     private float intensity;
-    private ColorDescriptor color;
+    private ColorJson color;
     private float radius;
     private float angle;
     private float edge;
@@ -12,7 +12,7 @@ public class SpotLightDescriptor {
         return intensity;
     }
 
-    public ColorDescriptor getColor() {
+    public ColorJson getColor() {
         return color;
     }
 
