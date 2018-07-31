@@ -13,3 +13,6 @@
 - [REMOVED] All Spritebatch::draw methods
 - [ADDED] Spritebatch::render that take the new Sprite class as parameter
 - [ADDED] Asset management
+
+### 0.0.4
+- [CHANGED] Modularized the project
