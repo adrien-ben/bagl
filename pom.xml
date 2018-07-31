@@ -2,7 +2,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.adrien.games</groupId>
+    <groupId>com.adrienben.games</groupId>
     <artifactId>bagl</artifactId>
     <version>0.0.4</version>
 
@@ -164,11 +164,11 @@
                 </dependencies>
                 <configuration>
                     <argLine>
-                        --add-opens com.adrien.games.bagl/com.adrien.games.bagl.core.io=ALL-UNNAMED
-                        --add-opens com.adrien.games.bagl/com.adrien.games.bagl.engine.resource.asset=ALL-UNNAMED
-                        --add-opens com.adrien.games.bagl/com.adrien.games.bagl.opengl.shader=ALL-UNNAMED
-                        --add-opens com.adrien.games.bagl/com.adrien.games.bagl.engine.assets=ALL-UNNAMED
-                        --add-opens com.adrien.games.bagl/com.adrien.games.bagl.extensions=ALL-UNNAMED
+                        --add-opens com.adrienben.games.bagl/com.adrienben.games.bagl.core.io=ALL-UNNAMED
+                        --add-opens com.adrienben.games.bagl/com.adrienben.games.bagl.engine.resource.asset=ALL-UNNAMED
+                        --add-opens com.adrienben.games.bagl/com.adrienben.games.bagl.opengl.shader=ALL-UNNAMED
+                        --add-opens com.adrienben.games.bagl/com.adrienben.games.bagl.engine.assets=ALL-UNNAMED
+                        --add-opens com.adrienben.games.bagl/com.adrienben.games.bagl.extensions=ALL-UNNAMED
                     </argLine>
                 </configuration>
             </plugin>
