@@ -9,10 +9,7 @@ import com.adrienben.games.bagl.engine.rendering.Material;
 import com.adrienben.games.bagl.engine.rendering.light.DirectionalLight;
 import com.adrienben.games.bagl.engine.rendering.light.PointLight;
 import com.adrienben.games.bagl.engine.rendering.light.SpotLight;
-import com.adrienben.games.bagl.engine.rendering.model.Mesh;
-import com.adrienben.games.bagl.engine.rendering.model.MeshFactory;
-import com.adrienben.games.bagl.engine.rendering.model.Model;
-import com.adrienben.games.bagl.engine.rendering.model.ModelNode;
+import com.adrienben.games.bagl.engine.rendering.model.*;
 import com.adrienben.games.bagl.engine.rendering.particles.ParticleEmitter;
 import com.adrienben.games.bagl.engine.rendering.particles.ParticleRenderer;
 import com.adrienben.games.bagl.engine.rendering.postprocess.PostProcessor;
@@ -335,13 +332,30 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisit
      * @param material The material to use
      */
     private void renderMeshShadow(final Mesh mesh, final Material material) {
+        if (material.getAlphaMode() == AlphaMode.BLEND) {
+            return;
+        }
         if (material.isDoubleSided()) {
             glDisable(GL_CULL_FACE);
         }
+        this.setUpShadowShaderMaterialUniforms(material);
         this.meshRenderer.render(mesh);
+        Texture.unbind();
         if (material.isDoubleSided()) {
             glEnable(GL_CULL_FACE);
         }
+    }
+
+    private void setUpShadowShaderMaterialUniforms(final Material material) {
+        shadowShader.setUniform("uMaterial.diffuseColor", material.getDiffuseColor());
+        final var hasDiffuseMap = Objects.nonNull(material.getDiffuseMap());
+        shadowShader.setUniform("uMaterial.hasDiffuseMap", hasDiffuseMap);
+        if (hasDiffuseMap) {
+            shadowShader.setUniform("uMaterial.diffuseMap", Material.DIFFUSE_MAP_CHANNEL);
+            material.getDiffuseMap().bind();
+        }
+        shadowShader.setUniform("uMaterial.isOpaque", material.getAlphaMode() == AlphaMode.OPAQUE);
+        shadowShader.setUniform("uMaterial.alphaCutoff", material.getAlphaCutoff());
     }
 
     /**
@@ -389,6 +403,9 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisit
      * @param material The material to apply
      */
     private void renderMeshToGBuffer(final Mesh mesh, final Material material) {
+        if (material.getAlphaMode() == AlphaMode.BLEND) {
+            return;
+        }
         if (material.isDoubleSided()) {
             glDisable(GL_CULL_FACE);
         }
