@@ -7,7 +7,7 @@
     <parent>
         <artifactId>bagl-parent</artifactId>
         <groupId>com.adrienben.games</groupId>
-        <version>0.0.4</version>
+        <version>0.0.5</version>
     </parent>
 
     <artifactId>bagl-core</artifactId>
