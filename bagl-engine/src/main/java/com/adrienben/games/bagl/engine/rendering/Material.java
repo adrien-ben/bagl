@@ -3,10 +3,10 @@ package com.adrienben.games.bagl.engine.rendering;
 import com.adrienben.games.bagl.core.Color;
 import com.adrienben.games.bagl.core.validation.Validation;
 import com.adrienben.games.bagl.engine.rendering.model.AlphaMode;
-import com.adrienben.games.bagl.opengl.shader.Shader;
 import com.adrienben.games.bagl.opengl.texture.Texture;
 
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Material class
@@ -93,66 +93,10 @@ public class Material {
      * Release resources
      */
     public void destroy() {
-        if (Objects.nonNull(this.diffuseMap)) {
-            this.diffuseMap.destroy();
-        }
-        if (Objects.nonNull(this.emissiveMap)) {
-            this.emissiveMap.destroy();
-        }
-        if (Objects.nonNull(this.ormMap)) {
-            this.ormMap.destroy();
-        }
-        if (Objects.nonNull(this.normalMap)) {
-            this.normalMap.destroy();
-        }
-    }
-
-    /**
-     * Apply the current material to a shader
-     *
-     * @param shader The shader to apply the material to
-     */
-    public void applyTo(final Shader shader) {
-        shader.setUniform("uMaterial.diffuseColor", this.diffuseColor);
-        shader.setUniform("uMaterial.emissiveColor", this.emissiveColor);
-        shader.setUniform("uMaterial.emissiveIntensity", this.emissiveIntensity);
-        shader.setUniform("uMaterial.roughness", this.roughness);
-        shader.setUniform("uMaterial.metallic", this.metallic);
-
-        final var hasDiffuseMap = Objects.nonNull(this.diffuseMap);
-        shader.setUniform("uMaterial.hasDiffuseMap", hasDiffuseMap);
-        if (hasDiffuseMap) {
-            shader.setUniform("uMaterial.diffuseMap", DIFFUSE_MAP_CHANNEL);
-            this.diffuseMap.bind(DIFFUSE_MAP_CHANNEL);
-        }
-
-        final var hasEmissiveMap = Objects.nonNull(this.emissiveMap);
-        shader.setUniform("uMaterial.hasEmissiveMap", hasEmissiveMap);
-        if (hasEmissiveMap) {
-            shader.setUniform("uMaterial.emissiveMap", EMISSIVE_MAP_CHANNEL);
-            this.emissiveMap.bind(EMISSIVE_MAP_CHANNEL);
-        }
-
-        final var hasOrmMap = Objects.nonNull(this.ormMap);
-        shader.setUniform("uMaterial.hasOrmMap", hasOrmMap);
-        if (hasOrmMap) {
-            shader.setUniform("uMaterial.ormMap", ORM_MAP_CHANNEL);
-            this.ormMap.bind(ORM_MAP_CHANNEL);
-        }
-
-        final var hasNormalMap = Objects.nonNull(this.normalMap);
-        shader.setUniform("uMaterial.hasNormalMap", hasNormalMap);
-        if (hasNormalMap) {
-            shader.setUniform("uMaterial.normalMap", NORMAL_MAP_CHANNEL);
-            this.normalMap.bind(NORMAL_MAP_CHANNEL);
-        }
-
-        shader.setUniform("uMaterial.isOpaque", this.alphaMode == AlphaMode.OPAQUE);
-        shader.setUniform("uMaterial.alphaCutoff", this.alphaCutoff);
-    }
-
-    public boolean hasNormalMap() {
-        return Objects.nonNull(this.normalMap);
+        getDiffuseMap().ifPresent(Texture::destroy);
+        getEmissiveMap().ifPresent(Texture::destroy);
+        getOrmMap().ifPresent(Texture::destroy);
+        getNormalMap().ifPresent(Texture::destroy);
     }
 
     public Color getDiffuseColor() {
@@ -160,11 +104,11 @@ public class Material {
     }
 
     public Color getEmissiveColor() {
-        return this.emissiveColor;
+        return emissiveColor;
     }
 
     public float getEmissiveIntensity() {
-        return this.emissiveIntensity;
+        return emissiveIntensity;
     }
 
     public float getRoughness() {
@@ -175,24 +119,24 @@ public class Material {
         return metallic;
     }
 
-    public Texture getDiffuseMap() {
-        return diffuseMap;
+    public Optional<Texture> getDiffuseMap() {
+        return Optional.ofNullable(diffuseMap);
     }
 
-    public Texture getEmissiveMap() {
-        return this.emissiveMap;
+    public Optional<Texture> getEmissiveMap() {
+        return Optional.ofNullable(emissiveMap);
     }
 
-    public Texture getOrmMap() {
-        return this.ormMap;
+    public Optional<Texture> getOrmMap() {
+        return Optional.ofNullable(ormMap);
     }
 
-    public Texture getNormalMap() {
-        return normalMap;
+    public Optional<Texture> getNormalMap() {
+        return Optional.ofNullable(normalMap);
     }
 
     public boolean isDoubleSided() {
-        return this.doubleSided;
+        return doubleSided;
     }
 
     public AlphaMode getAlphaMode() {
