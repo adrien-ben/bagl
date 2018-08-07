@@ -16,3 +16,4 @@
 
 ### 0.0.4
 - [CHANGED] Modularized the project
+- [ADDED] Partial transparency rendering support
