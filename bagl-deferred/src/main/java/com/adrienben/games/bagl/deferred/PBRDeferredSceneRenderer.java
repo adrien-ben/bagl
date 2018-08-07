@@ -1,18 +1,19 @@
 package com.adrienben.games.bagl.deferred;
 
 import com.adrienben.games.bagl.core.exception.EngineException;
-import com.adrienben.games.bagl.core.io.ResourcePath;
 import com.adrienben.games.bagl.core.math.Vectors;
+import com.adrienben.games.bagl.deferred.pbr.BrdfLookup;
+import com.adrienben.games.bagl.deferred.shaders.DeferredShader;
+import com.adrienben.games.bagl.deferred.shaders.GBufferShader;
+import com.adrienben.games.bagl.deferred.shaders.ShaderFactory;
+import com.adrienben.games.bagl.deferred.shaders.ShadowShader;
 import com.adrienben.games.bagl.engine.Configuration;
 import com.adrienben.games.bagl.engine.camera.Camera;
 import com.adrienben.games.bagl.engine.rendering.Material;
 import com.adrienben.games.bagl.engine.rendering.light.DirectionalLight;
 import com.adrienben.games.bagl.engine.rendering.light.PointLight;
 import com.adrienben.games.bagl.engine.rendering.light.SpotLight;
-import com.adrienben.games.bagl.engine.rendering.model.Mesh;
-import com.adrienben.games.bagl.engine.rendering.model.MeshFactory;
-import com.adrienben.games.bagl.engine.rendering.model.Model;
-import com.adrienben.games.bagl.engine.rendering.model.ModelNode;
+import com.adrienben.games.bagl.engine.rendering.model.*;
 import com.adrienben.games.bagl.engine.rendering.particles.ParticleEmitter;
 import com.adrienben.games.bagl.engine.rendering.particles.ParticleRenderer;
 import com.adrienben.games.bagl.engine.rendering.postprocess.PostProcessor;
@@ -57,8 +58,6 @@ import static org.lwjgl.opengl.GL11.*;
  */
 public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisitor {
 
-    private static final int BRDF_RESOLUTION = 512;
-
     private final int xResolution;
     private final int yResolution;
     private final int shadowMapResolution;
@@ -84,13 +83,13 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisit
     private FrameBuffer gBuffer;
     private FrameBuffer shadowBuffer;
     private FrameBuffer finalBuffer;
-    private FrameBuffer brdfBuffer;
 
     private Shader skyboxShader;
-    private Shader shadowShader;
-    private Shader gBufferShader;
-    private Shader deferredShader;
-    private Shader brdfShader;
+    private ShadowShader shadowShader;
+    private GBufferShader gBufferShader;
+    private DeferredShader deferredShader;
+
+    private BrdfLookup brdfLookup;
 
     private ParticleRenderer particleRenderer;
     private MeshRenderer meshRenderer;
@@ -118,6 +117,8 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisit
         this.screenQuad = MeshFactory.createScreenQuad();
         this.cubeMapMesh = MeshFactory.createCubeMapMesh();
 
+        this.brdfLookup = new BrdfLookup();
+
         this.particleRenderer = new ParticleRenderer();
         this.meshRenderer = new MeshRenderer();
         this.postProcessor = new PostProcessor(
@@ -128,7 +129,6 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisit
 
         this.initFrameBuffers();
         this.initShaders();
-        this.bakeBRDFIntegration();
     }
 
     /**
@@ -139,11 +139,10 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisit
         this.shadowShader.destroy();
         this.gBufferShader.destroy();
         this.deferredShader.destroy();
-        this.brdfShader.destroy();
+        this.brdfLookup.destroy();
         this.gBuffer.destroy();
         this.shadowBuffer.destroy();
         this.finalBuffer.destroy();
-        this.brdfBuffer.destroy();
         this.screenQuad.destroy();
         this.cubeMapMesh.destroy();
         this.particleRenderer.destroy();
@@ -163,51 +162,16 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisit
                 .colorOutputFormat(Format.RGBA32F)
                 .depthStencilFormat(Format.DEPTH_32F)
                 .build());
-        this.brdfBuffer = new FrameBuffer(BRDF_RESOLUTION, BRDF_RESOLUTION, FrameBufferParameters.builder()
-                .hasDepthStencil(false)
-                .colorOutputFormat(Format.RG16F)
-                .build());
     }
 
     /**
      * Initializes the shaders
      */
     private void initShaders() {
-        this.skyboxShader = Shader.builder()
-                .vertexPath(ResourcePath.get("classpath:/shaders/environment/environment.vert"))
-                .fragmentPath(ResourcePath.get("classpath:/shaders/environment/environment_cubemap_sample.frag"))
-                .build();
-        this.shadowShader = Shader.builder()
-                .vertexPath(ResourcePath.get("classpath:/shaders/shadow/shadow.vert"))
-                .fragmentPath(ResourcePath.get("classpath:/shaders/shadow/shadow.frag"))
-                .build();
-        this.gBufferShader = Shader.builder()
-                .vertexPath(ResourcePath.get("classpath:/shaders/deferred/gbuffer.vert"))
-                .fragmentPath(ResourcePath.get("classpath:/shaders/deferred/gbuffer.frag"))
-                .build();
-        this.deferredShader = Shader.builder()
-                .vertexPath(ResourcePath.get("classpath:/shaders/deferred/deferred.vert"))
-                .fragmentPath(ResourcePath.get("classpath:/shaders/deferred/deferred.frag"))
-                .build();
-        this.brdfShader = Shader.builder()
-                .vertexPath(ResourcePath.get("classpath:/shaders/post/post_process.vert"))
-                .fragmentPath(ResourcePath.get("classpath:/shaders/environment/brdf_integration.frag"))
-                .build();
-    }
-
-    /**
-     * Bake the BRDF lookup texture for specular IBL
-     */
-    private void bakeBRDFIntegration() {
-        this.brdfBuffer.bind();
-        this.brdfShader.bind();
-
-        glViewport(0, 0, BRDF_RESOLUTION, BRDF_RESOLUTION);
-        this.meshRenderer.render(this.screenQuad);
-        glViewport(0, 0, this.xResolution, this.yResolution);
-
-        Shader.unbind();
-        this.brdfBuffer.unbind();
+        this.skyboxShader = ShaderFactory.createSkyboxShader();
+        this.shadowShader = new ShadowShader();
+        this.gBufferShader = new GBufferShader();
+        this.deferredShader = new DeferredShader();
     }
 
     /**
@@ -323,7 +287,7 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisit
     private void renderModelNodeShadow(final ModelNode node) {
         final var nodeTransform = node.getTransform().getTransformMatrix();
         this.lightViewProj.mul(nodeTransform, this.wvpBuffer);
-        this.shadowShader.setUniform("wvp", this.wvpBuffer);
+        this.shadowShader.setWorldViewProjectionUniform(this.wvpBuffer);
         node.getMeshes().forEach(this::renderMeshShadow);
         node.getChildren().forEach(this::renderModelNodeShadow);
     }
@@ -335,10 +299,15 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisit
      * @param material The material to use
      */
     private void renderMeshShadow(final Mesh mesh, final Material material) {
+        if (material.getAlphaMode() == AlphaMode.BLEND) {
+            return;
+        }
         if (material.isDoubleSided()) {
             glDisable(GL_CULL_FACE);
         }
+        this.shadowShader.setMaterialUniforms(material);
         this.meshRenderer.render(mesh);
+        Texture.unbind();
         if (material.isDoubleSided()) {
             glEnable(GL_CULL_FACE);
         }
@@ -375,9 +344,8 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisit
     private void renderModelNodeToGBuffer(final ModelNode node) {
         final var nodeTransform = node.getTransform().getTransformMatrix();
         this.camera.getViewProj().mul(nodeTransform, this.wvpBuffer);
-        this.gBufferShader
-                .setUniform("uMatrices.world", nodeTransform)
-                .setUniform("uMatrices.wvp", this.wvpBuffer);
+        this.gBufferShader.setWorldUniform(nodeTransform);
+        this.gBufferShader.setWorldViewProjectionUniform(this.wvpBuffer);
         node.getMeshes().forEach(this::renderMeshToGBuffer);
         node.getChildren().forEach(this::renderModelNodeToGBuffer);
     }
@@ -389,14 +357,18 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisit
      * @param material The material to apply
      */
     private void renderMeshToGBuffer(final Mesh mesh, final Material material) {
+        if (material.getAlphaMode() == AlphaMode.BLEND) {
+            return;
+        }
         if (material.isDoubleSided()) {
             glDisable(GL_CULL_FACE);
         }
-        material.applyTo(this.gBufferShader);
+        this.gBufferShader.setMaterialUniforms(material);
         this.meshRenderer.render(mesh);
         Texture.unbind();
         Texture.unbind(1);
         Texture.unbind(2);
+        Texture.unbind(3);
         if (material.isDoubleSided()) {
             glEnable(GL_CULL_FACE);
         }
@@ -415,23 +387,14 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisit
         this.gBuffer.getColorTexture(1).bind(1);
         this.gBuffer.getColorTexture(2).bind(2);
         this.gBuffer.getDepthTexture().bind(3);
-        this.brdfBuffer.getColorTexture(0).bind(7);
+        this.brdfLookup.getTexture().bind(7);
 
         this.deferredShader.bind()
-                .setUniform("uCamera.invertedViewProj", this.camera.getInvertedViewProj())
-                .setUniform("uCamera.position", this.camera.getPosition())
-                .setUniform("uShadow.hasShadow", this.renderShadow)
-                .setUniform("uLights.directionalCount", this.directionalLights.size())
-                .setUniform("uLights.pointCount", this.pointLights.size())
-                .setUniform("uLights.spotCount", this.spotLights.size())
-                .setUniform("uGBuffer.colors", 0)
-                .setUniform("uGBuffer.normals", 1)
-                .setUniform("uGBuffer.emissive", 2)
-                .setUniform("uGBuffer.depth", 3)
-                .setUniform("uShadow.shadowMap", 4)
-                .setUniform("uLights.irradiance", 5)
-                .setUniform("uLights.preFilteredMap", 6)
-                .setUniform("uLights.brdf", 7);
+                .setCameraUniforms(this.camera)
+                .setHasShadowUniform(this.renderShadow)
+                .setDirectionalLightsUniforms(this.directionalLights)
+                .setPointLightsUniforms(this.pointLights)
+                .setSpotLightsUniforms(this.spotLights);
 
         if (Objects.nonNull(this.irradianceMap)) {
             this.irradianceMap.bind(5);
@@ -440,17 +403,8 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisit
             this.preFilteredMap.bind(6);
         }
         if (this.renderShadow) {
-            this.deferredShader.setUniform("uShadow.lightViewProj", this.lightViewProj);
+            this.deferredShader.setShadowCasterViewProjectionMatrix(this.lightViewProj);
             this.shadowBuffer.getDepthTexture().bind(4);
-        }
-        for (var i = 0; i < this.directionalLights.size(); i++) {
-            this.setDirectionalLight(this.deferredShader, i, this.directionalLights.get(i));
-        }
-        for (var i = 0; i < this.pointLights.size(); i++) {
-            this.setPointLight(this.deferredShader, i, this.pointLights.get(i));
-        }
-        for (var i = 0; i < this.spotLights.size(); i++) {
-            this.setSpotLight(this.deferredShader, i, this.spotLights.get(i));
         }
 
         glDepthFunc(GL_NOTEQUAL);
@@ -471,31 +425,7 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisit
         this.finalBuffer.unbind();
     }
 
-    private void setDirectionalLight(final Shader shader, final int index, final DirectionalLight light) {
-        shader.setUniform("uLights.directionals[" + index + "].base.intensity", light.getIntensity())
-                .setUniform("uLights.directionals[" + index + "].base.color", light.getColor())
-                .setUniform("uLights.directionals[" + index + "].direction", light.getDirection());
-    }
-
-    private void setPointLight(Shader shader, int index, PointLight light) {
-        shader.setUniform("uLights.points[" + index + "].base.intensity", light.getIntensity())
-                .setUniform("uLights.points[" + index + "].base.color", light.getColor())
-                .setUniform("uLights.points[" + index + "].position", light.getPosition())
-                .setUniform("uLights.points[" + index + "].radius", light.getRadius());
-    }
-
-    private void setSpotLight(Shader shader, int index, SpotLight light) {
-        shader.setUniform("uLights.spots[" + index + "].point.base.intensity", light.getIntensity())
-                .setUniform("uLights.spots[" + index + "].point.base.color", light.getColor())
-                .setUniform("uLights.spots[" + index + "].point.position", light.getPosition())
-                .setUniform("uLights.spots[" + index + "].point.radius", light.getRadius())
-                .setUniform("uLights.spots[" + index + "].direction", light.getDirection())
-                .setUniform("uLights.spots[" + index + "].cutOff", light.getCutOff())
-                .setUniform("uLights.spots[" + index + "].outerCutOff", light.getOuterCutOff());
-    }
-
     private void renderParticles() {
-
         this.finalBuffer.bind();
         this.particleEmitters.forEach(emitter -> {
             this.particleRenderer.setCamera(this.camera);

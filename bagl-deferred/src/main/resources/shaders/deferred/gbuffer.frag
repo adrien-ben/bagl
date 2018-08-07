@@ -1,21 +1,6 @@
 #version 330
 
-struct Material {
-	vec4 diffuseColor;
-	vec4 emissiveColor;
-    float emissiveIntensity;
-	float roughness;
-	float metallic;
-
-	bool hasDiffuseMap;
-    sampler2D diffuseMap;
-    bool hasEmissiveMap;
-    sampler2D emissiveMap;
-    bool hasOrmMap;
-    sampler2D ormMap;
-	bool hasNormalMap;
-    sampler2D normalMap;
-};
+#import "classpath:/shaders/common/material.glsl"
 
 in vec2 passCoords;
 in vec3 passNormal;
@@ -28,6 +13,11 @@ layout (location = 2) out vec3 emissive;
 uniform Material uMaterial;
 
 void main() {
+    // discard transparent pixels
+    if(isTransparent(uMaterial, passCoords)) {
+        discard;
+    }
+
     // diffuse color
     colors.rgb = uMaterial.diffuseColor.rgb;
     if(uMaterial.hasDiffuseMap) {
@@ -54,8 +44,6 @@ void main() {
     }
 
 	normals.rgb = normal*0.5 + 0.5;
-
-
 
     // metallic
 	normals.a = uMaterial.metallic;

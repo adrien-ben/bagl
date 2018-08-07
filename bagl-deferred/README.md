@@ -42,6 +42,11 @@ For ORM maps, roughness must be put in the green channel and metalness in the bl
 Ambient occlusion maps are not yet supported but when they are, data will be read from the red channel of the same map.
 For double sided materials, normals will be automatically inverted during the fragment shader stage.
 
+#### Transparency
+
+Transparency of materials is partially supported. Materials with fully opaque and transparent parts are supported.
+Blending is NOT supported.
+
 ### Models
 
 Partial support of glTF 2.0 is implemented. For now only static mesh rendering are handle. Sparse accessors are not supported.

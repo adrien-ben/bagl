@@ -7,6 +7,7 @@ import com.adrienben.games.bagl.core.utils.Tuple2;
 import com.adrienben.games.bagl.engine.Configuration;
 import com.adrienben.games.bagl.engine.Transform;
 import com.adrienben.games.bagl.engine.rendering.Material;
+import com.adrienben.games.bagl.engine.rendering.model.AlphaMode;
 import com.adrienben.games.bagl.engine.rendering.model.Mesh;
 import com.adrienben.games.bagl.engine.rendering.model.Model;
 import com.adrienben.games.bagl.engine.rendering.model.ModelNode;
@@ -43,6 +44,8 @@ import java.util.stream.Collectors;
  * @author adrien
  */
 public class GltfLoader {
+
+    private static final float DEFAULT_EMISSIVE_INTENSITY = 1f;
 
     private String directory;
 
@@ -345,11 +348,13 @@ public class GltfLoader {
                 .map(GltfTextureInfo::getTexture).map(this::mapTexture).orElse(null);
         final var normalMap = Optional.ofNullable(gltfMaterial.getNormalTexture()).map(GltfNormalTextureInfo::getTexture)
                 .map(this::mapTexture).orElse(null);
+        final var alphaMode = mapAlphaMode(gltfMaterial.getAlphaMode());
+        final var alphaCutoff = gltfMaterial.getAlphaCutoff();
 
         return Material.builder()
-                .diffuse(new Color(color.getR(), color.getG(), color.getB(), color.getA()))
-                .emissive(new Color(emissive.getR(), emissive.getG(), emissive.getB(), emissive.getA()))
-                .emissiveIntensity(1f)
+                .diffuse(mapColor(color))
+                .emissive(mapColor(emissive))
+                .emissiveIntensity(DEFAULT_EMISSIVE_INTENSITY)
                 .roughness(gltfMaterial.getPbrMetallicRoughness().getRoughnessFactor())
                 .metallic(gltfMaterial.getPbrMetallicRoughness().getMetallicFactor())
                 .diffuse(diffuseTexture)
@@ -357,7 +362,13 @@ public class GltfLoader {
                 .orm(pbrTexture)
                 .normals(normalMap)
                 .doubleSided(gltfMaterial.getDoubleSided())
+                .alphaMode(alphaMode)
+                .alphaCutoff(alphaCutoff)
                 .build();
+    }
+
+    private Color mapColor(final GltfColor color) {
+        return new Color(color.getR(), color.getG(), color.getB(), color.getA());
     }
 
     /**
@@ -455,6 +466,19 @@ public class GltfLoader {
                 return Wrap.MIRRORED_REPEAT;
             default:
                 throw new UnsupportedOperationException("Unsupported wrap mode " + wrapMode);
+        }
+    }
+
+    private AlphaMode mapAlphaMode(final GltfAlphaMode alphaMode) {
+        switch (alphaMode) {
+            case OPAQUE:
+                return AlphaMode.OPAQUE;
+            case MASK:
+                return AlphaMode.MASK;
+            case BLEND:
+                return AlphaMode.BLEND;
+            default:
+                throw new UnsupportedOperationException("Unsupported alpha mode " + alphaMode);
         }
     }
 }
