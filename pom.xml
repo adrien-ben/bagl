@@ -2,11 +2,22 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.adrien.games</groupId>
-    <artifactId>bagl</artifactId>
-    <version>0.0.3</version>
+
+    <groupId>com.adrienben.games</groupId>
+    <artifactId>bagl-parent</artifactId>
+    <version>0.0.4</version>
+    <packaging>pom</packaging>
+
     <name>BAGL</name>
     <description>OpenGL framework that I use for educational purpose.</description>
+
+    <modules>
+        <module>bagl-core</module>
+        <module>bagl-opengl</module>
+        <module>bagl-engine</module>
+        <module>bagl-deferred</module>
+        <module>bagl-tests</module>
+    </modules>
 
     <properties>
         <java.version>1.10</java.version>
@@ -25,153 +36,154 @@
         <junit-platform-surefire-provider.version>1.2.0</junit-platform-surefire-provider.version>
     </properties>
 
-    <dependencies>
-        <!-- LWJGL dependencies -->
-        <dependency>
-            <groupId>org.lwjgl</groupId>
-            <artifactId>lwjgl</artifactId>
-            <version>${lwjgl.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.lwjgl</groupId>
-            <artifactId>lwjgl</artifactId>
-            <version>${lwjgl.version}</version>
-            <classifier>${lwjgl.natives}</classifier>
-        </dependency>
-        <dependency>
-            <groupId>org.lwjgl</groupId>
-            <artifactId>lwjgl-glfw</artifactId>
-            <version>${lwjgl.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.lwjgl</groupId>
-            <artifactId>lwjgl-glfw</artifactId>
-            <version>${lwjgl.version}</version>
-            <classifier>${lwjgl.natives}</classifier>
-        </dependency>
-        <dependency>
-            <groupId>org.lwjgl</groupId>
-            <artifactId>lwjgl-jemalloc</artifactId>
-            <version>${lwjgl.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.lwjgl</groupId>
-            <artifactId>lwjgl-jemalloc</artifactId>
-            <version>${lwjgl.version}</version>
-            <classifier>${lwjgl.natives}</classifier>
-        </dependency>
-        <dependency>
-            <groupId>org.lwjgl</groupId>
-            <artifactId>lwjgl-opengl</artifactId>
-            <version>${lwjgl.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.lwjgl</groupId>
-            <artifactId>lwjgl-opengl</artifactId>
-            <version>${lwjgl.version}</version>
-            <classifier>${lwjgl.natives}</classifier>
-        </dependency>
-        <dependency>
-            <groupId>org.lwjgl</groupId>
-            <artifactId>lwjgl-stb</artifactId>
-            <version>${lwjgl.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.lwjgl</groupId>
-            <artifactId>lwjgl-stb</artifactId>
-            <version>${lwjgl.version}</version>
-            <classifier>${lwjgl.natives}</classifier>
-        </dependency>
-        <!-- JOML -->
-        <dependency>
-            <groupId>org.joml</groupId>
-            <artifactId>joml</artifactId>
-            <version>${joml.version}</version>
-        </dependency>
-        <!-- gltf-loader -->
-        <dependency>
-            <groupId>com.adrienben.tools</groupId>
-            <artifactId>gltf-loader</artifactId>
-            <version>${gltf-loader.version}</version>
-        </dependency>
-        <!-- GSON dependencies -->
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>${gson.version}</version>
-        </dependency>
-        <!-- LOG4J dependencies -->
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-            <version>${log4j.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>${log4j.version}</version>
-        </dependency>
+    <dependencyManagement>
+        <dependencies>
+            <!-- LWJGL dependencies -->
+            <dependency>
+                <groupId>org.lwjgl</groupId>
+                <artifactId>lwjgl</artifactId>
+                <version>${lwjgl.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.lwjgl</groupId>
+                <artifactId>lwjgl</artifactId>
+                <version>${lwjgl.version}</version>
+                <classifier>${lwjgl.natives}</classifier>
+            </dependency>
+            <dependency>
+                <groupId>org.lwjgl</groupId>
+                <artifactId>lwjgl-glfw</artifactId>
+                <version>${lwjgl.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.lwjgl</groupId>
+                <artifactId>lwjgl-glfw</artifactId>
+                <version>${lwjgl.version}</version>
+                <classifier>${lwjgl.natives}</classifier>
+            </dependency>
+            <dependency>
+                <groupId>org.lwjgl</groupId>
+                <artifactId>lwjgl-jemalloc</artifactId>
+                <version>${lwjgl.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.lwjgl</groupId>
+                <artifactId>lwjgl-jemalloc</artifactId>
+                <version>${lwjgl.version}</version>
+                <classifier>${lwjgl.natives}</classifier>
+            </dependency>
+            <dependency>
+                <groupId>org.lwjgl</groupId>
+                <artifactId>lwjgl-opengl</artifactId>
+                <version>${lwjgl.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.lwjgl</groupId>
+                <artifactId>lwjgl-opengl</artifactId>
+                <version>${lwjgl.version}</version>
+                <classifier>${lwjgl.natives}</classifier>
+            </dependency>
+            <dependency>
+                <groupId>org.lwjgl</groupId>
+                <artifactId>lwjgl-stb</artifactId>
+                <version>${lwjgl.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.lwjgl</groupId>
+                <artifactId>lwjgl-stb</artifactId>
+                <version>${lwjgl.version}</version>
+                <classifier>${lwjgl.natives}</classifier>
+            </dependency>
+            <!-- JOML -->
+            <dependency>
+                <groupId>org.joml</groupId>
+                <artifactId>joml</artifactId>
+                <version>${joml.version}</version>
+            </dependency>
+            <!-- gltf-loader -->
+            <dependency>
+                <groupId>com.adrienben.tools</groupId>
+                <artifactId>gltf-loader</artifactId>
+                <version>${gltf-loader.version}</version>
+            </dependency>
+            <!-- GSON dependencies -->
+            <dependency>
+                <groupId>com.google.code.gson</groupId>
+                <artifactId>gson</artifactId>
+                <version>${gson.version}</version>
+            </dependency>
+            <!-- LOG4J dependencies -->
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-api</artifactId>
+                <version>${log4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-core</artifactId>
+                <version>${log4j.version}</version>
+            </dependency>
 
-        <!-- JUNIT 5 -->
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>${junit-jupiter-engine.version}</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
+            <!-- JUNIT 5 -->
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-engine</artifactId>
+                <version>${junit-jupiter-engine.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven.compiler.plugin.version}</version>
-                <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>${maven.source.plugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>jar-no-fork</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>${maven-surefire-plugin.version}</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.junit.platform</groupId>
-                        <artifactId>junit-platform-surefire-provider</artifactId>
-                        <version>${junit-platform-surefire-provider.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.junit.jupiter</groupId>
-                        <artifactId>junit-jupiter-engine</artifactId>
-                        <version>${junit-jupiter-engine.version}</version>
-                    </dependency>
-                </dependencies>
-                <configuration>
-                    <argLine>
-                        --add-opens com.adrien.games.bagl/com.adrien.games.bagl.utils=ALL-UNNAMED
-                        --add-opens com.adrien.games.bagl/com.adrien.games.bagl.resource.asset=ALL-UNNAMED
-                        --add-opens com.adrien.games.bagl/com.adrien.games.bagl.resource.shader=ALL-UNNAMED
-                        --add-opens com.adrien.games.bagl/com.adrien.games.bagl.assets=ALL-UNNAMED
-                        --add-opens com.adrien.games.bagl/com.adrien.games.bagl.extensions=ALL-UNNAMED
-                    </argLine>
-                </configuration>
-            </plugin>
-        </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${maven.compiler.plugin.version}</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.ow2.asm</groupId>
+                            <artifactId>asm</artifactId>
+                            <version>6.1.1</version>
+                        </dependency>
+                    </dependencies>
+                    <configuration>
+                        <source>${java.version}</source>
+                        <target>${java.version}</target>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>${maven.source.plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <id>attach-sources</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>jar-no-fork</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${maven-surefire-plugin.version}</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.junit.platform</groupId>
+                            <artifactId>junit-platform-surefire-provider</artifactId>
+                            <version>${junit-platform-surefire-provider.version}</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.junit.jupiter</groupId>
+                            <artifactId>junit-jupiter-engine</artifactId>
+                            <version>${junit-jupiter-engine.version}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 
     <profiles>
