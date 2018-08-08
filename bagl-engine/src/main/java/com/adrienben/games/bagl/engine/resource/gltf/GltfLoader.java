@@ -1,4 +1,4 @@
-package com.adrienben.games.bagl.engine.resource;
+package com.adrienben.games.bagl.engine.resource.gltf;
 
 import com.adrienben.games.bagl.core.Color;
 import com.adrienben.games.bagl.core.io.ResourcePath;
@@ -7,17 +7,14 @@ import com.adrienben.games.bagl.core.utils.Tuple2;
 import com.adrienben.games.bagl.engine.Configuration;
 import com.adrienben.games.bagl.engine.Transform;
 import com.adrienben.games.bagl.engine.rendering.Material;
-import com.adrienben.games.bagl.engine.rendering.model.AlphaMode;
 import com.adrienben.games.bagl.engine.rendering.model.Mesh;
 import com.adrienben.games.bagl.engine.rendering.model.Model;
 import com.adrienben.games.bagl.engine.rendering.model.ModelNode;
+import com.adrienben.games.bagl.engine.resource.gltf.mappers.*;
 import com.adrienben.games.bagl.opengl.BufferUsage;
-import com.adrienben.games.bagl.opengl.DataType;
-import com.adrienben.games.bagl.opengl.PrimitiveType;
 import com.adrienben.games.bagl.opengl.texture.Filter;
 import com.adrienben.games.bagl.opengl.texture.Texture;
 import com.adrienben.games.bagl.opengl.texture.TextureParameters;
-import com.adrienben.games.bagl.opengl.texture.Wrap;
 import com.adrienben.games.bagl.opengl.vertex.IndexBuffer;
 import com.adrienben.games.bagl.opengl.vertex.VertexBuffer;
 import com.adrienben.games.bagl.opengl.vertex.VertexBufferParams;
@@ -47,7 +44,23 @@ public class GltfLoader {
 
     private static final float DEFAULT_EMISSIVE_INTENSITY = 1f;
 
+    private final ChannelMapper channelMapper;
+    private final DataTypeMapper dataTypeMapper;
+    private final PrimitiveTypeMapper primitiveTypeMapper;
+    private final FilterMapper filterMapper;
+    private final WrapMapper wrapMapper;
+    private final AlphaModeMapper alphaModeMapper;
+
     private String directory;
+
+    public GltfLoader() {
+        this.channelMapper = new ChannelMapper();
+        this.dataTypeMapper = new DataTypeMapper();
+        this.primitiveTypeMapper = new PrimitiveTypeMapper();
+        this.filterMapper = new FilterMapper();
+        this.wrapMapper = new WrapMapper();
+        this.alphaModeMapper = new AlphaModeMapper();
+    }
 
     /**
      * Load a gltf file
@@ -154,7 +167,10 @@ public class GltfLoader {
      * @return A map of meshes mapped to their material
      */
     private Map<Mesh, Material> mapGltfMesh(final GltfMesh mesh) {
-        return mesh.getPrimitives().stream().map(this::createMesh).collect(Collectors.toMap(Tuple2::getFirst, Tuple2::getSecond));
+        return mesh.getPrimitives()
+                .stream()
+                .map(this::createMesh)
+                .collect(Collectors.toMap(Tuple2::getFirst, Tuple2::getSecond));
     }
 
     /**
@@ -173,7 +189,7 @@ public class GltfLoader {
                 .flatMap(Optional::stream)
                 .collect(Collectors.toList());
 
-        final Mesh mesh = new Mesh(vBuffers, iBuffer, this.mapPrimitiveType(primitive.getMode()));
+        final Mesh mesh = new Mesh(vBuffers, iBuffer, primitiveTypeMapper.map(primitive.getMode()));
         final Material material = this.mapMaterial(primitive.getMaterial());
 
         return new Tuple2<>(mesh, material);
@@ -187,12 +203,14 @@ public class GltfLoader {
      */
     private IndexBuffer createIndexBuffer(final GltfAccessor accessor) {
         return this.extractData(accessor).map(indices -> {
-            final var dataType = this.mapDataType(accessor.getComponentType());
+            final var dataType = dataTypeMapper.map(accessor.getComponentType());
             final var indexBuffer = new IndexBuffer(indices, dataType, BufferUsage.STATIC_DRAW);
             MemoryUtil.memFree(indices);
             return indexBuffer;
         }).orElse(null);
     }
+
+
 
     /**
      * Create a vertex buffer from a primitive attribute
@@ -205,66 +223,22 @@ public class GltfLoader {
         final var vertices = this.extractData(accessor).orElseThrow(() -> new IllegalArgumentException(
                 "Primitive attribute's accessor should not be null"));
 
-        final var channel = this.mapChannel(type);
+        final var channel = channelMapper.map(type);
         if (channel == -1) {
             return Optional.empty();
         }
 
-        final var builder = VertexBufferParams.builder()
-                .dataType(this.mapDataType(accessor.getComponentType()))
-                .element(new VertexElement(channel, accessor.getType().getComponentCount(), accessor.getNormalized()));
-
-        final var vertexBuffer = new VertexBuffer(vertices, builder.build());
+        final var vertexBufferParams = mapVertexBufferParams(channel, accessor);
+        final var vertexBuffer = new VertexBuffer(vertices, vertexBufferParams);
         MemoryUtil.memFree(vertices);
         return Optional.of(vertexBuffer);
     }
 
-    /**
-     * Retrieve the vertex attribute channel from the type of attribute
-     * <p>
-     * If the type of attribute iss not supported it returns -1
-     *
-     * @param type The type of a primitive attribute
-     * @return The channel on which to map the vertex elements
-     */
-    private int mapChannel(final String type) {
-        switch (type) {
-            case "POSITION":
-                return Mesh.POSITION_INDEX;
-            case "NORMAL":
-                return Mesh.NORMAL_INDEX;
-            case "TANGENT":
-                return Mesh.TANGENT_INDEX;
-            case "TEXCOORD_0":
-                return Mesh.COORDINATES_INDEX;
-            default:
-                return -1;
-        }
-    }
-
-    /**
-     * Map a gltf component type to a data type
-     *
-     * @param componentType The component type to map
-     * @return The corresponding data type
-     */
-    private DataType mapDataType(final GltfComponentType componentType) {
-        switch (componentType) {
-            case BYTE:
-                return DataType.BYTE;
-            case UNSIGNED_BYTE:
-                return DataType.UNSIGNED_BYTE;
-            case SHORT:
-                return DataType.SHORT;
-            case UNSIGNED_SHORT:
-                return DataType.UNSIGNED_SHORT;
-            case UNSIGNED_INT:
-                return DataType.UNSIGNED_INT;
-            case FLOAT:
-                return DataType.FLOAT;
-            default:
-                throw new UnsupportedOperationException("Unsupported component type " + componentType);
-        }
+    private VertexBufferParams mapVertexBufferParams(final int channel, final GltfAccessor accessor) {
+        return VertexBufferParams.builder()
+                .dataType(dataTypeMapper.map(accessor.getComponentType()))
+                .element(new VertexElement(channel, accessor.getType().getComponentCount(), accessor.getNormalized()))
+                .build();
     }
 
     /**
@@ -312,26 +286,6 @@ public class GltfLoader {
     }
 
     /**
-     * Map a gltf primitive mode into a primitive type
-     *
-     * @param mode The mode to map
-     * @return The corresponding primitive type
-     * @throws UnsupportedOperationException if the mode is not supported
-     */
-    private PrimitiveType mapPrimitiveType(final GltfPrimitiveMode mode) {
-        switch (mode) {
-            case POINTS:
-                return PrimitiveType.POINTS;
-            case TRIANGLES:
-                return PrimitiveType.TRIANGLES;
-            case TRIANGLE_STRIP:
-                return PrimitiveType.TRIANGLE_STRIP;
-            default:
-                throw new UnsupportedOperationException("Unsupported primitive type " + mode);
-        }
-    }
-
-    /**
      * Map a gltf material
      *
      * @param gltfMaterial The material to map
@@ -348,7 +302,7 @@ public class GltfLoader {
                 .map(GltfTextureInfo::getTexture).map(this::mapTexture).orElse(null);
         final var normalMap = Optional.ofNullable(gltfMaterial.getNormalTexture()).map(GltfNormalTextureInfo::getTexture)
                 .map(this::mapTexture).orElse(null);
-        final var alphaMode = mapAlphaMode(gltfMaterial.getAlphaMode());
+        final var alphaMode = alphaModeMapper.map(gltfMaterial.getAlphaMode());
         final var alphaCutoff = gltfMaterial.getAlphaCutoff();
 
         return Material.builder()
@@ -381,21 +335,24 @@ public class GltfLoader {
         if (Objects.isNull(texture) || Objects.isNull(texture.getSource())) {
             return null;
         }
+        final var params = mapTextureParameters(texture.getSampler());
+        return this.generateTextureFromImage(texture.getSource(), params);
+    }
 
-        final var sampler = texture.getSampler();
-        final var magFilter = Optional.ofNullable(sampler.getMagFilter()).map(this::mapFilter);
-        final var minFilter = Optional.ofNullable(sampler.getMinFilter()).map(this::mapFilter);
+    private TextureParameters.Builder mapTextureParameters(final GltfSampler sampler) {
+        final var magFilter = Optional.ofNullable(sampler.getMagFilter()).map(filterMapper::map);
+        final var minFilter = Optional.ofNullable(sampler.getMinFilter()).map(filterMapper::map);
+        final var isMipmap = magFilter.map(Filter::isMipmap).orElse(false)
+                || minFilter.map(Filter::isMipmap).orElse(false);
 
         final var params = TextureParameters.builder();
         magFilter.ifPresent(params::magFilter);
         minFilter.ifPresent(params::minFilter);
-        params.mipmaps(magFilter.map(Filter::isMipmap).orElse(false)
-                || minFilter.map(Filter::isMipmap).orElse(false));
-        params.sWrap(this.mapWrap(sampler.getWrapS()));
-        params.tWrap(this.mapWrap(sampler.getWrapT()));
+        params.mipmaps(isMipmap);
+        params.sWrap(wrapMapper.map(sampler.getWrapS()));
+        params.tWrap(wrapMapper.map(sampler.getWrapT()));
         params.anisotropic(Configuration.getInstance().getAnisotropicLevel());
-
-        return this.generateTexture(texture.getSource(), params);
+        return params;
     }
 
     /**
@@ -405,80 +362,34 @@ public class GltfLoader {
      * @param params    The parameters of the texture
      * @return A new texture
      */
-    private Texture generateTexture(final GltfImage gltfImage, final TextureParameters.Builder params) {
-        final Texture tex;
+    private Texture generateTextureFromImage(final GltfImage gltfImage, final TextureParameters.Builder params) {
         if (Objects.nonNull(gltfImage.getBufferView())) {
-            final var view = gltfImage.getBufferView();
-            final var length = view.getByteLength();
-            final var imageData = MemoryUtil.memAlloc(length)
-                    .put(view.getBuffer().getData(), view.getByteOffset(), length).flip();
-            tex = Texture.fromMemory(imageData, params);
-            MemoryUtil.memFree(imageData);
+            return generateTextureFromBufferView(gltfImage.getBufferView(), params);
         } else if (Objects.nonNull(gltfImage.getData())) {
-            final var data = gltfImage.getData();
-            final var imageData = MemoryUtil.memAlloc(data.length).put(data).flip();
-            tex = Texture.fromMemory(imageData, params);
-            MemoryUtil.memFree(imageData);
-        } else {
-            tex = Texture.fromFile(ResourcePath.get(this.directory, gltfImage.getUri()), params);
+            return generateTextureFromImageData(gltfImage.getData(), params);
         }
-        return tex;
+        return generateTextureFromFile(gltfImage.getUri(), params);
     }
 
-    /**
-     * Map gltf texture filter
-     *
-     * @param filter The filter to map
-     * @return The corresponding texture filter
-     */
-    private Filter mapFilter(final GltfFilter filter) {
-        switch (filter) {
-            case NEAREST:
-                return Filter.NEAREST;
-            case LINEAR:
-                return Filter.LINEAR;
-            case NEAREST_MIPMAP_NEAREST:
-                return Filter.MIPMAP_NEAREST_NEAREST;
-            case NEAREST_MIPMAP_LINEAR:
-                return Filter.MIPMAP_NEAREST_LINEAR;
-            case LINEAR_MIPMAP_NEAREST:
-                return Filter.MIPMAP_LINEAR_NEAREST;
-            case LINEAR_MIPMAP_LINEAR:
-                return Filter.MIPMAP_LINEAR_LINEAR;
-            default:
-                throw new UnsupportedOperationException("Unsupported filter " + filter);
-        }
+    private Texture generateTextureFromBufferView(final GltfBufferView bufferView, final TextureParameters.Builder params) {
+        final var length = bufferView.getByteLength();
+        final var imageData = MemoryUtil.memAlloc(length)
+                .put(bufferView.getBuffer().getData(), bufferView.getByteOffset(), length).flip();
+        return generateTextureFromByteBufferAndFreeBuffer(imageData, params);
     }
 
-    /**
-     * Map gltf wrap mode
-     *
-     * @param wrapMode the wrap mode to map
-     * @return The corresponding wrap
-     */
-    private Wrap mapWrap(final GltfWrapMode wrapMode) {
-        switch (wrapMode) {
-            case REPEAT:
-                return Wrap.REPEAT;
-            case CLAMP_TO_EDGE:
-                return Wrap.CLAMP_TO_EDGE;
-            case MIRRORED_REPEAT:
-                return Wrap.MIRRORED_REPEAT;
-            default:
-                throw new UnsupportedOperationException("Unsupported wrap mode " + wrapMode);
-        }
+    private Texture generateTextureFromImageData(final byte[] data, final TextureParameters.Builder params) {
+        final var imageData = MemoryUtil.memAlloc(data.length).put(data).flip();
+        return generateTextureFromByteBufferAndFreeBuffer(imageData, params);
     }
 
-    private AlphaMode mapAlphaMode(final GltfAlphaMode alphaMode) {
-        switch (alphaMode) {
-            case OPAQUE:
-                return AlphaMode.OPAQUE;
-            case MASK:
-                return AlphaMode.MASK;
-            case BLEND:
-                return AlphaMode.BLEND;
-            default:
-                throw new UnsupportedOperationException("Unsupported alpha mode " + alphaMode);
-        }
+    private Texture generateTextureFromByteBufferAndFreeBuffer(final ByteBuffer byteBuffer, final TextureParameters.Builder params) {
+        final var texture = Texture.fromMemory(byteBuffer, params);
+        MemoryUtil.memFree(byteBuffer);
+        return texture;
+    }
+
+    private Texture generateTextureFromFile(final String path, final TextureParameters.Builder params) {
+        return Texture.fromFile(ResourcePath.get(this.directory, path), params);
     }
 }
