@@ -8,6 +8,7 @@ import com.adrienben.games.bagl.deferred.shaders.GBufferShader;
 import com.adrienben.games.bagl.deferred.shaders.ShaderFactory;
 import com.adrienben.games.bagl.deferred.shaders.ShadowShader;
 import com.adrienben.games.bagl.engine.Configuration;
+import com.adrienben.games.bagl.engine.Transform;
 import com.adrienben.games.bagl.engine.camera.Camera;
 import com.adrienben.games.bagl.engine.rendering.Material;
 import com.adrienben.games.bagl.engine.rendering.light.DirectionalLight;
@@ -31,6 +32,8 @@ import com.adrienben.games.bagl.opengl.shader.Shader;
 import com.adrienben.games.bagl.opengl.texture.Cubemap;
 import com.adrienben.games.bagl.opengl.texture.Format;
 import com.adrienben.games.bagl.opengl.texture.Texture;
+import org.joml.AABBf;
+import org.joml.FrustumIntersection;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
@@ -72,6 +75,9 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisit
     private final List<Model> models;
     private final List<ParticleEmitter> particleEmitters;
 
+    private FrustumIntersection cameraFrustum;
+    private AABBf aabbBuffer;
+
     private final Matrix4f wvpBuffer;
     private final Matrix4f lightViewProj;
 
@@ -110,6 +116,9 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisit
         this.spotLights = new ArrayList<>();
         this.models = new ArrayList<>();
         this.particleEmitters = new ArrayList<>();
+
+        this.cameraFrustum = new FrustumIntersection();
+        this.aabbBuffer = new AABBf();
 
         this.wvpBuffer = new Matrix4f();
         this.lightViewProj = new Matrix4f();
@@ -202,6 +211,7 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisit
             throw new EngineException("Impossible to render a scene if no camera is set up");
         }
 
+        this.updateFrustum();
         this.renderShadowMap();
         this.performGeometryPass();
         this.performLightingPass();
@@ -209,6 +219,10 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisit
         this.renderParticles();
 
         this.postProcessor.process(this.finalBuffer.getColorTexture(0));
+    }
+
+    private void updateFrustum() {
+        cameraFrustum.set(camera.getViewProj());
     }
 
     /**
@@ -346,8 +360,19 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisit
         this.camera.getViewProj().mul(nodeTransform, this.wvpBuffer);
         this.gBufferShader.setWorldUniform(nodeTransform);
         this.gBufferShader.setWorldViewProjectionUniform(this.wvpBuffer);
-        node.getMeshes().forEach(this::renderMeshToGBuffer);
+        node.getMeshes()
+                .entrySet()
+                .stream()
+                .filter(entry -> isMeshVisibleFromCameraPOV(entry.getKey(), node.getTransform()))
+                .forEach(entry -> renderMeshToGBuffer(entry.getKey(), entry.getValue()));
         node.getChildren().forEach(this::renderModelNodeToGBuffer);
+    }
+
+    private boolean isMeshVisibleFromCameraPOV(final Mesh mesh, final Transform meshTransform) {
+        final var meshAabb = meshTransform.transformAABB(mesh.getAabb(), aabbBuffer);
+        final int intersection = cameraFrustum.intersectAab(meshAabb.minX, meshAabb.minY, meshAabb.minZ,
+                meshAabb.maxX, meshAabb.maxY, meshAabb.maxZ);
+        return intersection == FrustumIntersection.INSIDE || intersection == FrustumIntersection.INTERSECT;
     }
 
     /**
@@ -379,6 +404,12 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisit
      * analytical light found in the scene
      */
     private void performLightingPass() {
+        prepareResourcesForLightingPass();
+        renderLightingPass();
+        unbindResourcesPostLightingPass();
+    }
+
+    private void prepareResourcesForLightingPass() {
         this.finalBuffer.bind();
         this.finalBuffer.clear();
         this.finalBuffer.copyFrom(this.gBuffer, true, false);
@@ -406,13 +437,17 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisit
             this.deferredShader.setShadowCasterViewProjectionMatrix(this.lightViewProj);
             this.shadowBuffer.getDepthTexture().bind(4);
         }
+    }
 
+    private void renderLightingPass() {
         glDepthFunc(GL_NOTEQUAL);
         glDepthMask(false);
         this.meshRenderer.render(this.screenQuad);
         glDepthMask(true);
         glDepthFunc(GL_LESS);
+    }
 
+    private void unbindResourcesPostLightingPass() {
         Shader.unbind();
         Cubemap.unbind(5);
         Cubemap.unbind(6);
