@@ -20,6 +20,7 @@ import com.adrienben.games.bagl.opengl.vertex.VertexBuffer;
 import com.adrienben.games.bagl.opengl.vertex.VertexBufferParams;
 import com.adrienben.games.bagl.opengl.vertex.VertexElement;
 import com.adrienben.tools.gltf.models.*;
+import org.joml.AABBf;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.lwjgl.system.MemoryUtil;
@@ -181,18 +182,28 @@ public class GltfLoader {
      */
     private Tuple2<Mesh, Material> createMesh(final GltfPrimitive primitive) {
         final var iBuffer = this.createIndexBuffer(primitive.getIndices());
-
-        final var vBuffers = primitive.getAttributes()
-                .entrySet()
-                .stream()
+        final var vBuffers = primitive.getAttributes().entrySet().stream()
                 .map(entry -> this.createVertexBuffer(entry.getKey(), entry.getValue()))
                 .flatMap(Optional::stream)
                 .collect(Collectors.toList());
+        final var primitiveType = primitiveTypeMapper.map(primitive.getMode());
+        final var aabb = getMeshAabb(primitive);
 
-        final Mesh mesh = new Mesh(vBuffers, iBuffer, primitiveTypeMapper.map(primitive.getMode()));
+        final Mesh mesh = Mesh.builder().vertexBuffers(vBuffers).indexBuffer(iBuffer).primitiveType(primitiveType).aabb(aabb).build();
         final Material material = this.mapMaterial(primitive.getMaterial());
 
         return new Tuple2<>(mesh, material);
+    }
+
+    private AABBf getMeshAabb(final GltfPrimitive primitive) {
+        final var positionAccessor = Optional.of(primitive.getAttributes()).map(attributes -> attributes.get("POSITION"));
+        final var min = positionAccessor.map(GltfAccessor::getMin).map(this::getVector3fFromAccessorsMinMax).orElse(new Vector3f());
+        final var max = positionAccessor.map(GltfAccessor::getMax).map(this::getVector3fFromAccessorsMinMax).orElse(new Vector3f());
+        return new AABBf(min, max);
+    }
+
+    private Vector3f getVector3fFromAccessorsMinMax(final List<Float> accessorsMinMax) {
+        return new Vector3f(accessorsMinMax.get(0), accessorsMinMax.get(1), accessorsMinMax.get(2));
     }
 
     /**
@@ -209,8 +220,6 @@ public class GltfLoader {
             return indexBuffer;
         }).orElse(null);
     }
-
-
 
     /**
      * Create a vertex buffer from a primitive attribute
