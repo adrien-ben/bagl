@@ -233,6 +233,7 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
             updateLightViewProjectionMatrix();
 
             glViewport(0, 0, this.shadowMapResolution, this.shadowMapResolution);
+            glCullFace(GL_FRONT);
             this.shadowBuffer.bind();
             this.shadowBuffer.clear();
             this.shadowShader.bind();
@@ -242,6 +243,7 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
             Shader.unbind();
             this.shadowBuffer.unbind();
             glViewport(0, 0, this.xResolution, this.yResolution);
+            glCullFace(GL_BACK);
         }
     }
 
