@@ -1,13 +1,13 @@
 package com.adrienben.games.bagl.deferred;
 
 import com.adrienben.games.bagl.core.exception.EngineException;
-import com.adrienben.games.bagl.core.math.Vectors;
 import com.adrienben.games.bagl.deferred.collector.SceneRenderDataCollector;
 import com.adrienben.games.bagl.deferred.pbr.BrdfLookup;
 import com.adrienben.games.bagl.deferred.shaders.DeferredShader;
 import com.adrienben.games.bagl.deferred.shaders.GBufferShader;
 import com.adrienben.games.bagl.deferred.shaders.ShaderFactory;
 import com.adrienben.games.bagl.deferred.shaders.ShadowShader;
+import com.adrienben.games.bagl.deferred.shadow.ShadowMapViewProjectionComputer;
 import com.adrienben.games.bagl.engine.Configuration;
 import com.adrienben.games.bagl.engine.Transform;
 import com.adrienben.games.bagl.engine.rendering.Material;
@@ -30,7 +30,6 @@ import com.adrienben.games.bagl.opengl.texture.Texture;
 import org.joml.AABBf;
 import org.joml.FrustumIntersection;
 import org.joml.Matrix4f;
-import org.joml.Vector3f;
 
 import java.util.Objects;
 
@@ -65,6 +64,7 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
 
     private final Matrix4f wvpBuffer;
     private final Matrix4f lightViewProj;
+    private final ShadowMapViewProjectionComputer shadowMapViewProjectionComputer;
 
     private Mesh screenQuad;
     private Mesh cubeMapMesh;
@@ -102,6 +102,7 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
 
         this.wvpBuffer = new Matrix4f();
         this.lightViewProj = new Matrix4f();
+        this.shadowMapViewProjectionComputer = new ShadowMapViewProjectionComputer();
 
         this.screenQuad = MeshFactory.createScreenQuad();
         this.cubeMapMesh = MeshFactory.createCubeMapMesh();
@@ -229,10 +230,7 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
     private void renderShadowMap() {
         this.renderShadow = !sceneRenderDataCollector.getDirectionalLights().isEmpty();
         if (this.renderShadow) {
-            final var position = new Vector3f(sceneRenderDataCollector.getDirectionalLights().get(0).getDirection()).mul(-10f);
-
-            this.lightViewProj.setOrtho(-10, 10, -10, 10, 0.1f, 20f)
-                    .lookAt(position, Vectors.VEC3_ZERO, Vectors.VEC3_UP);
+            updateLightViewProjectionMatrix();
 
             glViewport(0, 0, this.shadowMapResolution, this.shadowMapResolution);
             this.shadowBuffer.bind();
@@ -245,6 +243,12 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
             this.shadowBuffer.unbind();
             glViewport(0, 0, this.xResolution, this.yResolution);
         }
+    }
+
+    private void updateLightViewProjectionMatrix() {
+        final var caster = sceneRenderDataCollector.getDirectionalLights().get(0);
+        final var sceneAABB = sceneRenderDataCollector.getSceneAABB();
+        shadowMapViewProjectionComputer.computeViewProjectionFromCameraAndLight(caster, sceneAABB, lightViewProj);
     }
 
     /**

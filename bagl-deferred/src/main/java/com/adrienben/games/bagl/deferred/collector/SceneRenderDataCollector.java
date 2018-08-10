@@ -1,17 +1,22 @@
 package com.adrienben.games.bagl.deferred.collector;
 
+import com.adrienben.games.bagl.core.math.Vectors;
 import com.adrienben.games.bagl.engine.camera.Camera;
 import com.adrienben.games.bagl.engine.rendering.light.DirectionalLight;
 import com.adrienben.games.bagl.engine.rendering.light.PointLight;
 import com.adrienben.games.bagl.engine.rendering.light.SpotLight;
+import com.adrienben.games.bagl.engine.rendering.model.Mesh;
 import com.adrienben.games.bagl.engine.rendering.model.Model;
+import com.adrienben.games.bagl.engine.rendering.model.ModelNode;
 import com.adrienben.games.bagl.engine.rendering.particles.ParticleEmitter;
 import com.adrienben.games.bagl.engine.scene.ComponentVisitor;
 import com.adrienben.games.bagl.engine.scene.Scene;
 import com.adrienben.games.bagl.engine.scene.components.*;
 import com.adrienben.games.bagl.opengl.texture.Cubemap;
+import org.joml.AABBf;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -30,6 +35,9 @@ public class SceneRenderDataCollector implements ComponentVisitor {
     private final List<SpotLight> spotLights;
     private final List<Model> models;
     private final List<ParticleEmitter> particleEmitters;
+    private final AABBf sceneAABB;
+
+    private final AABBf aabBfBuffer;
 
     public SceneRenderDataCollector() {
         this.camera = null;
@@ -38,6 +46,8 @@ public class SceneRenderDataCollector implements ComponentVisitor {
         this.spotLights = new ArrayList<>();
         this.models = new ArrayList<>();
         this.particleEmitters = new ArrayList<>();
+        this.sceneAABB = new AABBf(Vectors.VEC3_ZERO, Vectors.VEC3_ZERO);
+        this.aabBfBuffer = new AABBf();
     }
 
     /**
@@ -46,6 +56,7 @@ public class SceneRenderDataCollector implements ComponentVisitor {
     public void collectDataForRendering(final Scene scene) {
         preUpdateCleanup();
         scene.accept(this);
+        computeSceneAABB();
     }
 
     /**
@@ -61,6 +72,20 @@ public class SceneRenderDataCollector implements ComponentVisitor {
         spotLights.clear();
         models.clear();
         particleEmitters.clear();
+        sceneAABB.setMin(Vectors.VEC3_ZERO);
+        sceneAABB.setMax(Vectors.VEC3_ZERO);
+    }
+
+    private void computeSceneAABB() {
+        models.stream().map(Model::getNodes).flatMap(Collection::stream).forEach(this::computeModelNodeAABB);
+    }
+
+    private void computeModelNodeAABB(final ModelNode modelNode) {
+        final var transform = modelNode.getTransform();
+        modelNode.getMeshes().keySet().stream()
+                .map(Mesh::getAabb)
+                .map(aabb -> transform.transformAABB(aabb, aabBfBuffer))
+                .reduce(sceneAABB, AABBf::union);
     }
 
     /**
@@ -191,5 +216,9 @@ public class SceneRenderDataCollector implements ComponentVisitor {
 
     public List<ParticleEmitter> getParticleEmitters() {
         return particleEmitters;
+    }
+
+    public AABBf getSceneAABB() {
+        return sceneAABB;
     }
 }
