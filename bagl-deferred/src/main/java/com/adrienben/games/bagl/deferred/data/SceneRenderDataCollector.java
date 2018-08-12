@@ -1,23 +1,14 @@
-package com.adrienben.games.bagl.deferred.collector;
+package com.adrienben.games.bagl.deferred.data;
 
-import com.adrienben.games.bagl.core.math.Vectors;
-import com.adrienben.games.bagl.engine.camera.Camera;
-import com.adrienben.games.bagl.engine.rendering.light.DirectionalLight;
-import com.adrienben.games.bagl.engine.rendering.light.PointLight;
-import com.adrienben.games.bagl.engine.rendering.light.SpotLight;
 import com.adrienben.games.bagl.engine.rendering.model.Mesh;
 import com.adrienben.games.bagl.engine.rendering.model.Model;
 import com.adrienben.games.bagl.engine.rendering.model.ModelNode;
-import com.adrienben.games.bagl.engine.rendering.particles.ParticleEmitter;
 import com.adrienben.games.bagl.engine.scene.ComponentVisitor;
 import com.adrienben.games.bagl.engine.scene.Scene;
 import com.adrienben.games.bagl.engine.scene.components.*;
-import com.adrienben.games.bagl.opengl.texture.Cubemap;
 import org.joml.AABBf;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * This class is responsible for collecting the data required for rendering a scene.
@@ -26,58 +17,28 @@ import java.util.List;
  */
 public class SceneRenderDataCollector implements ComponentVisitor {
 
-    private Camera camera;
-    private Cubemap environmentMap;
-    private Cubemap irradianceMap;
-    private Cubemap preFilteredMap;
-    private final List<DirectionalLight> directionalLights;
-    private final List<PointLight> pointLights;
-    private final List<SpotLight> spotLights;
-    private final List<Model> models;
-    private final List<ParticleEmitter> particleEmitters;
-    private final AABBf sceneAABB;
-
+    private final SceneRenderData sceneRenderData;
     private final AABBf aabBfBuffer;
 
     public SceneRenderDataCollector() {
-        this.camera = null;
-        this.directionalLights = new ArrayList<>();
-        this.pointLights = new ArrayList<>();
-        this.spotLights = new ArrayList<>();
-        this.models = new ArrayList<>();
-        this.particleEmitters = new ArrayList<>();
-        this.sceneAABB = new AABBf(Vectors.VEC3_ZERO, Vectors.VEC3_ZERO);
+        this.sceneRenderData = new SceneRenderData();
         this.aabBfBuffer = new AABBf();
     }
 
     /**
      * Update the data to render by visiting the scene.
      */
-    public void collectDataForRendering(final Scene scene) {
-        preUpdateCleanup();
+    public SceneRenderData collectDataForRendering(final Scene scene) {
+        sceneRenderData.reset();
         scene.accept(this);
         computeSceneAABB();
-    }
-
-    /**
-     * Clear data before rendering in case the scene change since last frame
-     */
-    private void preUpdateCleanup() {
-        camera = null;
-        environmentMap = null;
-        irradianceMap = null;
-        preFilteredMap = null;
-        directionalLights.clear();
-        pointLights.clear();
-        spotLights.clear();
-        models.clear();
-        particleEmitters.clear();
-        sceneAABB.setMin(Vectors.VEC3_ZERO);
-        sceneAABB.setMax(Vectors.VEC3_ZERO);
+        return sceneRenderData;
     }
 
     private void computeSceneAABB() {
-        models.stream().map(Model::getNodes).flatMap(Collection::stream).forEach(this::computeModelNodeAABB);
+        sceneRenderData.getModels().stream()
+                .map(Model::getNodes).flatMap(Collection::stream)
+                .forEach(this::computeModelNodeAABB);
     }
 
     private void computeModelNodeAABB(final ModelNode modelNode) {
@@ -85,7 +46,7 @@ public class SceneRenderDataCollector implements ComponentVisitor {
         modelNode.getMeshes().keySet().stream()
                 .map(Mesh::getAabb)
                 .map(aabb -> transform.transformAABB(aabb, aabBfBuffer))
-                .reduce(sceneAABB, AABBf::union);
+                .reduce(sceneRenderData.getSceneAABB(), AABBf::union);
     }
 
     /**
@@ -97,7 +58,7 @@ public class SceneRenderDataCollector implements ComponentVisitor {
      */
     @Override
     public void visit(final ModelComponent component) {
-        models.add(component.getModel());
+        sceneRenderData.addModel(component.getModel());
     }
 
     /**
@@ -111,7 +72,7 @@ public class SceneRenderDataCollector implements ComponentVisitor {
      */
     @Override
     public void visit(final CameraComponent component) {
-        camera = component.getCamera();
+        sceneRenderData.setCamera(component.getCamera());
     }
 
     /**
@@ -125,9 +86,9 @@ public class SceneRenderDataCollector implements ComponentVisitor {
      */
     @Override
     public void visit(final EnvironmentComponent component) {
-        environmentMap = component.getEnvironmentMap().orElse(null);
-        irradianceMap = component.getIrradianceMap().orElse(null);
-        preFilteredMap = component.getPreFilteredMap().orElse(null);
+        sceneRenderData.setEnvironmentMap(component.getEnvironmentMap().orElse(null));
+        sceneRenderData.setIrradianceMap(component.getIrradianceMap().orElse(null));
+        sceneRenderData.setPreFilteredMap(component.getPreFilteredMap().orElse(null));
     }
 
     /**
@@ -140,7 +101,7 @@ public class SceneRenderDataCollector implements ComponentVisitor {
      */
     @Override
     public void visit(final DirectionalLightComponent component) {
-        directionalLights.add(component.getLight());
+        sceneRenderData.addDirectionalLight(component.getLight());
     }
 
     /**
@@ -153,7 +114,7 @@ public class SceneRenderDataCollector implements ComponentVisitor {
      */
     @Override
     public void visit(final PointLightComponent component) {
-        pointLights.add(component.getLight());
+        sceneRenderData.addPointLight(component.getLight());
     }
 
     /**
@@ -166,7 +127,7 @@ public class SceneRenderDataCollector implements ComponentVisitor {
      */
     @Override
     public void visit(final SpotLightComponent component) {
-        spotLights.add(component.getLight());
+        sceneRenderData.addSpotLight(component.getLight());
     }
 
     /**
@@ -179,46 +140,6 @@ public class SceneRenderDataCollector implements ComponentVisitor {
      */
     @Override
     public void visit(final ParticleComponent component) {
-        particleEmitters.add(component.getEmitter());
-    }
-
-    public Camera getCamera() {
-        return camera;
-    }
-
-    public Cubemap getEnvironmentMap() {
-        return environmentMap;
-    }
-
-    public Cubemap getIrradianceMap() {
-        return irradianceMap;
-    }
-
-    public Cubemap getPreFilteredMap() {
-        return preFilteredMap;
-    }
-
-    public List<DirectionalLight> getDirectionalLights() {
-        return directionalLights;
-    }
-
-    public List<PointLight> getPointLights() {
-        return pointLights;
-    }
-
-    public List<SpotLight> getSpotLights() {
-        return spotLights;
-    }
-
-    public List<Model> getModels() {
-        return models;
-    }
-
-    public List<ParticleEmitter> getParticleEmitters() {
-        return particleEmitters;
-    }
-
-    public AABBf getSceneAABB() {
-        return sceneAABB;
+        sceneRenderData.addParticleEmitter(component.getEmitter());
     }
 }
