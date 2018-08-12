@@ -6,11 +6,17 @@
 
 const float SHADOW_BIAS = 0.005;
 const float MAX_REFLECTION_LOD = 4.0;
+const int CSM_SPLIT_COUNT = 4;
+
+struct ShadowCascade {
+    sampler2D shadowMap;
+    mat4 lightViewProj;
+    float splitValue;
+};
 
 struct Shadow {
     bool hasShadow;
-    sampler2D shadowMap;
-    mat4 lightViewProj;
+    ShadowCascade shadowCascades[CSM_SPLIT_COUNT];
 };
 
 struct GBuffer {
@@ -145,6 +151,21 @@ vec3 computeLight(vec3 color, float intensity, float attenuation, vec3 L, vec3 V
     return (kD*albedo/PI + specular)*Li*NdotL;
 }
 
+float linearizeDepth(float depth) {
+    float f = uCamera.zFar;
+    float n = uCamera.zNear;
+    return (2 * n) / (f + n - depth * (f - n));
+}
+
+int selectShadowMapIndexFromDepth(float depth) {
+    for(int i = 0; i < CSM_SPLIT_COUNT; i++) {
+        if(depth < uShadow.shadowCascades[i].splitValue) {
+            return i;
+        }
+    }
+    return CSM_SPLIT_COUNT - 1;
+}
+
 void main() {
     //retrive data from gbuffer
 	vec4 normalMetallic = texture2D(uGBuffer.normals, passCoords);
@@ -152,6 +173,7 @@ void main() {
     vec4 colorRoughness = texture2D(uGBuffer.colors, passCoords);
     vec3 color = colorRoughness.rgb;
     float depthValue = texture2D(uGBuffer.depth, passCoords).r;
+    float linearDepth = linearizeDepth(depthValue);
     vec4 position = positionFromDepth(depthValue);
     float roughness = colorRoughness.a;
     float metallic = normalMetallic.a;
@@ -190,9 +212,10 @@ void main() {
     int directionalCount = min(uLights.directionalCount, MAX_DIR_LIGHTS);
     for(int i = 0; i < directionalCount; i++) {
         if(i == 0 && uShadow.hasShadow) {
-            vec4 lightSpacePosition = uShadow.lightViewProj*position;
+            int cascadeIndex = selectShadowMapIndexFromDepth(linearDepth);
+            vec4 lightSpacePosition = uShadow.shadowCascades[cascadeIndex].lightViewProj*position;
             lightSpacePosition.xyz /= lightSpacePosition.w;
-            float shadowMapDepth = texture2D(uShadow.shadowMap, lightSpacePosition.xy*0.5 + 0.5).r;
+            float shadowMapDepth = texture2D(uShadow.shadowCascades[cascadeIndex].shadowMap, lightSpacePosition.xy*0.5 + 0.5).r;
             if(shadowMapDepth + SHADOW_BIAS < lightSpacePosition.z*0.5 + 0.5) {
                 continue;
             }

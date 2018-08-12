@@ -30,7 +30,7 @@ public class Configuration {
 
     private static final Logger log = LogManager.getLogger(Configuration.class);
 
-    private static final String CONFIGURATION_FILE_PATH = "/config.properties";
+    private static final String CONFIGURATION_FILE_PATH = "classpath:/config.properties";
     private static final String DEFAULT_ASSETS_DESCRIPTOR_PATH = "classpath:/assets.json";
 
     private static Configuration instance;
@@ -41,7 +41,6 @@ public class Configuration {
     private final boolean vsync;
     private final boolean fullscreen;
     private final int anisotropicLevel;
-    private final int shadowMapResolution;
     private final FxaaPresets fxaaPresets;
     private final ResourcePath assetDescriptorFilePath;
 
@@ -53,14 +52,13 @@ public class Configuration {
         this.vsync = readRequiredBool("vsync");
         this.fullscreen = readRequiredBool("fullscreen");
         this.anisotropicLevel = readRequiredInt("anisotropic");
-        this.shadowMapResolution = readRequiredInt("shadow_map_resolution");
         this.fxaaPresets = readRequiredAndMap("fxaa_quality", FxaaPresets::valueOf);
         this.assetDescriptorFilePath = readAndMapIfPresent("assets_descriptor_path", ResourcePath::get)
                 .orElse(ResourcePath.get(DEFAULT_ASSETS_DESCRIPTOR_PATH));
     }
 
     private void loadFile() {
-        try (final var inStream = Configuration.class.getResourceAsStream(CONFIGURATION_FILE_PATH)) {
+        try (final var inStream = ResourcePath.get(CONFIGURATION_FILE_PATH).openInputStream()) {
             this.properties.load(inStream);
         } catch (final IOException e) {
             log.error("Failed to load properties file {}", CONFIGURATION_FILE_PATH, e);
@@ -137,10 +135,6 @@ public class Configuration {
 
     public int getAnisotropicLevel() {
         return anisotropicLevel;
-    }
-
-    public int getShadowMapResolution() {
-        return this.shadowMapResolution;
     }
 
     public FxaaPresets getFxaaPresets() {

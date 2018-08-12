@@ -7,7 +7,8 @@ import com.adrienben.games.bagl.deferred.pbr.BrdfLookup;
 import com.adrienben.games.bagl.deferred.shaders.DeferredShader;
 import com.adrienben.games.bagl.deferred.shaders.GBufferShader;
 import com.adrienben.games.bagl.deferred.shaders.ShaderFactory;
-import com.adrienben.games.bagl.deferred.shadow.ShadowMapGenerator;
+import com.adrienben.games.bagl.deferred.shadow.CSMGenerator;
+import com.adrienben.games.bagl.deferred.shadow.CascadedShadowMap;
 import com.adrienben.games.bagl.engine.Configuration;
 import com.adrienben.games.bagl.engine.Transform;
 import com.adrienben.games.bagl.engine.rendering.Material;
@@ -31,8 +32,10 @@ import org.joml.AABBf;
 import org.joml.FrustumIntersection;
 import org.joml.Matrix4f;
 
+import java.util.List;
 import java.util.Objects;
 
+import static com.adrienben.games.bagl.deferred.shaders.DeferredShader.*;
 import static org.lwjgl.opengl.GL11.*;
 
 /**
@@ -76,9 +79,8 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
 
     private BrdfLookup brdfLookup;
 
-    private Texture shadowMap;
-
-    private ShadowMapGenerator shadowMapGenerator;
+    private CascadedShadowMap cascadedShadowMap;
+    private CSMGenerator csmGenerator;
     private ParticleRenderer particleRenderer;
     private MeshRenderer meshRenderer;
     private PostProcessor postProcessor;
@@ -103,7 +105,7 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
 
         brdfLookup = new BrdfLookup();
 
-        shadowMapGenerator = new ShadowMapGenerator(config.getShadowMapResolution());
+        csmGenerator = new CSMGenerator();
         particleRenderer = new ParticleRenderer();
         meshRenderer = new MeshRenderer();
         postProcessor = new PostProcessor(
@@ -128,7 +130,7 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
         finalBuffer.destroy();
         screenQuad.destroy();
         cubeMapMesh.destroy();
-        shadowMapGenerator.destroy();
+        csmGenerator.destroy();
         particleRenderer.destroy();
         postProcessor.destroy();
     }
@@ -197,7 +199,8 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
     }
 
     private void renderShadowMap() {
-        shadowMap = shadowMapGenerator.generateShadowMap(sceneRenderData).orElse(null);
+        csmGenerator.setSceneRenderData(sceneRenderData);
+        cascadedShadowMap = csmGenerator.generateShadowMaps();
     }
 
     /**
@@ -307,30 +310,24 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
         finalBuffer.clear();
         finalBuffer.copyFrom(gBuffer, true, false);
 
-        gBuffer.getColorTexture(0).bind(0);
-        gBuffer.getColorTexture(1).bind(1);
-        gBuffer.getColorTexture(2).bind(2);
-        gBuffer.getDepthTexture().bind(3);
-        brdfLookup.getTexture().bind(7);
-
-        final var hasShadow = Objects.nonNull(shadowMap);
+        gBuffer.getColorTexture(0).bind(COLORS_TEXTURE_CHANNEL);
+        gBuffer.getColorTexture(1).bind(NORMALS_TEXTURE_CHANNEL);
+        gBuffer.getColorTexture(2).bind(EMISSIVE_TEXTURE_CHANNEL);
+        gBuffer.getDepthTexture().bind(DEPTH_TEXTURE_CHANNEL);
+        brdfLookup.getTexture().bind(BRDF_LOOKUP_CHANNEL);
 
         deferredShader.bind()
                 .setCameraUniforms(sceneRenderData.getCamera())
-                .setHasShadowUniform(hasShadow)
+                .setCSMUnforms(cascadedShadowMap)
                 .setDirectionalLightsUniforms(sceneRenderData.getDirectionalLights())
                 .setPointLightsUniforms(sceneRenderData.getPointLights())
                 .setSpotLightsUniforms(sceneRenderData.getSpotLights());
 
         if (Objects.nonNull(sceneRenderData.getIrradianceMap())) {
-            sceneRenderData.getIrradianceMap().bind(5);
+            sceneRenderData.getIrradianceMap().bind(IRRADIANCE_MAP_CHANNEL);
         }
         if (Objects.nonNull(sceneRenderData.getPreFilteredMap())) {
-            sceneRenderData.getPreFilteredMap().bind(6);
-        }
-        if (hasShadow) {
-            deferredShader.setShadowCasterViewProjectionMatrix(shadowMapGenerator.getCasterViewProjection());
-            shadowMap.bind(4);
+            sceneRenderData.getPreFilteredMap().bind(PRE_FILTERED_MAP_CHANNEL);
         }
     }
 
@@ -344,14 +341,14 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
 
     private void unbindResourcesPostLightingPass() {
         Shader.unbind();
-        Cubemap.unbind(5);
-        Cubemap.unbind(6);
-        Cubemap.unbind(7);
-        Texture.unbind(0);
-        Texture.unbind(1);
-        Texture.unbind(2);
-        Texture.unbind(3);
-        Texture.unbind(4);
+        Cubemap.unbind(COLORS_TEXTURE_CHANNEL);
+        Cubemap.unbind(NORMALS_TEXTURE_CHANNEL);
+        Cubemap.unbind(EMISSIVE_TEXTURE_CHANNEL);
+        Texture.unbind(DEPTH_TEXTURE_CHANNEL);
+        Texture.unbind(IRRADIANCE_MAP_CHANNEL);
+        Texture.unbind(PRE_FILTERED_MAP_CHANNEL);
+        Texture.unbind(BRDF_LOOKUP_CHANNEL);
+        Texture.unbind(SHADOW_MAP_0_CHANNEL);
         finalBuffer.unbind();
     }
 
@@ -367,8 +364,8 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
         finalBuffer.unbind();
     }
 
-    public FrameBuffer getShadowBuffer() {
-        return shadowMapGenerator.getShadowBuffer();
+    public List<FrameBuffer> getCSMBuffer() {
+        return csmGenerator.getFrameBuffers();
     }
 
     public FrameBuffer getGBuffer() {
