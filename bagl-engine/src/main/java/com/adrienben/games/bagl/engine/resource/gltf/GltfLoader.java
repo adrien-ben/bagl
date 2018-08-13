@@ -13,7 +13,7 @@ import com.adrienben.games.bagl.engine.rendering.model.ModelNode;
 import com.adrienben.games.bagl.engine.resource.gltf.mappers.*;
 import com.adrienben.games.bagl.opengl.BufferUsage;
 import com.adrienben.games.bagl.opengl.texture.Filter;
-import com.adrienben.games.bagl.opengl.texture.Texture;
+import com.adrienben.games.bagl.opengl.texture.Texture2D;
 import com.adrienben.games.bagl.opengl.texture.TextureParameters;
 import com.adrienben.games.bagl.opengl.vertex.IndexBuffer;
 import com.adrienben.games.bagl.opengl.vertex.VertexBuffer;
@@ -340,7 +340,7 @@ public class GltfLoader {
      * @param texture The texture to map
      * @return A new texture or null
      */
-    private Texture mapTexture(final GltfTexture texture) {
+    private Texture2D mapTexture(final GltfTexture texture) {
         if (Objects.isNull(texture) || Objects.isNull(texture.getSource())) {
             return null;
         }
@@ -371,7 +371,7 @@ public class GltfLoader {
      * @param params    The parameters of the texture
      * @return A new texture
      */
-    private Texture generateTextureFromImage(final GltfImage gltfImage, final TextureParameters.Builder params) {
+    private Texture2D generateTextureFromImage(final GltfImage gltfImage, final TextureParameters.Builder params) {
         if (Objects.nonNull(gltfImage.getBufferView())) {
             return generateTextureFromBufferView(gltfImage.getBufferView(), params);
         } else if (Objects.nonNull(gltfImage.getData())) {
@@ -380,25 +380,25 @@ public class GltfLoader {
         return generateTextureFromFile(gltfImage.getUri(), params);
     }
 
-    private Texture generateTextureFromBufferView(final GltfBufferView bufferView, final TextureParameters.Builder params) {
+    private Texture2D generateTextureFromBufferView(final GltfBufferView bufferView, final TextureParameters.Builder params) {
         final var length = bufferView.getByteLength();
         final var imageData = MemoryUtil.memAlloc(length)
                 .put(bufferView.getBuffer().getData(), bufferView.getByteOffset(), length).flip();
         return generateTextureFromByteBufferAndFreeBuffer(imageData, params);
     }
 
-    private Texture generateTextureFromImageData(final byte[] data, final TextureParameters.Builder params) {
+    private Texture2D generateTextureFromImageData(final byte[] data, final TextureParameters.Builder params) {
         final var imageData = MemoryUtil.memAlloc(data.length).put(data).flip();
         return generateTextureFromByteBufferAndFreeBuffer(imageData, params);
     }
 
-    private Texture generateTextureFromByteBufferAndFreeBuffer(final ByteBuffer byteBuffer, final TextureParameters.Builder params) {
-        final var texture = Texture.fromMemory(byteBuffer, params);
+    private Texture2D generateTextureFromByteBufferAndFreeBuffer(final ByteBuffer byteBuffer, final TextureParameters.Builder params) {
+        final var texture = Texture2D.fromMemory(byteBuffer, params);
         MemoryUtil.memFree(byteBuffer);
         return texture;
     }
 
-    private Texture generateTextureFromFile(final String path, final TextureParameters.Builder params) {
-        return Texture.fromFile(ResourcePath.get(this.directory, path), params);
+    private Texture2D generateTextureFromFile(final String path, final TextureParameters.Builder params) {
+        return Texture2D.fromFile(ResourcePath.get(this.directory, path), params);
     }
 }

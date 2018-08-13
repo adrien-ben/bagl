@@ -19,7 +19,7 @@ import com.adrienben.games.bagl.engine.rendering.particles.ParticleEmitter;
 import com.adrienben.games.bagl.engine.resource.scene.json.*;
 import com.adrienben.games.bagl.engine.scene.Component;
 import com.adrienben.games.bagl.engine.scene.components.*;
-import com.adrienben.games.bagl.opengl.texture.Texture;
+import com.adrienben.games.bagl.opengl.texture.Texture2D;
 import com.adrienben.games.bagl.opengl.texture.TextureParameters;
 import com.google.gson.Gson;
 import org.joml.Vector3f;
@@ -198,15 +198,15 @@ public class ComponentFactory {
         return new ParticleComponent(builder.build());
     }
 
-    private Texture getParticleTexture(final ParticleJson particleJson) {
+    private Texture2D getParticleTexture(final ParticleJson particleJson) {
         checkParticleTextureLink(particleJson);
         final var texturePath = particleJson.getTexturePath();
         final var textureId = particleJson.getTextureId();
 
         if (Objects.nonNull(texturePath)) {
-            return Texture.fromFile(ResourcePath.get(texturePath), TextureParameters.builder());
+            return Texture2D.fromFile(ResourcePath.get(texturePath), TextureParameters.builder());
         } else if (Objects.nonNull(textureId)) {
-            return assetStore.getAsset(textureId, Texture.class);
+            return assetStore.getAsset(textureId, Texture2D.class);
         }
         return null;
     }

@@ -3,7 +3,7 @@ package com.adrienben.games.bagl.opengl;
 import com.adrienben.games.bagl.core.Color;
 import com.adrienben.games.bagl.core.exception.EngineException;
 import com.adrienben.games.bagl.opengl.texture.Format;
-import com.adrienben.games.bagl.opengl.texture.Texture;
+import com.adrienben.games.bagl.opengl.texture.Texture2D;
 import com.adrienben.games.bagl.opengl.texture.TextureParameters;
 import com.adrienben.games.bagl.opengl.texture.Wrap;
 
@@ -33,8 +33,8 @@ public class FrameBuffer {
     private final int width;
     private final int height;
     private final FrameBufferParameters parameters;
-    private Texture[] colorOutputs;
-    private Texture depthTexture;
+    private Texture2D[] colorOutputs;
+    private Texture2D depthTexture;
     private final int handle;
 
     /**
@@ -60,7 +60,7 @@ public class FrameBuffer {
         this.parameters = parameters;
         this.colorOutputs = parameters.getColorOutputs().isEmpty() ? null : this.createColorOutputs();
         this.depthTexture = parameters.hadDepthStencil()
-                ? new Texture(this.width, this.height, TextureParameters.builder().format(parameters.getDepthStencilFormat()).compareFunction(parameters.getCompareFunction()).build())
+                ? new Texture2D(this.width, this.height, TextureParameters.builder().format(parameters.getDepthStencilFormat()).compareFunction(parameters.getCompareFunction()).build())
                 : null;
         this.handle = this.createBuffer();
     }
@@ -68,17 +68,17 @@ public class FrameBuffer {
     /**
      * Create one texture for each of the color output specified if the frame buffer parameters
      *
-     * @return An array of {@link Texture}
+     * @return An array of {@link Texture2D}
      */
-    private Texture[] createColorOutputs() {
+    private Texture2D[] createColorOutputs() {
         final var colorOutputs = this.parameters.getColorOutputs().size();
-        final var textures = new Texture[colorOutputs];
+        final var textures = new Texture2D[colorOutputs];
         final var params = TextureParameters.builder()
                 .sWrap(Wrap.CLAMP_TO_EDGE)
                 .tWrap(Wrap.CLAMP_TO_EDGE);
         for (var i = 0; i < colorOutputs; i++) {
             params.format(this.parameters.getColorOutputs().get(i));
-            textures[i] = new Texture(this.width, this.height, params.build());
+            textures[i] = new Texture2D(this.width, this.height, params.build());
         }
         return textures;
     }
@@ -250,7 +250,7 @@ public class FrameBuffer {
         }
 
         if (Objects.nonNull(this.colorOutputs)) {
-            Arrays.stream(this.colorOutputs).forEach(Texture::destroy);
+            Arrays.stream(this.colorOutputs).forEach(Texture2D::destroy);
         }
 
         if (Objects.nonNull(this.depthTexture)) {
@@ -260,7 +260,7 @@ public class FrameBuffer {
         glDeleteFramebuffers(this.handle);
     }
 
-    public Texture getColorTexture(final int index) {
+    public Texture2D getColorTexture(final int index) {
         if (Objects.isNull(this.colorOutputs)) {
             throw new EngineException("This frame buffer has no color outputs");
         }
@@ -279,7 +279,7 @@ public class FrameBuffer {
         return this.height;
     }
 
-    public Texture getDepthTexture() {
+    public Texture2D getDepthTexture() {
         if (Objects.isNull(this.depthTexture)) {
             throw new EngineException("This frame buffer has no depth texture");
         }

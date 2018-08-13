@@ -1,6 +1,6 @@
 package com.adrienben.games.bagl.deferred.shadow;
 
-import com.adrienben.games.bagl.opengl.texture.Texture;
+import com.adrienben.games.bagl.opengl.texture.Texture2D;
 import org.joml.Matrix4fc;
 
 /**
@@ -12,9 +12,9 @@ public class ShadowCascade {
 
     private final float splitValue;
     private final Matrix4fc lightViewProjection;
-    private final Texture shadowMap;
+    private final Texture2D shadowMap;
 
-    public ShadowCascade(final float splitValue, final Matrix4fc lightViewProjection, final Texture shadowMap) {
+    public ShadowCascade(final float splitValue, final Matrix4fc lightViewProjection, final Texture2D shadowMap) {
         this.splitValue = splitValue;
         this.lightViewProjection = lightViewProjection;
         this.shadowMap = shadowMap;
@@ -28,7 +28,7 @@ public class ShadowCascade {
         return lightViewProjection;
     }
 
-    public Texture getShadowMap() {
+    public Texture2D getShadowMap() {
         return shadowMap;
     }
 }

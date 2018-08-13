@@ -3,7 +3,7 @@ package com.adrienben.games.bagl.engine.assets;
 import com.adrienben.games.bagl.core.exception.EngineException;
 import com.adrienben.games.bagl.core.io.ResourcePath;
 import com.adrienben.games.bagl.engine.rendering.model.Model;
-import com.adrienben.games.bagl.opengl.texture.Texture;
+import com.adrienben.games.bagl.opengl.texture.Texture2D;
 import com.adrienben.games.bagl.tests.OGLExtension;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,28 +42,28 @@ class AssetStoreTest {
 
     @Test
     void itShouldLoadAsset() {
-        final Texture texture = assetStore.getAsset("test", Texture.class);
+        final Texture2D texture = assetStore.getAsset("test", Texture2D.class);
         assertNotNull(texture);
     }
 
     @Test
     void itShouldLoadAssetsOnlyOnce() {
-        final Texture texture0 = assetStore.getAsset("test", Texture.class);
-        final Texture texture1 = assetStore.getAsset("test", Texture.class);
+        final Texture2D texture0 = assetStore.getAsset("test", Texture2D.class);
+        final Texture2D texture1 = assetStore.getAsset("test", Texture2D.class);
         assertSame(texture0, texture1);
     }
 
     @Test
     void itShouldDestroyLoadedAssets() {
-        final Texture texture0 = assetStore.getAsset("test", Texture.class);
+        final Texture2D texture0 = assetStore.getAsset("test", Texture2D.class);
         assetStore.destroyAssets();
-        final Texture texture1 = assetStore.getAsset("test", Texture.class);
+        final Texture2D texture1 = assetStore.getAsset("test", Texture2D.class);
         assertNotSame(texture0, texture1);
     }
 
     @Test
     void itShouldFailToLoadNonExistingAsset() {
-        assertThrows(EngineException.class, () -> assetStore.getAsset("unknown", Texture.class));
+        assertThrows(EngineException.class, () -> assetStore.getAsset("unknown", Texture2D.class));
     }
 
     @Test

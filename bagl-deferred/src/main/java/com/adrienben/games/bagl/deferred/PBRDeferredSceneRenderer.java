@@ -25,7 +25,6 @@ import com.adrienben.games.bagl.engine.scene.components.DirectionalLightComponen
 import com.adrienben.games.bagl.opengl.FrameBuffer;
 import com.adrienben.games.bagl.opengl.FrameBufferParameters;
 import com.adrienben.games.bagl.opengl.shader.Shader;
-import com.adrienben.games.bagl.opengl.texture.Cubemap;
 import com.adrienben.games.bagl.opengl.texture.Format;
 import com.adrienben.games.bagl.opengl.texture.Texture;
 import org.joml.AABBf;
@@ -207,9 +206,10 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
      * Render the skybox from the environment map found in the scene if any
      */
     private void renderSkybox() {
-        if (Objects.nonNull(sceneRenderData.getEnvironmentMap())) {
+        final var environmentMap = sceneRenderData.getEnvironmentMap();
+        if (Objects.nonNull(environmentMap)) {
             finalBuffer.bind();
-            sceneRenderData.getEnvironmentMap().bind();
+            environmentMap.bind();
             skyboxShader.bind();
             skyboxShader.setUniform("viewProj", sceneRenderData.getCamera().getViewProjAtOrigin());
 
@@ -218,7 +218,7 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
             glDepthFunc(GL_LESS);
 
             Shader.unbind();
-            Cubemap.unbind();
+            environmentMap.unbind();
             finalBuffer.unbind();
         }
     }
@@ -286,10 +286,10 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
         }
         gBufferShader.setMaterialUniforms(material);
         meshRenderer.render(mesh);
-        Texture.unbind();
-        Texture.unbind(1);
-        Texture.unbind(2);
-        Texture.unbind(3);
+        material.getDiffuseMap().ifPresent(Texture::unbind);
+        material.getEmissiveMap().ifPresent(Texture::unbind);
+        material.getOrmMap().ifPresent(Texture::unbind);
+        material.getNormalMap().ifPresent(Texture::unbind);
         if (material.isDoubleSided()) {
             glEnable(GL_CULL_FACE);
         }
@@ -341,14 +341,14 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
 
     private void unbindResourcesPostLightingPass() {
         Shader.unbind();
-        Cubemap.unbind(COLORS_TEXTURE_CHANNEL);
-        Cubemap.unbind(NORMALS_TEXTURE_CHANNEL);
-        Cubemap.unbind(EMISSIVE_TEXTURE_CHANNEL);
-        Texture.unbind(DEPTH_TEXTURE_CHANNEL);
-        Texture.unbind(IRRADIANCE_MAP_CHANNEL);
-        Texture.unbind(PRE_FILTERED_MAP_CHANNEL);
-        Texture.unbind(BRDF_LOOKUP_CHANNEL);
-        Texture.unbind(SHADOW_MAP_0_CHANNEL);
+        gBuffer.getColorTexture(0).unbind();
+        gBuffer.getColorTexture(1).unbind();
+        gBuffer.getColorTexture(2).unbind();
+        gBuffer.getDepthTexture().unbind();
+        brdfLookup.getTexture().unbind();
+        for (int i = 0; i < CascadedShadowMap.CASCADE_COUNT; i++) {
+            cascadedShadowMap.getShadowCascade(i).getShadowMap().unbind();
+        }
         finalBuffer.unbind();
     }
 

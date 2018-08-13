@@ -30,12 +30,12 @@ The BRDF used is the same as Epic's Unreal Engine 4 :
 
 We use the roughness/metallic workflow. The materials are described as follows :
 
-- Diffuse color (Color or Texture)
+- Diffuse color (Color or Texture2D)
 - Roughness [0.0..1.0]
 - Metallic [0.0..1.0]
-- ORM (Occlusion/Roughness/Metalness) map (Texture, Optional) 
-- Normal map (Texture, Optional)
-- Emissive color (Color or Texture)
+- ORM (Occlusion/Roughness/Metalness) map (Texture2D, Optional) 
+- Normal map (Texture2D, Optional)
+- Emissive color (Color or Texture2D)
 - Double sided flag
 
 For ORM maps, roughness must be put in the green channel and metalness in the blue channel.

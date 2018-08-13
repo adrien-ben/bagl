@@ -145,7 +145,7 @@ public class CSMGenerator {
         }
         shadowShader.setMaterialUniforms(material);
         meshRenderer.render(mesh);
-        Texture.unbind();
+        material.getDiffuseMap().ifPresent(Texture::unbind);
         if (material.isDoubleSided()) {
             glEnable(GL_CULL_FACE);
         }

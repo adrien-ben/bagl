@@ -4,7 +4,7 @@ import com.adrienben.games.bagl.core.io.ResourcePath;
 import com.adrienben.games.bagl.engine.rendering.model.Mesh;
 import com.adrienben.games.bagl.engine.rendering.model.MeshFactory;
 import com.adrienben.games.bagl.opengl.shader.Shader;
-import com.adrienben.games.bagl.opengl.texture.Texture;
+import com.adrienben.games.bagl.opengl.texture.Texture2D;
 
 import static org.lwjgl.opengl.GL11.glDrawArrays;
 
@@ -60,14 +60,14 @@ public abstract class PostProcessorStep {
      * <p>
      * Process an input texture and return a modified version of it.
      *
-     * @implSpec This method must return a non null {@link Texture}.
+     * @implSpec This method must return a non null {@link Texture2D}.
      */
-    protected abstract Texture onProcess(Texture image);
+    protected abstract Texture2D onProcess(Texture2D image);
 
     /**
      * Process {@code image}.
      */
-    public Texture process(final Texture image) {
+    public Texture2D process(final Texture2D image) {
         screenQuadMesh.getVertexArray().bind();
         final var output = onProcess(image);
         screenQuadMesh.getVertexArray().unbind();

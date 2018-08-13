@@ -90,7 +90,7 @@ public class EnvironmentMapGenerator {
         final var params = TextureParameters.builder()
                 .sWrap(Wrap.CLAMP_TO_EDGE)
                 .tWrap(Wrap.CLAMP_TO_EDGE);
-        final var equirectangularMap = Texture.fromFile(path, true, params);
+        final var equirectangularMap = Texture2D.fromFile(path, true, params);
 
         final var cubemapParams = TextureParameters.builder()
                 .format(Format.RGB16F)
@@ -102,11 +102,11 @@ public class EnvironmentMapGenerator {
         this.environmentSphericalShader.bind();
         this.renderToCubemap(cubemap, 0, this.environmentSphericalShader, this.environmentFrameBuffer);
         Shader.unbind();
-        Texture.unbind();
+        equirectangularMap.unbind();
 
         cubemap.bind();
         glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
-        Cubemap.unbind();
+        cubemap.unbind();
 
         equirectangularMap.destroy();
         return cubemap;
@@ -124,7 +124,7 @@ public class EnvironmentMapGenerator {
         environmentMap.bind();
         this.irradianceShader.bind();
         this.renderToCubemap(cubemap, 0, this.irradianceShader, this.irradianceFrameBuffer);
-        Cubemap.unbind();
+        environmentMap.unbind();
         Shader.unbind();
         return cubemap;
     }
@@ -151,7 +151,7 @@ public class EnvironmentMapGenerator {
             this.preFilteredMapShader.setUniform("roughness", roughness);
             this.renderToCubemap(cubemap, lod, this.preFilteredMapShader, this.preFilteredMapFrameBuffer);
         }
-        Cubemap.unbind();
+        environmentMap.unbind();
         Shader.unbind();
 
         return cubemap;
