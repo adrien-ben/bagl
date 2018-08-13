@@ -14,6 +14,7 @@ import java.util.Objects;
  * <li>tWrap : The wrapping of the texture for the v component. Default is REPEAT.
  * <li>anisotropic : The level of anisotropic filtering (should be 0, 2, 4, 8 or 16). Default is 0;
  * <li>mipmaps : Flag indicating if mimaps must be generated. Default is false.
+ * <li>compareFunction : The compare function to use. Default is {@link CompareFunction#NONE}</li>
  * </ul>
  * <p>
  * Too construct an instance of this class you must use the provided builder as follows:
@@ -36,6 +37,7 @@ public final class TextureParameters {
     private final Wrap tWrap;
     private final int anisotropic;
     private final boolean mipmaps;
+    private final CompareFunction compareFunction;
 
     private TextureParameters(final Builder builder) {
         this.format = builder.format;
@@ -45,6 +47,7 @@ public final class TextureParameters {
         this.tWrap = builder.tWrap;
         this.anisotropic = builder.anisotropic;
         this.mipmaps = builder.mipmaps;
+        this.compareFunction = builder.compareFunction;
     }
 
     /**
@@ -84,6 +87,10 @@ public final class TextureParameters {
         return this.mipmaps;
     }
 
+    public CompareFunction getCompareFunction() {
+        return compareFunction;
+    }
+
     /**
      * Texture parameters builder
      */
@@ -96,6 +103,7 @@ public final class TextureParameters {
         private Wrap tWrap = Wrap.REPEAT;
         private int anisotropic = 0;
         private boolean mipmaps = false;
+        private CompareFunction compareFunction = CompareFunction.NONE;
 
         /**
          * Private constructor to private instantiation
@@ -140,6 +148,11 @@ public final class TextureParameters {
 
         public Builder mipmaps(final boolean mipmaps) {
             this.mipmaps = mipmaps;
+            return this;
+        }
+
+        public Builder compareFunction(final CompareFunction compareFunction) {
+            this.compareFunction = compareFunction;
             return this;
         }
     }

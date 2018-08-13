@@ -60,7 +60,7 @@ public class FrameBuffer {
         this.parameters = parameters;
         this.colorOutputs = parameters.getColorOutputs().isEmpty() ? null : this.createColorOutputs();
         this.depthTexture = parameters.hadDepthStencil()
-                ? new Texture(this.width, this.height, TextureParameters.builder().format(parameters.getDepthStencilFormat()).build())
+                ? new Texture(this.width, this.height, TextureParameters.builder().format(parameters.getDepthStencilFormat()).compareFunction(parameters.getCompareFunction()).build())
                 : null;
         this.handle = this.createBuffer();
     }

@@ -11,6 +11,9 @@ import static org.lwjgl.opengl.EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOT
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
 import static org.lwjgl.opengl.GL13.glActiveTexture;
+import static org.lwjgl.opengl.GL14.GL_TEXTURE_COMPARE_FUNC;
+import static org.lwjgl.opengl.GL14.GL_TEXTURE_COMPARE_MODE;
+import static org.lwjgl.opengl.GL30.GL_COMPARE_REF_TO_TEXTURE;
 import static org.lwjgl.opengl.GL30.glGenerateMipmap;
 
 /**
@@ -158,19 +161,6 @@ public final class Texture implements Asset {
         return handle;
     }
 
-    private void applyTextureParameters() {
-        if (this.parameters.getMipmaps()) {
-            glGenerateMipmap(GL_TEXTURE_2D);
-        }
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, this.parameters.getMagFilter().getGlFilter());
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, this.parameters.getMinFilter().getGlFilter());
-        if (this.parameters.getAnisotropic() > 0) {
-            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, this.parameters.getAnisotropic());
-        }
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, this.parameters.getsWrap().getGlWrap());
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, this.parameters.gettWrap().getGlWrap());
-    }
-
     private static Format getFormat(final int channelCount, final boolean isHdr) {
         switch (channelCount) {
             case 1:
@@ -183,6 +173,43 @@ public final class Texture implements Asset {
                 return isHdr ? Format.RGBA16F : Format.RGBA8;
             default:
                 throw new IllegalArgumentException("A texture cannot be composed of less than 1 or more that 4 channels");
+        }
+    }
+
+    private void applyTextureParameters() {
+        applyMipmapParameter();
+        applyFilterParameters();
+        applyAnisotropicParameter();
+        applyWrapParameters();
+        applyCompareFunctionParameters();
+    }
+
+    private void applyMipmapParameter() {
+        if (this.parameters.getMipmaps()) {
+            glGenerateMipmap(GL_TEXTURE_2D);
+        }
+    }
+
+    private void applyFilterParameters() {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, this.parameters.getMagFilter().getGlFilter());
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, this.parameters.getMinFilter().getGlFilter());
+    }
+
+    private void applyAnisotropicParameter() {
+        if (this.parameters.getAnisotropic() > 0) {
+            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, this.parameters.getAnisotropic());
+        }
+    }
+
+    private void applyWrapParameters() {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, this.parameters.getsWrap().getGlWrap());
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, this.parameters.gettWrap().getGlWrap());
+    }
+
+    private void applyCompareFunctionParameters() {
+        if (this.parameters.getCompareFunction() != CompareFunction.NONE) {
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, this.parameters.getCompareFunction().getGlCode());
         }
     }
 

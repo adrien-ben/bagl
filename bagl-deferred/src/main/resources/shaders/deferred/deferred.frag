@@ -9,7 +9,7 @@ const float MAX_REFLECTION_LOD = 4.0;
 const int CSM_SPLIT_COUNT = 4;
 
 struct ShadowCascade {
-    sampler2D shadowMap;
+    sampler2DShadow shadowMap;
     mat4 lightViewProj;
     float splitValue;
 };
@@ -211,20 +211,19 @@ void main() {
     //directional lights
     int directionalCount = min(uLights.directionalCount, MAX_DIR_LIGHTS);
     for(int i = 0; i < directionalCount; i++) {
+        float lightIntensity = uLights.directionals[i].base.intensity;
         if(i == 0 && uShadow.hasShadow) {
             int cascadeIndex = selectShadowMapIndexFromDepth(linearDepth);
             vec4 lightSpacePosition = uShadow.shadowCascades[cascadeIndex].lightViewProj*position;
-            lightSpacePosition.xyz /= lightSpacePosition.w;
-            float shadowMapDepth = texture2D(uShadow.shadowCascades[cascadeIndex].shadowMap, lightSpacePosition.xy*0.5 + 0.5).r;
-            if(shadowMapDepth + SHADOW_BIAS < lightSpacePosition.z*0.5 + 0.5) {
-                continue;
-            }
+            vec3 shadowMapCoords = (lightSpacePosition.xyz / lightSpacePosition.w)*0.5 + 0.5;
+            float shadowMapDepthTest = texture(uShadow.shadowCascades[cascadeIndex].shadowMap, shadowMapCoords, SHADOW_BIAS);
+            lightIntensity *= shadowMapDepthTest;
         }
 
         //light direction
         vec3 L = normalize(-uLights.directionals[i].direction);
 
-        L0 += computeLight(uLights.directionals[i].base.color.rgb, uLights.directionals[i].base.intensity, 1.0, L, V, N, NdotV, F0, color, roughness, metallic);
+        L0 += computeLight(uLights.directionals[i].base.color.rgb, lightIntensity, 1.0, L, V, N, NdotV, F0, color, roughness, metallic);
     }
 
     //point lights

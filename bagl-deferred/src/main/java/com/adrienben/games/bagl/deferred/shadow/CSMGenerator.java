@@ -10,7 +10,9 @@ import com.adrienben.games.bagl.engine.rendering.model.Model;
 import com.adrienben.games.bagl.engine.rendering.model.ModelNode;
 import com.adrienben.games.bagl.engine.rendering.renderer.MeshRenderer;
 import com.adrienben.games.bagl.opengl.FrameBuffer;
+import com.adrienben.games.bagl.opengl.FrameBufferParameters;
 import com.adrienben.games.bagl.opengl.shader.Shader;
+import com.adrienben.games.bagl.opengl.texture.CompareFunction;
 import com.adrienben.games.bagl.opengl.texture.Texture;
 import org.joml.Matrix4f;
 
@@ -54,7 +56,7 @@ public class CSMGenerator {
     }
 
     private FrameBuffer createFrameBuffer(final int resolution) {
-        return new FrameBuffer(resolution, resolution);
+        return new FrameBuffer(resolution, resolution, FrameBufferParameters.builder().compareFunction(CompareFunction.LESS).build());
     }
 
     /**
