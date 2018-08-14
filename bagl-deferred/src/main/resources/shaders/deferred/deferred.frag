@@ -166,6 +166,13 @@ int selectShadowMapIndexFromDepth(float depth) {
     return CSM_SPLIT_COUNT - 1;
 }
 
+float computeShadow(float linearDepth, vec4 worldSpacePosition) {
+    int cascadeIndex = selectShadowMapIndexFromDepth(linearDepth);
+    vec4 lightSpacePosition = uShadow.shadowCascades[cascadeIndex].lightViewProj*worldSpacePosition;
+    vec3 shadowMapCoords = (lightSpacePosition.xyz / lightSpacePosition.w)*0.5 + 0.5;
+    return texture(uShadow.shadowCascades[cascadeIndex].shadowMap, shadowMapCoords, SHADOW_BIAS);
+}
+
 void main() {
     //retrive data from gbuffer
 	vec4 normalMetallic = texture2D(uGBuffer.normals, passCoords);
@@ -213,10 +220,7 @@ void main() {
     for(int i = 0; i < directionalCount; i++) {
         float lightIntensity = uLights.directionals[i].base.intensity;
         if(i == 0 && uShadow.hasShadow) {
-            int cascadeIndex = selectShadowMapIndexFromDepth(linearDepth);
-            vec4 lightSpacePosition = uShadow.shadowCascades[cascadeIndex].lightViewProj*position;
-            vec3 shadowMapCoords = (lightSpacePosition.xyz / lightSpacePosition.w)*0.5 + 0.5;
-            float shadowMapDepthTest = texture(uShadow.shadowCascades[cascadeIndex].shadowMap, shadowMapCoords, SHADOW_BIAS);
+            float shadowMapDepthTest = computeShadow(linearDepth, position);
             lightIntensity *= shadowMapDepthTest;
         }
 

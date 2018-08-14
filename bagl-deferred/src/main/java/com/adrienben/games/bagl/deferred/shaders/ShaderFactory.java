@@ -17,8 +17,8 @@ public final class ShaderFactory {
 
     public static Shader createShadowShader() {
         return Shader.builder()
-                .vertexPath(ResourcePath.get("classpath:/shaders/shadow/shadow.vert"))
-                .fragmentPath(ResourcePath.get("classpath:/shaders/shadow/shadow.frag"))
+                .vertexPath(ResourcePath.get("classpath:/shaders/shadow/shadow_map.vert"))
+                .fragmentPath(ResourcePath.get("classpath:/shaders/shadow/shadow_map.frag"))
                 .build();
     }
 
