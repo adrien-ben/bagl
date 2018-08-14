@@ -2,10 +2,12 @@ package com.adrienben.games.bagl.deferred.shadow;
 
 import com.adrienben.games.bagl.core.math.Frustum;
 import com.adrienben.games.bagl.core.math.Vectors;
+import com.adrienben.games.bagl.core.utils.CollectionUtils;
 import com.adrienben.games.bagl.deferred.data.SceneRenderData;
 import org.joml.AABBf;
 import org.joml.Matrix4f;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -19,30 +21,24 @@ import java.util.Objects;
  */
 public class CSMViewProjectionComputer {
 
-    private final List<Float> splitValues;
-    private final Matrix4f lightWorld = new Matrix4f();
+    private final CSMSplitValuesComputer csmSplitValuesComputer = new CSMSplitValuesComputer();
 
+    private List<Float> splitValues;
     private SceneRenderData sceneRenderData;
-
     private Frustum frustum;
-    private List<Frustum> subFrusta = List.of(new Frustum(), new Frustum(), new Frustum(), new Frustum());
-    private List<AABBf> subFrustaBoundingBoxes = List.of(new AABBf(), new AABBf(), new AABBf(), new AABBf());
-    private List<Matrix4f> subFrustaViewProjections = List.of(new Matrix4f(), new Matrix4f(), new Matrix4f(), new Matrix4f());
 
-    /**
-     * Construct a computer.
-     *
-     * @param splitValues The values to use to split the camera view frustum.
-     */
-    public CSMViewProjectionComputer(final List<Float> splitValues) {
-        this.splitValues = splitValues;
-    }
+    private final Matrix4f lightWorld = new Matrix4f();
+    private final List<Frustum> subFrusta = CollectionUtils.createListWithDefaultValues(ArrayList::new, CascadedShadowMap.CASCADE_COUNT, Frustum::new);
+    private final List<AABBf> subFrustaBoundingBoxes = CollectionUtils.createListWithDefaultValues(ArrayList::new, CascadedShadowMap.CASCADE_COUNT, AABBf::new);
+    private final List<Matrix4f> subFrustaViewProjections = CollectionUtils.createListWithDefaultValues(ArrayList::new, CascadedShadowMap.CASCADE_COUNT, Matrix4f::new);
 
     /**
      * Generates the cascaded shadow maps view-projection matrices.
      */
     public void computeCSMViewProjections() {
-        frustum = Objects.requireNonNull(sceneRenderData.getCamera()).getFrustum();
+        final var camera = sceneRenderData.getCamera();
+        frustum = Objects.requireNonNull(camera).getFrustum();
+        splitValues = csmSplitValuesComputer.computeSplits(CascadedShadowMap.CASCADE_COUNT, camera.getzNear(), camera.getzFar());
         generateSubFrusta();
         transposeSubFrusta();
         generateFrustaBoundingBoxes();
@@ -99,6 +95,10 @@ public class CSMViewProjectionComputer {
         destination.setOrtho(subFrustumBoundingBox.minX, subFrustumBoundingBox.maxX, subFrustumBoundingBox.minY,
                 subFrustumBoundingBox.maxY, -subFrustumBoundingBox.maxZ, -subFrustumBoundingBox.minZ);
         return destination;
+    }
+
+    public float getSplitValueForSplit(final int splitIndex) {
+        return splitValues.get(splitIndex);
     }
 
     public Matrix4f getViewProjectionForSplit(final int splitIndex) {

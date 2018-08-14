@@ -21,7 +21,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.adrienben.games.bagl.deferred.shadow.CascadedShadowMap.*;
+import static com.adrienben.games.bagl.deferred.shadow.CascadedShadowMap.CASCADE_COUNT;
+import static com.adrienben.games.bagl.deferred.shadow.CascadedShadowMap.SPLIT_RESOLUTIONS;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL32.GL_DEPTH_CLAMP;
 
@@ -50,7 +51,7 @@ public class CSMGenerator {
     public CSMGenerator() {
         this.frameBuffers = SPLIT_RESOLUTIONS.stream().map(this::createFrameBuffer).collect(Collectors.toList());
         this.shadowShader = new ShadowShader();
-        this.csmViewProjectionComputer = new CSMViewProjectionComputer(SPLIT_VALUES);
+        this.csmViewProjectionComputer = new CSMViewProjectionComputer();
         this.meshRenderer = new MeshRenderer();
         this.wvpBuffer = new Matrix4f();
     }
@@ -103,7 +104,7 @@ public class CSMGenerator {
 
     private void renderAllMaps() {
         for (int i = 0; i < CASCADE_COUNT; i++) {
-            currentSplitValue = SPLIT_VALUES.get(i);
+            currentSplitValue = csmViewProjectionComputer.getSplitValueForSplit(i);
             currentResolution = SPLIT_RESOLUTIONS.get(i);
             currentFrameBuffer = frameBuffers.get(i);
             currentCasterViewProjection = csmViewProjectionComputer.getViewProjectionForSplit(i);
