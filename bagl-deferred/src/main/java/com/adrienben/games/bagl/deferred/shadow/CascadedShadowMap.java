@@ -10,7 +10,7 @@ import java.util.List;
 public class CascadedShadowMap {
 
     public static final int CASCADE_COUNT = 4;
-    public final static List<Integer> SPLIT_RESOLUTIONS = List.of(4096, 2048, 1024, 512);
+    public static final int CASCADE_RESOLUTION = 4096;
 
     private final List<ShadowCascade> shadowCascades;
 

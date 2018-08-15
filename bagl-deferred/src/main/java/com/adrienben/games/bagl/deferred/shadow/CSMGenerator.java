@@ -1,5 +1,6 @@
 package com.adrienben.games.bagl.deferred.shadow;
 
+import com.adrienben.games.bagl.core.utils.CollectionUtils;
 import com.adrienben.games.bagl.deferred.data.SceneRenderData;
 import com.adrienben.games.bagl.deferred.shaders.ShadowShader;
 import com.adrienben.games.bagl.engine.Configuration;
@@ -19,10 +20,9 @@ import org.joml.Matrix4f;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.adrienben.games.bagl.deferred.shadow.CascadedShadowMap.CASCADE_COUNT;
-import static com.adrienben.games.bagl.deferred.shadow.CascadedShadowMap.SPLIT_RESOLUTIONS;
+import static com.adrienben.games.bagl.deferred.shadow.CascadedShadowMap.CASCADE_RESOLUTION;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL32.GL_DEPTH_CLAMP;
 
@@ -37,27 +37,25 @@ public class CSMGenerator {
 
     private final List<FrameBuffer> frameBuffers;
     private final ShadowShader shadowShader;
-    private final CSMViewProjectionComputer csmViewProjectionComputer;
+    private final CSMSplitsComputer csmSplitsComputer;
     private final MeshRenderer meshRenderer;
     private final Matrix4f wvpBuffer;
 
     private SceneRenderData sceneRenderData;
-    private float currentSplitValue;
-    private int currentResolution;
     private FrameBuffer currentFrameBuffer;
-    private Matrix4f currentCasterViewProjection;
+    private CSMSplit currentCSMSplit;
     private List<ShadowCascade> shadowCascades = new ArrayList<>();
 
     public CSMGenerator() {
-        this.frameBuffers = SPLIT_RESOLUTIONS.stream().map(this::createFrameBuffer).collect(Collectors.toList());
+        this.frameBuffers = CollectionUtils.createListWithDefaultValues(ArrayList::new, CASCADE_COUNT, this::createFrameBuffer);
         this.shadowShader = new ShadowShader();
-        this.csmViewProjectionComputer = new CSMViewProjectionComputer();
+        this.csmSplitsComputer = new CSMSplitsComputer();
         this.meshRenderer = new MeshRenderer();
         this.wvpBuffer = new Matrix4f();
     }
 
-    private FrameBuffer createFrameBuffer(final int resolution) {
-        return new FrameBuffer(resolution, resolution, FrameBufferParameters.builder().compareFunction(CompareFunction.LESS).build());
+    private FrameBuffer createFrameBuffer() {
+        return new FrameBuffer(CASCADE_RESOLUTION, CASCADE_RESOLUTION, FrameBufferParameters.builder().compareFunction(CompareFunction.LESS).build());
     }
 
     /**
@@ -91,8 +89,8 @@ public class CSMGenerator {
     }
 
     private void computeCSMViewProjections() {
-        csmViewProjectionComputer.setSceneRenderData(sceneRenderData);
-        csmViewProjectionComputer.computeCSMViewProjections();
+        csmSplitsComputer.setSceneRenderData(sceneRenderData);
+        csmSplitsComputer.computeCSMViewProjections();
     }
 
     private void prepareForRenderingAllMaps() {
@@ -104,10 +102,8 @@ public class CSMGenerator {
 
     private void renderAllMaps() {
         for (int i = 0; i < CASCADE_COUNT; i++) {
-            currentSplitValue = csmViewProjectionComputer.getSplitValueForSplit(i);
-            currentResolution = SPLIT_RESOLUTIONS.get(i);
+            currentCSMSplit = csmSplitsComputer.getSplit(i);
             currentFrameBuffer = frameBuffers.get(i);
-            currentCasterViewProjection = csmViewProjectionComputer.getViewProjectionForSplit(i);
             generateShadowMap();
         }
     }
@@ -115,12 +111,12 @@ public class CSMGenerator {
     private void generateShadowMap() {
         prepareForRenderingOneMap();
         sceneRenderData.getModels().forEach(this::renderModelShadow);
-        shadowCascades.add(new ShadowCascade(currentSplitValue, currentCasterViewProjection, currentFrameBuffer.getDepthTexture()));
+        shadowCascades.add(new ShadowCascade(currentCSMSplit.getFarDepth(), currentCSMSplit.getLightsViewProjection(), currentFrameBuffer.getDepthTexture()));
         cleanUpAfterRenderingOneMap();
     }
 
     private void prepareForRenderingOneMap() {
-        glViewport(0, 0, currentResolution, currentResolution);
+        glViewport(0, 0, CASCADE_RESOLUTION, CASCADE_RESOLUTION);
         currentFrameBuffer.bind();
         currentFrameBuffer.clear();
     }
@@ -131,7 +127,7 @@ public class CSMGenerator {
 
     private void renderModelNodeShadow(final ModelNode node) {
         final var nodeTransform = node.getTransform().getTransformMatrix();
-        currentCasterViewProjection.mul(nodeTransform, wvpBuffer);
+        currentCSMSplit.getLightsViewProjection().mul(nodeTransform, wvpBuffer);
         shadowShader.setWorldViewProjectionUniform(wvpBuffer);
         node.getMeshes().forEach(this::renderMeshShadow);
         node.getChildren().forEach(this::renderModelNodeShadow);

@@ -1,9 +1,6 @@
 package com.adrienben.games.bagl.core.math;
 
-import org.joml.AABBf;
-import org.joml.Matrix4fc;
-import org.joml.Vector3f;
-import org.joml.Vector3fc;
+import org.joml.*;
 
 import static org.joml.Matrix4fc.*;
 
@@ -14,6 +11,8 @@ import static org.joml.Matrix4fc.*;
  */
 public class Frustum {
 
+    private static final int CORNER_COUNT = 8;
+
     private final Vector3f bottomLeftNearCorner = new Vector3f();
     private final Vector3f bottomRightNearCorner = new Vector3f();
     private final Vector3f topRightNearCorner = new Vector3f();
@@ -22,6 +21,9 @@ public class Frustum {
     private final Vector3f bottomRightFarCorner = new Vector3f();
     private final Vector3f topRightFarCorner = new Vector3f();
     private final Vector3f topLeftFarCorner = new Vector3f();
+    private final Vector3f center = new Vector3f();
+
+    private final Vector3f nearToFarBuffer = new Vector3f();
 
     /**
      * Construct an identity frustum.
@@ -63,6 +65,7 @@ public class Frustum {
         bottomRightFarCorner.mulPosition(transformation);
         topRightFarCorner.mulPosition(transformation);
         topLeftFarCorner.mulPosition(transformation);
+        center.mulPosition(transformation);
         return this;
     }
 
@@ -85,31 +88,66 @@ public class Frustum {
     }
 
     /**
+     * Compute the bounding sphere of this frustum.
+     *
+     * @param destination The {@link Spheref} where to store the result.
+     * @return {@code destination}.
+     */
+    public Spheref computeBoundingSphere(final Spheref destination) {
+        computeCenter();
+        final var nearRadius = center.distance(bottomLeftNearCorner);
+        final var farRadius = center.distance(bottomLeftFarCorner);
+        destination.x = center.x;
+        destination.y = center.y;
+        destination.z = center.z;
+        destination.r = MathUtils.max(nearRadius, farRadius);
+        return destination;
+    }
+
+    private void computeCenter() {
+        center.set(bottomLeftNearCorner);
+        center.add(bottomRightNearCorner);
+        center.add(topRightNearCorner);
+        center.add(topLeftNearCorner);
+        center.add(bottomLeftFarCorner);
+        center.add(bottomRightFarCorner);
+        center.add(topRightFarCorner);
+        center.add(topLeftFarCorner);
+        center.div(CORNER_COUNT);
+    }
+
+    /**
      * Clip this frustum on the z axis and store the result in {@code destination}.
      *
-     * @param fraction    The fraction of the original depth to keep.
+     * @param farFactor    The fraction of the original depth to keep.
      * @param destination The frustum where to store the result.
      * @return destination.
      */
-    public Frustum clipZ(final float fraction, final Frustum destination) {
-        copyNearPlaneInto(destination);
-        return copyAndClipFarPlaneInto(fraction, destination);
+    public Frustum clipZ(final float farFactor, final Frustum destination) {
+        return clipZ(0, farFactor, destination);
     }
 
-    private Frustum copyNearPlaneInto(final Frustum destination) {
-        destination.bottomLeftNearCorner.set(bottomLeftNearCorner);
-        destination.bottomRightNearCorner.set(bottomRightNearCorner);
-        destination.topRightNearCorner.set(topRightNearCorner);
-        destination.topLeftNearCorner.set(topLeftNearCorner);
+    /**
+     * Clip this frustum on the z axis and store the result in {@code destination}.
+     *
+     * @param nearFactor  The fraction of the original depth to clip.
+     * @param farFactor   The fraction of the original depth to keep.
+     * @param destination The frustum where to store the result.
+     * @return destination.
+     */
+    public Frustum clipZ(final float nearFactor, final float farFactor, final Frustum destination) {
+        clipEdge(bottomLeftNearCorner, nearFactor, destination.bottomLeftNearCorner, bottomLeftFarCorner, farFactor, destination.bottomLeftFarCorner);
+        clipEdge(bottomRightNearCorner, nearFactor, destination.bottomRightNearCorner, bottomRightFarCorner, farFactor, destination.bottomRightFarCorner);
+        clipEdge(topRightNearCorner, nearFactor, destination.topRightNearCorner, topRightFarCorner, farFactor, destination.topRightFarCorner);
+        clipEdge(topLeftNearCorner, nearFactor, destination.topLeftNearCorner, topLeftFarCorner, farFactor, destination.topLeftFarCorner);
         return destination;
     }
 
-    private Frustum copyAndClipFarPlaneInto(final float fraction, final Frustum destination) {
-        getVectorFromAtoB(bottomLeftNearCorner, bottomLeftFarCorner, destination.bottomLeftFarCorner).mul(fraction).add(bottomLeftNearCorner);
-        getVectorFromAtoB(bottomRightNearCorner, bottomRightFarCorner, destination.bottomRightFarCorner).mul(fraction).add(bottomRightNearCorner);
-        getVectorFromAtoB(topRightNearCorner, topRightFarCorner, destination.topRightFarCorner).mul(fraction).add(topRightNearCorner);
-        getVectorFromAtoB(topLeftNearCorner, topLeftFarCorner, destination.topLeftFarCorner).mul(fraction).add(topLeftNearCorner);
-        return destination;
+    private void clipEdge(final Vector3f oldNear, final float nearFactor, final Vector3f newNear,
+                          final Vector3f oldFar, final float farFactor, final Vector3f newFar) {
+        getVectorFromAtoB(oldNear, oldFar, nearToFarBuffer);
+        newFar.set(nearToFarBuffer).mul(farFactor).add(oldNear);
+        newNear.set(oldNear).add(nearToFarBuffer.mul(nearFactor));
     }
 
     private Vector3f getVectorFromAtoB(final Vector3fc pointA, final Vector3fc pointB, final Vector3f destination) {
