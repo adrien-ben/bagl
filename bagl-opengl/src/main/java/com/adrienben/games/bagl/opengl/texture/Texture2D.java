@@ -171,8 +171,9 @@ public final class Texture2D extends Texture implements Asset {
         applyMinFilterParameters();
         applyMagFilterParameters();
         applyAnisotropicParameter();
-        applySWrapParameters();
-        applyTWrapParameters();
+        applySWrapParameter();
+        applyTWrapParameter();
+        applyBorderColorParameter();
         applyCompareFunctionParameters();
     }
 

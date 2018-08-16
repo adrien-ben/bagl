@@ -1,7 +1,6 @@
 package com.adrienben.games.bagl.opengl.texture;
 
-import com.adrienben.games.bagl.opengl.OpenGL;
-
+import static com.adrienben.games.bagl.opengl.OpenGL.*;
 import static org.lwjgl.opengl.EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL14.GL_TEXTURE_COMPARE_FUNC;
@@ -9,6 +8,11 @@ import static org.lwjgl.opengl.GL14.GL_TEXTURE_COMPARE_MODE;
 import static org.lwjgl.opengl.GL30.GL_COMPARE_REF_TO_TEXTURE;
 import static org.lwjgl.opengl.GL30.glGenerateMipmap;
 
+/**
+ * Base class for textures containing basic texture operations.
+ *
+ * @author adrien
+ */
 public abstract class Texture {
 
     private static final int DEFAULT_TEXTURE_UNIT = 0;
@@ -32,53 +36,62 @@ public abstract class Texture {
     }
 
     protected void applyMinFilterParameters() {
-        setParameterI(GL_TEXTURE_MIN_FILTER, getParameters().getMinFilter().getGlFilter());
+        setParameterI(type, GL_TEXTURE_MIN_FILTER, getParameters().getMinFilter().getGlFilter());
     }
 
     protected void applyMagFilterParameters() {
-        setParameterI(GL_TEXTURE_MAG_FILTER, getParameters().getMagFilter().getGlFilter());
+        setParameterI(type, GL_TEXTURE_MAG_FILTER, getParameters().getMagFilter().getGlFilter());
     }
 
     protected void applyAnisotropicParameter() {
         if (getParameters().getAnisotropic() > 0) {
-            setParameterF(GL_TEXTURE_MAX_ANISOTROPY_EXT, getParameters().getAnisotropic());
+            setParameterF(type, GL_TEXTURE_MAX_ANISOTROPY_EXT, getParameters().getAnisotropic());
         }
     }
 
-    protected void applySWrapParameters() {
-        setParameterI(GL_TEXTURE_WRAP_S, getParameters().getsWrap().getGlWrap());
+    protected void applySWrapParameter() {
+        setParameterI(type, GL_TEXTURE_WRAP_S, getParameters().getsWrap().getGlWrap());
     }
 
-    protected void applyTWrapParameters() {
-        setParameterI(GL_TEXTURE_WRAP_T, getParameters().gettWrap().getGlWrap());
+    protected void applyTWrapParameter() {
+        setParameterI(type, GL_TEXTURE_WRAP_T, getParameters().gettWrap().getGlWrap());
+    }
+
+    protected void applyBorderColorParameter() {
+        setParameterColor(type, GL_TEXTURE_BORDER_COLOR, parameters.getBorderColor());
     }
 
     protected void applyCompareFunctionParameters() {
         if (getParameters().getCompareFunction() != CompareFunction.NONE) {
-            setParameterI(GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-            setParameterI(GL_TEXTURE_COMPARE_FUNC, getParameters().getCompareFunction().getGlCode());
+            setParameterI(type, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+            setParameterI(type, GL_TEXTURE_COMPARE_FUNC, getParameters().getCompareFunction().getGlCode());
         }
     }
 
-    protected void setParameterI(final int parameterName, final int parameterValue) {
-        glTexParameteri(type.getGlCode(), parameterName, parameterValue);
-    }
-
-    protected void setParameterF(final int parameterName, final float parameterValue) {
-        glTexParameterf(type.getGlCode(), parameterName, parameterValue);
-    }
-
+    /**
+     * Destroy the wrapped OpenGL texture.
+     * <p>
+     * Unbind it first if bound.
+     */
     public void destroy() {
-        if (textureUnit != NOT_BOUND_TEXTURE_UNIT) {
+        if (isBound()) {
             unbind();
         }
         glDeleteTextures(handle);
     }
 
+    /**
+     * Bind the texture on the texture unit {@value DEFAULT_TEXTURE_UNIT}.
+     */
     public void bind() {
         bind(DEFAULT_TEXTURE_UNIT);
     }
 
+    /**
+     * Bind the texture on a texture unit.
+     *
+     * @param textureUnit The texture unit on which to bind the texture.
+     */
     public void bind(final int textureUnit) {
         if (isBoundOn(textureUnit)) {
             return;
@@ -86,13 +99,16 @@ public abstract class Texture {
         if (isBound()) {
             unbind();
         }
-        OpenGL.bindTexture(this, textureUnit);
+        bindTexture(this, textureUnit);
         this.textureUnit = textureUnit;
     }
 
+    /**
+     * Unbind the texture if bound.
+     */
     public void unbind() {
         if (isBound()) {
-            OpenGL.unbindTexture(this, textureUnit);
+            unbindTexture(this, textureUnit);
             textureUnit = NOT_BOUND_TEXTURE_UNIT;
         }
     }

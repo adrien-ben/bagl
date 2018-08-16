@@ -29,7 +29,7 @@ public class BrdfLookup {
 
     public BrdfLookup() {
         this.brdfBuffer = new FrameBuffer(BRDF_RESOLUTION, BRDF_RESOLUTION, FrameBufferParameters.builder()
-                .hasDepthStencil(false)
+                .depthStencilTextureParameters(null)
                 .colorOutputFormat(Format.RG16F)
                 .build());
         this.brdfShader = ShaderFactory.createBrdfShader();

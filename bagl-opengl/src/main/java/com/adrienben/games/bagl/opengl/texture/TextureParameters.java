@@ -1,5 +1,6 @@
 package com.adrienben.games.bagl.opengl.texture;
 
+import com.adrienben.games.bagl.core.Color;
 import com.adrienben.games.bagl.core.validation.Validation;
 
 import java.util.Objects;
@@ -12,6 +13,7 @@ import java.util.Objects;
  * <li>magFilter : The magnification filter of the texture. Default is LINEAR.
  * <li>sWrap : The wrapping of the texture for the u component. Default is REPEAT.
  * <li>tWrap : The wrapping of the texture for the v component. Default is REPEAT.
+ * <li>borderColor : The color that will be sampled when sampling outside of the texture when wrap is set to {@link Wrap#CLAMP_TO_BORDER}. Default is BLACK.
  * <li>anisotropic : The level of anisotropic filtering (should be 0, 2, 4, 8 or 16). Default is 0;
  * <li>mipmaps : Flag indicating if mimaps must be generated. Default is false.
  * <li>compareFunction : The compare function to use. Default is {@link CompareFunction#NONE}</li>
@@ -35,6 +37,7 @@ public final class TextureParameters {
     private final Filter magFilter;
     private final Wrap sWrap;
     private final Wrap tWrap;
+    private final Color borderColor;
     private final int anisotropic;
     private final boolean mipmaps;
     private final CompareFunction compareFunction;
@@ -45,6 +48,7 @@ public final class TextureParameters {
         this.magFilter = builder.magFilter;
         this.sWrap = builder.sWrap;
         this.tWrap = builder.tWrap;
+        this.borderColor = builder.borderColor;
         this.anisotropic = builder.anisotropic;
         this.mipmaps = builder.mipmaps;
         this.compareFunction = builder.compareFunction;
@@ -79,6 +83,10 @@ public final class TextureParameters {
         return this.tWrap;
     }
 
+    public Color getBorderColor() {
+        return borderColor;
+    }
+
     public int getAnisotropic() {
         return this.anisotropic;
     }
@@ -101,6 +109,7 @@ public final class TextureParameters {
         private Filter magFilter = Filter.LINEAR;
         private Wrap sWrap = Wrap.REPEAT;
         private Wrap tWrap = Wrap.REPEAT;
+        private Color borderColor = Color.BLACK;
         private int anisotropic = 0;
         private boolean mipmaps = false;
         private CompareFunction compareFunction = CompareFunction.NONE;
@@ -137,6 +146,11 @@ public final class TextureParameters {
 
         public Builder tWrap(final Wrap wrap) {
             this.tWrap = Objects.requireNonNull(wrap, "wrap cannot be null");
+            return this;
+        }
+
+        public Builder borderColor(final Color borderColor) {
+            this.borderColor = Objects.requireNonNull(borderColor, "borderColor cannot be null");
             return this;
         }
 

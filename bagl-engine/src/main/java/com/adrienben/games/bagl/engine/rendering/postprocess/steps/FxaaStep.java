@@ -21,7 +21,7 @@ public class FxaaStep extends PostProcessorStep {
     private final Shader fxaaShader;
 
     public FxaaStep(final int xResolution, final int yResolution, final FxaaPresets fxaaQuality) {
-        final var parameters = FrameBufferParameters.builder().hasDepthStencil(false).colorOutputFormat(Format.RGBA8).build();
+        final var parameters = FrameBufferParameters.builder().depthStencilTextureParameters(null).colorOutputFormat(Format.RGBA8).build();
         frameBuffer = new FrameBuffer(xResolution, yResolution, parameters);
         fxaaShader = buildProcessShader(ResourcePath.get("classpath:/shaders/post/fxaa.frag"))
                 .bind()

@@ -59,9 +59,10 @@ public class FrameBuffer {
         this.height = height;
         this.parameters = parameters;
         this.colorOutputs = parameters.getColorOutputs().isEmpty() ? null : this.createColorOutputs();
-        this.depthTexture = parameters.hadDepthStencil()
-                ? new Texture2D(this.width, this.height, TextureParameters.builder().format(parameters.getDepthStencilFormat()).compareFunction(parameters.getCompareFunction()).build())
-                : null;
+//        this.depthTexture = parameters.hadDepthStencil()
+//                ? new Texture2D(this.width, this.height, TextureParameters.builder().format(parameters.getDepthStencilFormat()).compareFunction(parameters.getCompareFunction()).build())
+//                : null;
+        this.depthTexture = parameters.getDepthStencilTextureParameters().map(params -> new Texture2D(width, height, params)).orElse(null);
         this.handle = this.createBuffer();
     }
 
@@ -117,7 +118,8 @@ public class FrameBuffer {
      * @return true if depth only false is depth/stencil
      */
     private boolean isDepthOnly() {
-        return this.parameters.getDepthStencilFormat() == Format.DEPTH_32F;
+        return depthTexture.getParameters().getFormat() == Format.DEPTH_32F;
+//        return this.parameters.getDepthStencilFormat() == Format.DEPTH_32F;
     }
 
     /**

@@ -25,7 +25,7 @@ public class LumaStep extends PostProcessorStep {
     private Shader lumaShader;
 
     public LumaStep(final int xResolution, final int yResolution) {
-        this.frameBuffer = new FrameBuffer(xResolution, yResolution, FrameBufferParameters.builder().hasDepthStencil(false).colorOutputFormat(Format.RGBA8).build());
+        this.frameBuffer = new FrameBuffer(xResolution, yResolution, FrameBufferParameters.builder().depthStencilTextureParameters(null).colorOutputFormat(Format.RGBA8).build());
         this.lumaShader = buildProcessShader(ResourcePath.get("classpath:/shaders/post/luma.frag"));
     }
 

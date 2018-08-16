@@ -5,6 +5,7 @@ import com.adrienben.games.bagl.core.exception.EngineException;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
+import static com.adrienben.games.bagl.opengl.OpenGL.setParameterI;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE;
 import static org.lwjgl.opengl.GL12.GL_TEXTURE_WRAP_R;
@@ -64,9 +65,10 @@ public class Cubemap extends Texture {
     private void applyTextureParameters() {
         applyMinFilterParameters();
         applyMagFilterParameters();
-        setParameterI(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        setParameterI(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        setParameterI(GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+        setParameterI(getType(), GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        setParameterI(getType(), GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        setParameterI(getType(), GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+        applyBorderColorParameter();
         applyMipmapParameter();
     }
 

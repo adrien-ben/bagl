@@ -24,7 +24,7 @@ public class BloomStep extends PostProcessorStep {
     private FrameBuffer finalBuffer;
 
     public BloomStep(final int xResolution, final int yResolution) {
-        final var parameters = FrameBufferParameters.builder().hasDepthStencil(false).colorOutputFormat(Format.RGB16F).build();
+        final var parameters = FrameBufferParameters.builder().depthStencilTextureParameters(null).colorOutputFormat(Format.RGB16F).build();
         this.bloomBuffer = new FrameBuffer(xResolution, yResolution, parameters);
         this.blurBuffer = new DoubleBuffer<>(() -> new FrameBuffer(xResolution, yResolution, parameters));
         this.finalBuffer = new FrameBuffer(xResolution, yResolution, parameters);

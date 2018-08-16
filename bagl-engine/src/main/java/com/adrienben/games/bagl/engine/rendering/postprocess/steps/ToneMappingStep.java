@@ -19,7 +19,7 @@ public class ToneMappingStep extends PostProcessorStep {
     private Shader toneMappingShader;
 
     public ToneMappingStep(final int xResolution, final int yResolution) {
-        final var parameters = FrameBufferParameters.builder().hasDepthStencil(false).colorOutputFormat(Format.RGBA8).build();
+        final var parameters = FrameBufferParameters.builder().depthStencilTextureParameters(null).colorOutputFormat(Format.RGBA8).build();
         this.frameBuffer = new FrameBuffer(xResolution, yResolution, parameters);
         this.toneMappingShader = buildProcessShader(ResourcePath.get("classpath:/shaders/post/tone_mapping.frag"));
     }

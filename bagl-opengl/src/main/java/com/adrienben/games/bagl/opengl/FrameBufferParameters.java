@@ -2,11 +2,9 @@ package com.adrienben.games.bagl.opengl;
 
 import com.adrienben.games.bagl.opengl.texture.CompareFunction;
 import com.adrienben.games.bagl.opengl.texture.Format;
+import com.adrienben.games.bagl.opengl.texture.TextureParameters;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Stream;
 
 /**
@@ -43,15 +41,17 @@ public final class FrameBufferParameters {
 
     private static final FrameBufferParameters DEFAULT = new FrameBufferParameters(new Builder());
 
-    private final boolean hasDepthStencil;
-    private final Format depthStencilFormat;
-    private final CompareFunction compareFunction;
+    private final TextureParameters depthStencilTextureParameters;
+    //    private final boolean hasDepthStencil;
+//    private final Format depthStencilFormat;
+//    private final CompareFunction compareFunction;
     private final List<Format> colorOutputFormats;
 
     private FrameBufferParameters(final Builder builder) {
-        this.hasDepthStencil = builder.hasDepthStencil;
-        this.depthStencilFormat = builder.depthStencilFormat;
-        this.compareFunction = builder.compareFunction;
+        this.depthStencilTextureParameters = builder.depthTextureParameters;
+//        this.hasDepthStencil = builder.hasDepthStencil;
+//        this.depthStencilFormat = builder.depthStencilFormat;
+//        this.compareFunction = builder.compareFunction;
         this.colorOutputFormats = Collections.unmodifiableList(builder.colorOutputFormats);
     }
 
@@ -73,17 +73,21 @@ public final class FrameBufferParameters {
         return new Builder();
     }
 
-    public boolean hadDepthStencil() {
-        return this.hasDepthStencil;
+    public Optional<TextureParameters> getDepthStencilTextureParameters() {
+        return Optional.ofNullable(depthStencilTextureParameters);
     }
 
-    public Format getDepthStencilFormat() {
-        return this.depthStencilFormat;
-    }
-
-    public CompareFunction getCompareFunction() {
-        return compareFunction;
-    }
+//    public boolean hadDepthStencil() {
+//        return this.hasDepthStencil;
+//    }
+//
+//    public Format getDepthStencilFormat() {
+//        return this.depthStencilFormat;
+//    }
+//
+//    public CompareFunction getCompareFunction() {
+//        return compareFunction;
+//    }
 
     public List<Format> getColorOutputs() {
         return this.colorOutputFormats;
@@ -94,9 +98,10 @@ public final class FrameBufferParameters {
      */
     public static class Builder {
 
-        private boolean hasDepthStencil = true;
-        private Format depthStencilFormat = Format.DEPTH_32F;
-        private CompareFunction compareFunction = CompareFunction.NONE;
+        private TextureParameters depthTextureParameters = TextureParameters.builder().format(Format.DEPTH_32F).build();
+        //        private boolean hasDepthStencil = true;
+//        private Format depthStencilFormat = Format.DEPTH_32F;
+//        private CompareFunction compareFunction = CompareFunction.NONE;
         private List<Format> colorOutputFormats = new ArrayList<>();
 
         private Builder() {
@@ -106,21 +111,26 @@ public final class FrameBufferParameters {
             return new FrameBufferParameters(this);
         }
 
-        public Builder hasDepthStencil(final boolean hasDepthStencil) {
-            this.hasDepthStencil = hasDepthStencil;
+        public Builder depthStencilTextureParameters(final TextureParameters depthTextureParameters) {
+            this.depthTextureParameters = depthTextureParameters;
             return this;
         }
 
-        public Builder depthStencilFormat(final Format depthStencilFormat) {
-            this.depthStencilFormat = Objects.requireNonNull(depthStencilFormat,
-                    "depthStencilFormat cannot be null");
-            return this;
-        }
-
-        public Builder compareFunction(final CompareFunction compareFunction) {
-            this.compareFunction = compareFunction;
-            return this;
-        }
+//        public Builder hasDepthStencil(final boolean hasDepthStencil) {
+//            this.hasDepthStencil = hasDepthStencil;
+//            return this;
+//        }
+//
+//        public Builder depthStencilFormat(final Format depthStencilFormat) {
+//            this.depthStencilFormat = Objects.requireNonNull(depthStencilFormat,
+//                    "depthStencilFormat cannot be null");
+//            return this;
+//        }
+//
+//        public Builder compareFunction(final CompareFunction compareFunction) {
+//            this.compareFunction = compareFunction;
+//            return this;
+//        }
 
         /**
          * Add one or more color output formats

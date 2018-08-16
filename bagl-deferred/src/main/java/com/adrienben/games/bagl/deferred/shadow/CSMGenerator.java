@@ -1,5 +1,6 @@
 package com.adrienben.games.bagl.deferred.shadow;
 
+import com.adrienben.games.bagl.core.Color;
 import com.adrienben.games.bagl.core.utils.CollectionUtils;
 import com.adrienben.games.bagl.deferred.data.SceneRenderData;
 import com.adrienben.games.bagl.deferred.shaders.ShadowShader;
@@ -13,8 +14,7 @@ import com.adrienben.games.bagl.engine.rendering.renderer.MeshRenderer;
 import com.adrienben.games.bagl.opengl.FrameBuffer;
 import com.adrienben.games.bagl.opengl.FrameBufferParameters;
 import com.adrienben.games.bagl.opengl.shader.Shader;
-import com.adrienben.games.bagl.opengl.texture.CompareFunction;
-import com.adrienben.games.bagl.opengl.texture.Texture;
+import com.adrienben.games.bagl.opengl.texture.*;
 import org.joml.Matrix4f;
 
 import java.util.ArrayList;
@@ -56,7 +56,14 @@ public class CSMGenerator {
     }
 
     private FrameBuffer createFrameBuffer() {
-        return new FrameBuffer(resolution, resolution, FrameBufferParameters.builder().compareFunction(CompareFunction.LESS).build());
+        final TextureParameters depthTextureParameters = TextureParameters.builder()
+                .format(Format.DEPTH_32F)
+                .compareFunction(CompareFunction.LESS)
+                .sWrap(Wrap.CLAMP_TO_BORDER)
+                .tWrap(Wrap.CLAMP_TO_BORDER)
+                .borderColor(Color.WHITE)
+                .build();
+        return new FrameBuffer(resolution, resolution, FrameBufferParameters.builder().depthStencilTextureParameters(depthTextureParameters).build());
     }
 
     /**

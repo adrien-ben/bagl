@@ -173,6 +173,9 @@ float computeShadow(float linearDepth, vec4 worldSpacePosition, float bias) {
     int cascadeIndex = selectShadowMapIndexFromDepth(linearDepth);
     vec4 lightSpacePosition = uShadow.shadowCascades[cascadeIndex].lightViewProj*worldSpacePosition;
     vec3 shadowMapCoords = (lightSpacePosition.xyz / lightSpacePosition.w)*0.5 + 0.5;
+    if(shadowMapCoords.z > 1.0) {
+        return 1.0;
+    }
     return texture(uShadow.shadowCascades[cascadeIndex].shadowMap, shadowMapCoords, bias);
 }
 

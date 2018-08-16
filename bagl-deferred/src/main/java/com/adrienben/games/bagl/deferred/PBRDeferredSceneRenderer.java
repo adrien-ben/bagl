@@ -140,11 +140,9 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
     private void initFrameBuffers() {
         gBuffer = new FrameBuffer(xResolution, yResolution, FrameBufferParameters.builder()
                 .colorOutputFormat(Format.RGBA8, Format.RGBA16F, Format.RGB16F)
-                .depthStencilFormat(Format.DEPTH_32F)
                 .build());
         finalBuffer = new FrameBuffer(xResolution, yResolution, FrameBufferParameters.builder()
                 .colorOutputFormat(Format.RGBA32F)
-                .depthStencilFormat(Format.DEPTH_32F)
                 .build());
     }
 
