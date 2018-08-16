@@ -63,15 +63,15 @@ public class DeferredShader {
 
     public DeferredShader setCameraUniforms(final Camera camera) {
         shader.setUniform("uCamera.invertedViewProj", camera.getInvertedViewProj())
-                .setUniform("uCamera.position", camera.getPosition())
-                .setUniform("uCamera.zNear", camera.getzNear())
-                .setUniform("uCamera.zFar", camera.getzFar());
+                .setUniform("uCamera.position", camera.getPosition());
         return this;
     }
 
     public DeferredShader setCSMUnforms(final CascadedShadowMap cascadedShadowMap) {
         shader.setUniform("uShadow.hasShadow", Objects.nonNull(cascadedShadowMap));
         if (Objects.nonNull(cascadedShadowMap)) {
+            shader.setUniform("uShadow.zNear", cascadedShadowMap.getzNear())
+                    .setUniform("uShadow.zFar", cascadedShadowMap.getzFar());
             for (int i = 0; i < CascadedShadowMap.CASCADE_COUNT; i++) {
                 setShadowCascadeUniforms(i, cascadedShadowMap.getShadowCascade(i));
             }

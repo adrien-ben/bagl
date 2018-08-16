@@ -207,6 +207,18 @@ public class Frustum {
         return this;
     }
 
+    public Frustum set(final Frustum other) {
+        bottomLeftNearCorner.set(other.bottomLeftNearCorner);
+        bottomRightNearCorner.set(other.bottomRightNearCorner);
+        topRightNearCorner.set(other.topRightNearCorner);
+        topLeftNearCorner.set(other.topLeftNearCorner);
+        bottomLeftFarCorner.set(other.bottomLeftFarCorner);
+        bottomRightFarCorner.set(other.bottomRightFarCorner);
+        topRightFarCorner.set(other.topRightFarCorner);
+        topLeftFarCorner.set(other.topLeftFarCorner);
+        return this;
+    }
+    
     public Vector3fc getBottomLeftNearCorner() {
         return bottomLeftNearCorner;
     }

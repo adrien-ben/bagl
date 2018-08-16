@@ -1,8 +1,12 @@
 package com.adrienben.games.bagl.deferred.shadow;
 
+import com.adrienben.games.bagl.core.math.Frustum;
+import com.adrienben.games.bagl.core.math.MathUtils;
 import com.adrienben.games.bagl.core.math.Vectors;
 import com.adrienben.games.bagl.core.utils.CollectionUtils;
 import com.adrienben.games.bagl.deferred.data.SceneRenderData;
+import com.adrienben.games.bagl.engine.Configuration;
+import com.adrienben.games.bagl.engine.camera.Camera;
 import org.joml.Matrix4f;
 import org.joml.Spheref;
 import org.joml.Vector3f;
@@ -13,17 +17,20 @@ import java.util.List;
 /**
  * Compute the view-projection matrices for rendering cascaded shadow maps (CSM).
  * <p>
- * This is done by split the camera frustum into smaller sub frusta and computing the light space bounding boxes
+ * This is done by split the camera frustumBuffer into smaller sub frusta and computing the light space bounding boxes
  * of these frusta. The bounding boxes are then used to generate orthogonal projection matrices.
  *
  * @author adrien
  */
 public class CSMSplitsComputer {
 
+    private float zNear;
+    private float zFar;
     private final CSMSplitValuesComputer csmSplitValuesComputer = new CSMSplitValuesComputer();
     private final List<CSMSplit> splits = CollectionUtils.createListWithDefaultValues(ArrayList::new, CascadedShadowMap.CASCADE_COUNT, CSMSplit::new);
 
     private SceneRenderData sceneRenderData;
+    private final Frustum frustum = new Frustum();
 
     // Buffer used for computation for saving instantiation
     private final Matrix4f matrixBuffer = new Matrix4f();
@@ -34,12 +41,13 @@ public class CSMSplitsComputer {
      */
     public void computeCSMViewProjections() {
         computeCSMSplitValues();
+        computeCameraFrustum();
         splits.forEach(this::updateCSMSplits);
     }
 
     private void computeCSMSplitValues() {
-        final var camera = sceneRenderData.getCamera();
-        final var splitValues = csmSplitValuesComputer.computeSplits(CascadedShadowMap.CASCADE_COUNT, camera.getzNear(), camera.getzFar());
+        updateZNearAndFar();
+        final var splitValues = csmSplitValuesComputer.computeSplits(CascadedShadowMap.CASCADE_COUNT, zNear, zFar);
         for (int i = 0; i < splitValues.size(); i++) {
             final var nearValue = i == 0 ? 0f : splitValues.get(i - 1);
             final var farValue = splitValues.get(i);
@@ -49,6 +57,17 @@ public class CSMSplitsComputer {
         }
     }
 
+    private void computeCameraFrustum() {
+        final Camera camera = sceneRenderData.getCamera();
+        camera.getFrustum().clipZ((zFar - zNear) / (camera.getzFar() - camera.getzNear()), frustum);
+    }
+
+    private void updateZNearAndFar() {
+        final var camera = sceneRenderData.getCamera();
+        zNear = camera.getzNear();
+        zFar = MathUtils.min(Configuration.getInstance().getShadowMaxDistance(), camera.getzFar());
+    }
+
     private void updateCSMSplits(final CSMSplit split) {
         computeSubFrustum(split);
         computeWorldSpaceBoundingSphere(split);
@@ -56,9 +75,8 @@ public class CSMSplitsComputer {
     }
 
     private void computeSubFrustum(final CSMSplit split) {
-        final var cameraFrustum = sceneRenderData.getCamera().getFrustum();
         final var splitFrustum = split.getFrustum();
-        cameraFrustum.clipZ(split.getNearDepth(), split.getFarDepth(), splitFrustum);
+        frustum.clipZ(split.getNearDepth(), split.getFarDepth(), splitFrustum);
     }
 
     private void computeWorldSpaceBoundingSphere(final CSMSplit split) {
@@ -95,10 +113,18 @@ public class CSMSplitsComputer {
     }
 
     private Vector3f computeTexelOffset(final Matrix4f viewProjection, final Vector3f destination) {
-        final float halfCascadeResolution = CascadedShadowMap.CASCADE_RESOLUTION * 0.5f;
+        final float halfCascadeResolution = Configuration.getInstance().getShadowMapResolution() * 0.5f;
         final var shadowOrigin = viewProjection.transformPosition(Vectors.VEC3_ZERO, destination).mul(halfCascadeResolution);
         return destination.set((float) Math.round(shadowOrigin.x()) - shadowOrigin.x(), (float) Math.round(shadowOrigin.y()) - shadowOrigin.y(), 0f)
                 .div(halfCascadeResolution);
+    }
+
+    public float getzNear() {
+        return zNear;
+    }
+
+    public float getzFar() {
+        return zFar;
     }
 
     public CSMSplit getSplit(final int splitIndex) {

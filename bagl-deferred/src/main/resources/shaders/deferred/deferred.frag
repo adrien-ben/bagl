@@ -4,7 +4,8 @@
 #import "classpath:/shaders/common/maths.glsl"
 #import "classpath:/shaders/common/camera.glsl"
 
-const float SHADOW_BIAS = 0.005;
+const float MIN_SHADOW_BIAS = 0.005;
+const float MAX_SHADOW_BIAS = 0.05;
 const float MAX_REFLECTION_LOD = 4.0;
 const int CSM_SPLIT_COUNT = 4;
 
@@ -16,6 +17,8 @@ struct ShadowCascade {
 
 struct Shadow {
     bool hasShadow;
+    float zNear;
+    float zFar;
     ShadowCascade shadowCascades[CSM_SPLIT_COUNT];
 };
 
@@ -152,8 +155,8 @@ vec3 computeLight(vec3 color, float intensity, float attenuation, vec3 L, vec3 V
 }
 
 float linearizeDepth(float depth) {
-    float f = uCamera.zFar;
-    float n = uCamera.zNear;
+    float f = uShadow.zFar;
+    float n = uShadow.zNear;
     return (2 * n) / (f + n - depth * (f - n));
 }
 
@@ -166,11 +169,11 @@ int selectShadowMapIndexFromDepth(float depth) {
     return CSM_SPLIT_COUNT - 1;
 }
 
-float computeShadow(float linearDepth, vec4 worldSpacePosition) {
+float computeShadow(float linearDepth, vec4 worldSpacePosition, float bias) {
     int cascadeIndex = selectShadowMapIndexFromDepth(linearDepth);
     vec4 lightSpacePosition = uShadow.shadowCascades[cascadeIndex].lightViewProj*worldSpacePosition;
     vec3 shadowMapCoords = (lightSpacePosition.xyz / lightSpacePosition.w)*0.5 + 0.5;
-    return texture(uShadow.shadowCascades[cascadeIndex].shadowMap, shadowMapCoords, SHADOW_BIAS);
+    return texture(uShadow.shadowCascades[cascadeIndex].shadowMap, shadowMapCoords, bias);
 }
 
 void main() {
@@ -218,14 +221,14 @@ void main() {
     //directional lights
     int directionalCount = min(uLights.directionalCount, MAX_DIR_LIGHTS);
     for(int i = 0; i < directionalCount; i++) {
-        float lightIntensity = uLights.directionals[i].base.intensity;
-        if(i == 0 && uShadow.hasShadow) {
-            float shadowMapDepthTest = computeShadow(linearDepth, position);
-            lightIntensity *= shadowMapDepthTest;
-        }
-
         //light direction
         vec3 L = normalize(-uLights.directionals[i].direction);
+        float lightIntensity = uLights.directionals[i].base.intensity;
+        if(i == 0 && uShadow.hasShadow) {
+            float bias = max(MAX_SHADOW_BIAS * (1.0 - dot(N, L)), MIN_SHADOW_BIAS);
+            float shadowMapDepthTest = computeShadow(linearDepth, position, bias);
+            lightIntensity *= shadowMapDepthTest;
+        }
 
         L0 += computeLight(uLights.directionals[i].base.color.rgb, lightIntensity, 1.0, L, V, N, NdotV, F0, color, roughness, metallic);
     }

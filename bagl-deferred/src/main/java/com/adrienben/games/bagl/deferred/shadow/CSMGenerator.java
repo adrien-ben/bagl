@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.List;
 
 import static com.adrienben.games.bagl.deferred.shadow.CascadedShadowMap.CASCADE_COUNT;
-import static com.adrienben.games.bagl.deferred.shadow.CascadedShadowMap.CASCADE_RESOLUTION;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL32.GL_DEPTH_CLAMP;
 
@@ -35,6 +34,7 @@ import static org.lwjgl.opengl.GL32.GL_DEPTH_CLAMP;
  */
 public class CSMGenerator {
 
+    private final int resolution;
     private final List<FrameBuffer> frameBuffers;
     private final ShadowShader shadowShader;
     private final CSMSplitsComputer csmSplitsComputer;
@@ -47,6 +47,7 @@ public class CSMGenerator {
     private List<ShadowCascade> shadowCascades = new ArrayList<>();
 
     public CSMGenerator() {
+        this.resolution = Configuration.getInstance().getShadowMapResolution();
         this.frameBuffers = CollectionUtils.createListWithDefaultValues(ArrayList::new, CASCADE_COUNT, this::createFrameBuffer);
         this.shadowShader = new ShadowShader();
         this.csmSplitsComputer = new CSMSplitsComputer();
@@ -55,7 +56,7 @@ public class CSMGenerator {
     }
 
     private FrameBuffer createFrameBuffer() {
-        return new FrameBuffer(CASCADE_RESOLUTION, CASCADE_RESOLUTION, FrameBufferParameters.builder().compareFunction(CompareFunction.LESS).build());
+        return new FrameBuffer(resolution, resolution, FrameBufferParameters.builder().compareFunction(CompareFunction.LESS).build());
     }
 
     /**
@@ -79,7 +80,7 @@ public class CSMGenerator {
             prepareForRenderingAllMaps();
             renderAllMaps();
             cleanUpAfterRenderingAllMaps();
-            return new CascadedShadowMap(Collections.unmodifiableList(shadowCascades));
+            return new CascadedShadowMap(csmSplitsComputer.getzNear(), csmSplitsComputer.getzFar(), Collections.unmodifiableList(shadowCascades));
         }
         return null;
     }
@@ -116,7 +117,7 @@ public class CSMGenerator {
     }
 
     private void prepareForRenderingOneMap() {
-        glViewport(0, 0, CASCADE_RESOLUTION, CASCADE_RESOLUTION);
+        glViewport(0, 0, resolution, resolution);
         currentFrameBuffer.bind();
         currentFrameBuffer.clear();
     }

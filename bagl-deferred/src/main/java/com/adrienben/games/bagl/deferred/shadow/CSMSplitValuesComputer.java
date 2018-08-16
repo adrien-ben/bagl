@@ -1,5 +1,7 @@
 package com.adrienben.games.bagl.deferred.shadow;
 
+import com.adrienben.games.bagl.engine.Configuration;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,7 +12,6 @@ import java.util.List;
  */
 public class CSMSplitValuesComputer {
 
-    private static final float LAMBDA = 0.5f;
     private static final float LAST_SPLIT_VALUE = 1f;
 
     /**
@@ -31,11 +32,12 @@ public class CSMSplitValuesComputer {
     }
 
     private float computeSplitValue(final int splitIndex, final int maxSplits, final float zNear, final float zFar) {
+        final var lambda = Configuration.getInstance().getShadowCascadeSplitLambda();
         final var depth = zFar - zNear;
         final var indexByMax = (float) splitIndex / maxSplits;
         final var clog = zNear * (float) (Math.pow(zFar / zNear, indexByMax));
         final var cuni = zNear + depth * indexByMax;
-        final var value = LAMBDA * clog + (1 - LAMBDA) * cuni;
+        final var value = lambda * clog + (1 - lambda) * cuni;
         return value / depth;
     }
 }
