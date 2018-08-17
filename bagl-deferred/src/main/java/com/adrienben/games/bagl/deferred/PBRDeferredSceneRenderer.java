@@ -352,8 +352,10 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
         gBuffer.getColorTexture(2).unbind();
         gBuffer.getDepthTexture().unbind();
         brdfLookup.getTexture().unbind();
-        for (int i = 0; i < CascadedShadowMap.CASCADE_COUNT; i++) {
-            cascadedShadowMap.getShadowCascade(i).getShadowMap().unbind();
+        if (Objects.nonNull(cascadedShadowMap)) {
+            for (int i = 0; i < CascadedShadowMap.CASCADE_COUNT; i++) {
+                cascadedShadowMap.getShadowCascade(i).getShadowMap().unbind();
+            }
         }
         finalBuffer.unbind();
     }
