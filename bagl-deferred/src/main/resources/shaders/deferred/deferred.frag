@@ -4,8 +4,8 @@
 #import "classpath:/shaders/common/maths.glsl"
 #import "classpath:/shaders/common/camera.glsl"
 
-const float MIN_SHADOW_BIAS = 0.005;
-const float MAX_SHADOW_BIAS = 0.05;
+const float MIN_SHADOW_BIAS = 0.0005;
+const float MAX_SHADOW_BIAS = 0.0025;
 const float MAX_REFLECTION_LOD = 4.0;
 const int CSM_SPLIT_COUNT = 4;
 
@@ -176,7 +176,8 @@ float computeShadow(float linearDepth, vec4 worldSpacePosition, float bias) {
     if(shadowMapCoords.z > 1.0) {
         return 1.0;
     }
-    return texture(uShadow.shadowCascades[cascadeIndex].shadowMap, shadowMapCoords, bias);
+    shadowMapCoords.z -= bias;
+    return texture(uShadow.shadowCascades[cascadeIndex].shadowMap, shadowMapCoords);
 }
 
 void main() {
