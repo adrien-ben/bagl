@@ -33,13 +33,12 @@ We use the roughness/metallic workflow. The materials are described as follows :
 - Diffuse color (Color or Texture2D)
 - Roughness [0.0..1.0]
 - Metallic [0.0..1.0]
-- ORM (Occlusion/Roughness/Metalness) map (Texture2D, Optional) 
+- Roughness/Metallic map (Texture2D, Optional) 
 - Normal map (Texture2D, Optional)
 - Emissive color (Color or Texture2D)
 - Double sided flag
 
-For ORM maps, roughness must be put in the green channel and metalness in the blue channel.
-Ambient occlusion maps are not yet supported but when they are, data will be read from the red channel of the same map.
+For Roughness/Metallic maps, roughness must be put in the green channel and metalness in the blue channel.
 For double sided materials, normals will be automatically inverted during the fragment shader stage.
 
 #### Transparency

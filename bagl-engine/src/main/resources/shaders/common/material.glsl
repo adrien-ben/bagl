@@ -9,8 +9,8 @@ struct Material {
     sampler2D diffuseMap;
     bool hasEmissiveMap;
     sampler2D emissiveMap;
-    bool hasOrmMap;
-    sampler2D ormMap;
+    bool hasRoughnessMetallicMap;
+    sampler2D roughnessMetallicMap;
 	bool hasNormalMap;
     sampler2D normalMap;
 

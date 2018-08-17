@@ -307,7 +307,7 @@ public class GltfLoader {
                 .map(GltfTextureInfo::getTexture).map(this::mapTexture).orElse(null);
         final var emissiveTexture = Optional.ofNullable(gltfMaterial.getEmissiveTexture())
                 .map(GltfTextureInfo::getTexture).map(this::mapTexture).orElse(null);
-        final var pbrTexture = Optional.ofNullable(gltfMaterial.getPbrMetallicRoughness().getMetallicRoughnessTexture())
+        final var roughnessMetallicMap = Optional.ofNullable(gltfMaterial.getPbrMetallicRoughness().getMetallicRoughnessTexture())
                 .map(GltfTextureInfo::getTexture).map(this::mapTexture).orElse(null);
         final var normalMap = Optional.ofNullable(gltfMaterial.getNormalTexture()).map(GltfNormalTextureInfo::getTexture)
                 .map(this::mapTexture).orElse(null);
@@ -322,7 +322,7 @@ public class GltfLoader {
                 .metallic(gltfMaterial.getPbrMetallicRoughness().getMetallicFactor())
                 .diffuse(diffuseTexture)
                 .emissive(emissiveTexture)
-                .orm(pbrTexture)
+                .roughnessMetallic(roughnessMetallicMap)
                 .normals(normalMap)
                 .doubleSided(gltfMaterial.getDoubleSided())
                 .alphaMode(alphaMode)

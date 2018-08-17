@@ -21,7 +21,7 @@ import java.util.Optional;
  * <p>
  * <li>A diffuse texture (default: null)
  * <li>An emissive texture (default: null)
- * <li>An ORM (Occlusion/Roughness/Metalness) texture (default: null)
+ * <li>An roughness metallic texture (default: null)
  * <li>A normal texture (default: null)
  * <p>
  * <li>A double sided flag (default: false)
@@ -56,7 +56,7 @@ public class Material {
 
     private final Texture2D diffuseMap;
     private final Texture2D emissiveMap;
-    private final Texture2D ormMap;
+    private final Texture2D roughnessMetallicMap;
     private final Texture2D normalMap;
 
     private final boolean doubleSided;
@@ -72,7 +72,7 @@ public class Material {
 
         this.diffuseMap = builder.diffuseMap;
         this.emissiveMap = builder.emissiveMap;
-        this.ormMap = builder.ormMap;
+        this.roughnessMetallicMap = builder.roughnessMetallicMap;
         this.normalMap = builder.normalMap;
 
         this.doubleSided = builder.doubleSided;
@@ -95,7 +95,7 @@ public class Material {
     public void destroy() {
         getDiffuseMap().ifPresent(Texture2D::destroy);
         getEmissiveMap().ifPresent(Texture2D::destroy);
-        getOrmMap().ifPresent(Texture2D::destroy);
+        getRoughnessMetallicMap().ifPresent(Texture2D::destroy);
         getNormalMap().ifPresent(Texture2D::destroy);
     }
 
@@ -127,8 +127,8 @@ public class Material {
         return Optional.ofNullable(emissiveMap);
     }
 
-    public Optional<Texture2D> getOrmMap() {
-        return Optional.ofNullable(ormMap);
+    public Optional<Texture2D> getRoughnessMetallicMap() {
+        return Optional.ofNullable(roughnessMetallicMap);
     }
 
     public Optional<Texture2D> getNormalMap() {
@@ -151,6 +151,7 @@ public class Material {
      * Material builder
      */
     public static class Builder {
+
         private Color diffuseColor = Color.WHITE;
         private Color emissiveColor = Color.BLACK;
         private float emissiveIntensity = 0f;
@@ -159,7 +160,7 @@ public class Material {
 
         private Texture2D diffuseMap = null;
         private Texture2D emissiveMap = null;
-        private Texture2D ormMap = null;
+        private Texture2D roughnessMetallicMap = null;
         private Texture2D normalMap = null;
 
         private boolean doubleSided = false;
@@ -219,8 +220,8 @@ public class Material {
             return this;
         }
 
-        public Builder orm(final Texture2D ormMap) {
-            this.ormMap = ormMap;
+        public Builder roughnessMetallic(final Texture2D roughnessMetallicMap) {
+            this.roughnessMetallicMap = roughnessMetallicMap;
             return this;
         }
 

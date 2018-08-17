@@ -55,10 +55,10 @@ public class GBufferShader {
             map.bind(Material.EMISSIVE_MAP_CHANNEL);
         });
 
-        final var ormMap = material.getOrmMap();
-        shader.setUniform("uMaterial.hasOrmMap", ormMap.isPresent());
-        ormMap.ifPresent(map -> {
-            shader.setUniform("uMaterial.ormMap", Material.ORM_MAP_CHANNEL);
+        final var roughnessMetallicMap = material.getRoughnessMetallicMap();
+        shader.setUniform("uMaterial.hasRoughnessMetallicMap", roughnessMetallicMap.isPresent());
+        roughnessMetallicMap.ifPresent(map -> {
+            shader.setUniform("uMaterial.roughnessMetallicMap", Material.ORM_MAP_CHANNEL);
             map.bind(Material.ORM_MAP_CHANNEL);
         });
 

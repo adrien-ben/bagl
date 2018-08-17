@@ -26,8 +26,8 @@ void main() {
 
     // roughness
     float roughness = uMaterial.roughness;
-    if(uMaterial.hasOrmMap) {
-        roughness *= texture2D(uMaterial.ormMap, passCoords).g;
+    if(uMaterial.hasRoughnessMetallicMap) {
+        roughness *= texture2D(uMaterial.roughnessMetallicMap, passCoords).g;
     }
     colors.a = clamp(roughness, 0.03, 1.0);
 
@@ -47,8 +47,8 @@ void main() {
 
     // metallic
 	normals.a = uMaterial.metallic;
-	if(uMaterial.hasOrmMap) {
-	    normals.a *= texture2D(uMaterial.ormMap, passCoords).b;
+	if(uMaterial.hasRoughnessMetallicMap) {
+	    normals.a *= texture2D(uMaterial.roughnessMetallicMap, passCoords).b;
 	}
 
     // emissive color

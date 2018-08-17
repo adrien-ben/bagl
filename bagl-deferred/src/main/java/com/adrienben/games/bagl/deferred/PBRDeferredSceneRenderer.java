@@ -294,7 +294,7 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
         meshRenderer.render(mesh);
         material.getDiffuseMap().ifPresent(Texture::unbind);
         material.getEmissiveMap().ifPresent(Texture::unbind);
-        material.getOrmMap().ifPresent(Texture::unbind);
+        material.getRoughnessMetallicMap().ifPresent(Texture::unbind);
         material.getNormalMap().ifPresent(Texture::unbind);
         if (material.isDoubleSided()) {
             glEnable(GL_CULL_FACE);
