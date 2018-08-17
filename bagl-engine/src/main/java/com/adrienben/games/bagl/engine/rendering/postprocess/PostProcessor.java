@@ -23,6 +23,18 @@ public class PostProcessor {
     }
 
     /**
+     * Add a post processing step to the processor.
+     * <p>
+     * The step is inserted just before the final step which write the the current frame buffer.
+     *
+     * @param step The step to add.
+     */
+    public void addStep(final PostProcessorStep step) {
+        final var lastStep = steps.set(steps.size() - 1, step);
+        steps.add(lastStep);
+    }
+
+    /**
      * Release resources
      */
     public void destroy() {
@@ -31,8 +43,6 @@ public class PostProcessor {
 
     /**
      * Apply post processing to an image
-     * <p>
-     * Applies bloom, gamma correction et hdr tone mapping to the image
      *
      * @param image The image to apply post processing to
      */

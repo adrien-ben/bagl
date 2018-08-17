@@ -103,7 +103,8 @@ Possible working value is 0.4. See [glPolygonOffset](https://www.khronos.org/reg
 
 ### Post Processing
 
-The renderer uses a simple post processing pipeline that apply bloom, anti-aliasing, tone mapping and gamma correction.
+The renderer uses a simple post processing pipeline that apply bloom, anti-aliasing, tone mapping and gamma correction. Bloom and 
+fxaa can be disabled. Bloom by setting bloom_enabled to false and `fxaa` by setting `fxaa_quality` to DISABLED.
 
 #### Anti Aliasing
 

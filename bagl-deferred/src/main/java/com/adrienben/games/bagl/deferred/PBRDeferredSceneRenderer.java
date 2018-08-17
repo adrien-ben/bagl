@@ -15,6 +15,7 @@ import com.adrienben.games.bagl.engine.rendering.Material;
 import com.adrienben.games.bagl.engine.rendering.model.*;
 import com.adrienben.games.bagl.engine.rendering.particles.ParticleRenderer;
 import com.adrienben.games.bagl.engine.rendering.postprocess.PostProcessor;
+import com.adrienben.games.bagl.engine.rendering.postprocess.fxaa.FxaaPresets;
 import com.adrienben.games.bagl.engine.rendering.postprocess.steps.BloomStep;
 import com.adrienben.games.bagl.engine.rendering.postprocess.steps.FxaaStep;
 import com.adrienben.games.bagl.engine.rendering.postprocess.steps.ToneMappingStep;
@@ -107,14 +108,21 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
         csmGenerator = new CSMGenerator();
         particleRenderer = new ParticleRenderer();
         meshRenderer = new MeshRenderer();
-        postProcessor = new PostProcessor(
-                new BloomStep(xResolution, yResolution),
-                new ToneMappingStep(xResolution, yResolution),
-                new FxaaStep(xResolution, yResolution, config.getFxaaPresets())
-        );
+        postProcessor = new PostProcessor();
+        setUpPostProcessor(config);
 
         initFrameBuffers();
         initShaders();
+    }
+
+    private void setUpPostProcessor(final Configuration config) {
+        if (config.isBloomEnabled()) {
+            postProcessor.addStep(new BloomStep(xResolution, yResolution));
+        }
+        postProcessor.addStep(new ToneMappingStep(xResolution, yResolution));
+        if (config.getFxaaPresets() != FxaaPresets.DISABLED) {
+            postProcessor.addStep(new FxaaStep(xResolution, yResolution, config.getFxaaPresets()));
+        }
     }
 
     /**

@@ -49,6 +49,7 @@ public class Configuration {
     private final float shadowCascadeSplitLambda;
     private final float shadowPolygonOffsetUnits;
     private final FxaaPresets fxaaPresets;
+    private final boolean bloomEnabled;
     private final ResourcePath assetDescriptorFilePath;
 
     private Configuration() {
@@ -64,6 +65,7 @@ public class Configuration {
         this.shadowCascadeSplitLambda = readRequiredFloat("shadow_cascade_split_lambda");
         this.shadowPolygonOffsetUnits = readRequiredFloat("shadow_polygon_offset_units");
         this.fxaaPresets = readRequiredAndMap("fxaa_quality", FxaaPresets::valueOf);
+        this.bloomEnabled = readRequiredBool("bloom_enabled");
         this.assetDescriptorFilePath = readAndMapIfPresent("assets_descriptor_path", ResourcePath::get)
                 .orElse(ResourcePath.get(DEFAULT_ASSETS_DESCRIPTOR_PATH));
     }
@@ -174,6 +176,10 @@ public class Configuration {
 
     public FxaaPresets getFxaaPresets() {
         return fxaaPresets;
+    }
+
+    public boolean isBloomEnabled() {
+        return bloomEnabled;
     }
 
     public ResourcePath getAssetDescriptorFilePath() {
