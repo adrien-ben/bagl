@@ -4,8 +4,6 @@
 #import "classpath:/shaders/common/maths.glsl"
 #import "classpath:/shaders/common/camera.glsl"
 
-const float MIN_SHADOW_BIAS = 0.0005;
-const float MAX_SHADOW_BIAS = 0.0025;
 const float MAX_REFLECTION_LOD = 4.0;
 const int CSM_SPLIT_COUNT = 4;
 
@@ -169,14 +167,13 @@ int selectShadowMapIndexFromDepth(float depth) {
     return CSM_SPLIT_COUNT - 1;
 }
 
-float computeShadow(float linearDepth, vec4 worldSpacePosition, float bias) {
+float computeShadow(float linearDepth, vec4 worldSpacePosition) {
     int cascadeIndex = selectShadowMapIndexFromDepth(linearDepth);
     vec4 lightSpacePosition = uShadow.shadowCascades[cascadeIndex].lightViewProj*worldSpacePosition;
     vec3 shadowMapCoords = (lightSpacePosition.xyz / lightSpacePosition.w)*0.5 + 0.5;
     if(shadowMapCoords.z > 1.0) {
         return 1.0;
     }
-    shadowMapCoords.z -= bias;
     return texture(uShadow.shadowCascades[cascadeIndex].shadowMap, shadowMapCoords);
 }
 
@@ -229,8 +226,7 @@ void main() {
         vec3 L = normalize(-uLights.directionals[i].direction);
         float lightIntensity = uLights.directionals[i].base.intensity;
         if(i == 0 && uShadow.hasShadow) {
-            float bias = max(MAX_SHADOW_BIAS * (1.0 - dot(N, L)), MIN_SHADOW_BIAS);
-            float shadowMapDepthTest = computeShadow(linearDepth, position, bias);
+            float shadowMapDepthTest = computeShadow(linearDepth, position);
             lightIntensity *= shadowMapDepthTest;
         }
 

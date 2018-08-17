@@ -34,6 +34,8 @@ import static org.lwjgl.opengl.GL32.GL_DEPTH_CLAMP;
  */
 public class CSMGenerator {
 
+    private static final float POLYGON_OFFSET = 1.0f;
+
     private final int resolution;
     private final List<FrameBuffer> frameBuffers;
     private final ShadowShader shadowShader;
@@ -102,8 +104,11 @@ public class CSMGenerator {
     }
 
     private void prepareForRenderingAllMaps() {
+        final var config = Configuration.getInstance();
         glCullFace(GL_FRONT);
         glEnable(GL_DEPTH_CLAMP);
+        glEnable(GL_POLYGON_OFFSET_FILL);
+        glPolygonOffset(POLYGON_OFFSET, config.getShadowPolygonOffsetUnits());
         shadowShader.bind();
         shadowCascades.clear();
     }
@@ -161,10 +166,11 @@ public class CSMGenerator {
     }
 
     private void cleanUpAfterRenderingAllMaps() {
+        final var config = Configuration.getInstance();
         Shader.unbind();
+        glDisable(GL_POLYGON_OFFSET_FILL);
         glDisable(GL_DEPTH_CLAMP);
         glCullFace(GL_BACK);
-        final var config = Configuration.getInstance();
         glViewport(0, 0, config.getXResolution(), config.getYResolution());
     }
 

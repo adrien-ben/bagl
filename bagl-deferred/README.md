@@ -96,6 +96,10 @@ Shadow can be configuring with the following parameters :
 - shadow_map_resolution : to control the resolution of the shadow map
 - shadow_max_distance : to control the max distance from the camera position at which the shadow will render
 - shadow_cascade_split_lambda : to control the distribution between uniform and logarithmic terms when splitting the view frustum
+- shadow_polygon_offset_units : to control depth bias
+
+The last parameters control the depth bias applied when rendering shadow maps. This is used to avoid shadow acne issues.
+Possible working value is 0.4. See [glPolygonOffset](https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glPolygonOffset.xhtml).
 
 ### Post Processing
 

@@ -25,6 +25,7 @@ import java.util.function.Function;
  * <li>shadow_map_resolution (integer) : the resolution of the shadow map.
  * <li>shadow_max_distance (float) : the max distance from the camera at which shadow are displayed
  * <li>shadow_cascade_split_lambda (float) : the ratio between logarithmic and uniform split for cascaded shadow maps
+ * <li>shadow_polygon_offset_units (float) : control for the shadow depth bias
  * <li>fxaa_quality (String) : the preset quality of the fxaa. Should be LOW, MEDIUM or HIGH.
  * <li>assets_descriptor_path (String) : the path of the asset descriptor json file.
  */
@@ -46,6 +47,7 @@ public class Configuration {
     private final int shadowMapResolution;
     private final float shadowMaxDistance;
     private final float shadowCascadeSplitLambda;
+    private final float shadowPolygonOffsetUnits;
     private final FxaaPresets fxaaPresets;
     private final ResourcePath assetDescriptorFilePath;
 
@@ -60,6 +62,7 @@ public class Configuration {
         this.shadowMapResolution = readRequiredInt("shadow_map_resolution");
         this.shadowMaxDistance = readRequiredFloat("shadow_max_distance");
         this.shadowCascadeSplitLambda = readRequiredFloat("shadow_cascade_split_lambda");
+        this.shadowPolygonOffsetUnits = readRequiredFloat("shadow_polygon_offset_units");
         this.fxaaPresets = readRequiredAndMap("fxaa_quality", FxaaPresets::valueOf);
         this.assetDescriptorFilePath = readAndMapIfPresent("assets_descriptor_path", ResourcePath::get)
                 .orElse(ResourcePath.get(DEFAULT_ASSETS_DESCRIPTOR_PATH));
@@ -163,6 +166,10 @@ public class Configuration {
 
     public float getShadowCascadeSplitLambda() {
         return shadowCascadeSplitLambda;
+    }
+
+    public float getShadowPolygonOffsetUnits() {
+        return shadowPolygonOffsetUnits;
     }
 
     public FxaaPresets getFxaaPresets() {
