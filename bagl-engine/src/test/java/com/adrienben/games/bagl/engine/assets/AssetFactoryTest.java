@@ -10,7 +10,7 @@ import com.adrienben.games.bagl.engine.resource.scene.ComponentFactory;
 import com.adrienben.games.bagl.engine.resource.scene.SceneLoader;
 import com.adrienben.games.bagl.engine.scene.Scene;
 import com.adrienben.games.bagl.opengl.texture.Filter;
-import com.adrienben.games.bagl.opengl.texture.Texture;
+import com.adrienben.games.bagl.opengl.texture.Texture2D;
 import com.adrienben.games.bagl.opengl.texture.Wrap;
 import com.adrienben.games.bagl.tests.OGLExtension;
 import org.junit.jupiter.api.Assertions;
@@ -48,9 +48,9 @@ class AssetFactoryTest {
 
     private void assertTextureIsCreated() {
         assertNotNull(createdAsset);
-        assertTrue(createdAsset instanceof Texture);
+        assertTrue(createdAsset instanceof Texture2D);
 
-        final var texture = (Texture) createdAsset;
+        final var texture = (Texture2D) createdAsset;
         assertEquals(1, texture.getWidth());
         assertEquals(1, texture.getHeight());
 

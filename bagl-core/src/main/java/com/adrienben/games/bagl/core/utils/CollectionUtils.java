@@ -1,6 +1,8 @@
 package com.adrienben.games.bagl.core.utils;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * Utility methods for collections
@@ -33,5 +35,21 @@ public final class CollectionUtils {
      */
     public static boolean isNotEmpty(final Collection<?> collection) {
         return !CollectionUtils.isEmpty(collection);
+    }
+
+    /**
+     * Create a list of size {@code size} and fill it will default values.
+     *
+     * @param listSupplier         The supplier for the list instance.
+     * @param size                 The size of the list.
+     * @param defaultValueSupplier The supplier for the default values.
+     * @return The created list.
+     */
+    public static <T> List<T> createListWithDefaultValues(final Supplier<List<T>> listSupplier, final int size, final Supplier<T> defaultValueSupplier) {
+        final var list = listSupplier.get();
+        for (int i = 0; i < size; i++) {
+            list.add(defaultValueSupplier.get());
+        }
+        return list;
     }
 }

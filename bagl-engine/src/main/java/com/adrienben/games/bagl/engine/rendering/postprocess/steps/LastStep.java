@@ -3,7 +3,7 @@ package com.adrienben.games.bagl.engine.rendering.postprocess.steps;
 import com.adrienben.games.bagl.core.io.ResourcePath;
 import com.adrienben.games.bagl.engine.rendering.postprocess.PostProcessorStep;
 import com.adrienben.games.bagl.opengl.shader.Shader;
-import com.adrienben.games.bagl.opengl.texture.Texture;
+import com.adrienben.games.bagl.opengl.texture.Texture2D;
 
 /**
  * Last step of the post processing pipeline.
@@ -39,13 +39,13 @@ public class LastStep extends PostProcessorStep {
      * {@code image} will be returned as is.
      */
     @Override
-    protected Texture onProcess(final Texture image) {
+    protected Texture2D onProcess(final Texture2D image) {
         shader.bind();
         image.bind();
 
         renderQuad();
 
-        Texture.unbind();
+        image.unbind();
         Shader.unbind();
         return image;
     }

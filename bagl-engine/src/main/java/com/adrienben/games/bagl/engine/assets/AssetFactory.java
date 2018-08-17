@@ -8,7 +8,7 @@ import com.adrienben.games.bagl.engine.rendering.text.Font;
 import com.adrienben.games.bagl.engine.resource.scene.SceneLoader;
 import com.adrienben.games.bagl.engine.scene.Scene;
 import com.adrienben.games.bagl.opengl.texture.Filter;
-import com.adrienben.games.bagl.opengl.texture.Texture;
+import com.adrienben.games.bagl.opengl.texture.Texture2D;
 import com.adrienben.games.bagl.opengl.texture.TextureParameters;
 import com.adrienben.games.bagl.opengl.texture.Wrap;
 
@@ -45,9 +45,9 @@ public class AssetFactory {
         return assetCreationCommand.apply(assetDescriptor);
     }
 
-    private Texture createTexture(final AssetDescriptor assetDescriptor) {
+    private Texture2D createTexture(final AssetDescriptor assetDescriptor) {
         final var textureParametersBuilder = createTextureParametersBuilder(assetDescriptor.getParameters());
-        return Texture.fromFile(assetDescriptor.getPath(), textureParametersBuilder);
+        return Texture2D.fromFile(assetDescriptor.getPath(), textureParametersBuilder);
     }
 
     private TextureParameters.Builder createTextureParametersBuilder(final Map<String, Object> parametersMap) {

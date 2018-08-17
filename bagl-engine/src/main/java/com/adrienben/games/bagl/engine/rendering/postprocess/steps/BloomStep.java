@@ -7,7 +7,7 @@ import com.adrienben.games.bagl.opengl.FrameBuffer;
 import com.adrienben.games.bagl.opengl.FrameBufferParameters;
 import com.adrienben.games.bagl.opengl.shader.Shader;
 import com.adrienben.games.bagl.opengl.texture.Format;
-import com.adrienben.games.bagl.opengl.texture.Texture;
+import com.adrienben.games.bagl.opengl.texture.Texture2D;
 
 /**
  * Bloom post processing step.
@@ -24,7 +24,7 @@ public class BloomStep extends PostProcessorStep {
     private FrameBuffer finalBuffer;
 
     public BloomStep(final int xResolution, final int yResolution) {
-        final var parameters = FrameBufferParameters.builder().hasDepthStencil(false).colorOutputFormat(Format.RGB16F).build();
+        final var parameters = FrameBufferParameters.builder().depthStencilTextureParameters(null).colorOutputFormat(Format.RGB16F).build();
         this.bloomBuffer = new FrameBuffer(xResolution, yResolution, parameters);
         this.blurBuffer = new DoubleBuffer<>(() -> new FrameBuffer(xResolution, yResolution, parameters));
         this.finalBuffer = new FrameBuffer(xResolution, yResolution, parameters);
@@ -53,7 +53,7 @@ public class BloomStep extends PostProcessorStep {
      * Apply bloom on {@code image}.
      */
     @Override
-    public Texture onProcess(final Texture image) {
+    public Texture2D onProcess(final Texture2D image) {
         performBloomPass(image);
         performGaussianBlur(bloomBuffer.getColorTexture(0));
         performFinalPass(image);
@@ -61,19 +61,19 @@ public class BloomStep extends PostProcessorStep {
         return finalBuffer.getColorTexture(0);
     }
 
-    private void performBloomPass(final Texture image) {
+    private void performBloomPass(final Texture2D image) {
         bloomBuffer.bind();
         bloomBuffer.clear();
-
         bloomShader.bind();
         image.bind();
 
         renderQuad();
 
+        image.unbind();
         bloomBuffer.unbind();
     }
 
-    private void performGaussianBlur(final Texture image) {
+    private void performGaussianBlur(final Texture2D image) {
         blurShader.bind();
         var horizontal = true;
 
@@ -82,14 +82,12 @@ public class BloomStep extends PostProcessorStep {
             blurBuffer.getWriteBuffer().clear();
             blurShader.setUniform("horizontal", horizontal);
 
-            if (i == 0) {
-                image.bind();
-            } else {
-                blurBuffer.getReadBuffer().getColorTexture(0).bind();
-            }
+            final var texture = i == 0 ? image : blurBuffer.getReadBuffer().getColorTexture(0);
+            texture.bind();
 
             renderQuad();
 
+            texture.unbind();
             blurBuffer.swap();
         }
 
@@ -97,7 +95,7 @@ public class BloomStep extends PostProcessorStep {
         Shader.unbind();
     }
 
-    private void performFinalPass(final Texture baseImage) {
+    private void performFinalPass(final Texture2D baseImage) {
         finalBuffer.bind();
         finalBuffer.clear();
 
@@ -109,8 +107,8 @@ public class BloomStep extends PostProcessorStep {
 
         renderQuad();
 
-        Texture.unbind(1);
-        Texture.unbind(0);
+        blurBuffer.getReadBuffer().getColorTexture(0).unbind();
+        baseImage.unbind();
         Shader.unbind();
 
         finalBuffer.unbind();

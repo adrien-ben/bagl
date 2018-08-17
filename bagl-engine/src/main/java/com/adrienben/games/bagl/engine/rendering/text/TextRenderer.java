@@ -8,7 +8,6 @@ import com.adrienben.games.bagl.opengl.BlendMode;
 import com.adrienben.games.bagl.opengl.BufferUsage;
 import com.adrienben.games.bagl.opengl.OpenGL;
 import com.adrienben.games.bagl.opengl.shader.Shader;
-import com.adrienben.games.bagl.opengl.texture.Texture;
 import com.adrienben.games.bagl.opengl.vertex.*;
 import org.joml.Vector2fc;
 import org.lwjgl.opengl.GL11;
@@ -233,7 +232,7 @@ public class TextRenderer implements Renderer<Text> {
         Shader.unbind();
         this.iBuffer.unbind();
         this.vArray.unbind();
-        Texture.unbind();
+        font.getBitmap().unbind();
 
         this.bufferedChar = 0;
     }

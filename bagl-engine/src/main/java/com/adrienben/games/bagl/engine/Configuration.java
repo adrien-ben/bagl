@@ -23,6 +23,9 @@ import java.util.function.Function;
  * <li>fullscreen (boolean) : flag indicating if full screen should be enabled.
  * <li>anisotropic (integer) : level of anisotropic filtering.
  * <li>shadow_map_resolution (integer) : the resolution of the shadow map.
+ * <li>shadow_max_distance (float) : the max distance from the camera at which shadow are displayed
+ * <li>shadow_cascade_split_lambda (float) : the ratio between logarithmic and uniform split for cascaded shadow maps
+ * <li>shadow_polygon_offset_units (float) : control for the shadow depth bias
  * <li>fxaa_quality (String) : the preset quality of the fxaa. Should be LOW, MEDIUM or HIGH.
  * <li>assets_descriptor_path (String) : the path of the asset descriptor json file.
  */
@@ -30,7 +33,7 @@ public class Configuration {
 
     private static final Logger log = LogManager.getLogger(Configuration.class);
 
-    private static final String CONFIGURATION_FILE_PATH = "/config.properties";
+    private static final String CONFIGURATION_FILE_PATH = "classpath:/config.properties";
     private static final String DEFAULT_ASSETS_DESCRIPTOR_PATH = "classpath:/assets.json";
 
     private static Configuration instance;
@@ -42,6 +45,9 @@ public class Configuration {
     private final boolean fullscreen;
     private final int anisotropicLevel;
     private final int shadowMapResolution;
+    private final float shadowMaxDistance;
+    private final float shadowCascadeSplitLambda;
+    private final float shadowPolygonOffsetUnits;
     private final FxaaPresets fxaaPresets;
     private final ResourcePath assetDescriptorFilePath;
 
@@ -54,13 +60,16 @@ public class Configuration {
         this.fullscreen = readRequiredBool("fullscreen");
         this.anisotropicLevel = readRequiredInt("anisotropic");
         this.shadowMapResolution = readRequiredInt("shadow_map_resolution");
+        this.shadowMaxDistance = readRequiredFloat("shadow_max_distance");
+        this.shadowCascadeSplitLambda = readRequiredFloat("shadow_cascade_split_lambda");
+        this.shadowPolygonOffsetUnits = readRequiredFloat("shadow_polygon_offset_units");
         this.fxaaPresets = readRequiredAndMap("fxaa_quality", FxaaPresets::valueOf);
         this.assetDescriptorFilePath = readAndMapIfPresent("assets_descriptor_path", ResourcePath::get)
                 .orElse(ResourcePath.get(DEFAULT_ASSETS_DESCRIPTOR_PATH));
     }
 
     private void loadFile() {
-        try (final var inStream = Configuration.class.getResourceAsStream(CONFIGURATION_FILE_PATH)) {
+        try (final var inStream = ResourcePath.get(CONFIGURATION_FILE_PATH).openInputStream()) {
             this.properties.load(inStream);
         } catch (final IOException e) {
             log.error("Failed to load properties file {}", CONFIGURATION_FILE_PATH, e);
@@ -79,6 +88,14 @@ public class Configuration {
 
     private boolean readRequiredBool(final String key) {
         return readRequiredAndMap(key, Boolean::parseBoolean);
+    }
+
+    private float readRequiredFloat(final String key) {
+        try {
+            return readRequiredAndMap(key, Float::parseFloat);
+        } catch (final NumberFormatException e) {
+            throw new EngineException("Property " + key + " is not a valid integer");
+        }
     }
 
     private <T> T readRequiredAndMap(final String key, final Function<String, T> mapper) {
@@ -140,7 +157,19 @@ public class Configuration {
     }
 
     public int getShadowMapResolution() {
-        return this.shadowMapResolution;
+        return shadowMapResolution;
+    }
+
+    public float getShadowMaxDistance() {
+        return shadowMaxDistance;
+    }
+
+    public float getShadowCascadeSplitLambda() {
+        return shadowCascadeSplitLambda;
+    }
+
+    public float getShadowPolygonOffsetUnits() {
+        return shadowPolygonOffsetUnits;
     }
 
     public FxaaPresets getFxaaPresets() {

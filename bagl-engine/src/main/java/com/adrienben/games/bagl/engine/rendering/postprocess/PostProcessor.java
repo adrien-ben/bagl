@@ -1,7 +1,7 @@
 package com.adrienben.games.bagl.engine.rendering.postprocess;
 
 import com.adrienben.games.bagl.engine.rendering.postprocess.steps.LastStep;
-import com.adrienben.games.bagl.opengl.texture.Texture;
+import com.adrienben.games.bagl.opengl.texture.Texture2D;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,7 +36,7 @@ public class PostProcessor {
      *
      * @param image The image to apply post processing to
      */
-    public void process(final Texture image) {
+    public void process(final Texture2D image) {
         var lastResult = image;
         for (final PostProcessorStep step : steps) {
             lastResult = step.process(lastResult);

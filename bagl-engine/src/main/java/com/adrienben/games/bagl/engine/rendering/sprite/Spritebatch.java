@@ -7,7 +7,7 @@ import com.adrienben.games.bagl.engine.camera.Camera2D;
 import com.adrienben.games.bagl.engine.rendering.renderer.Renderer;
 import com.adrienben.games.bagl.opengl.BufferUsage;
 import com.adrienben.games.bagl.opengl.shader.Shader;
-import com.adrienben.games.bagl.opengl.texture.Texture;
+import com.adrienben.games.bagl.opengl.texture.Texture2D;
 import com.adrienben.games.bagl.opengl.vertex.*;
 import org.joml.Vector2f;
 import org.joml.Vector2fc;
@@ -56,7 +56,7 @@ public class Spritebatch implements Renderer<Sprite> {
 
     private int drawnSprites;
     private boolean started;
-    private Texture currentTexture;
+    private Texture2D currentTexture;
 
     /**
      * Instantiates and initializes the spritebatch
@@ -190,7 +190,7 @@ public class Spritebatch implements Renderer<Sprite> {
         started = false;
     }
 
-    private boolean shouldRender(final Texture texture) {
+    private boolean shouldRender(final Texture2D texture) {
         return drawnSprites >= size || (currentTexture != null && !currentTexture.equals(texture));
     }
 
@@ -201,7 +201,7 @@ public class Spritebatch implements Renderer<Sprite> {
      */
     @Override
     public void render(final Sprite sprite) {
-        final Texture texture = sprite.getTexture();
+        final Texture2D texture = sprite.getTexture();
 
         checkStarted();
         if (shouldRender(texture)) {
@@ -329,7 +329,7 @@ public class Spritebatch implements Renderer<Sprite> {
     private void unbindGLResources() {
         iBuffer.unbind();
         vArray.unbind();
-        Texture.unbind();
+        currentTexture.unbind();
         Shader.unbind();
     }
 }

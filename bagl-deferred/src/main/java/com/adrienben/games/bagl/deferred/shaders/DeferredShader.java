@@ -1,13 +1,15 @@
 package com.adrienben.games.bagl.deferred.shaders;
 
+import com.adrienben.games.bagl.deferred.shadow.CascadedShadowMap;
+import com.adrienben.games.bagl.deferred.shadow.ShadowCascade;
 import com.adrienben.games.bagl.engine.camera.Camera;
 import com.adrienben.games.bagl.engine.rendering.light.DirectionalLight;
 import com.adrienben.games.bagl.engine.rendering.light.PointLight;
 import com.adrienben.games.bagl.engine.rendering.light.SpotLight;
 import com.adrienben.games.bagl.opengl.shader.Shader;
-import org.joml.Matrix4fc;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Wrapper for the deferred shader.
@@ -16,14 +18,14 @@ import java.util.List;
  */
 public class DeferredShader {
 
-    private static final int COLORS_TEXTURE_CHANNEL = 0;
-    private static final int NORMALS_TEXTURE_CHANNEL = 1;
-    private static final int EMISSIVE_TEXTURE_CHANNEL = 2;
-    private static final int DEPTH_TEXTURE_CHANNEL = 3;
-    private static final int SHADOW_MAP_CHANNEL = 4;
-    private static final int IRRADIANCE_MAP_CHANNEL = 5;
-    private static final int PRE_FILTERED_MAP_CHANNEL = 6;
-    private static final int BRDF_LOOKUP_CHANNEL = 7;
+    public static final int COLORS_TEXTURE_CHANNEL = 0;
+    public static final int NORMALS_TEXTURE_CHANNEL = 1;
+    public static final int EMISSIVE_TEXTURE_CHANNEL = 2;
+    public static final int DEPTH_TEXTURE_CHANNEL = 3;
+    public static final int IRRADIANCE_MAP_CHANNEL = 4;
+    public static final int PRE_FILTERED_MAP_CHANNEL = 5;
+    public static final int BRDF_LOOKUP_CHANNEL = 6;
+    public static final int SHADOW_MAP_0_CHANNEL = 7;
 
     private final Shader shader;
 
@@ -33,15 +35,21 @@ public class DeferredShader {
     public DeferredShader() {
         this.shader = ShaderFactory.createDeferredShader();
         bind();
+        setTextureChannelsUniforms();
+        Shader.unbind();
+    }
+
+    private void setTextureChannelsUniforms() {
         this.shader.setUniform("uGBuffer.colors", COLORS_TEXTURE_CHANNEL)
                 .setUniform("uGBuffer.normals", NORMALS_TEXTURE_CHANNEL)
                 .setUniform("uGBuffer.emissive", EMISSIVE_TEXTURE_CHANNEL)
                 .setUniform("uGBuffer.depth", DEPTH_TEXTURE_CHANNEL)
-                .setUniform("uShadow.shadowMap", SHADOW_MAP_CHANNEL)
                 .setUniform("uLights.irradiance", IRRADIANCE_MAP_CHANNEL)
                 .setUniform("uLights.preFilteredMap", PRE_FILTERED_MAP_CHANNEL)
                 .setUniform("uLights.brdf", BRDF_LOOKUP_CHANNEL);
-        Shader.unbind();
+        for (int i = 0; i < CascadedShadowMap.CASCADE_COUNT; i++) {
+            shader.setUniform(String.format("uShadow.shadowCascades[%d].shadowMap", i), SHADOW_MAP_0_CHANNEL + i);
+        }
     }
 
     public void destroy() {
@@ -59,14 +67,23 @@ public class DeferredShader {
         return this;
     }
 
-    public DeferredShader setHasShadowUniform(final boolean hasShadow) {
-        shader.setUniform("uShadow.hasShadow", hasShadow);
+    public DeferredShader setCSMUnforms(final CascadedShadowMap cascadedShadowMap) {
+        shader.setUniform("uShadow.hasShadow", Objects.nonNull(cascadedShadowMap));
+        if (Objects.nonNull(cascadedShadowMap)) {
+            shader.setUniform("uShadow.zNear", cascadedShadowMap.getzNear())
+                    .setUniform("uShadow.zFar", cascadedShadowMap.getzFar());
+            for (int i = 0; i < CascadedShadowMap.CASCADE_COUNT; i++) {
+                setShadowCascadeUniforms(i, cascadedShadowMap.getShadowCascade(i));
+            }
+        }
         return this;
     }
 
-    public DeferredShader setShadowCasterViewProjectionMatrix(final Matrix4fc shadowCasterViewProjectionMatrix) {
-        shader.setUniform("uShadow.lightViewProj", shadowCasterViewProjectionMatrix);
-        return this;
+    private void setShadowCascadeUniforms(final int shadowCascadeIndex, final ShadowCascade shadowCascade) {
+        final var shadowCascadeUniformBaseName = String.format("uShadow.shadowCascades[%d]", shadowCascadeIndex);
+        shader.setUniform(shadowCascadeUniformBaseName + ".lightViewProj", shadowCascade.getLightViewProjection());
+        shader.setUniform(shadowCascadeUniformBaseName + ".splitValue", shadowCascade.getSplitValue());
+        shadowCascade.getShadowMap().bind(SHADOW_MAP_0_CHANNEL + shadowCascadeIndex);
     }
 
     public DeferredShader setDirectionalLightsUniforms(final List<DirectionalLight> directionalLights) {

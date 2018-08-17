@@ -4,13 +4,20 @@
 #import "classpath:/shaders/common/maths.glsl"
 #import "classpath:/shaders/common/camera.glsl"
 
-const float SHADOW_BIAS = 0.005;
 const float MAX_REFLECTION_LOD = 4.0;
+const int CSM_SPLIT_COUNT = 4;
+
+struct ShadowCascade {
+    sampler2DShadow shadowMap;
+    mat4 lightViewProj;
+    float splitValue;
+};
 
 struct Shadow {
     bool hasShadow;
-    sampler2D shadowMap;
-    mat4 lightViewProj;
+    float zNear;
+    float zFar;
+    ShadowCascade shadowCascades[CSM_SPLIT_COUNT];
 };
 
 struct GBuffer {
@@ -145,6 +152,31 @@ vec3 computeLight(vec3 color, float intensity, float attenuation, vec3 L, vec3 V
     return (kD*albedo/PI + specular)*Li*NdotL;
 }
 
+float linearizeDepth(float depth) {
+    float f = uShadow.zFar;
+    float n = uShadow.zNear;
+    return (2 * n) / (f + n - depth * (f - n));
+}
+
+int selectShadowMapIndexFromDepth(float depth) {
+    for(int i = 0; i < CSM_SPLIT_COUNT; i++) {
+        if(depth < uShadow.shadowCascades[i].splitValue) {
+            return i;
+        }
+    }
+    return CSM_SPLIT_COUNT - 1;
+}
+
+float computeShadow(float linearDepth, vec4 worldSpacePosition) {
+    int cascadeIndex = selectShadowMapIndexFromDepth(linearDepth);
+    vec4 lightSpacePosition = uShadow.shadowCascades[cascadeIndex].lightViewProj*worldSpacePosition;
+    vec3 shadowMapCoords = (lightSpacePosition.xyz / lightSpacePosition.w)*0.5 + 0.5;
+    if(shadowMapCoords.z > 1.0) {
+        return 1.0;
+    }
+    return texture(uShadow.shadowCascades[cascadeIndex].shadowMap, shadowMapCoords);
+}
+
 void main() {
     //retrive data from gbuffer
 	vec4 normalMetallic = texture2D(uGBuffer.normals, passCoords);
@@ -152,6 +184,7 @@ void main() {
     vec4 colorRoughness = texture2D(uGBuffer.colors, passCoords);
     vec3 color = colorRoughness.rgb;
     float depthValue = texture2D(uGBuffer.depth, passCoords).r;
+    float linearDepth = linearizeDepth(depthValue);
     vec4 position = positionFromDepth(depthValue);
     float roughness = colorRoughness.a;
     float metallic = normalMetallic.a;
@@ -189,19 +222,15 @@ void main() {
     //directional lights
     int directionalCount = min(uLights.directionalCount, MAX_DIR_LIGHTS);
     for(int i = 0; i < directionalCount; i++) {
-        if(i == 0 && uShadow.hasShadow) {
-            vec4 lightSpacePosition = uShadow.lightViewProj*position;
-            lightSpacePosition.xyz /= lightSpacePosition.w;
-            float shadowMapDepth = texture2D(uShadow.shadowMap, lightSpacePosition.xy*0.5 + 0.5).r;
-            if(shadowMapDepth + SHADOW_BIAS < lightSpacePosition.z*0.5 + 0.5) {
-                continue;
-            }
-        }
-
         //light direction
         vec3 L = normalize(-uLights.directionals[i].direction);
+        float lightIntensity = uLights.directionals[i].base.intensity;
+        if(i == 0 && uShadow.hasShadow) {
+            float shadowMapDepthTest = computeShadow(linearDepth, position);
+            lightIntensity *= shadowMapDepthTest;
+        }
 
-        L0 += computeLight(uLights.directionals[i].base.color.rgb, uLights.directionals[i].base.intensity, 1.0, L, V, N, NdotV, F0, color, roughness, metallic);
+        L0 += computeLight(uLights.directionals[i].base.color.rgb, lightIntensity, 1.0, L, V, N, NdotV, F0, color, roughness, metallic);
     }
 
     //point lights

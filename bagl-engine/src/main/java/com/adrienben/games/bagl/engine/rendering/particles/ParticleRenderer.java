@@ -129,7 +129,7 @@ public class ParticleRenderer implements Renderer<ParticleEmitter> {
 
         vArray.unbind();
         Shader.unbind();
-        Texture.unbind();
+        emitter.getTexture().ifPresent(Texture::unbind);
     }
 
     private void bufferParticlesToRender(ParticleEmitter emitter) {
