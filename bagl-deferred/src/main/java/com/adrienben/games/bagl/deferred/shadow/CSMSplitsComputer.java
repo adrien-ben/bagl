@@ -83,6 +83,7 @@ public class CSMSplitsComputer {
         final var subFrustum = split.getFrustum();
         final var boundingSphere = split.getBoundingSphere();
         subFrustum.computeBoundingSphere(boundingSphere);
+        boundingSphere.r = (float) Math.floor(boundingSphere.r * 100) / 100;
     }
 
     private void computeViewProjection(final CSMSplit split) {
