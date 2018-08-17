@@ -108,17 +108,6 @@ float geometrySchlickGGX(float NdotV, float roughness) {
     return nominator/denominator;
 }
 
-float computeFalloff(float distance, float radius) {
-    float distanceFactor = distance/radius;
-    float distanceFactor2 = distanceFactor*distanceFactor;
-    float distanceFactor4 = distanceFactor2*distanceFactor2;
-
-    float nominator = pow(clamp(1 - distanceFactor4, 0.0, 1.0), 2);
-    float denominator = distanceFactor2 + 1;
-
-    return nominator/denominator;
-}
-
 vec3 computeLight(vec3 color, float intensity, float attenuation, vec3 L, vec3 V, vec3 N, float NdotV, vec3 F0, vec3 albedo, float roughness, float metallic) {
 
     //N.L
