@@ -33,13 +33,18 @@ We use the roughness/metallic workflow. The materials are described as follows :
 - Diffuse color (Color or Texture2D)
 - Roughness [0.0..1.0]
 - Metallic [0.0..1.0]
+- Occlusion strength [0.0..0.1]
 - Roughness/Metallic map (Texture2D, Optional) 
 - Normal map (Texture2D, Optional)
 - Emissive color (Color or Texture2D)
+- Occlusion map (Texture2D, Optional)
 - Double sided flag
 
-For Roughness/Metallic maps, roughness must be put in the green channel and metalness in the blue channel.
-For double sided materials, normals will be automatically inverted during the fragment shader stage.
+For Roughness/Metallic maps, roughness must be put in the green channel and metallic in the blue channel.
+The occlusion map control the amount of indirect light that applies to the object. 0 (Black) means that no indirect lighting
+will affect the object and 1 (white) means that indirect lighting will fully affect the object. The occlusion strength controls 
+how much of the occlusion map is actually applied. For double sided materials, normals will be automatically inverted during the 
+fragment shader stage.
 
 #### Transparency
 

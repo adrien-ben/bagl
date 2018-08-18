@@ -314,7 +314,7 @@ public class GltfLoader {
         final var alphaMode = alphaModeMapper.map(gltfMaterial.getAlphaMode());
         final var alphaCutoff = gltfMaterial.getAlphaCutoff();
 
-        return Material.builder()
+        final Material.Builder builder = Material.builder()
                 .diffuse(mapColor(color))
                 .emissive(mapColor(emissive))
                 .emissiveIntensity(DEFAULT_EMISSIVE_INTENSITY)
@@ -326,8 +326,14 @@ public class GltfLoader {
                 .normals(normalMap)
                 .doubleSided(gltfMaterial.getDoubleSided())
                 .alphaMode(alphaMode)
-                .alphaCutoff(alphaCutoff)
-                .build();
+                .alphaCutoff(alphaCutoff);
+
+        Optional.ofNullable(gltfMaterial.getOcclusionTexture()).ifPresent(gltfOcclusion -> {
+            builder.occlusionStrength(gltfOcclusion.getStrength());
+            builder.occlusion(mapTexture(gltfOcclusion.getTexture()));
+        });
+
+        return builder.build();
     }
 
     private Color mapColor(final GltfColor color) {

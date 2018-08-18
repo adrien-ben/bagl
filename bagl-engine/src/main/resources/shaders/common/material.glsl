@@ -4,6 +4,7 @@ struct Material {
     float emissiveIntensity;
 	float roughness;
 	float metallic;
+	float occlusionStrength;
 
 	bool hasDiffuseMap;
     sampler2D diffuseMap;
@@ -13,6 +14,8 @@ struct Material {
     sampler2D roughnessMetallicMap;
 	bool hasNormalMap;
     sampler2D normalMap;
+    bool hasOcclusionMap;
+    sampler2D occlusionMap;
 
     bool isOpaque;
     float alphaCutoff;

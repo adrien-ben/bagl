@@ -34,6 +34,7 @@ import org.joml.Matrix4f;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import static com.adrienben.games.bagl.deferred.shaders.DeferredShader.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -147,7 +148,7 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
      */
     private void initFrameBuffers() {
         gBuffer = new FrameBuffer(xResolution, yResolution, FrameBufferParameters.builder()
-                .colorOutputFormat(Format.RGBA8, Format.RGBA16F, Format.RGB16F)
+                .colorOutputFormat(Format.RGBA8, Format.RGBA16F, Format.RGB16F, Format.RG8)
                 .build());
         finalBuffer = new FrameBuffer(xResolution, yResolution, FrameBufferParameters.builder()
                 .colorOutputFormat(Format.RGBA32F)
@@ -296,6 +297,7 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
         material.getEmissiveMap().ifPresent(Texture::unbind);
         material.getRoughnessMetallicMap().ifPresent(Texture::unbind);
         material.getNormalMap().ifPresent(Texture::unbind);
+        material.getOcclusionMap().ifPresent(Texture::unbind);
         if (material.isDoubleSided()) {
             glEnable(GL_CULL_FACE);
         }
@@ -319,6 +321,7 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
         gBuffer.getColorTexture(0).bind(COLORS_TEXTURE_CHANNEL);
         gBuffer.getColorTexture(1).bind(NORMALS_TEXTURE_CHANNEL);
         gBuffer.getColorTexture(2).bind(EMISSIVE_TEXTURE_CHANNEL);
+        gBuffer.getColorTexture(3).bind(OCCLUSION_TEXTURE_CHANNEL);
         gBuffer.getDepthTexture().bind(DEPTH_TEXTURE_CHANNEL);
         brdfLookup.getTexture().bind(BRDF_LOOKUP_CHANNEL);
 
@@ -350,7 +353,10 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
         gBuffer.getColorTexture(0).unbind();
         gBuffer.getColorTexture(1).unbind();
         gBuffer.getColorTexture(2).unbind();
+        gBuffer.getColorTexture(3).unbind();
         gBuffer.getDepthTexture().unbind();
+        Optional.ofNullable(sceneRenderData.getIrradianceMap()).ifPresent(Texture::unbind);
+        Optional.ofNullable(sceneRenderData.getPreFilteredMap()).ifPresent(Texture::unbind);
         brdfLookup.getTexture().unbind();
         if (Objects.nonNull(cascadedShadowMap)) {
             for (int i = 0; i < CascadedShadowMap.CASCADE_COUNT; i++) {

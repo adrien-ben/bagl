@@ -9,6 +9,7 @@ in mat3 passTBN;
 layout (location = 0) out vec4 colors;
 layout (location = 1) out vec4 normals;
 layout (location = 2) out vec3 emissive;
+layout (location = 3) out vec2 occlusion;
 
 uniform Material uMaterial;
 
@@ -55,5 +56,12 @@ void main() {
     emissive = uMaterial.emissiveColor.rgb*uMaterial.emissiveIntensity;
     if(uMaterial.hasEmissiveMap) {
         emissive *= pow(texture2D(uMaterial.emissiveMap, passCoords).rgb, vec3(2.2));
+    }
+
+    // occlusion
+    occlusion.r = uMaterial.occlusionStrength;
+    occlusion.g = 1.0;
+    if(uMaterial.hasOcclusionMap) {
+        occlusion.g = texture(uMaterial.occlusionMap, passCoords).r;
     }
 }

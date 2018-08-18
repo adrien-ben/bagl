@@ -21,11 +21,12 @@ public class DeferredShader {
     public static final int COLORS_TEXTURE_CHANNEL = 0;
     public static final int NORMALS_TEXTURE_CHANNEL = 1;
     public static final int EMISSIVE_TEXTURE_CHANNEL = 2;
-    public static final int DEPTH_TEXTURE_CHANNEL = 3;
-    public static final int IRRADIANCE_MAP_CHANNEL = 4;
-    public static final int PRE_FILTERED_MAP_CHANNEL = 5;
-    public static final int BRDF_LOOKUP_CHANNEL = 6;
-    public static final int SHADOW_MAP_0_CHANNEL = 7;
+    public static final int OCCLUSION_TEXTURE_CHANNEL = 3;
+    public static final int DEPTH_TEXTURE_CHANNEL = 4;
+    public static final int IRRADIANCE_MAP_CHANNEL = 5;
+    public static final int PRE_FILTERED_MAP_CHANNEL = 6;
+    public static final int BRDF_LOOKUP_CHANNEL = 7;
+    public static final int SHADOW_MAP_0_CHANNEL = 8;
 
     private final Shader shader;
 
@@ -43,6 +44,7 @@ public class DeferredShader {
         this.shader.setUniform("uGBuffer.colors", COLORS_TEXTURE_CHANNEL)
                 .setUniform("uGBuffer.normals", NORMALS_TEXTURE_CHANNEL)
                 .setUniform("uGBuffer.emissive", EMISSIVE_TEXTURE_CHANNEL)
+                .setUniform("uGBuffer.occlusion", OCCLUSION_TEXTURE_CHANNEL)
                 .setUniform("uGBuffer.depth", DEPTH_TEXTURE_CHANNEL)
                 .setUniform("uLights.irradiance", IRRADIANCE_MAP_CHANNEL)
                 .setUniform("uLights.preFilteredMap", PRE_FILTERED_MAP_CHANNEL)

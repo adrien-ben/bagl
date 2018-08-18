@@ -25,6 +25,7 @@ struct GBuffer {
 	sampler2D normals;
 	sampler2D depth;
 	sampler2D emissive;
+	sampler2D occlusion;
 };
 
 in vec2 passCoords;
@@ -169,15 +170,21 @@ float computeShadow(float linearDepth, vec4 worldSpacePosition) {
 void main() {
     //retrive data from gbuffer
 	vec4 normalMetallic = texture2D(uGBuffer.normals, passCoords);
-	vec3 N = normalize(normalMetallic.xyz*2 - 1);
     vec4 colorRoughness = texture2D(uGBuffer.colors, passCoords);
-    vec3 color = colorRoughness.rgb;
     float depthValue = texture2D(uGBuffer.depth, passCoords).r;
-    float linearDepth = linearizeDepth(depthValue);
+    vec3 emissive = texture2D(uGBuffer.emissive, passCoords).rgb;
+    vec2 occlusion = texture(uGBuffer.occlusion, passCoords).rg;
+
+	// separate the data
     vec4 position = positionFromDepth(depthValue);
+    float linearDepth = linearizeDepth(depthValue);
+	vec3 N = normalize(normalMetallic.xyz*2 - 1);
+
+    vec3 color = colorRoughness.rgb;
     float roughness = colorRoughness.a;
     float metallic = normalMetallic.a;
-    vec3 emissive = texture2D(uGBuffer.emissive, passCoords).rgb;
+    float occlusionStrength = occlusion.r;
+    float occlusionValue = occlusion.g;
 
     vec3 L0 = vec3(0.0);
 
@@ -207,6 +214,7 @@ void main() {
     vec3 specular = prefilteredSample * (F * envBRDF.x + envBRDF.y);
 
     vec3 ambient = kD * diffuse + specular;
+    ambient = mix(ambient, ambient*occlusionValue, occlusionStrength);
 
     //directional lights
     int directionalCount = min(uLights.directionalCount, MAX_DIR_LIGHTS);
