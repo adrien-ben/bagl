@@ -99,11 +99,9 @@ public class GameObject {
      * its local transform if the object has no parent
      */
     private void computeTransform() {
-        if (this.isRoot()) {
-            this.transform.set(this.localTransform);
-        } else {
-            final var parentTransform = this.parent.transform;
-            Transform.transform(this.localTransform, parentTransform, this.transform);
+        transform.set(localTransform);
+        if (!isRoot()) {
+            transform.transform(parent.transform);
         }
     }
 

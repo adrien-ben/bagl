@@ -56,7 +56,7 @@ public class Transform {
         final var tm = transform.getTransformMatrix();
         toTransform.translation.mulPosition(tm, result.translation);
         toTransform.scale.mul(transform.scale, result.scale);
-        toTransform.rotation.mul(transform.rotation, result.rotation);
+        transform.rotation.mul(toTransform.rotation, result.rotation);
         result.transform.dirty();
     }
 
