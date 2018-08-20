@@ -16,12 +16,10 @@ import static org.lwjgl.opengl.GL30.glGenerateMipmap;
 public abstract class Texture {
 
     private static final int DEFAULT_TEXTURE_UNIT = 0;
-    private static final int NOT_BOUND_TEXTURE_UNIT = -1;
 
     private final Type type;
     private final TextureParameters parameters;
     private final int handle;
-    private int textureUnit = NOT_BOUND_TEXTURE_UNIT;
 
     public Texture(final Type type, final TextureParameters parameters) {
         this.type = type;
@@ -74,9 +72,6 @@ public abstract class Texture {
      * Unbind it first if bound.
      */
     public void destroy() {
-        if (isBound()) {
-            unbind();
-        }
         glDeleteTextures(handle);
     }
 
@@ -93,32 +88,21 @@ public abstract class Texture {
      * @param textureUnit The texture unit on which to bind the texture.
      */
     public void bind(final int textureUnit) {
-        if (isBoundOn(textureUnit)) {
-            return;
-        }
-        if (isBound()) {
-            unbind();
-        }
         bindTexture(this, textureUnit);
-        this.textureUnit = textureUnit;
     }
 
     /**
      * Unbind the texture if bound.
      */
     public void unbind() {
-        if (isBound()) {
-            unbindTexture(this, textureUnit);
-            textureUnit = NOT_BOUND_TEXTURE_UNIT;
-        }
+        unbind(DEFAULT_TEXTURE_UNIT);
     }
 
-    private boolean isBound() {
-        return textureUnit != NOT_BOUND_TEXTURE_UNIT;
-    }
-
-    private boolean isBoundOn(final int textureUnit) {
-        return this.textureUnit == textureUnit;
+    /**
+     * Unbind the texture if bound.
+     */
+    public void unbind(final int textureUnit) {
+        unbindTexture(this, textureUnit);
     }
 
     public Type getType() {

@@ -12,7 +12,7 @@ import org.joml.Matrix4fc;
  */
 public class ShadowShader {
 
-    private static final int DIFFUSE_MAP_CHANNEL = 0;
+    public static final int DIFFUSE_MAP_CHANNEL = 0;
 
     private final Shader shader;
 

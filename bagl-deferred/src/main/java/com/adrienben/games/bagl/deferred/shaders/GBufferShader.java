@@ -12,11 +12,11 @@ import org.joml.Matrix4fc;
  */
 public class GBufferShader {
 
-    private static final int DIFFUSE_MAP_CHANNEL = 0;
-    private static final int EMISSIVE_MAP_CHANNEL = 1;
-    private static final int ROUGHNESS_METALLIC_MAP_CHANNEL = 2;
-    private static final int NORMAL_MAP_CHANNEL = 3;
-    private static final int OCCLUSION_MAP_CHANNEL = 4;
+    public static final int DIFFUSE_MAP_CHANNEL = 0;
+    public static final int EMISSIVE_MAP_CHANNEL = 1;
+    public static final int ROUGHNESS_METALLIC_MAP_CHANNEL = 2;
+    public static final int NORMAL_MAP_CHANNEL = 3;
+    public static final int OCCLUSION_MAP_CHANNEL = 4;
 
     private final Shader shader;
 

@@ -26,10 +26,7 @@ import org.joml.Vector3f;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -45,23 +42,16 @@ public class GltfLoader {
 
     private static final float DEFAULT_EMISSIVE_INTENSITY = 1f;
 
-    private final ChannelMapper channelMapper;
-    private final DataTypeMapper dataTypeMapper;
-    private final PrimitiveTypeMapper primitiveTypeMapper;
-    private final FilterMapper filterMapper;
-    private final WrapMapper wrapMapper;
-    private final AlphaModeMapper alphaModeMapper;
+    private final ChannelMapper channelMapper = new ChannelMapper();
+    private final DataTypeMapper dataTypeMapper = new DataTypeMapper();
+    private final PrimitiveTypeMapper primitiveTypeMapper = new PrimitiveTypeMapper();
+    private final FilterMapper filterMapper = new FilterMapper();
+    private final WrapMapper wrapMapper = new WrapMapper();
+    private final AlphaModeMapper alphaModeMapper = new AlphaModeMapper();
 
     private String directory;
-
-    public GltfLoader() {
-        this.channelMapper = new ChannelMapper();
-        this.dataTypeMapper = new DataTypeMapper();
-        this.primitiveTypeMapper = new PrimitiveTypeMapper();
-        this.filterMapper = new FilterMapper();
-        this.wrapMapper = new WrapMapper();
-        this.alphaModeMapper = new AlphaModeMapper();
-    }
+    private final List<Texture2D> textures = new ArrayList<>();
+    private final List<Map<Mesh, Material>> meshes = new ArrayList<>();
 
     /**
      * Load a gltf file
@@ -70,37 +60,49 @@ public class GltfLoader {
      * @return The loaded model
      */
     public Model load(final ResourcePath path) {
-        this.directory = path.getParent().toString();
+        directory = path.getParent().toString();
 
         final var gltfAsset = GltfAsset.Factory.fromFile(path.getAbsolutePath());
         if (Objects.isNull(gltfAsset)) {
             throw new IllegalStateException("Failed to load gltf " + path);
         }
 
-        final var meshes = gltfAsset.getMeshes().stream().map(this::mapGltfMesh).collect(Collectors.toList());
         final var model = new Model();
-        gltfAsset.getScenes().forEach(scene -> this.mapGltfScene(scene, model, meshes));
+        loadTextures(gltfAsset);
+        loadMeshes(gltfAsset);
+        gltfAsset.getScenes().forEach(scene -> mapGltfScene(scene, model));
+
+        textures.clear();
+        meshes.clear();
+
         return model;
+    }
+
+    private void loadMeshes(final GltfAsset gltfAsset) {
+        gltfAsset.getMeshes().forEach(this::mapGltfMesh);
+    }
+
+    private void loadTextures(final GltfAsset gltfAsset) {
+        gltfAsset.getTextures().stream().map(this::mapTexture).forEach(textures::add);
     }
 
     /**
      * Map a gltf scene
      *
-     * @param scene  The scene to map
-     * @param model  The model to which to add the nodes
-     * @param meshes The meshes of the asset
+     * @param scene The scene to map
+     * @param model The model to which to add the nodes
      */
-    private void mapGltfScene(final GltfScene scene, final Model model, final List<Map<Mesh, Material>> meshes) {
+    private void mapGltfScene(final GltfScene scene, final Model model) {
         if (CollectionUtils.isNotEmpty(scene.getNodes())) {
             scene.getNodes().forEach(node -> {
                 if (CollectionUtils.isNotEmpty(node.getChildren()) || Objects.nonNull(node.getMesh())) {
-                    final var root = model.addNode(this.mapTransform(node));
+                    final var root = model.addNode(mapTransform(node));
                     if (Objects.nonNull(node.getMesh())) {
                         meshes.get(node.getMesh().getIndex()).forEach(root::addMesh);
                     }
 
                     if (CollectionUtils.isNotEmpty(node.getChildren())) {
-                        node.getChildren().forEach(child -> this.mapGltfNode(child, root, meshes));
+                        node.getChildren().forEach(child -> mapGltfNode(child, root));
                     }
                 }
             });
@@ -112,17 +114,16 @@ public class GltfLoader {
      *
      * @param gltfNode The node to mesh
      * @param parent   The parent node to which to add the children
-     * @param meshes   The meshes of the asset
      */
-    private void mapGltfNode(final GltfNode gltfNode, final ModelNode parent, final List<Map<Mesh, Material>> meshes) {
+    private void mapGltfNode(final GltfNode gltfNode, final ModelNode parent) {
         if (CollectionUtils.isNotEmpty(gltfNode.getChildren()) || Objects.nonNull(gltfNode.getMesh())) {
-            final var node = parent.addChild(this.mapTransform(gltfNode));
+            final var node = parent.addChild(mapTransform(gltfNode));
 
             if (Objects.nonNull(gltfNode.getMesh())) {
                 meshes.get(gltfNode.getMesh().getIndex()).forEach(node::addMesh);
             }
             if (CollectionUtils.isNotEmpty(gltfNode.getChildren())) {
-                gltfNode.getChildren().forEach(child -> this.mapGltfNode(child, node, meshes));
+                gltfNode.getChildren().forEach(child -> mapGltfNode(child, node));
             }
         }
     }
@@ -135,9 +136,9 @@ public class GltfLoader {
      */
     private Transform mapTransform(final GltfNode gltfNode) {
         final var transform = new Transform();
-        transform.setTranslation(this.mapGltfVec3(gltfNode.getTranslation()));
-        transform.setRotation(this.mapGltfQuaternion(gltfNode.getRotation()));
-        transform.setScale(this.mapGltfVec3(gltfNode.getScale()));
+        transform.setTranslation(mapGltfVec3(gltfNode.getTranslation()));
+        transform.setRotation(mapGltfQuaternion(gltfNode.getRotation()));
+        transform.setScale(mapGltfVec3(gltfNode.getScale()));
         return transform;
     }
 
@@ -167,11 +168,12 @@ public class GltfLoader {
      * @param mesh The mesh to map
      * @return A map of meshes mapped to their material
      */
-    private Map<Mesh, Material> mapGltfMesh(final GltfMesh mesh) {
-        return mesh.getPrimitives()
+    private void mapGltfMesh(final GltfMesh mesh) {
+        final var meshMap = mesh.getPrimitives()
                 .stream()
                 .map(this::createMesh)
                 .collect(Collectors.toMap(Tuple2::getFirst, Tuple2::getSecond));
+        meshes.add(meshMap);
     }
 
     /**
@@ -181,16 +183,16 @@ public class GltfLoader {
      * @return A new mesh
      */
     private Tuple2<Mesh, Material> createMesh(final GltfPrimitive primitive) {
-        final var iBuffer = this.createIndexBuffer(primitive.getIndices());
+        final var iBuffer = createIndexBuffer(primitive.getIndices());
         final var vBuffers = primitive.getAttributes().entrySet().stream()
-                .map(entry -> this.createVertexBuffer(entry.getKey(), entry.getValue()))
+                .map(entry -> createVertexBuffer(entry.getKey(), entry.getValue()))
                 .flatMap(Optional::stream)
                 .collect(Collectors.toList());
         final var primitiveType = primitiveTypeMapper.map(primitive.getMode());
         final var aabb = getMeshAabb(primitive);
 
         final Mesh mesh = Mesh.builder().vertexBuffers(vBuffers).indexBuffer(iBuffer).primitiveType(primitiveType).aabb(aabb).build();
-        final Material material = this.mapMaterial(primitive.getMaterial());
+        final Material material = mapMaterial(primitive.getMaterial());
 
         return new Tuple2<>(mesh, material);
     }
@@ -213,7 +215,7 @@ public class GltfLoader {
      * @return A new index buffer
      */
     private IndexBuffer createIndexBuffer(final GltfAccessor accessor) {
-        return this.extractData(accessor).map(indices -> {
+        return extractData(accessor).map(indices -> {
             final var dataType = dataTypeMapper.map(accessor.getComponentType());
             final var indexBuffer = new IndexBuffer(indices, dataType, BufferUsage.STATIC_DRAW);
             MemoryUtil.memFree(indices);
@@ -229,7 +231,7 @@ public class GltfLoader {
      * @return A new vertex buffer
      */
     private Optional<VertexBuffer> createVertexBuffer(final String type, final GltfAccessor accessor) {
-        final var vertices = this.extractData(accessor).orElseThrow(() -> new IllegalArgumentException(
+        final var vertices = extractData(accessor).orElseThrow(() -> new IllegalArgumentException(
                 "Primitive attribute's accessor should not be null"));
 
         final var channel = channelMapper.map(type);
@@ -304,13 +306,13 @@ public class GltfLoader {
         final var color = gltfMaterial.getPbrMetallicRoughness().getBaseColorFactor();
         final var emissive = gltfMaterial.getEmissiveFactor();
         final var diffuseTexture = Optional.ofNullable(gltfMaterial.getPbrMetallicRoughness().getBaseColorTexture())
-                .map(GltfTextureInfo::getTexture).map(this::mapTexture).orElse(null);
+                .map(GltfTextureInfo::getTexture).map(this::getTexture).orElse(null);
         final var emissiveTexture = Optional.ofNullable(gltfMaterial.getEmissiveTexture())
-                .map(GltfTextureInfo::getTexture).map(this::mapTexture).orElse(null);
+                .map(GltfTextureInfo::getTexture).map(this::getTexture).orElse(null);
         final var roughnessMetallicMap = Optional.ofNullable(gltfMaterial.getPbrMetallicRoughness().getMetallicRoughnessTexture())
-                .map(GltfTextureInfo::getTexture).map(this::mapTexture).orElse(null);
+                .map(GltfTextureInfo::getTexture).map(this::getTexture).orElse(null);
         final var normalMap = Optional.ofNullable(gltfMaterial.getNormalTexture()).map(GltfNormalTextureInfo::getTexture)
-                .map(this::mapTexture).orElse(null);
+                .map(this::getTexture).orElse(null);
         final var alphaMode = alphaModeMapper.map(gltfMaterial.getAlphaMode());
         final var alphaCutoff = gltfMaterial.getAlphaCutoff();
 
@@ -330,7 +332,7 @@ public class GltfLoader {
 
         Optional.ofNullable(gltfMaterial.getOcclusionTexture()).ifPresent(gltfOcclusion -> {
             builder.occlusionStrength(gltfOcclusion.getStrength());
-            builder.occlusion(mapTexture(gltfOcclusion.getTexture()));
+            builder.occlusion(getTexture(gltfOcclusion.getTexture()));
         });
 
         return builder.build();
@@ -351,7 +353,11 @@ public class GltfLoader {
             return null;
         }
         final var params = mapTextureParameters(texture.getSampler());
-        return this.generateTextureFromImage(texture.getSource(), params);
+        return generateTextureFromImage(texture.getSource(), params);
+    }
+
+    private Texture2D getTexture(final GltfTexture texture) {
+        return textures.get(texture.getIndex());
     }
 
     private TextureParameters.Builder mapTextureParameters(final GltfSampler sampler) {
@@ -405,6 +411,6 @@ public class GltfLoader {
     }
 
     private Texture2D generateTextureFromFile(final String path, final TextureParameters.Builder params) {
-        return Texture2D.fromFile(ResourcePath.get(this.directory, path), params);
+        return Texture2D.fromFile(ResourcePath.get(directory, path), params);
     }
 }
