@@ -197,17 +197,6 @@ public class GltfLoader {
         return new Tuple2<>(mesh, material);
     }
 
-    private AABBf getMeshAabb(final GltfPrimitive primitive) {
-        final var positionAccessor = Optional.of(primitive.getAttributes()).map(attributes -> attributes.get("POSITION"));
-        final var min = positionAccessor.map(GltfAccessor::getMin).map(this::getVector3fFromAccessorsMinMax).orElse(new Vector3f());
-        final var max = positionAccessor.map(GltfAccessor::getMax).map(this::getVector3fFromAccessorsMinMax).orElse(new Vector3f());
-        return new AABBf(min, max);
-    }
-
-    private Vector3f getVector3fFromAccessorsMinMax(final List<Float> accessorsMinMax) {
-        return new Vector3f(accessorsMinMax.get(0), accessorsMinMax.get(1), accessorsMinMax.get(2));
-    }
-
     /**
      * Create a index buffer from a primitive indices accessor
      *
@@ -215,12 +204,28 @@ public class GltfLoader {
      * @return A new index buffer
      */
     private IndexBuffer createIndexBuffer(final GltfAccessor accessor) {
-        return extractData(accessor).map(indices -> {
-            final var dataType = dataTypeMapper.map(accessor.getComponentType());
-            final var indexBuffer = new IndexBuffer(indices, dataType, BufferUsage.STATIC_DRAW);
-            MemoryUtil.memFree(indices);
-            return indexBuffer;
-        }).orElse(null);
+        final var indices = extractIndices(accessor);
+        final var dataType = dataTypeMapper.map(accessor.getComponentType());
+        final var indexBuffer = new IndexBuffer(indices, dataType, BufferUsage.STATIC_DRAW);
+        MemoryUtil.memFree(indices);
+        return indexBuffer;
+    }
+
+    private ByteBuffer extractIndices(final GltfAccessor accessor) {
+        checkAccessorSupport(accessor);
+        final var bufferView = accessor.getBufferView();
+        final int offset = bufferView.getByteOffset() + accessor.getByteOffset();
+        final int byteSize = accessor.getCount() * accessor.getComponentType().getByteSize() * accessor.getType().getComponentCount();
+        return MemoryUtil.memAlloc(byteSize).put(bufferView.getBuffer().getData(), offset, byteSize).flip();
+    }
+
+    private void checkAccessorSupport(final GltfAccessor accessor) {
+        if (Objects.nonNull(accessor.getSparse())) {
+            throw new UnsupportedOperationException("Sparse buffer not supported");
+        }
+        if (Objects.isNull(accessor.getBufferView())) {
+            throw new UnsupportedOperationException("Accessor has no buffer view");
+        }
     }
 
     /**
@@ -231,25 +236,17 @@ public class GltfLoader {
      * @return A new vertex buffer
      */
     private Optional<VertexBuffer> createVertexBuffer(final String type, final GltfAccessor accessor) {
-        final var vertices = extractData(accessor).orElseThrow(() -> new IllegalArgumentException(
-                "Primitive attribute's accessor should not be null"));
-
         final var channel = channelMapper.map(type);
         if (channel == -1) {
             return Optional.empty();
         }
 
+        final var vertices = extractVertexData(accessor).orElseThrow(() -> new IllegalArgumentException(
+                "Primitive attribute's accessor should not be null"));
         final var vertexBufferParams = mapVertexBufferParams(channel, accessor);
         final var vertexBuffer = new VertexBuffer(vertices, vertexBufferParams);
         MemoryUtil.memFree(vertices);
         return Optional.of(vertexBuffer);
-    }
-
-    private VertexBufferParams mapVertexBufferParams(final int channel, final GltfAccessor accessor) {
-        return VertexBufferParams.builder()
-                .dataType(dataTypeMapper.map(accessor.getComponentType()))
-                .element(new VertexElement(channel, accessor.getType().getComponentCount(), accessor.getNormalized()))
-                .build();
     }
 
     /**
@@ -260,17 +257,8 @@ public class GltfLoader {
      * @param accessor The accessor to extract the data from
      * @return A new byte buffer
      */
-    private Optional<ByteBuffer> extractData(final GltfAccessor accessor) {
-        if (Objects.isNull(accessor)) {
-            return Optional.empty();
-        }
-        if (Objects.nonNull(accessor.getSparse())) {
-            throw new UnsupportedOperationException("Sparse buffer not supported");
-        }
-        if (Objects.isNull(accessor.getBufferView())) {
-            throw new UnsupportedOperationException("Accessor has no buffer view");
-        }
-
+    private Optional<ByteBuffer> extractVertexData(final GltfAccessor accessor) {
+        checkAccessorSupport(accessor);
         final var bufferView = accessor.getBufferView();
         final var data = bufferView.getBuffer().getData();
         final var byteOffset = accessor.getByteOffset() + bufferView.getByteOffset();
@@ -283,17 +271,30 @@ public class GltfLoader {
         final var extracted = MemoryUtil.memAlloc(count * elementByteSize);
         for (var index = 0; index < count; index++) {
             final var elementOffset = byteOffset + index * byteStride;
-
             for (var componentIndex = 0; componentIndex < componentCount; componentIndex++) {
                 final var componentOffset = elementOffset + componentIndex * componentByteSize;
-
-                for (var byteIndex = 0; byteIndex < componentByteSize; byteIndex++) {
-                    final var position = index * elementByteSize + componentIndex * componentByteSize + byteIndex;
-                    extracted.put(position, data[componentOffset + byteIndex]);
-                }
+                extracted.put(data, componentOffset, componentByteSize);
             }
         }
-        return Optional.of(extracted);
+        return Optional.of(extracted.flip());
+    }
+
+    private VertexBufferParams mapVertexBufferParams(final int channel, final GltfAccessor accessor) {
+        return VertexBufferParams.builder()
+                .dataType(dataTypeMapper.map(accessor.getComponentType()))
+                .element(new VertexElement(channel, accessor.getType().getComponentCount(), accessor.getNormalized()))
+                .build();
+    }
+
+    private AABBf getMeshAabb(final GltfPrimitive primitive) {
+        final var positionAccessor = Optional.of(primitive.getAttributes()).map(attributes -> attributes.get("POSITION"));
+        final var min = positionAccessor.map(GltfAccessor::getMin).map(this::getVector3fFromAccessorsMinMax).orElse(new Vector3f());
+        final var max = positionAccessor.map(GltfAccessor::getMax).map(this::getVector3fFromAccessorsMinMax).orElse(new Vector3f());
+        return new AABBf(min, max);
+    }
+
+    private Vector3f getVector3fFromAccessorsMinMax(final List<Float> accessorsMinMax) {
+        return new Vector3f(accessorsMinMax.get(0), accessorsMinMax.get(1), accessorsMinMax.get(2));
     }
 
     /**
