@@ -1,6 +1,7 @@
 package com.adrienben.games.bagl.deferred;
 
 import com.adrienben.games.bagl.core.exception.EngineException;
+import com.adrienben.games.bagl.core.utils.CollectionUtils;
 import com.adrienben.games.bagl.deferred.data.SceneRenderData;
 import com.adrienben.games.bagl.deferred.data.SceneRenderDataCollector;
 import com.adrienben.games.bagl.deferred.pbr.BrdfLookup;
@@ -258,15 +259,17 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
      * @param node The node to render
      */
     private void renderModelNodeToGBuffer(final ModelNode node) {
-        final var nodeTransform = node.getTransform().getTransformMatrix();
-        sceneRenderData.getCamera().getViewProj().mul(nodeTransform, wvpBuffer);
-        gBufferShader.setWorldUniform(nodeTransform);
-        gBufferShader.setWorldViewProjectionUniform(wvpBuffer);
-        node.getMeshes()
-                .entrySet()
-                .stream()
-                .filter(entry -> isMeshVisibleFromCameraPOV(entry.getKey(), node.getTransform()))
-                .forEach(entry -> renderMeshToGBuffer(entry.getKey(), entry.getValue()));
+        if (CollectionUtils.isNotEmpty(node.getMeshes())) {
+            final var nodeTransform = node.getTransform().getTransformMatrix();
+            sceneRenderData.getCamera().getViewProj().mul(nodeTransform, wvpBuffer);
+            gBufferShader.setWorldUniform(nodeTransform);
+            gBufferShader.setWorldViewProjectionUniform(wvpBuffer);
+            node.getMeshes()
+                    .entrySet()
+                    .stream()
+                    .filter(entry -> isMeshVisibleFromCameraPOV(entry.getKey(), node.getTransform()))
+                    .forEach(entry -> renderMeshToGBuffer(entry.getKey(), entry.getValue()));
+        }
         node.getChildren().forEach(this::renderModelNodeToGBuffer);
     }
 

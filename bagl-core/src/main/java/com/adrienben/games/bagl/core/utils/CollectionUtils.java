@@ -2,39 +2,60 @@ package com.adrienben.games.bagl.core.utils;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 /**
- * Utility methods for collections
+ * Utility methods for collections.
  *
  * @author adrien
  */
 public final class CollectionUtils {
 
     /**
-     * Private constructor to prevent instantiation
+     * Private constructor to prevent instantiation.
      */
     private CollectionUtils() {
     }
 
     /**
-     * Check if a collection is empty
+     * Check if a collection is empty.
      *
-     * @param collection The collection to check
-     * @return true if the collection is empty, false otherwise
+     * @param collection The collection to check.
+     * @return true if the collection is empty, false otherwise.
      */
     public static boolean isEmpty(final Collection<?> collection) {
         return collection == null || collection.isEmpty();
     }
 
     /**
-     * Check if a collection is not empty
+     * Check if a collection is not empty.
      *
-     * @param collection The collection to check
-     * @return true if the collection is not empty, false otherwise
+     * @param collection The collection to check.
+     * @return true if the collection is not empty, false otherwise.
      */
     public static boolean isNotEmpty(final Collection<?> collection) {
-        return !CollectionUtils.isEmpty(collection);
+        return !isEmpty(collection);
+    }
+
+    /**
+     * Check is a map is empty.
+     *
+     * @param map The map to check.
+     * @return true if the collection is empty, false otherwise.
+     */
+    public static boolean isEmpty(final Map<?, ?> map) {
+        return map == null || map.isEmpty();
+    }
+
+    /**
+     * Check is a map is not empty.
+     *
+     * @param map The map to check.
+     * @return true if the collection is not empty, false otherwise.
+     */
+    public static boolean isNotEmpty(final Map<?, ?> map) {
+        return !isEmpty(map);
     }
 
     /**

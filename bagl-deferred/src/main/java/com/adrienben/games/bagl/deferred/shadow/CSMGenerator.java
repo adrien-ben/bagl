@@ -143,10 +143,12 @@ public class CSMGenerator {
     }
 
     private void renderModelNodeShadow(final ModelNode node) {
-        final var nodeTransform = node.getTransform().getTransformMatrix();
-        currentCSMSplit.getLightsViewProjection().mul(nodeTransform, wvpBuffer);
-        shadowShader.setWorldViewProjectionUniform(wvpBuffer);
-        node.getMeshes().forEach(this::renderMeshShadow);
+        if (CollectionUtils.isNotEmpty(node.getMeshes())) {
+            final var nodeTransform = node.getTransform().getTransformMatrix();
+            currentCSMSplit.getLightsViewProjection().mul(nodeTransform, wvpBuffer);
+            shadowShader.setWorldViewProjectionUniform(wvpBuffer);
+            node.getMeshes().forEach(this::renderMeshShadow);
+        }
         node.getChildren().forEach(this::renderModelNodeShadow);
     }
 
