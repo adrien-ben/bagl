@@ -14,13 +14,17 @@ import com.adrienben.games.bagl.engine.rendering.renderer.MeshRenderer;
 import com.adrienben.games.bagl.opengl.FrameBuffer;
 import com.adrienben.games.bagl.opengl.FrameBufferParameters;
 import com.adrienben.games.bagl.opengl.shader.Shader;
-import com.adrienben.games.bagl.opengl.texture.*;
+import com.adrienben.games.bagl.opengl.texture.CompareFunction;
+import com.adrienben.games.bagl.opengl.texture.Format;
+import com.adrienben.games.bagl.opengl.texture.TextureParameters;
+import com.adrienben.games.bagl.opengl.texture.Wrap;
 import org.joml.Matrix4f;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static com.adrienben.games.bagl.deferred.shaders.ShadowShader.DIFFUSE_MAP_CHANNEL;
 import static com.adrienben.games.bagl.deferred.shadow.CascadedShadowMap.CASCADE_COUNT;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL32.GL_DEPTH_CLAMP;
@@ -155,7 +159,7 @@ public class CSMGenerator {
         }
         shadowShader.setMaterialUniforms(material);
         meshRenderer.render(mesh);
-        material.getDiffuseMap().ifPresent(Texture::unbind);
+        material.getDiffuseMap().ifPresent(map -> map.unbind(DIFFUSE_MAP_CHANNEL));
         if (material.isDoubleSided()) {
             glEnable(GL_CULL_FACE);
         }

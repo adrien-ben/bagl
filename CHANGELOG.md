@@ -19,3 +19,4 @@
 - [ADDED] Partial transparency rendering support
 - [OPTIMIZATION] Only render visible meshes
 - [IMPROVEMENT] Added Cascaded Shadow Mapping
+- [FIX] Fix GlTF model loading

@@ -107,8 +107,8 @@ public class BloomStep extends PostProcessorStep {
 
         renderQuad();
 
-        blurBuffer.getReadBuffer().getColorTexture(0).unbind();
-        baseImage.unbind();
+        blurBuffer.getReadBuffer().getColorTexture(0).unbind(1);
+        baseImage.unbind(0);
         Shader.unbind();
 
         finalBuffer.unbind();

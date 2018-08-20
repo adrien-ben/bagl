@@ -27,7 +27,6 @@ import com.adrienben.games.bagl.opengl.FrameBuffer;
 import com.adrienben.games.bagl.opengl.FrameBufferParameters;
 import com.adrienben.games.bagl.opengl.shader.Shader;
 import com.adrienben.games.bagl.opengl.texture.Format;
-import com.adrienben.games.bagl.opengl.texture.Texture;
 import org.joml.AABBf;
 import org.joml.FrustumIntersection;
 import org.joml.Matrix4f;
@@ -293,11 +292,11 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
         }
         gBufferShader.setMaterialUniforms(material);
         meshRenderer.render(mesh);
-        material.getDiffuseMap().ifPresent(Texture::unbind);
-        material.getEmissiveMap().ifPresent(Texture::unbind);
-        material.getRoughnessMetallicMap().ifPresent(Texture::unbind);
-        material.getNormalMap().ifPresent(Texture::unbind);
-        material.getOcclusionMap().ifPresent(Texture::unbind);
+        material.getDiffuseMap().ifPresent(map -> map.unbind(GBufferShader.DIFFUSE_MAP_CHANNEL));
+        material.getEmissiveMap().ifPresent(map -> map.unbind(GBufferShader.EMISSIVE_MAP_CHANNEL));
+        material.getRoughnessMetallicMap().ifPresent(map -> map.unbind(GBufferShader.ROUGHNESS_METALLIC_MAP_CHANNEL));
+        material.getNormalMap().ifPresent(map -> map.unbind(GBufferShader.NORMAL_MAP_CHANNEL));
+        material.getOcclusionMap().ifPresent(map -> map.unbind(GBufferShader.OCCLUSION_MAP_CHANNEL));
         if (material.isDoubleSided()) {
             glEnable(GL_CULL_FACE);
         }
@@ -350,17 +349,17 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
 
     private void unbindResourcesPostLightingPass() {
         Shader.unbind();
-        gBuffer.getColorTexture(0).unbind();
-        gBuffer.getColorTexture(1).unbind();
-        gBuffer.getColorTexture(2).unbind();
-        gBuffer.getColorTexture(3).unbind();
-        gBuffer.getDepthTexture().unbind();
-        Optional.ofNullable(sceneRenderData.getIrradianceMap()).ifPresent(Texture::unbind);
-        Optional.ofNullable(sceneRenderData.getPreFilteredMap()).ifPresent(Texture::unbind);
-        brdfLookup.getTexture().unbind();
+        gBuffer.getColorTexture(0).unbind(COLORS_TEXTURE_CHANNEL);
+        gBuffer.getColorTexture(1).unbind(NORMALS_TEXTURE_CHANNEL);
+        gBuffer.getColorTexture(2).unbind(EMISSIVE_TEXTURE_CHANNEL);
+        gBuffer.getColorTexture(3).unbind(OCCLUSION_TEXTURE_CHANNEL);
+        gBuffer.getDepthTexture().unbind(DEPTH_TEXTURE_CHANNEL);
+        Optional.ofNullable(sceneRenderData.getIrradianceMap()).ifPresent(map -> map.unbind(IRRADIANCE_MAP_CHANNEL));
+        Optional.ofNullable(sceneRenderData.getPreFilteredMap()).ifPresent(map -> map.unbind(PRE_FILTERED_MAP_CHANNEL));
+        brdfLookup.getTexture().unbind(BRDF_LOOKUP_CHANNEL);
         if (Objects.nonNull(cascadedShadowMap)) {
             for (int i = 0; i < CascadedShadowMap.CASCADE_COUNT; i++) {
-                cascadedShadowMap.getShadowCascade(i).getShadowMap().unbind();
+                cascadedShadowMap.getShadowCascade(i).getShadowMap().unbind(SHADOW_MAP_0_CHANNEL + i);
             }
         }
         finalBuffer.unbind();
