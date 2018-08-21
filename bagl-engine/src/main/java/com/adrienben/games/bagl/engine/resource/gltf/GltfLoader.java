@@ -6,6 +6,9 @@ import com.adrienben.games.bagl.core.utils.CollectionUtils;
 import com.adrienben.games.bagl.core.utils.Tuple2;
 import com.adrienben.games.bagl.engine.Configuration;
 import com.adrienben.games.bagl.engine.Transform;
+import com.adrienben.games.bagl.engine.animation.Animation;
+import com.adrienben.games.bagl.engine.animation.KeyFrame;
+import com.adrienben.games.bagl.engine.animation.NodeAnimation;
 import com.adrienben.games.bagl.engine.rendering.Material;
 import com.adrienben.games.bagl.engine.rendering.model.Mesh;
 import com.adrienben.games.bagl.engine.rendering.model.Model;
@@ -26,6 +29,7 @@ import org.joml.Vector3f;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -52,6 +56,7 @@ public class GltfLoader {
     private String directory;
     private final List<Texture2D> textures = new ArrayList<>();
     private final List<Map<Mesh, Material>> meshes = new ArrayList<>();
+    private ModelNode[] nodes;
 
     /**
      * Load a gltf file
@@ -67,10 +72,13 @@ public class GltfLoader {
             throw new IllegalStateException("Failed to load gltf " + path);
         }
 
+        nodes = new ModelNode[gltfAsset.getNodes().size()];
+
         final var model = new Model();
         loadTextures(gltfAsset);
         loadMeshes(gltfAsset);
         gltfAsset.getScenes().forEach(scene -> mapGltfScene(scene, model));
+        model.setAnimations(loadAnimations(gltfAsset));
 
         textures.clear();
         meshes.clear();
@@ -79,11 +87,99 @@ public class GltfLoader {
     }
 
     private void loadMeshes(final GltfAsset gltfAsset) {
-        gltfAsset.getMeshes().forEach(this::mapGltfMesh);
+        gltfAsset.getMeshes().stream().map(this::mapGltfMesh).forEach(meshes::add);
     }
 
     private void loadTextures(final GltfAsset gltfAsset) {
         gltfAsset.getTextures().stream().map(this::mapTexture).forEach(textures::add);
+    }
+
+    private List<Animation> loadAnimations(final GltfAsset gltfAsset) {
+        return gltfAsset.getAnimations().stream().map(this::mapAnimation).collect(Collectors.toList());
+    }
+
+    private Animation mapAnimation(final GltfAnimation gltfAnimation) {
+        final var animationNodes = gltfAnimation.getChannels().stream()
+                .filter(this::isChannelSupported)
+                .map(this::mapChannel)
+                .collect(Collectors.toList());
+        return new Animation(animationNodes);
+    }
+
+    private boolean isChannelSupported(final GltfChannel channel) {
+        return channel.getTarget().getPath() != GltfAnimationTargetPath.WEIGHTS;
+    }
+
+    private NodeAnimation mapChannel(final GltfChannel gltfChannel) {
+        final List<KeyFrame> keyFrames = this.mapGltfAnimationSampler(gltfChannel.getSampler(), gltfChannel.getTarget().getPath());
+        final ModelNode target = nodes[gltfChannel.getTarget().getNode().getIndex()];
+        return new NodeAnimation(target.getLocalTransform(), keyFrames);
+    }
+
+    private List<KeyFrame> mapGltfAnimationSampler(final GltfAnimationSampler gltfAnimationSampler, GltfAnimationTargetPath path) {
+        final GltfAccessor input = gltfAnimationSampler.getInput();
+        final GltfAccessor output = gltfAnimationSampler.getOutput();
+        final List<KeyFrame> keyFrames = new ArrayList<>();
+        for (int i = 0; i < input.getCount(); i++) {
+            final float time = readFloat(input, i);
+            final var keyFrame = new KeyFrame(time);
+            readAnimationOutput(output, i, keyFrame, path);
+            keyFrames.add(keyFrame);
+        }
+        return keyFrames;
+    }
+
+    private float readFloat(final GltfAccessor gltfAccessor, final int index) {
+        final var bufferView = gltfAccessor.getBufferView();
+        final var data = bufferView.getBuffer().getData();
+        return ByteBuffer.wrap(data)
+                .order(ByteOrder.LITTLE_ENDIAN)
+                .getFloat(bufferView.getByteOffset() + gltfAccessor.getByteOffset() + index * 4);
+    }
+
+    private void readAnimationOutput(final GltfAccessor gltfAccessor, final int index, final KeyFrame keyFrame, final GltfAnimationTargetPath path) {
+        switch (path) {
+            case TRANSLATION:
+                keyFrame.setTranslation(readVector3(gltfAccessor, index));
+                return;
+            case ROTATION:
+                keyFrame.setRotation(readQuaternions(gltfAccessor, index));
+                return;
+            case SCALE:
+                keyFrame.setScale(readVector3(gltfAccessor, index));
+                return;
+            default:
+                throw new UnsupportedOperationException("Unsupported animation target path");
+        }
+    }
+
+    private Vector3f readVector3(final GltfAccessor gltfAccessor, final int index) {
+        final var bufferView = gltfAccessor.getBufferView();
+        final int elementByteSize = gltfAccessor.getType().getComponentCount() * gltfAccessor.getComponentType().getByteSize();
+        final int offset = bufferView.getByteOffset()
+                + gltfAccessor.getByteOffset()
+                + index * elementByteSize;
+        final var bufferWrapper = ByteBuffer.wrap(bufferView.getBuffer().getData()).order(ByteOrder.LITTLE_ENDIAN).position(offset);
+        return new Vector3f(
+                bufferWrapper.getFloat(),
+                bufferWrapper.getFloat(),
+                bufferWrapper.getFloat()
+        );
+    }
+
+    private Quaternionf readQuaternions(final GltfAccessor gltfAccessor, final int index) {
+        final var bufferView = gltfAccessor.getBufferView();
+        final int elementByteSize = gltfAccessor.getType().getComponentCount() * gltfAccessor.getComponentType().getByteSize();
+        final int offset = bufferView.getByteOffset()
+                + gltfAccessor.getByteOffset()
+                + index * elementByteSize;
+        final var bufferWrapper = ByteBuffer.wrap(bufferView.getBuffer().getData()).order(ByteOrder.LITTLE_ENDIAN).position(offset);
+        return new Quaternionf(
+                bufferWrapper.getFloat(),
+                bufferWrapper.getFloat(),
+                bufferWrapper.getFloat(),
+                bufferWrapper.getFloat()
+        );
     }
 
     /**
@@ -95,15 +191,14 @@ public class GltfLoader {
     private void mapGltfScene(final GltfScene scene, final Model model) {
         if (CollectionUtils.isNotEmpty(scene.getNodes())) {
             scene.getNodes().forEach(node -> {
-                if (CollectionUtils.isNotEmpty(node.getChildren()) || Objects.nonNull(node.getMesh())) {
-                    final var root = model.addNode(mapTransform(node));
-                    if (Objects.nonNull(node.getMesh())) {
-                        meshes.get(node.getMesh().getIndex()).forEach(root::addMesh);
-                    }
+                final var root = model.addNode(mapTransform(node));
+                nodes[node.getIndex()] = root;
+                if (Objects.nonNull(node.getMesh())) {
+                    meshes.get(node.getMesh().getIndex()).forEach(root::addMesh);
+                }
 
-                    if (CollectionUtils.isNotEmpty(node.getChildren())) {
-                        node.getChildren().forEach(child -> mapGltfNode(child, root));
-                    }
+                if (CollectionUtils.isNotEmpty(node.getChildren())) {
+                    node.getChildren().forEach(child -> mapGltfNode(child, root));
                 }
             });
         }
@@ -116,15 +211,13 @@ public class GltfLoader {
      * @param parent   The parent node to which to add the children
      */
     private void mapGltfNode(final GltfNode gltfNode, final ModelNode parent) {
-        if (CollectionUtils.isNotEmpty(gltfNode.getChildren()) || Objects.nonNull(gltfNode.getMesh())) {
-            final var node = parent.addChild(mapTransform(gltfNode));
-
-            if (Objects.nonNull(gltfNode.getMesh())) {
-                meshes.get(gltfNode.getMesh().getIndex()).forEach(node::addMesh);
-            }
-            if (CollectionUtils.isNotEmpty(gltfNode.getChildren())) {
-                gltfNode.getChildren().forEach(child -> mapGltfNode(child, node));
-            }
+        final var node = parent.addChild(mapTransform(gltfNode));
+        nodes[gltfNode.getIndex()] = node;
+        if (Objects.nonNull(gltfNode.getMesh())) {
+            meshes.get(gltfNode.getMesh().getIndex()).forEach(node::addMesh);
+        }
+        if (CollectionUtils.isNotEmpty(gltfNode.getChildren())) {
+            gltfNode.getChildren().forEach(child -> mapGltfNode(child, node));
         }
     }
 
@@ -168,12 +261,11 @@ public class GltfLoader {
      * @param mesh The mesh to map
      * @return A map of meshes mapped to their material
      */
-    private void mapGltfMesh(final GltfMesh mesh) {
-        final var meshMap = mesh.getPrimitives()
+    private Map<Mesh, Material> mapGltfMesh(final GltfMesh mesh) {
+        return mesh.getPrimitives()
                 .stream()
                 .map(this::createMesh)
                 .collect(Collectors.toMap(Tuple2::getFirst, Tuple2::getSecond));
-        meshes.add(meshMap);
     }
 
     /**
