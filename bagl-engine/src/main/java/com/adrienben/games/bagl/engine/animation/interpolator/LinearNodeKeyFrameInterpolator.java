@@ -50,7 +50,7 @@ public class LinearNodeKeyFrameInterpolator implements NodeKeyFrameInterpolator 
             if (!destination.getRotation().isPresent()) {
                 destination.setRotation(new Quaternionf());
             }
-            start.getRotation().get().nlerp(end.getRotation().get(), interpolationValue, destination.getRotation().get());
+            start.getRotation().get().slerp(end.getRotation().get(), interpolationValue, destination.getRotation().get());
         } else {
             destination.setRotation(null);
         }
