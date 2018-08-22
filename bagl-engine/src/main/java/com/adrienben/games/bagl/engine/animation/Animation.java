@@ -5,20 +5,30 @@ import com.adrienben.games.bagl.engine.Time;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Represent a animation for a {@link com.adrienben.games.bagl.engine.rendering.model.Model}.
+ *
+ * @author adrien
+ */
 public class Animation {
 
-    private final List<NodeAnimation> nodeAnimations;
+    private final List<NodeAnimator> nodeAnimators;
     private final float duration;
     private float currentTime = 0.0f;
 
-    public Animation(final List<NodeAnimation> nodeAnimations) {
-        this.nodeAnimations = Objects.requireNonNull(nodeAnimations);
-        this.duration = (float) nodeAnimations.stream().mapToDouble(NodeAnimation::getEndTime).max().orElse(0);
+    public Animation(final List<NodeAnimator> nodeAnimators) {
+        this.nodeAnimators = Objects.requireNonNull(nodeAnimators);
+        this.duration = (float) nodeAnimators.stream().mapToDouble(NodeAnimator::getEndTime).max().orElse(0);
     }
 
+    /**
+     * Advance the animation timer.
+     *
+     * @param time The game time.
+     */
     public void step(final Time time) {
         updateCurrentTime(time);
-        nodeAnimations.forEach(nodeAnimation -> nodeAnimation.step(currentTime));
+        nodeAnimators.forEach(nodeAnimator -> nodeAnimator.step(currentTime));
     }
 
     private void updateCurrentTime(final Time time) {
@@ -26,9 +36,5 @@ public class Animation {
         if (currentTime > duration) {
             currentTime -= duration;
         }
-    }
-
-    public List<NodeAnimation> getNodeAnimations() {
-        return nodeAnimations;
     }
 }
