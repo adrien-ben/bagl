@@ -6,10 +6,7 @@ import com.adrienben.games.bagl.engine.Time;
 import com.adrienben.games.bagl.engine.Transform;
 import com.adrienben.games.bagl.engine.animation.Animation;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * A model is the root of a {@link ModelNode} tree
@@ -88,6 +85,10 @@ public final class Model implements Asset {
 
     public List<ModelNode> getNodes() {
         return this.nodes;
+    }
+
+    public List<Animation> getAnimations() {
+        return Collections.unmodifiableList(animations);
     }
 
     public void setAnimations(final List<Animation> animations) {

@@ -1,7 +1,8 @@
-package com.adrienben.games.bagl.engine.animation;
+package com.adrienben.games.bagl.engine.animation.selector;
 
 import com.adrienben.games.bagl.core.utils.CollectionUtils;
 import com.adrienben.games.bagl.core.utils.Tuple2;
+import com.adrienben.games.bagl.engine.animation.NodeKeyFrame;
 
 import java.util.List;
 import java.util.Objects;

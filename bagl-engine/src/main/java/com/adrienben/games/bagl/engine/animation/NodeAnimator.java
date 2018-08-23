@@ -3,6 +3,7 @@ package com.adrienben.games.bagl.engine.animation;
 import com.adrienben.games.bagl.core.utils.CollectionUtils;
 import com.adrienben.games.bagl.engine.Transform;
 import com.adrienben.games.bagl.engine.animation.interpolator.NodeKeyFrameInterpolator;
+import com.adrienben.games.bagl.engine.animation.selector.NodeKeyFrameSelector;
 
 import java.util.List;
 import java.util.Objects;
