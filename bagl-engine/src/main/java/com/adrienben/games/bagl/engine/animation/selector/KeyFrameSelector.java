@@ -2,7 +2,7 @@ package com.adrienben.games.bagl.engine.animation.selector;
 
 import com.adrienben.games.bagl.core.utils.CollectionUtils;
 import com.adrienben.games.bagl.core.utils.Tuple2;
-import com.adrienben.games.bagl.engine.animation.NodeKeyFrame;
+import com.adrienben.games.bagl.engine.animation.KeyFrame;
 
 import java.util.List;
 import java.util.Objects;
@@ -12,18 +12,18 @@ import java.util.Objects;
  *
  * @author adrien
  */
-public class NodeKeyFrameSelector {
+public class KeyFrameSelector<T> {
 
-    private final List<NodeKeyFrame> nodeKeyFrames;
+    private final List<KeyFrame<T>> keyFrames;
     private final float startTime;
     private final float endTime;
 
     private float currentAnimationTime;
 
-    public NodeKeyFrameSelector(final List<NodeKeyFrame> nodeKeyFrames) {
-        this.nodeKeyFrames = Objects.requireNonNull(nodeKeyFrames);
-        this.startTime = nodeKeyFrames.get(0).getTime();
-        this.endTime = nodeKeyFrames.get(nodeKeyFrames.size() - 1).getTime();
+    public KeyFrameSelector(final List<KeyFrame<T>> keyFrames) {
+        this.keyFrames = Objects.requireNonNull(keyFrames);
+        this.startTime = keyFrames.get(0).getTime();
+        this.endTime = keyFrames.get(keyFrames.size() - 1).getTime();
     }
 
     /**
@@ -32,20 +32,20 @@ public class NodeKeyFrameSelector {
      * @param currentAnimationTime The current animation time.
      * @return A new {@link Tuple2} whose first element is the earliest keyframe and the second is the latest.
      */
-    public Tuple2<NodeKeyFrame, NodeKeyFrame> selectCurrentInterval(final float currentAnimationTime) {
-        if (CollectionUtils.isEmpty(nodeKeyFrames)) {
+    public Tuple2<KeyFrame<T>, KeyFrame<T>> selectCurrentInterval(final float currentAnimationTime) {
+        if (CollectionUtils.isEmpty(keyFrames)) {
             return null;
         }
         this.currentAnimationTime = currentAnimationTime;
         return computeAndGetLastAndNextKeyFrames();
     }
 
-    private Tuple2<NodeKeyFrame, NodeKeyFrame> computeAndGetLastAndNextKeyFrames() {
-        if (!hasStarted() || nodeKeyFrames.size() == 1) {
-            final var firstNodeKeyFrame = nodeKeyFrames.get(0);
+    private Tuple2<KeyFrame<T>, KeyFrame<T>> computeAndGetLastAndNextKeyFrames() {
+        if (!hasStarted() || keyFrames.size() == 1) {
+            final var firstNodeKeyFrame = keyFrames.get(0);
             return new Tuple2<>(firstNodeKeyFrame, firstNodeKeyFrame);
         } else if (hasEnded()) {
-            final var lastKeyFrame = nodeKeyFrames.get(nodeKeyFrames.size() - 1);
+            final var lastKeyFrame = keyFrames.get(keyFrames.size() - 1);
             return new Tuple2<>(lastKeyFrame, lastKeyFrame);
         }
         return findCurrentNodeKeyFrameInterval();
@@ -59,11 +59,11 @@ public class NodeKeyFrameSelector {
         return currentAnimationTime > endTime;
     }
 
-    private Tuple2<NodeKeyFrame, NodeKeyFrame> findCurrentNodeKeyFrameInterval() {
-        var lastNodeKeyFrame = nodeKeyFrames.get(0);
+    private Tuple2<KeyFrame<T>, KeyFrame<T>> findCurrentNodeKeyFrameInterval() {
+        var lastNodeKeyFrame = keyFrames.get(0);
         var nextNodeKeyFrame = lastNodeKeyFrame;
-        for (int i = 1; i < nodeKeyFrames.size(); i++) {
-            nextNodeKeyFrame = nodeKeyFrames.get(i);
+        for (int i = 1; i < keyFrames.size(); i++) {
+            nextNodeKeyFrame = keyFrames.get(i);
             if (isCurrentTimeInNodeKeyFrameInterval(lastNodeKeyFrame, nextNodeKeyFrame)) {
                 break;
             }
@@ -72,7 +72,7 @@ public class NodeKeyFrameSelector {
         return new Tuple2<>(lastNodeKeyFrame, nextNodeKeyFrame);
     }
 
-    private boolean isCurrentTimeInNodeKeyFrameInterval(final NodeKeyFrame firstNodeKeyFrame, final NodeKeyFrame secondNodeKeyFrame) {
-        return currentAnimationTime >= firstNodeKeyFrame.getTime() && currentAnimationTime < secondNodeKeyFrame.getTime();
+    private boolean isCurrentTimeInNodeKeyFrameInterval(final KeyFrame firstKeyFrame, final KeyFrame secondKeyFrame) {
+        return currentAnimationTime >= firstKeyFrame.getTime() && currentAnimationTime < secondKeyFrame.getTime();
     }
 }

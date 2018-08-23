@@ -2,24 +2,35 @@ package com.adrienben.games.bagl.engine.animation;
 
 import com.adrienben.games.bagl.engine.Time;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
 
 /**
- * Represent a animation for a {@link com.adrienben.games.bagl.engine.rendering.model.Model}.
+ * Animation.
+ * <p>
+ * An animation is a set of {@link Animator}s applied to a set of targets. Those transform should be part of a
+ * same hierarchy. That way that hierarchy of nodes becomes animated.
  *
+ * @param <T> The type of the targets.
  * @author adrien
  */
-public class Animation {
+public class Animation<T> {
 
-    private final List<NodeAnimator> nodeAnimators;
+    private final Map<Class<?>, List<Animator<T, ?>>> animators = new LinkedHashMap<>();
+
     private final float duration;
     private float currentTime = 0.0f;
     private boolean isPlaying = false;
 
-    public Animation(final List<NodeAnimator> nodeAnimators) {
-        this.nodeAnimators = Objects.requireNonNull(nodeAnimators);
-        this.duration = (float) nodeAnimators.stream().mapToDouble(NodeAnimator::getEndTime).max().orElse(0);
+    private Animation(final Builder<T> builder) {
+        animators.putAll(builder.animators);
+        duration = (float) animators.values().stream().flatMap(List::stream).mapToDouble(Animator::getEndTime).max().orElse(0);
+    }
+
+    public static <T> Builder<T> builder() {
+        return new Builder<>();
     }
 
     /**
@@ -42,7 +53,7 @@ public class Animation {
     }
 
     private void stepAnimators() {
-        nodeAnimators.forEach(nodeAnimator -> nodeAnimator.step(currentTime));
+        animators.values().stream().flatMap(List::stream).forEach(animator -> animator.execute(currentTime));
     }
 
     /**
@@ -92,5 +103,36 @@ public class Animation {
     public void reset() {
         currentTime = 0.0f;
         stepAnimators();
+    }
+
+    /**
+     * Animation builder.
+     *
+     * @param <T> The animation target type.
+     */
+    public static class Builder<T> {
+
+        private final Map<Class<?>, List<Animator<T, ?>>> animators = new LinkedHashMap<>();
+
+        private Builder() {
+        }
+
+        public Animation<T> build() {
+            return new Animation<>(this);
+        }
+
+        public Builder<T> animators(final Map<Class<?>, List<Animator<T, ?>>> animators) {
+            animators.forEach(this::addAnimatorList);
+            return this;
+        }
+
+        private void addAnimatorList(final Class<?> animatorsClass, final List<Animator<T, ?>> animators) {
+            this.animators.computeIfAbsent(animatorsClass, key -> new ArrayList<>()).addAll(animators);
+        }
+
+        public Builder<T> animator(final Class<?> animatorClass, final Animator<T, ?> animator) {
+            this.animators.computeIfAbsent(animatorClass, key -> new ArrayList<>()).add(animator);
+            return this;
+        }
     }
 }

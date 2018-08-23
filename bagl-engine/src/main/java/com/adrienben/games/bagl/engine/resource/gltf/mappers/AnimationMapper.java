@@ -1,29 +1,29 @@
 package com.adrienben.games.bagl.engine.resource.gltf.mappers;
 
-import com.adrienben.games.bagl.engine.animation.Animation;
-import com.adrienben.games.bagl.engine.animation.NodeAnimator;
-import com.adrienben.games.bagl.engine.animation.NodeKeyFrame;
-import com.adrienben.games.bagl.engine.animation.interpolator.LinearNodeKeyFrameInterpolator;
-import com.adrienben.games.bagl.engine.animation.interpolator.NodeKeyFrameInterpolator;
-import com.adrienben.games.bagl.engine.animation.interpolator.StepNodeKeyFrameInterpolator;
+import com.adrienben.games.bagl.engine.Transform;
+import com.adrienben.games.bagl.engine.animation.*;
 import com.adrienben.games.bagl.engine.rendering.model.ModelNode;
+import com.adrienben.games.bagl.engine.resource.gltf.reader.GltfBufferReader;
+import com.adrienben.games.bagl.engine.resource.gltf.reader.GltfDataReader;
 import com.adrienben.tools.gltf.models.*;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * Map {@link GltfAnimation} into {@link Animation}.
+ * <p>
+ * Weight animation and cubic spline interpolation are ignored.
  *
  * @author adrien
  */
 public class AnimationMapper {
 
+    private Animation.Builder<Transform> animationBuilder;
     private ModelNode[] nodeIndex;
 
     /**
@@ -35,11 +35,11 @@ public class AnimationMapper {
      */
     public Animation map(final GltfAnimation gltfAnimation, final ModelNode[] nodeIndex) {
         this.nodeIndex = nodeIndex;
-        final var animationNodes = gltfAnimation.getChannels().stream()
+        animationBuilder = Animation.builder();
+        gltfAnimation.getChannels().stream()
                 .filter(this::isChannelSupported)
-                .map(this::mapChannel)
-                .collect(Collectors.toList());
-        return new Animation(animationNodes);
+                .forEach(this::mapAnimator);
+        return animationBuilder.build();
     }
 
     private boolean isChannelSupported(final GltfChannel channel) {
@@ -47,79 +47,92 @@ public class AnimationMapper {
                 && channel.getSampler().getInterpolation() != GltfInterpolationType.CUBICSPLINE;
     }
 
-    private NodeAnimator mapChannel(final GltfChannel gltfChannel) {
-        final var nodeKeyFrames = mapGltfAnimationSampler(gltfChannel.getSampler(), gltfChannel.getTarget().getPath());
-        final var nodeKeyFrameInterpolator = mapNodeKeyFrameInterpolator(gltfChannel.getSampler().getInterpolation());
-        final var target = nodeIndex[gltfChannel.getTarget().getNode().getIndex()];
-        return new NodeAnimator(target.getLocalTransform(), nodeKeyFrames, nodeKeyFrameInterpolator);
-    }
-
-    private List<NodeKeyFrame> mapGltfAnimationSampler(final GltfAnimationSampler gltfAnimationSampler, GltfAnimationTargetPath path) {
-        final GltfAccessor input = gltfAnimationSampler.getInput();
-        final GltfAccessor output = gltfAnimationSampler.getOutput();
-        final List<NodeKeyFrame> nodeKeyFrames = new ArrayList<>();
-        for (int i = 0; i < input.getCount(); i++) {
-            final float time = readFloat(input, i);
-            final var keyFrame = new NodeKeyFrame(time);
-            readAnimationOutput(output, i, keyFrame, path);
-            nodeKeyFrames.add(keyFrame);
-        }
-        return nodeKeyFrames;
-    }
-
-    private NodeKeyFrameInterpolator mapNodeKeyFrameInterpolator(final GltfInterpolationType gltfInterpolationType) {
-        switch (gltfInterpolationType) {
-            case STEP:
-                return new StepNodeKeyFrameInterpolator();
-            case LINEAR:
-                return new LinearNodeKeyFrameInterpolator();
-            default:
-                throw new UnsupportedOperationException("Unsupported interpolation type " + gltfInterpolationType);
-        }
-    }
-
-    private float readFloat(final GltfAccessor gltfAccessor, final int index) {
-        final var bufferView = gltfAccessor.getBufferView();
-        final var data = bufferView.getBuffer().getData();
-        return ByteBuffer.wrap(data)
-                .order(ByteOrder.LITTLE_ENDIAN)
-                .getFloat(bufferView.getByteOffset() + gltfAccessor.getByteOffset() + index * 4);
-    }
-
-    private void readAnimationOutput(final GltfAccessor gltfAccessor, final int index, final NodeKeyFrame nodeKeyFrame, final GltfAnimationTargetPath path) {
-        switch (path) {
+    private void mapAnimator(final GltfChannel gltfChannel) {
+        switch (gltfChannel.getTarget().getPath()) {
             case TRANSLATION:
-                nodeKeyFrame.setTranslation(readVector3(gltfAccessor, index));
-                return;
+                animationBuilder.animator(Vector3f.class, mapTranslationAnimator(gltfChannel));
+                break;
             case ROTATION:
-                nodeKeyFrame.setRotation(readQuaternions(gltfAccessor, index));
-                return;
+                animationBuilder.animator(Quaternionf.class, mapRotationAnimator(gltfChannel));
+                break;
             case SCALE:
-                nodeKeyFrame.setScale(readVector3(gltfAccessor, index));
-                return;
+                animationBuilder.animator(Vector3f.class, mapScaleAnimator(gltfChannel));
+                break;
             default:
                 throw new UnsupportedOperationException("Unsupported animation target path");
         }
     }
 
-    private Vector3f readVector3(final GltfAccessor gltfAccessor, final int index) {
-        final var bufferView = gltfAccessor.getBufferView();
-        final int elementByteSize = gltfAccessor.getType().getComponentCount() * gltfAccessor.getComponentType().getByteSize();
-        final int offset = bufferView.getByteOffset()
-                + gltfAccessor.getByteOffset()
-                + index * elementByteSize;
-        final var bufferWrapper = ByteBuffer.wrap(bufferView.getBuffer().getData()).order(ByteOrder.LITTLE_ENDIAN).position(offset);
-        return new Vector3f(bufferWrapper.getFloat(), bufferWrapper.getFloat(), bufferWrapper.getFloat());
+    private Animator<Transform, Vector3f> mapTranslationAnimator(final GltfChannel channel) {
+        return mapAnimator(channel, GltfBufferReader::readVector3, TargetUpdater.transformTranslationUpdater(),
+                this::getVector3fInterpolation, Vector3f::new);
     }
 
-    private Quaternionf readQuaternions(final GltfAccessor gltfAccessor, final int index) {
-        final var bufferView = gltfAccessor.getBufferView();
-        final int elementByteSize = gltfAccessor.getType().getComponentCount() * gltfAccessor.getComponentType().getByteSize();
-        final int offset = bufferView.getByteOffset()
-                + gltfAccessor.getByteOffset()
-                + index * elementByteSize;
-        final var bufferWrapper = ByteBuffer.wrap(bufferView.getBuffer().getData()).order(ByteOrder.LITTLE_ENDIAN).position(offset);
-        return new Quaternionf(bufferWrapper.getFloat(), bufferWrapper.getFloat(), bufferWrapper.getFloat(), bufferWrapper.getFloat()
-        );
+    private Animator<Transform, Quaternionf> mapRotationAnimator(final GltfChannel channel) {
+        return mapAnimator(channel, GltfBufferReader::readQuaternion, TargetUpdater.transformRotationUpdater(),
+                this::getQuaternionfInterpolation, Quaternionf::new);
+    }
+
+    private Animator<Transform, Vector3f> mapScaleAnimator(final GltfChannel channel) {
+        return mapAnimator(channel, GltfBufferReader::readVector3, TargetUpdater.translationScaleUpdater(),
+                this::getVector3fInterpolation, Vector3f::new);
+    }
+
+    private Interpolator<Vector3f> getVector3fInterpolation(final GltfInterpolationType gltfInterpolationType) {
+        switch (gltfInterpolationType) {
+            case STEP:
+                return Interpolator.vector3fStep();
+            case LINEAR:
+                return Interpolator.vector3fLerp();
+            default:
+                throw new UnsupportedOperationException("Unsupported interpolation type " + gltfInterpolationType);
+        }
+    }
+
+    private Interpolator<Quaternionf> getQuaternionfInterpolation(final GltfInterpolationType gltfInterpolationType) {
+        switch (gltfInterpolationType) {
+            case STEP:
+                return Interpolator.quaternionfStep();
+            case LINEAR:
+                return Interpolator.quaternionfSlerp();
+            default:
+                throw new UnsupportedOperationException("Unsupported interpolation type " + gltfInterpolationType);
+        }
+    }
+
+    private <T> Animator<Transform, T> mapAnimator(
+            final GltfChannel gltfChannel,
+            final GltfDataReader<T> dataReader,
+            final TargetUpdater<Transform, T> targetUpdater,
+            final Function<GltfInterpolationType, Interpolator<T>> interpolatorMapper,
+            final Supplier<T> defaultValueSupplier
+    ) {
+        final var gltfSampler = gltfChannel.getSampler();
+        final var interpolation = gltfSampler.getInterpolation();
+        return mapTargetAndKeyFrames(gltfChannel, dataReader)
+                .interpolator(interpolatorMapper.apply(interpolation))
+                .targetUpdater(targetUpdater)
+                .currentValueSupplier(defaultValueSupplier)
+                .build();
+    }
+
+    private <T> Animator.Builder<Transform, T> mapTargetAndKeyFrames(final GltfChannel gltfChannel, final GltfDataReader<T> dataReader) {
+        final var gltfSampler = gltfChannel.getSampler();
+        final var gltfTarget = gltfChannel.getTarget();
+        final var target = nodeIndex[gltfTarget.getNode().getIndex()].getLocalTransform();
+        final var keyFrames = mapKeyFrames(gltfSampler.getInput(), gltfSampler.getOutput(), dataReader);
+        return Animator.<Transform, T>builder().target(target).keyFrames(keyFrames);
+    }
+
+    private <T> List<KeyFrame<T>> mapKeyFrames(final GltfAccessor input, final GltfAccessor output, final GltfDataReader<T> dataReader) {
+        final var inputReader = new GltfBufferReader(input.getBufferView().getBuffer());
+        final var outputReader = new GltfBufferReader(output.getBufferView().getBuffer());
+        final var keyFrames = new ArrayList<KeyFrame<T>>();
+        for (int i = 0; i < input.getCount(); i++) {
+            final float time = inputReader.readFloat(input, i);
+            final T data = dataReader.read(outputReader, output, i);
+            keyFrames.add(new KeyFrame<>(time, data));
+        }
+        return keyFrames;
     }
 }
