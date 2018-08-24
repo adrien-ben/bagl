@@ -98,6 +98,10 @@ public final class ModelNode {
         return this.addChild(new Transform());
     }
 
+    public Transform getLocalTransform() {
+        return localTransform;
+    }
+
     public Transform getTransform() {
         return this.transform;
     }

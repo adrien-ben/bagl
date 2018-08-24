@@ -1,12 +1,12 @@
 package com.adrienben.games.bagl.engine.rendering.model;
 
 import com.adrienben.games.bagl.core.Asset;
+import com.adrienben.games.bagl.core.utils.CollectionUtils;
+import com.adrienben.games.bagl.engine.Time;
 import com.adrienben.games.bagl.engine.Transform;
+import com.adrienben.games.bagl.engine.animation.Animation;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * A model is the root of a {@link ModelNode} tree
@@ -19,6 +19,7 @@ public final class Model implements Asset {
 
     private final List<ModelNode> nodes = new ArrayList<>();
     private final Set<Mesh> meshes = new HashSet<>();
+    private List<Animation> animations;
 
     /**
      * {@inheritDoc}
@@ -28,6 +29,13 @@ public final class Model implements Asset {
     @Override
     public void destroy() {
         this.meshes.forEach(Mesh::destroy);
+    }
+
+
+    public void update(final Time time) {
+        if (CollectionUtils.isNotEmpty(animations)) {
+            animations.get(0).step(time);
+        }
     }
 
     /**
@@ -77,5 +85,13 @@ public final class Model implements Asset {
 
     public List<ModelNode> getNodes() {
         return this.nodes;
+    }
+
+    public List<Animation> getAnimations() {
+        return Collections.unmodifiableList(animations);
+    }
+
+    public void setAnimations(final List<Animation> animations) {
+        this.animations = animations;
     }
 }

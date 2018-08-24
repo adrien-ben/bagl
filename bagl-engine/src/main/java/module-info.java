@@ -15,6 +15,7 @@ module com.adrienben.games.bagl.engine {
 
     // EXPORTS
     exports com.adrienben.games.bagl.engine;
+    exports com.adrienben.games.bagl.engine.animation;
     exports com.adrienben.games.bagl.engine.camera;
     exports com.adrienben.games.bagl.engine.game;
     exports com.adrienben.games.bagl.engine.scene;
