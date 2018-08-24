@@ -14,14 +14,16 @@
 - [ADDED] Spritebatch::render that take the new Sprite class as parameter
 - [ADDED] Asset management
 
-### 0.0.4
+## 0.0.4
 - [CHANGED] Modularized the project
 - [ADDED] Partial transparency rendering support
 
-### 0.0.5
+## 0.0.5
 - [OPTIMIZATION] Only render visible meshes
 - [IMPROVEMENT] Added Cascaded Shadow Mapping
 - [FIX] Fix GlTF model loading
 - [ADDED] Generic animation API
 - [ADDED] Model's transform based animations
 - [ADDED] GlTf transform based animations loading
+
+## 0.0.6
