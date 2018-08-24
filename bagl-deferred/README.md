@@ -61,6 +61,16 @@ ModelNode class). Each node can have its own children. A node contains transform
 > Normals and tangents are not computed after load. So make sur that models you import already contain those. Models without
 > normals won't be lit and models using normal mapping but whose tangent are not provided will be either not lit or incorrectly lit.
 
+#### Animation
+
+Transform based animation are partially supported. Weight animations are not supported. Cubic spline key frame interpolation
+is not supported. Models containing either of these will still be renderer but parts of the models using unsupported features 
+won't be animated
+
+#### Mesh Skinning
+
+Mesh skinning is not yet supported.
+
 ### Lights
 
 The renderer supports directional, point, and spot lights. Some area lights will be implemented (sphere and tube).

@@ -356,3 +356,102 @@ You can now declare the teleporter component in the json file.
   "radius": 1.0
 }
 ```
+
+## Generic key frame based animations
+
+baGL provides a generic API to construct key frame based animations.
+
+### Key frames
+
+The key frame class is used to represent the state of some data at a given time.
+
+### Interpolator
+
+The Interpolator functional interface defines a contract to interpolate between the data of two key frames.
+
+### Animator
+
+The animator is responsible for animating a target over time. It hold a reference to a target to animate and the list
+of key frames representing the states of its target over time. It needs to be passed an interpolator, a target updater
+and a supplier that will be used to cache the current interpolated state of the target data.
+
+### TargetUpdater
+
+The TargetUpdater functional interface defines the contract for updating some target with some data. It will be used
+to apply the current state the data to the animated target.
+
+### Animation
+
+The animation is responsible for managing the current animation time. It exposes an API to allow the used to control the
+animation playback (play, pause, stop, ...).
+
+The animation is a collection of animators that will be executed over time.
+
+### Example
+
+Let's see an example of an animated character.
+
+```java
+class AnimationExample {
+    
+    static class Character {
+        private Vector2f position = new Vector2f();
+        void moveTo(Vector2f position) {
+            this.position.set(position);
+        }
+        // omitted accessors
+    }
+
+    public static void main(String[] args) throws InterruptedException {
+        
+        // The character to animate
+        var john = new Character();
+        
+        // The list of john's position keyframes
+        var keyFrames = List.of(
+                new KeyFrame<>(0, new Vector2f(-10, 0)), // Position at the start of animation
+                new KeyFrame<>(10, new Vector2f(10, 0))); // Position at the end of animation
+                
+        // The animator responsible for animating john's position
+        var animator = Animator.<Character, Vector2f>builder()
+                .target(john)
+                .keyFrames(keyFrames)
+                .interpolator(Vector2f::lerp) // Linear interpolator
+                .targetUpdater(Character::moveTo) // Update john by setting its position
+                .currentValueSupplier(Vector2f::new)  // Cache supplier for the interpolated value
+                .build();
+        
+        // The actual animation
+        var animation = Animation.<Character>builder().animator(Vector2f.class, animator).build();
+        animation.play(); // Paused by default
+
+        // The main loop
+        var time = new Time();
+        while (true) {
+            time.update(); // Update timer
+            animation.step(time); // Step animation
+            System.out.println("John's position: " + john.getPosition());
+            Thread.sleep(1000);
+        }
+    }
+}
+```
+
+The animation consists of moving `john` from (-10, 0) to (10, 0) in ten seconds. Once the animation is created, we
+loop every second and use the `step` method to advance the animation. Here is the output of the example.
+
+```text
+John's position: (-1,000E+1  0,000E+0)
+John's position: (-7,828E+0  0,000E+0)
+John's position: (-5,827E+0  0,000E+0)
+John's position: (-3,827E+0  0,000E+0)
+John's position: (-1,826E+0  0,000E+0)
+...
+John's position: (1,000E+1  0,000E+0)
+```
+
+> Note that we had to call the `play` method before starting the loop. By default animations are paused.
+
+> Here we just used one animator but we could have used more of them. Either animating the same property
+> or others. For example if john had a height attribute we could have made him grow from 0 to 5 then shrink
+> back to its original height from 5 to 10.
