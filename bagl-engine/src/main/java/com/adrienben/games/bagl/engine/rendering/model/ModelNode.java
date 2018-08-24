@@ -57,11 +57,11 @@ public final class ModelNode {
     /**
      * Transform the node
      *
-     * @param transform The transform to apply
+     * @param toApply The transform to apply
      */
-    public void transform(final Transform transform) {
-        Transform.transform(this.localTransform, transform, this.transform);
-        this.children.forEach(child -> child.transform(this.transform));
+    public void transform(final Transform toApply) {
+        Transform.transform(localTransform, toApply, transform);
+        children.forEach(child -> child.transform(transform));
     }
 
     /**
@@ -96,6 +96,10 @@ public final class ModelNode {
      */
     public ModelNode addChild() {
         return this.addChild(new Transform());
+    }
+
+    public Transform getLocalTransform() {
+        return localTransform;
     }
 
     public Transform getTransform() {

@@ -1,17 +1,21 @@
 package com.adrienben.games.bagl.engine.rendering.model;
 
+import com.adrienben.games.bagl.core.math.AABBs;
+import com.adrienben.games.bagl.core.utils.CollectionUtils;
+import com.adrienben.games.bagl.core.validation.Validation;
 import com.adrienben.games.bagl.opengl.PrimitiveType;
 import com.adrienben.games.bagl.opengl.vertex.IndexBuffer;
 import com.adrienben.games.bagl.opengl.vertex.VertexArray;
 import com.adrienben.games.bagl.opengl.vertex.VertexBuffer;
+import org.joml.AABBf;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 /**
- * Mesh data
+ * Mesh data.
+ * <p>
+ * Mesh are created using the {@link Mesh.Builder} class. You can get a
+ * builder instance by calling {@link Mesh#builder()}.
  *
  * @author adrien
  */
@@ -29,64 +33,33 @@ public class Mesh {
 
     private final List<VertexBuffer> vBuffers;
     private final VertexArray vArray;
+    private final int vertexCount;
     private final IndexBuffer iBuffer;
     private final PrimitiveType primitiveType;
-    private final int vertexCount;
+    private final AABBf aabb;
 
-    /**
-     * Construct a mesh
-     *
-     * @param vBuffer The vertex buffer
-     * @param iBuffer The index buffer
-     */
-    public Mesh(final VertexBuffer vBuffer, final IndexBuffer iBuffer) {
-        this.vBuffers = Collections.singletonList(vBuffer);
-        this.iBuffer = iBuffer;
-        this.vArray = this.generateVertexArray();
-        this.primitiveType = PrimitiveType.TRIANGLES;
-        this.vertexCount = vBuffer.getVertexCount();
-    }
-
-    /**
-     * Construct a mesh
-     *
-     * @param vBuffer       The vertex buffer
-     * @param primitiveType The type of primitives to use when rendering
-     */
-    public Mesh(final VertexBuffer vBuffer, final PrimitiveType primitiveType) {
-        this.vBuffers = Collections.singletonList(vBuffer);
-        this.iBuffer = null;
-        this.vArray = this.generateVertexArray();
-        this.primitiveType = primitiveType;
-        this.vertexCount = vBuffer.getVertexCount();
-    }
-
-    /**
-     * Construct a mesh
-     *
-     * @param vBuffers      The vertex buffers
-     * @param iBuffer       The index buffer
-     * @param primitiveType The type of primitives to use when rendering
-     */
-    public Mesh(final List<VertexBuffer> vBuffers, final IndexBuffer iBuffer, final PrimitiveType primitiveType) {
-        this.vBuffers = vBuffers;
-        this.iBuffer = iBuffer;
-        this.vArray = this.generateVertexArray();
-        this.primitiveType = primitiveType;
+    private Mesh(final Builder builder) {
+        this.vBuffers = new ArrayList<>(Validation.validate(builder.vertexBuffers, CollectionUtils::isNotEmpty, "Mesh requires at least one vertex buffer"));
+        this.vArray = generateVertexArray();
         this.vertexCount = this.vBuffers.get(0).getVertexCount();
+        this.iBuffer = builder.indexBuffer;
+        this.primitiveType = builder.primitiveType;
+        this.aabb = builder.aabb;
     }
 
-    /**
-     * Generate a vertex array from the vertex buffers of the mesh
-     *
-     * @return The generate vertex array
-     */
     private VertexArray generateVertexArray() {
         final var vArray = new VertexArray();
         vArray.bind();
         this.vBuffers.forEach(vArray::attachVertexBuffer);
         vArray.unbind();
         return vArray;
+    }
+
+    /**
+     * Create a new mesh builder.
+     */
+    public static Builder builder() {
+        return new Builder();
     }
 
     /**
@@ -114,5 +87,58 @@ public class Mesh {
 
     public int getVertexCount() {
         return this.vertexCount;
+    }
+
+    public AABBf getAabb() {
+        return aabb;
+    }
+
+    /**
+     * Mesh builder.
+     * <p>
+     * You can set the following parameters :
+     * <li>vertexBuffers (at least one required)</li>
+     * <li>indexBuffer : default = null</li>
+     * <li>primitiveType (required) : default = {@link PrimitiveType#TRIANGLES}</li>
+     * <li>aabb (required) : default = {@link AABBs#createZero()}</li>
+     */
+    public static class Builder {
+
+        private List<VertexBuffer> vertexBuffers = new ArrayList<>();
+        private IndexBuffer indexBuffer = null;
+        private PrimitiveType primitiveType = PrimitiveType.TRIANGLES;
+        private AABBf aabb = AABBs.createZero();
+
+        private Builder() {
+        }
+
+        public Mesh build() {
+            return new Mesh(this);
+        }
+
+        public Builder vertexBuffer(final VertexBuffer vertexBuffer) {
+            this.vertexBuffers.add(Objects.requireNonNull(vertexBuffer));
+            return this;
+        }
+
+        public Builder vertexBuffers(final Collection<VertexBuffer> vertexBuffers) {
+            this.vertexBuffers.addAll(Objects.requireNonNull(vertexBuffers));
+            return this;
+        }
+
+        public Builder indexBuffer(final IndexBuffer indexBuffer) {
+            this.indexBuffer = indexBuffer;
+            return this;
+        }
+
+        public Builder primitiveType(final PrimitiveType primitiveType) {
+            this.primitiveType = Objects.requireNonNull(primitiveType);
+            return this;
+        }
+
+        public Builder aabb(final AABBf aabb) {
+            this.aabb = Objects.requireNonNull(aabb);
+            return this;
+        }
     }
 }

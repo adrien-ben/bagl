@@ -15,6 +15,7 @@ module com.adrienben.games.bagl.engine {
 
     // EXPORTS
     exports com.adrienben.games.bagl.engine;
+    exports com.adrienben.games.bagl.engine.animation;
     exports com.adrienben.games.bagl.engine.camera;
     exports com.adrienben.games.bagl.engine.game;
     exports com.adrienben.games.bagl.engine.scene;
@@ -32,9 +33,9 @@ module com.adrienben.games.bagl.engine {
     exports com.adrienben.games.bagl.engine.rendering.sprite;
     exports com.adrienben.games.bagl.engine.rendering.text;
     exports com.adrienben.games.bagl.engine.assets;
-    exports com.adrienben.games.bagl.engine.resource;
     exports com.adrienben.games.bagl.engine.resource.asset;
     exports com.adrienben.games.bagl.engine.resource.asset.json;
+    exports com.adrienben.games.bagl.engine.resource.gltf;
     exports com.adrienben.games.bagl.engine.resource.scene;
     exports com.adrienben.games.bagl.engine.resource.scene.json;
 

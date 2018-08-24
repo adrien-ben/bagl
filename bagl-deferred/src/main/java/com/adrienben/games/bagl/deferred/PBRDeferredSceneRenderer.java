@@ -1,43 +1,42 @@
 package com.adrienben.games.bagl.deferred;
 
 import com.adrienben.games.bagl.core.exception.EngineException;
-import com.adrienben.games.bagl.core.math.Vectors;
+import com.adrienben.games.bagl.core.utils.CollectionUtils;
+import com.adrienben.games.bagl.deferred.data.SceneRenderData;
+import com.adrienben.games.bagl.deferred.data.SceneRenderDataCollector;
 import com.adrienben.games.bagl.deferred.pbr.BrdfLookup;
 import com.adrienben.games.bagl.deferred.shaders.DeferredShader;
 import com.adrienben.games.bagl.deferred.shaders.GBufferShader;
 import com.adrienben.games.bagl.deferred.shaders.ShaderFactory;
-import com.adrienben.games.bagl.deferred.shaders.ShadowShader;
+import com.adrienben.games.bagl.deferred.shadow.CSMGenerator;
+import com.adrienben.games.bagl.deferred.shadow.CascadedShadowMap;
 import com.adrienben.games.bagl.engine.Configuration;
-import com.adrienben.games.bagl.engine.camera.Camera;
+import com.adrienben.games.bagl.engine.Transform;
 import com.adrienben.games.bagl.engine.rendering.Material;
-import com.adrienben.games.bagl.engine.rendering.light.DirectionalLight;
-import com.adrienben.games.bagl.engine.rendering.light.PointLight;
-import com.adrienben.games.bagl.engine.rendering.light.SpotLight;
 import com.adrienben.games.bagl.engine.rendering.model.*;
-import com.adrienben.games.bagl.engine.rendering.particles.ParticleEmitter;
 import com.adrienben.games.bagl.engine.rendering.particles.ParticleRenderer;
 import com.adrienben.games.bagl.engine.rendering.postprocess.PostProcessor;
+import com.adrienben.games.bagl.engine.rendering.postprocess.fxaa.FxaaPresets;
 import com.adrienben.games.bagl.engine.rendering.postprocess.steps.BloomStep;
 import com.adrienben.games.bagl.engine.rendering.postprocess.steps.FxaaStep;
 import com.adrienben.games.bagl.engine.rendering.postprocess.steps.ToneMappingStep;
 import com.adrienben.games.bagl.engine.rendering.renderer.MeshRenderer;
 import com.adrienben.games.bagl.engine.rendering.renderer.Renderer;
-import com.adrienben.games.bagl.engine.scene.ComponentVisitor;
 import com.adrienben.games.bagl.engine.scene.Scene;
-import com.adrienben.games.bagl.engine.scene.components.*;
+import com.adrienben.games.bagl.engine.scene.components.DirectionalLightComponent;
 import com.adrienben.games.bagl.opengl.FrameBuffer;
 import com.adrienben.games.bagl.opengl.FrameBufferParameters;
 import com.adrienben.games.bagl.opengl.shader.Shader;
-import com.adrienben.games.bagl.opengl.texture.Cubemap;
 import com.adrienben.games.bagl.opengl.texture.Format;
-import com.adrienben.games.bagl.opengl.texture.Texture;
+import org.joml.AABBf;
+import org.joml.FrustumIntersection;
 import org.joml.Matrix4f;
-import org.joml.Vector3f;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
+import static com.adrienben.games.bagl.deferred.shaders.DeferredShader.*;
 import static org.lwjgl.opengl.GL11.*;
 
 /**
@@ -51,46 +50,38 @@ import static org.lwjgl.opengl.GL11.*;
  * <li>PBR rendering with IBL</li>
  * <li>Post processing pass (bloom/gamma correction/tone mapping from HDR to SDR</li>
  * <p>
- * When {@link PBRDeferredSceneRenderer#render(Scene)} is called, the renderer visits the scene and collects
- * scene data required for rendering
+ * When {@link PBRDeferredSceneRenderer#render(Scene)} is called, the data required for rendering is
+ * gathered from the scene before the actual rendering takes place.
  *
  * @author adrien
  */
-public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisitor {
+public class PBRDeferredSceneRenderer implements Renderer<Scene> {
 
     private final int xResolution;
     private final int yResolution;
-    private final int shadowMapResolution;
 
-    private Camera camera;
-    private Cubemap environmentMap;
-    private Cubemap irradianceMap;
-    private Cubemap preFilteredMap;
-    private final List<DirectionalLight> directionalLights;
-    private final List<PointLight> pointLights;
-    private final List<SpotLight> spotLights;
-    private final List<Model> models;
-    private final List<ParticleEmitter> particleEmitters;
+    private SceneRenderDataCollector sceneRenderDataCollector;
+    private SceneRenderData sceneRenderData;
+
+    private FrustumIntersection cameraFrustum;
+    private AABBf aabbBuffer;
 
     private final Matrix4f wvpBuffer;
-    private final Matrix4f lightViewProj;
 
     private Mesh screenQuad;
     private Mesh cubeMapMesh;
 
-    private boolean renderShadow;
-
     private FrameBuffer gBuffer;
-    private FrameBuffer shadowBuffer;
     private FrameBuffer finalBuffer;
 
     private Shader skyboxShader;
-    private ShadowShader shadowShader;
     private GBufferShader gBufferShader;
     private DeferredShader deferredShader;
 
     private BrdfLookup brdfLookup;
 
+    private CascadedShadowMap cascadedShadowMap;
+    private CSMGenerator csmGenerator;
     private ParticleRenderer particleRenderer;
     private MeshRenderer meshRenderer;
     private PostProcessor postProcessor;
@@ -100,67 +91,67 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisit
      */
     public PBRDeferredSceneRenderer() {
         final var config = Configuration.getInstance();
-        this.xResolution = config.getXResolution();
-        this.yResolution = config.getYResolution();
-        this.shadowMapResolution = config.getShadowMapResolution();
+        xResolution = config.getXResolution();
+        yResolution = config.getYResolution();
 
-        this.camera = null;
-        this.directionalLights = new ArrayList<>();
-        this.pointLights = new ArrayList<>();
-        this.spotLights = new ArrayList<>();
-        this.models = new ArrayList<>();
-        this.particleEmitters = new ArrayList<>();
+        sceneRenderDataCollector = new SceneRenderDataCollector();
 
-        this.wvpBuffer = new Matrix4f();
-        this.lightViewProj = new Matrix4f();
+        cameraFrustum = new FrustumIntersection();
+        aabbBuffer = new AABBf();
 
-        this.screenQuad = MeshFactory.createScreenQuad();
-        this.cubeMapMesh = MeshFactory.createCubeMapMesh();
+        wvpBuffer = new Matrix4f();
 
-        this.brdfLookup = new BrdfLookup();
+        screenQuad = MeshFactory.createScreenQuad();
+        cubeMapMesh = MeshFactory.createCubeMapMesh();
 
-        this.particleRenderer = new ParticleRenderer();
-        this.meshRenderer = new MeshRenderer();
-        this.postProcessor = new PostProcessor(
-                new BloomStep(xResolution, yResolution),
-                new ToneMappingStep(xResolution, yResolution),
-                new FxaaStep(xResolution, yResolution, config.getFxaaPresets())
-        );
+        brdfLookup = new BrdfLookup();
 
-        this.initFrameBuffers();
-        this.initShaders();
+        csmGenerator = new CSMGenerator();
+        particleRenderer = new ParticleRenderer();
+        meshRenderer = new MeshRenderer();
+        postProcessor = new PostProcessor();
+        setUpPostProcessor(config);
+
+        initFrameBuffers();
+        initShaders();
+    }
+
+    private void setUpPostProcessor(final Configuration config) {
+        if (config.isBloomEnabled()) {
+            postProcessor.addStep(new BloomStep(xResolution, yResolution));
+        }
+        postProcessor.addStep(new ToneMappingStep(xResolution, yResolution));
+        if (config.getFxaaPresets() != FxaaPresets.DISABLED) {
+            postProcessor.addStep(new FxaaStep(xResolution, yResolution, config.getFxaaPresets()));
+        }
     }
 
     /**
      * Release resources
      */
     public void destroy() {
-        this.skyboxShader.destroy();
-        this.shadowShader.destroy();
-        this.gBufferShader.destroy();
-        this.deferredShader.destroy();
-        this.brdfLookup.destroy();
-        this.gBuffer.destroy();
-        this.shadowBuffer.destroy();
-        this.finalBuffer.destroy();
-        this.screenQuad.destroy();
-        this.cubeMapMesh.destroy();
-        this.particleRenderer.destroy();
-        this.postProcessor.destroy();
+        skyboxShader.destroy();
+        gBufferShader.destroy();
+        deferredShader.destroy();
+        brdfLookup.destroy();
+        gBuffer.destroy();
+        finalBuffer.destroy();
+        screenQuad.destroy();
+        cubeMapMesh.destroy();
+        csmGenerator.destroy();
+        particleRenderer.destroy();
+        postProcessor.destroy();
     }
 
     /**
      * Initializes the frame buffers
      */
     private void initFrameBuffers() {
-        this.gBuffer = new FrameBuffer(this.xResolution, this.yResolution, FrameBufferParameters.builder()
-                .colorOutputFormat(Format.RGBA8, Format.RGBA16F, Format.RGB16F)
-                .depthStencilFormat(Format.DEPTH_32F)
+        gBuffer = new FrameBuffer(xResolution, yResolution, FrameBufferParameters.builder()
+                .colorOutputFormat(Format.RGBA8, Format.RGBA16F, Format.RGB16F, Format.RG8)
                 .build());
-        this.shadowBuffer = new FrameBuffer(this.shadowMapResolution, this.shadowMapResolution);
-        this.finalBuffer = new FrameBuffer(this.xResolution, this.yResolution, FrameBufferParameters.builder()
+        finalBuffer = new FrameBuffer(xResolution, yResolution, FrameBufferParameters.builder()
                 .colorOutputFormat(Format.RGBA32F)
-                .depthStencilFormat(Format.DEPTH_32F)
                 .build());
     }
 
@@ -168,16 +159,15 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisit
      * Initializes the shaders
      */
     private void initShaders() {
-        this.skyboxShader = ShaderFactory.createSkyboxShader();
-        this.shadowShader = new ShadowShader();
-        this.gBufferShader = new GBufferShader();
-        this.deferredShader = new DeferredShader();
+        skyboxShader = ShaderFactory.createSkyboxShader();
+        gBufferShader = new GBufferShader();
+        deferredShader = new DeferredShader();
     }
 
     /**
      * Render a scene from the camera point of view
      * <p>
-     * The method first visit {@code scene} to collect data to use for rendering.
+     * The method first collect data to use for rendering.
      * <p>
      * Then if the scene contains at least one {@link DirectionalLightComponent}, it
      * will generate the shadow map for the point of view of the first light found.
@@ -194,122 +184,49 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisit
      * @param scene The scene to render
      */
     public void render(final Scene scene) {
-        this.preRenderCleanup();
+        sceneRenderData = sceneRenderDataCollector.collectDataForRendering(scene);
 
-        scene.accept(this);
-
-        if (Objects.isNull(this.camera)) {
+        if (Objects.isNull(sceneRenderData.getCamera())) {
             throw new EngineException("Impossible to render a scene if no camera is set up");
         }
 
-        this.renderShadowMap();
-        this.performGeometryPass();
-        this.performLightingPass();
-        this.renderSkybox();
-        this.renderParticles();
+        updateFrustum();
+        renderShadowMap();
+        performGeometryPass();
+        performLightingPass();
+        renderSkybox();
+        renderParticles();
 
-        this.postProcessor.process(this.finalBuffer.getColorTexture(0));
+        postProcessor.process(finalBuffer.getColorTexture(0));
     }
 
-    /**
-     * Clear data before rendering in case the scene change since last frame
-     */
-    private void preRenderCleanup() {
-        this.camera = null;
-        this.environmentMap = null;
-        this.irradianceMap = null;
-        this.preFilteredMap = null;
-        this.directionalLights.clear();
-        this.pointLights.clear();
-        this.spotLights.clear();
-        this.models.clear();
-        this.particleEmitters.clear();
+    private void updateFrustum() {
+        cameraFrustum.set(sceneRenderData.getCamera().getViewProj());
+    }
+
+    private void renderShadowMap() {
+        csmGenerator.setSceneRenderData(sceneRenderData);
+        cascadedShadowMap = csmGenerator.generateShadowMaps();
     }
 
     /**
      * Render the skybox from the environment map found in the scene if any
      */
     private void renderSkybox() {
-        if (Objects.nonNull(this.environmentMap)) {
-            this.finalBuffer.bind();
-            this.environmentMap.bind();
-            this.skyboxShader.bind();
-            this.skyboxShader.setUniform("viewProj", this.camera.getViewProjAtOrigin());
+        final var environmentMap = sceneRenderData.getEnvironmentMap();
+        if (Objects.nonNull(environmentMap)) {
+            finalBuffer.bind();
+            environmentMap.bind();
+            skyboxShader.bind();
+            skyboxShader.setUniform("viewProj", sceneRenderData.getCamera().getViewProjAtOrigin());
 
             glDepthFunc(GL_LEQUAL);
-            this.meshRenderer.render(this.cubeMapMesh);
+            meshRenderer.render(cubeMapMesh);
             glDepthFunc(GL_LESS);
 
             Shader.unbind();
-            Cubemap.unbind();
-            this.finalBuffer.unbind();
-        }
-    }
-
-    /**
-     * Render the shadow map if the scene contains a directional light
-     */
-    private void renderShadowMap() {
-        this.renderShadow = !this.directionalLights.isEmpty();
-        if (this.renderShadow) {
-            final var position = new Vector3f(this.directionalLights.get(0).getDirection()).mul(-10f);
-
-            this.lightViewProj.setOrtho(-10, 10, -10, 10, 0.1f, 20f)
-                    .lookAt(position, Vectors.VEC3_ZERO, Vectors.VEC3_UP);
-
-            glViewport(0, 0, this.shadowMapResolution, this.shadowMapResolution);
-            this.shadowBuffer.bind();
-            this.shadowBuffer.clear();
-            this.shadowShader.bind();
-
-            this.models.forEach(this::renderModelShadow);
-
-            Shader.unbind();
-            this.shadowBuffer.unbind();
-            glViewport(0, 0, this.xResolution, this.yResolution);
-        }
-    }
-
-    /**
-     * Render a model in the shadow map
-     *
-     * @param model The model to render
-     */
-    private void renderModelShadow(final Model model) {
-        model.getNodes().forEach(this::renderModelNodeShadow);
-    }
-
-    /**
-     * Render a model node in the shadow map
-     *
-     * @param node The node to render
-     */
-    private void renderModelNodeShadow(final ModelNode node) {
-        final var nodeTransform = node.getTransform().getTransformMatrix();
-        this.lightViewProj.mul(nodeTransform, this.wvpBuffer);
-        this.shadowShader.setWorldViewProjectionUniform(this.wvpBuffer);
-        node.getMeshes().forEach(this::renderMeshShadow);
-        node.getChildren().forEach(this::renderModelNodeShadow);
-    }
-
-    /**
-     * Render a mesh to the shadow map
-     *
-     * @param mesh     The mesh to render
-     * @param material The material to use
-     */
-    private void renderMeshShadow(final Mesh mesh, final Material material) {
-        if (material.getAlphaMode() == AlphaMode.BLEND) {
-            return;
-        }
-        if (material.isDoubleSided()) {
-            glDisable(GL_CULL_FACE);
-        }
-        this.shadowShader.setMaterialUniforms(material);
-        this.meshRenderer.render(mesh);
-        Texture.unbind();
-        if (material.isDoubleSided()) {
-            glEnable(GL_CULL_FACE);
+            environmentMap.unbind();
+            finalBuffer.unbind();
         }
     }
 
@@ -317,14 +234,14 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisit
      * Perform the GBuffer pass
      */
     private void performGeometryPass() {
-        this.gBuffer.bind();
-        this.gBuffer.clear();
-        this.gBufferShader.bind();
+        gBuffer.bind();
+        gBuffer.clear();
+        gBufferShader.bind();
 
-        this.models.forEach(this::renderModelToGBuffer);
+        sceneRenderData.getModels().forEach(this::renderModelToGBuffer);
 
         Shader.unbind();
-        this.gBuffer.unbind();
+        gBuffer.unbind();
     }
 
     /**
@@ -342,12 +259,25 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisit
      * @param node The node to render
      */
     private void renderModelNodeToGBuffer(final ModelNode node) {
-        final var nodeTransform = node.getTransform().getTransformMatrix();
-        this.camera.getViewProj().mul(nodeTransform, this.wvpBuffer);
-        this.gBufferShader.setWorldUniform(nodeTransform);
-        this.gBufferShader.setWorldViewProjectionUniform(this.wvpBuffer);
-        node.getMeshes().forEach(this::renderMeshToGBuffer);
+        if (CollectionUtils.isNotEmpty(node.getMeshes())) {
+            final var nodeTransform = node.getTransform().getTransformMatrix();
+            sceneRenderData.getCamera().getViewProj().mul(nodeTransform, wvpBuffer);
+            gBufferShader.setWorldUniform(nodeTransform);
+            gBufferShader.setWorldViewProjectionUniform(wvpBuffer);
+            node.getMeshes()
+                    .entrySet()
+                    .stream()
+                    .filter(entry -> isMeshVisibleFromCameraPOV(entry.getKey(), node.getTransform()))
+                    .forEach(entry -> renderMeshToGBuffer(entry.getKey(), entry.getValue()));
+        }
         node.getChildren().forEach(this::renderModelNodeToGBuffer);
+    }
+
+    private boolean isMeshVisibleFromCameraPOV(final Mesh mesh, final Transform meshTransform) {
+        final var meshAabb = meshTransform.transformAABB(mesh.getAabb(), aabbBuffer);
+        final var intersection = cameraFrustum.intersectAab(meshAabb.minX, meshAabb.minY, meshAabb.minZ,
+                meshAabb.maxX, meshAabb.maxY, meshAabb.maxZ);
+        return intersection == FrustumIntersection.INSIDE || intersection == FrustumIntersection.INTERSECT;
     }
 
     /**
@@ -363,12 +293,13 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisit
         if (material.isDoubleSided()) {
             glDisable(GL_CULL_FACE);
         }
-        this.gBufferShader.setMaterialUniforms(material);
-        this.meshRenderer.render(mesh);
-        Texture.unbind();
-        Texture.unbind(1);
-        Texture.unbind(2);
-        Texture.unbind(3);
+        gBufferShader.setMaterialUniforms(material);
+        meshRenderer.render(mesh);
+        material.getDiffuseMap().ifPresent(map -> map.unbind(GBufferShader.DIFFUSE_MAP_CHANNEL));
+        material.getEmissiveMap().ifPresent(map -> map.unbind(GBufferShader.EMISSIVE_MAP_CHANNEL));
+        material.getRoughnessMetallicMap().ifPresent(map -> map.unbind(GBufferShader.ROUGHNESS_METALLIC_MAP_CHANNEL));
+        material.getNormalMap().ifPresent(map -> map.unbind(GBufferShader.NORMAL_MAP_CHANNEL));
+        material.getOcclusionMap().ifPresent(map -> map.unbind(GBufferShader.OCCLUSION_MAP_CHANNEL));
         if (material.isDoubleSided()) {
             glEnable(GL_CULL_FACE);
         }
@@ -379,167 +310,85 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene>, ComponentVisit
      * analytical light found in the scene
      */
     private void performLightingPass() {
-        this.finalBuffer.bind();
-        this.finalBuffer.clear();
-        this.finalBuffer.copyFrom(this.gBuffer, true, false);
+        prepareResourcesForLightingPass();
+        renderLightingPass();
+        unbindResourcesPostLightingPass();
+    }
 
-        this.gBuffer.getColorTexture(0).bind(0);
-        this.gBuffer.getColorTexture(1).bind(1);
-        this.gBuffer.getColorTexture(2).bind(2);
-        this.gBuffer.getDepthTexture().bind(3);
-        this.brdfLookup.getTexture().bind(7);
+    private void prepareResourcesForLightingPass() {
+        finalBuffer.bind();
+        finalBuffer.clear();
+        finalBuffer.copyFrom(gBuffer, true, false);
 
-        this.deferredShader.bind()
-                .setCameraUniforms(this.camera)
-                .setHasShadowUniform(this.renderShadow)
-                .setDirectionalLightsUniforms(this.directionalLights)
-                .setPointLightsUniforms(this.pointLights)
-                .setSpotLightsUniforms(this.spotLights);
+        gBuffer.getColorTexture(0).bind(COLORS_TEXTURE_CHANNEL);
+        gBuffer.getColorTexture(1).bind(NORMALS_TEXTURE_CHANNEL);
+        gBuffer.getColorTexture(2).bind(EMISSIVE_TEXTURE_CHANNEL);
+        gBuffer.getColorTexture(3).bind(OCCLUSION_TEXTURE_CHANNEL);
+        gBuffer.getDepthTexture().bind(DEPTH_TEXTURE_CHANNEL);
+        brdfLookup.getTexture().bind(BRDF_LOOKUP_CHANNEL);
 
-        if (Objects.nonNull(this.irradianceMap)) {
-            this.irradianceMap.bind(5);
+        deferredShader.bind()
+                .setCameraUniforms(sceneRenderData.getCamera())
+                .setCSMUnforms(cascadedShadowMap)
+                .setDirectionalLightsUniforms(sceneRenderData.getDirectionalLights())
+                .setPointLightsUniforms(sceneRenderData.getPointLights())
+                .setSpotLightsUniforms(sceneRenderData.getSpotLights());
+
+        if (Objects.nonNull(sceneRenderData.getIrradianceMap())) {
+            sceneRenderData.getIrradianceMap().bind(IRRADIANCE_MAP_CHANNEL);
         }
-        if (Objects.nonNull(this.preFilteredMap)) {
-            this.preFilteredMap.bind(6);
+        if (Objects.nonNull(sceneRenderData.getPreFilteredMap())) {
+            sceneRenderData.getPreFilteredMap().bind(PRE_FILTERED_MAP_CHANNEL);
         }
-        if (this.renderShadow) {
-            this.deferredShader.setShadowCasterViewProjectionMatrix(this.lightViewProj);
-            this.shadowBuffer.getDepthTexture().bind(4);
-        }
+    }
 
+    private void renderLightingPass() {
         glDepthFunc(GL_NOTEQUAL);
         glDepthMask(false);
-        this.meshRenderer.render(this.screenQuad);
+        meshRenderer.render(screenQuad);
         glDepthMask(true);
         glDepthFunc(GL_LESS);
+    }
 
+    private void unbindResourcesPostLightingPass() {
         Shader.unbind();
-        Cubemap.unbind(5);
-        Cubemap.unbind(6);
-        Cubemap.unbind(7);
-        Texture.unbind(0);
-        Texture.unbind(1);
-        Texture.unbind(2);
-        Texture.unbind(3);
-        Texture.unbind(4);
-        this.finalBuffer.unbind();
+        gBuffer.getColorTexture(0).unbind(COLORS_TEXTURE_CHANNEL);
+        gBuffer.getColorTexture(1).unbind(NORMALS_TEXTURE_CHANNEL);
+        gBuffer.getColorTexture(2).unbind(EMISSIVE_TEXTURE_CHANNEL);
+        gBuffer.getColorTexture(3).unbind(OCCLUSION_TEXTURE_CHANNEL);
+        gBuffer.getDepthTexture().unbind(DEPTH_TEXTURE_CHANNEL);
+        Optional.ofNullable(sceneRenderData.getIrradianceMap()).ifPresent(map -> map.unbind(IRRADIANCE_MAP_CHANNEL));
+        Optional.ofNullable(sceneRenderData.getPreFilteredMap()).ifPresent(map -> map.unbind(PRE_FILTERED_MAP_CHANNEL));
+        brdfLookup.getTexture().unbind(BRDF_LOOKUP_CHANNEL);
+        if (Objects.nonNull(cascadedShadowMap)) {
+            for (int i = 0; i < CascadedShadowMap.CASCADE_COUNT; i++) {
+                cascadedShadowMap.getShadowCascade(i).getShadowMap().unbind(SHADOW_MAP_0_CHANNEL + i);
+            }
+        }
+        finalBuffer.unbind();
     }
 
     private void renderParticles() {
-        this.finalBuffer.bind();
-        this.particleEmitters.forEach(emitter -> {
-            this.particleRenderer.setCamera(this.camera);
-            this.particleRenderer.setDirectionalLights(this.directionalLights);
-            this.particleRenderer.setPointLights(this.pointLights);
-            this.particleRenderer.setSpotLights(this.spotLights);
-            this.particleRenderer.render(emitter);
+        finalBuffer.bind();
+        sceneRenderData.getParticleEmitters().forEach(emitter -> {
+            particleRenderer.setCamera(sceneRenderData.getCamera());
+            particleRenderer.setDirectionalLights(sceneRenderData.getDirectionalLights());
+            particleRenderer.setPointLights(sceneRenderData.getPointLights());
+            particleRenderer.setSpotLights(sceneRenderData.getSpotLights());
+            particleRenderer.render(emitter);
         });
-        this.finalBuffer.unbind();
+        finalBuffer.unbind();
     }
 
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Add the model contained in component to the list of models to render
-     *
-     * @see ComponentVisitor#visit(ModelComponent)
-     */
-    @Override
-    public void visit(final ModelComponent component) {
-        this.models.add(component.getModel());
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Set the camera contained in component as the camera to use when rendering.
-     * Take care if your scene contains several camera then the last visited camera will
-     * be the one used
-     *
-     * @see ComponentVisitor#visit(CameraComponent)
-     */
-    @Override
-    public void visit(final CameraComponent component) {
-        this.camera = component.getCamera();
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Set the environment maps to render. Take care, for now only one set of
-     * maps can be used. If several {@link EnvironmentComponent} are present
-     * in the scene then only the last will be used
-     *
-     * @param component The component to visit
-     */
-    @Override
-    public void visit(final EnvironmentComponent component) {
-        this.environmentMap = component.getEnvironmentMap().orElse(null);
-        this.irradianceMap = component.getIrradianceMap().orElse(null);
-        this.preFilteredMap = component.getPreFilteredMap().orElse(null);
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Add the light contained in component to the list of light to take
-     * into account when rendering
-     *
-     * @see ComponentVisitor#visit(DirectionalLightComponent)
-     */
-    @Override
-    public void visit(final DirectionalLightComponent component) {
-        this.directionalLights.add(component.getLight());
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Add the light contained in component to the list of light to take
-     * into account when rendering
-     *
-     * @see ComponentVisitor#visit(PointLightComponent)
-     */
-    @Override
-    public void visit(final PointLightComponent component) {
-        this.pointLights.add(component.getLight());
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Add the light contained in component to the list of light to take
-     * into account when rendering
-     *
-     * @see ComponentVisitor#visit(SpotLightComponent)
-     */
-    @Override
-    public void visit(final SpotLightComponent component) {
-        this.spotLights.add(component.getLight());
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Add the particle emitter contained in component to the list of emitter
-     * to render.
-     *
-     * @see ComponentVisitor#visit(SpotLightComponent)
-     */
-    @Override
-    public void visit(final ParticleComponent component) {
-        this.particleEmitters.add(component.getEmitter());
-    }
-
-    public FrameBuffer getShadowBuffer() {
-        return this.shadowBuffer;
+    public List<FrameBuffer> getCSMBuffer() {
+        return csmGenerator.getFrameBuffers();
     }
 
     public FrameBuffer getGBuffer() {
-        return this.gBuffer;
+        return gBuffer;
     }
 
     public FrameBuffer getFinalBuffer() {
-        return this.finalBuffer;
+        return finalBuffer;
     }
 }

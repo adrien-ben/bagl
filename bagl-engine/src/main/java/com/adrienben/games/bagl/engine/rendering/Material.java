@@ -3,7 +3,7 @@ package com.adrienben.games.bagl.engine.rendering;
 import com.adrienben.games.bagl.core.Color;
 import com.adrienben.games.bagl.core.validation.Validation;
 import com.adrienben.games.bagl.engine.rendering.model.AlphaMode;
-import com.adrienben.games.bagl.opengl.texture.Texture;
+import com.adrienben.games.bagl.opengl.texture.Texture2D;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -15,14 +15,16 @@ import java.util.Optional;
  * <ul>
  * <li>The diffuse color (default: {@link Color#WHITE})
  * <li>An emissive color (default {@link Color#WHITE})
- * <li>An emissive intensity (default: 0f)
- * <li>A roughness factor (default: 0.5f)
- * <li>A metalness factor (default: 0f)
+ * <li>An emissive intensity (default: {@value Builder#DEFAULT_EMISSIVE_INTENSITY})
+ * <li>A roughness factor (default: {@value Builder#DEFAULT_ROUGHNESS})
+ * <li>A metallic factor (default: {@value Builder#DEFAULT_METALLIC})
+ * <li>A occlusionStrength factor (default: {@value Builder#DEFAULT_OCCLUSION_STRENGTH})
  * <p>
  * <li>A diffuse texture (default: null)
  * <li>An emissive texture (default: null)
- * <li>An ORM (Occlusion/Roughness/Metalness) texture (default: null)
+ * <li>An roughness metallic texture (default: null)
  * <li>A normal texture (default: null)
+ * <li>A occlusion texture (default: null)
  * <p>
  * <li>A double sided flag (default: false)
  * <li>The alpha mode (default: {@link AlphaMode#OPAQUE})
@@ -43,21 +45,18 @@ import java.util.Optional;
  */
 public class Material {
 
-    public static final int DIFFUSE_MAP_CHANNEL = 0;
-    public static final int EMISSIVE_MAP_CHANNEL = 1;
-    public static final int ORM_MAP_CHANNEL = 2;
-    public static final int NORMAL_MAP_CHANNEL = 3;
-
     private final Color diffuseColor;
     private final Color emissiveColor;
     private final float emissiveIntensity;
     private final float roughness;
     private final float metallic;
+    private final float occlusionStrength;
 
-    private final Texture diffuseMap;
-    private final Texture emissiveMap;
-    private final Texture ormMap;
-    private final Texture normalMap;
+    private final Texture2D diffuseMap;
+    private final Texture2D emissiveMap;
+    private final Texture2D roughnessMetallicMap;
+    private final Texture2D normalMap;
+    private final Texture2D occlusionMap;
 
     private final boolean doubleSided;
     private final AlphaMode alphaMode;
@@ -69,11 +68,13 @@ public class Material {
         this.emissiveIntensity = builder.emissiveIntensity;
         this.roughness = builder.roughness;
         this.metallic = builder.metallic;
+        this.occlusionStrength = builder.occlusionStrength;
 
         this.diffuseMap = builder.diffuseMap;
         this.emissiveMap = builder.emissiveMap;
-        this.ormMap = builder.ormMap;
+        this.roughnessMetallicMap = builder.roughnessMetallicMap;
         this.normalMap = builder.normalMap;
+        this.occlusionMap = builder.occlusionMap;
 
         this.doubleSided = builder.doubleSided;
         this.alphaMode = builder.alphaMode;
@@ -93,10 +94,11 @@ public class Material {
      * Release resources
      */
     public void destroy() {
-        getDiffuseMap().ifPresent(Texture::destroy);
-        getEmissiveMap().ifPresent(Texture::destroy);
-        getOrmMap().ifPresent(Texture::destroy);
-        getNormalMap().ifPresent(Texture::destroy);
+        getDiffuseMap().ifPresent(Texture2D::destroy);
+        getEmissiveMap().ifPresent(Texture2D::destroy);
+        getRoughnessMetallicMap().ifPresent(Texture2D::destroy);
+        getNormalMap().ifPresent(Texture2D::destroy);
+        getOcclusionMap().ifPresent(Texture2D::destroy);
     }
 
     public Color getDiffuseColor() {
@@ -119,20 +121,28 @@ public class Material {
         return metallic;
     }
 
-    public Optional<Texture> getDiffuseMap() {
+    public float getOcclusionStrength() {
+        return occlusionStrength;
+    }
+
+    public Optional<Texture2D> getDiffuseMap() {
         return Optional.ofNullable(diffuseMap);
     }
 
-    public Optional<Texture> getEmissiveMap() {
+    public Optional<Texture2D> getEmissiveMap() {
         return Optional.ofNullable(emissiveMap);
     }
 
-    public Optional<Texture> getOrmMap() {
-        return Optional.ofNullable(ormMap);
+    public Optional<Texture2D> getRoughnessMetallicMap() {
+        return Optional.ofNullable(roughnessMetallicMap);
     }
 
-    public Optional<Texture> getNormalMap() {
+    public Optional<Texture2D> getNormalMap() {
         return Optional.ofNullable(normalMap);
+    }
+
+    public Optional<Texture2D> getOcclusionMap() {
+        return Optional.ofNullable(occlusionMap);
     }
 
     public boolean isDoubleSided() {
@@ -151,16 +161,24 @@ public class Material {
      * Material builder
      */
     public static class Builder {
+
+        private static final float DEFAULT_EMISSIVE_INTENSITY = 0.0f;
+        private static final float DEFAULT_ROUGHNESS = 0.5f;
+        private static final float DEFAULT_METALLIC = 0.0f;
+        private static final float DEFAULT_OCCLUSION_STRENGTH = 0.0f;
+
         private Color diffuseColor = Color.WHITE;
         private Color emissiveColor = Color.BLACK;
-        private float emissiveIntensity = 0f;
-        private float roughness = 1.0f;
-        private float metallic = 1.0f;
+        private float emissiveIntensity = DEFAULT_EMISSIVE_INTENSITY;
+        private float roughness = DEFAULT_ROUGHNESS;
+        private float metallic = DEFAULT_METALLIC;
+        private float occlusionStrength = DEFAULT_OCCLUSION_STRENGTH;
 
-        private Texture diffuseMap = null;
-        private Texture emissiveMap = null;
-        private Texture ormMap = null;
-        private Texture normalMap = null;
+        private Texture2D diffuseMap = null;
+        private Texture2D emissiveMap = null;
+        private Texture2D roughnessMetallicMap = null;
+        private Texture2D normalMap = null;
+        private Texture2D occlusionMap = null;
 
         private boolean doubleSided = false;
         private AlphaMode alphaMode = AlphaMode.OPAQUE;
@@ -209,23 +227,34 @@ public class Material {
             return this;
         }
 
-        public Builder diffuse(final Texture diffuseMap) {
+        public Builder occlusionStrength(final float occlusionStrength) {
+            this.occlusionStrength = Validation.validate(occlusionStrength, v -> v >= 0 && v <= 1,
+                    "occlusionStrength must be in [0..1]");
+            return this;
+        }
+
+        public Builder diffuse(final Texture2D diffuseMap) {
             this.diffuseMap = diffuseMap;
             return this;
         }
 
-        public Builder emissive(final Texture emissiveMap) {
+        public Builder emissive(final Texture2D emissiveMap) {
             this.emissiveMap = emissiveMap;
             return this;
         }
 
-        public Builder orm(final Texture ormMap) {
-            this.ormMap = ormMap;
+        public Builder roughnessMetallic(final Texture2D roughnessMetallicMap) {
+            this.roughnessMetallicMap = roughnessMetallicMap;
             return this;
         }
 
-        public Builder normals(final Texture normalMap) {
+        public Builder normals(final Texture2D normalMap) {
             this.normalMap = normalMap;
+            return this;
+        }
+
+        public Builder occlusion(final Texture2D occlusionMap) {
+            this.occlusionMap = occlusionMap;
             return this;
         }
 

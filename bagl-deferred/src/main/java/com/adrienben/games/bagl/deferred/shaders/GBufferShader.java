@@ -12,10 +12,27 @@ import org.joml.Matrix4fc;
  */
 public class GBufferShader {
 
+    public static final int DIFFUSE_MAP_CHANNEL = 0;
+    public static final int EMISSIVE_MAP_CHANNEL = 1;
+    public static final int ROUGHNESS_METALLIC_MAP_CHANNEL = 2;
+    public static final int NORMAL_MAP_CHANNEL = 3;
+    public static final int OCCLUSION_MAP_CHANNEL = 4;
+
     private final Shader shader;
 
     public GBufferShader() {
         this.shader = ShaderFactory.createGBufferShader();
+        setTextureChannelsUniforms();
+    }
+
+    private void setTextureChannelsUniforms() {
+        bind();
+        shader.setUniform("uMaterial.diffuseMap", DIFFUSE_MAP_CHANNEL);
+        shader.setUniform("uMaterial.emissiveMap", EMISSIVE_MAP_CHANNEL);
+        shader.setUniform("uMaterial.roughnessMetallicMap", ROUGHNESS_METALLIC_MAP_CHANNEL);
+        shader.setUniform("uMaterial.normalMap", NORMAL_MAP_CHANNEL);
+        shader.setUniform("uMaterial.occlusionMap", OCCLUSION_MAP_CHANNEL);
+        Shader.unbind();
     }
 
     public void destroy() {
@@ -40,34 +57,27 @@ public class GBufferShader {
         shader.setUniform("uMaterial.emissiveIntensity", material.getEmissiveIntensity());
         shader.setUniform("uMaterial.roughness", material.getRoughness());
         shader.setUniform("uMaterial.metallic", material.getMetallic());
+        shader.setUniform("uMaterial.occlusionStrength", material.getOcclusionStrength());
 
         final var diffuseMap = material.getDiffuseMap();
         shader.setUniform("uMaterial.hasDiffuseMap", diffuseMap.isPresent());
-        diffuseMap.ifPresent(map -> {
-            shader.setUniform("uMaterial.diffuseMap", Material.DIFFUSE_MAP_CHANNEL);
-            map.bind();
-        });
+        diffuseMap.ifPresent(map -> map.bind(DIFFUSE_MAP_CHANNEL));
 
         final var emissiveMap = material.getEmissiveMap();
         shader.setUniform("uMaterial.hasEmissiveMap", emissiveMap.isPresent());
-        emissiveMap.ifPresent(map -> {
-            shader.setUniform("uMaterial.emissiveMap", Material.EMISSIVE_MAP_CHANNEL);
-            map.bind(Material.EMISSIVE_MAP_CHANNEL);
-        });
+        emissiveMap.ifPresent(map -> map.bind(EMISSIVE_MAP_CHANNEL));
 
-        final var ormMap = material.getOrmMap();
-        shader.setUniform("uMaterial.hasOrmMap", ormMap.isPresent());
-        ormMap.ifPresent(map -> {
-            shader.setUniform("uMaterial.ormMap", Material.ORM_MAP_CHANNEL);
-            map.bind(Material.ORM_MAP_CHANNEL);
-        });
+        final var roughnessMetallicMap = material.getRoughnessMetallicMap();
+        shader.setUniform("uMaterial.hasRoughnessMetallicMap", roughnessMetallicMap.isPresent());
+        roughnessMetallicMap.ifPresent(map -> map.bind(ROUGHNESS_METALLIC_MAP_CHANNEL));
 
         final var normalMap = material.getNormalMap();
         shader.setUniform("uMaterial.hasNormalMap", normalMap.isPresent());
-        normalMap.ifPresent(map -> {
-            shader.setUniform("uMaterial.normalMap", Material.NORMAL_MAP_CHANNEL);
-            map.bind(Material.NORMAL_MAP_CHANNEL);
-        });
+        normalMap.ifPresent(map -> map.bind(NORMAL_MAP_CHANNEL));
+
+        final var occlusionMap = material.getOcclusionMap();
+        shader.setUniform("uMaterial.hasOcclusionMap", occlusionMap.isPresent());
+        occlusionMap.ifPresent(map -> map.bind(OCCLUSION_MAP_CHANNEL));
 
         shader.setUniform("uMaterial.isOpaque", material.getAlphaMode() == AlphaMode.OPAQUE);
         shader.setUniform("uMaterial.alphaCutoff", material.getAlphaCutoff());

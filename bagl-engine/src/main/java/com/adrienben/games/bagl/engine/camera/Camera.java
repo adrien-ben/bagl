@@ -1,5 +1,6 @@
 package com.adrienben.games.bagl.engine.camera;
 
+import com.adrienben.games.bagl.core.math.Frustum;
 import com.adrienben.games.bagl.core.utils.Dirtiable;
 import org.joml.*;
 
@@ -20,6 +21,7 @@ public class Camera {
     private final float aspectRatio;
     private final float zNear;
     private final float zFar;
+    private final Dirtiable<Frustum> frustum;
 
     private final Dirtiable<Matrix4f> projection;
     private final Dirtiable<Matrix4f> view;
@@ -47,6 +49,7 @@ public class Camera {
         this.aspectRatio = aspectRatio;
         this.zNear = zNear;
         this.zFar = zFar;
+        this.frustum = new Dirtiable<>(new Frustum(), frustum -> frustum.set(getViewProj()));
 
         // camera
         this.projection = new Dirtiable<>(new Matrix4f(), projection -> projection.setPerspective(this.fov, this.aspectRatio, this.zNear, this.zFar));
@@ -72,11 +75,7 @@ public class Camera {
         this.up.rotate(rotation);
         this.position.add(this.direction, this.target);
         this.direction.cross(this.up, this.side);
-        this.view.dirty();
-        this.viewProj.dirty();
-        this.invertedViewProj.dirty();
-        this.viewAtOrigin.dirty();
-        this.viewProjAtOrigin.dirty();
+        this.dirtyViewAtOrigin();
         return this;
     }
 
@@ -90,10 +89,44 @@ public class Camera {
     public Camera move(final Vector3fc direction) {
         this.position.add(direction);
         this.position.add(this.direction, this.target);
+        this.dirtyView();
+        return this;
+    }
+
+    public void setPosition(final Vector3fc position) {
+        this.position.set(position);
+        this.position.add(this.direction, this.target);
+        this.dirtyView();
+    }
+
+    public void setDirection(final Vector3fc direction) {
+        this.direction.set(direction);
+        this.position.add(this.direction, this.target);
+        this.direction.cross(this.up, this.side);
+        this.dirtyViewAtOrigin();
+    }
+
+    public void setUp(final Vector3fc up) {
+        this.up.set(up);
+        this.direction.cross(this.up, this.side);
+        this.dirtyViewAtOrigin();
+    }
+
+    private void dirtyView() {
+        this.frustum.dirty();
         this.view.dirty();
         this.viewProj.dirty();
         this.invertedViewProj.dirty();
-        return this;
+    }
+
+    private void dirtyViewAtOrigin() {
+        dirtyView();
+        this.viewAtOrigin.dirty();
+        this.viewProjAtOrigin.dirty();
+    }
+
+    public Frustum getFrustum() {
+        return frustum.get();
     }
 
     /**
@@ -168,32 +201,11 @@ public class Camera {
         return this.side;
     }
 
-    public void setPosition(final Vector3fc position) {
-        this.position.set(position);
-        this.position.add(this.direction, this.target);
-        this.view.dirty();
-        this.viewProj.dirty();
-        this.invertedViewProj.dirty();
+    public float getzNear() {
+        return zNear;
     }
 
-    public void setDirection(final Vector3fc direction) {
-        this.direction.set(direction);
-        this.position.add(this.direction, this.target);
-        this.direction.cross(this.up, this.side);
-        this.view.dirty();
-        this.viewProj.dirty();
-        this.invertedViewProj.dirty();
-        this.viewAtOrigin.dirty();
-        this.viewProjAtOrigin.dirty();
-    }
-
-    public void setUp(final Vector3fc up) {
-        this.up.set(up);
-        this.direction.cross(this.up, this.side);
-        this.view.dirty();
-        this.viewProj.dirty();
-        this.invertedViewProj.dirty();
-        this.viewAtOrigin.dirty();
-        this.viewProjAtOrigin.dirty();
+    public float getzFar() {
+        return zFar;
     }
 }

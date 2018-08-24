@@ -15,6 +15,8 @@ public class Transform {
     private final Vector3f scale;
     private final Dirtiable<Matrix4f> transform;
 
+    private final Vector3f buffer;
+
     /**
      * Construct a transform
      * <p>
@@ -26,6 +28,7 @@ public class Transform {
         this.rotation = new Quaternionf();
         this.scale = new Vector3f(1, 1, 1);
         this.transform = new Dirtiable<>(new Matrix4f(), this::computeTransform);
+        this.buffer = new Vector3f();
     }
 
     /**
@@ -53,8 +56,21 @@ public class Transform {
         final var tm = transform.getTransformMatrix();
         toTransform.translation.mulPosition(tm, result.translation);
         toTransform.scale.mul(transform.scale, result.scale);
-        toTransform.rotation.mul(transform.rotation, result.rotation);
+        transform.rotation.mul(toTransform.rotation, result.rotation);
         result.transform.dirty();
+    }
+
+    /**
+     * Transform the given {@link AABBf} and store thr result into {@code destination}.
+     * <p>
+     * {@code toTransform} is scaled then moved but not rotated. The method returns {@code destination}.
+     */
+    public AABBf transformAABB(final AABBf toTransform, final AABBf destination) {
+        buffer.set(toTransform.minX, toTransform.minY, toTransform.minZ).mul(scale).add(translation);
+        destination.setMin(buffer);
+        buffer.set(toTransform.maxX, toTransform.maxY, toTransform.maxZ).mul(scale).add(translation);
+        destination.setMax(buffer);
+        return destination;
     }
 
     /**

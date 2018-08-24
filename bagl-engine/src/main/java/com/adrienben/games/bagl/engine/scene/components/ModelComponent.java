@@ -33,6 +33,7 @@ public class ModelComponent extends Component {
      */
     @Override
     public void update(final Time time) {
+        this.model.update(time);
         this.model.transform(super.getParentObject().getTransform());
     }
 

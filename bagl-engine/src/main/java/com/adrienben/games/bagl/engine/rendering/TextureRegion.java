@@ -1,6 +1,6 @@
 package com.adrienben.games.bagl.engine.rendering;
 
-import com.adrienben.games.bagl.opengl.texture.Texture;
+import com.adrienben.games.bagl.opengl.texture.Texture2D;
 
 /**
  * This class represents the region of a texture. The bottom-left
@@ -8,13 +8,13 @@ import com.adrienben.games.bagl.opengl.texture.Texture;
  */
 public class TextureRegion {
 
-    private final Texture texture;
+    private final Texture2D texture;
     private final float left;
     private final float bottom;
     private final float right;
     private final float top;
 
-    public TextureRegion(Texture texture, float left, float bottom, float right, float top) {
+    public TextureRegion(Texture2D texture, float left, float bottom, float right, float top) {
         this.texture = texture;
         this.left = left;
         this.bottom = bottom;
@@ -22,7 +22,7 @@ public class TextureRegion {
         this.top = top;
     }
 
-    public Texture getTexture() {
+    public Texture2D getTexture() {
         return texture;
     }
 

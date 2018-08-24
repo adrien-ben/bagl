@@ -1,7 +1,7 @@
 package com.adrienben.games.bagl.engine.rendering.sprite;
 
 import com.adrienben.games.bagl.core.Color;
-import com.adrienben.games.bagl.opengl.texture.Texture;
+import com.adrienben.games.bagl.opengl.texture.Texture2D;
 import org.joml.Rectanglef;
 import org.joml.Vector2f;
 import org.joml.Vector2fc;
@@ -17,7 +17,7 @@ public class Sprite {
 
     private static final Rectanglef DEFAULT_REGION = new Rectanglef(0.0f, 0.0f, 1.0f, 1.0f);
 
-    private final Texture texture;
+    private final Texture2D texture;
     private final float width;
     private final float height;
     private final Rectanglef region;
@@ -39,7 +39,7 @@ public class Sprite {
         return new Builder();
     }
 
-    public Texture getTexture() {
+    public Texture2D getTexture() {
         return texture;
     }
 
@@ -89,7 +89,7 @@ public class Sprite {
      */
     public static class Builder {
 
-        private Texture texture;
+        private Texture2D texture;
         private float width;
         private float height;
         private Rectanglef region = new Rectanglef(DEFAULT_REGION);
@@ -104,7 +104,7 @@ public class Sprite {
             return new Sprite(this);
         }
 
-        public Builder texture(final Texture texture) {
+        public Builder texture(final Texture2D texture) {
             this.texture = Objects.requireNonNull(texture);
             return this;
         }

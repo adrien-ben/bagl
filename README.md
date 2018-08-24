@@ -11,7 +11,7 @@ baGL is an OpenGL framework that I use for educational purpose. It uses [LWJGL 3
 - Deferred Rendering
 - Physically Based Rendering. See [Epic's paper](http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf)
 - IBL
-- Shadow mapping
+- Cascaded Shadow Mapping
 - Post processing (bloom, gamma correction and tone mapping, anti aliasing)
 - Lights (directional lights, point lights and spot lights)
 - HDR environment maps (from .hdr equirectangular images)
@@ -22,6 +22,7 @@ baGL is an OpenGL framework that I use for educational purpose. It uses [LWJGL 3
 - Simple scene graph
 - Shader #import directive
 - Basic assets management
+- Transform based model animations
 
 ## Modules
 
@@ -36,10 +37,9 @@ This project is separated in several modules :
 ## TODO
 
 - Rendering
-    - Animations
+    - Mesh skinning
     - Sprites in 3D environment (debug icons, ...)
     - Area lights (sphere and tubes)
-    - Fixing shadows
     - UI (third party ?)
 - OpenGL state manager
 - Complete glTF 2.0 support
@@ -55,3 +55,5 @@ This project is separated in several modules :
 - [OpenGL reference pages](https://www.khronos.org/registry/OpenGL-Refpages/gl4/)
 - [Wikipedia](https://www.wikipedia.org/)
 - [NVidia's FXAA's paper](https://developer.download.nvidia.com/assets/gamedev/files/sdk/11/FXAA_WhitePaper.pdf) and [FXAA 3.11 source code](https://gist.github.com/kosua20/0c506b81b3812ac900048059d2383126)
+- [GPU Gems 3](https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch10.html), [Microsoft Docs](https://docs.microsoft.com/en-us/windows/desktop/dxtecharts/cascaded-shadow-maps) for Cascaded Shadow Mapping.
+- [This gamedev.net](https://www.gamedev.net/forums/topic/591684-xna-40---shimmering-shadow-maps/) post about stabilizing shadow maps.

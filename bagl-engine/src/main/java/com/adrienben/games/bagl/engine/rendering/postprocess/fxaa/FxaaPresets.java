@@ -7,6 +7,7 @@ package com.adrienben.games.bagl.engine.rendering.postprocess.fxaa;
  */
 public enum FxaaPresets {
 
+    DISABLED(-1f, -1f, -1f),
     LOW(0.25f, 0.25f, 0.0883f),
     MEDIUM(0.5f, 0.166f, 0.0833f),
     HIGH(0.75f, 0.125f, 0.0625f);

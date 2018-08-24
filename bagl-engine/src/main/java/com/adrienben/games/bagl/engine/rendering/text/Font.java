@@ -5,7 +5,7 @@ import com.adrienben.games.bagl.core.exception.EngineException;
 import com.adrienben.games.bagl.core.exception.ParseException;
 import com.adrienben.games.bagl.core.io.ResourcePath;
 import com.adrienben.games.bagl.engine.rendering.TextureRegion;
-import com.adrienben.games.bagl.opengl.texture.Texture;
+import com.adrienben.games.bagl.opengl.texture.Texture2D;
 import com.adrienben.games.bagl.opengl.texture.TextureParameters;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -41,7 +41,7 @@ public class Font implements Asset {
     private int pageHeight;
     private String atlasName;
     private final Map<Integer, Glyph> glyphs = new HashMap<>();
-    private Texture bitmap;
+    private Texture2D bitmap;
 
     public Font(final ResourcePath filePath) {
         this.load(filePath);
@@ -57,7 +57,7 @@ public class Font implements Asset {
         }
 
         final var bitmapPath = ResourcePath.get(filePath.getParent().getAbsolutePath(), this.atlasName);
-        this.bitmap = Texture.fromFile(bitmapPath, true, TextureParameters.builder());
+        this.bitmap = Texture2D.fromFile(bitmapPath, true, TextureParameters.builder());
     }
 
     private void parseHeader(BufferedReader reader) throws IOException, ParseException {
@@ -143,7 +143,7 @@ public class Font implements Asset {
         this.bitmap.destroy();
     }
 
-    public Texture getBitmap() {
+    public Texture2D getBitmap() {
         return this.bitmap;
     }
 

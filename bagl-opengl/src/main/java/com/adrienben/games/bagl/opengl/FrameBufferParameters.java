@@ -1,11 +1,10 @@
 package com.adrienben.games.bagl.opengl;
 
+import com.adrienben.games.bagl.opengl.texture.CompareFunction;
 import com.adrienben.games.bagl.opengl.texture.Format;
+import com.adrienben.games.bagl.opengl.texture.TextureParameters;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Stream;
 
 /**
@@ -15,6 +14,7 @@ import java.util.stream.Stream;
  * <ul>
  * <li>hasDepthStencil (default = true)
  * <li>depthStencilFormat (default = {@link Format#DEPTH_32F})
+ * <li>compareFunction (default = {@link CompareFunction#NONE})
  * <li>colorOutputFormats (default = empty)
  * </ul>
  * <p>
@@ -22,7 +22,9 @@ import java.util.stream.Stream;
  * to the frame buffer. {@code depthStencilFormat} specifies the format of the
  * depth/stencil channel if requested. {@code colorOutputFormats} is a list of
  * {@link Format}; for each of the specified format, a color texture will be
- * attached to the frame buffer. This list can stay empty
+ * attached to the frame buffer. This list can stay empty. {@code compareFunction}
+ * the compare function parameter for the depth buffer texture. This can be used for
+ * shadow mapping.
  * <p>
  * To create a instance of this class, you have to use the inner builder:
  * <pre>
@@ -39,13 +41,17 @@ public final class FrameBufferParameters {
 
     private static final FrameBufferParameters DEFAULT = new FrameBufferParameters(new Builder());
 
-    private final boolean hasDepthStencil;
-    private final Format depthStencilFormat;
+    private final TextureParameters depthStencilTextureParameters;
+    //    private final boolean hasDepthStencil;
+//    private final Format depthStencilFormat;
+//    private final CompareFunction compareFunction;
     private final List<Format> colorOutputFormats;
 
     private FrameBufferParameters(final Builder builder) {
-        this.hasDepthStencil = builder.hasDepthStencil;
-        this.depthStencilFormat = builder.depthStencilFormat;
+        this.depthStencilTextureParameters = builder.depthTextureParameters;
+//        this.hasDepthStencil = builder.hasDepthStencil;
+//        this.depthStencilFormat = builder.depthStencilFormat;
+//        this.compareFunction = builder.compareFunction;
         this.colorOutputFormats = Collections.unmodifiableList(builder.colorOutputFormats);
     }
 
@@ -67,13 +73,21 @@ public final class FrameBufferParameters {
         return new Builder();
     }
 
-    public boolean hadDepthStencil() {
-        return this.hasDepthStencil;
+    public Optional<TextureParameters> getDepthStencilTextureParameters() {
+        return Optional.ofNullable(depthStencilTextureParameters);
     }
 
-    public Format getDepthStencilFormat() {
-        return this.depthStencilFormat;
-    }
+//    public boolean hadDepthStencil() {
+//        return this.hasDepthStencil;
+//    }
+//
+//    public Format getDepthStencilFormat() {
+//        return this.depthStencilFormat;
+//    }
+//
+//    public CompareFunction getCompareFunction() {
+//        return compareFunction;
+//    }
 
     public List<Format> getColorOutputs() {
         return this.colorOutputFormats;
@@ -84,13 +98,12 @@ public final class FrameBufferParameters {
      */
     public static class Builder {
 
-        private boolean hasDepthStencil = true;
-        private Format depthStencilFormat = Format.DEPTH_32F;
+        private TextureParameters depthTextureParameters = TextureParameters.builder().format(Format.DEPTH_32F).build();
+        //        private boolean hasDepthStencil = true;
+//        private Format depthStencilFormat = Format.DEPTH_32F;
+//        private CompareFunction compareFunction = CompareFunction.NONE;
         private List<Format> colorOutputFormats = new ArrayList<>();
 
-        /**
-         * Private constructor to private instantiation
-         */
         private Builder() {
         }
 
@@ -98,28 +111,26 @@ public final class FrameBufferParameters {
             return new FrameBufferParameters(this);
         }
 
-        /**
-         * Enable/disable the depth stencil channel
-         *
-         * @param hasDepthStencil Depth/stencil flag
-         * @return This
-         */
-        public Builder hasDepthStencil(final boolean hasDepthStencil) {
-            this.hasDepthStencil = hasDepthStencil;
+        public Builder depthStencilTextureParameters(final TextureParameters depthTextureParameters) {
+            this.depthTextureParameters = depthTextureParameters;
             return this;
         }
 
-        /**
-         * Set the format of the depth stencil channel
-         *
-         * @param depthStencilFormat The format to use
-         * @return This
-         */
-        public Builder depthStencilFormat(final Format depthStencilFormat) {
-            this.depthStencilFormat = Objects.requireNonNull(depthStencilFormat,
-                    "depthStencilFormat cannot be null");
-            return this;
-        }
+//        public Builder hasDepthStencil(final boolean hasDepthStencil) {
+//            this.hasDepthStencil = hasDepthStencil;
+//            return this;
+//        }
+//
+//        public Builder depthStencilFormat(final Format depthStencilFormat) {
+//            this.depthStencilFormat = Objects.requireNonNull(depthStencilFormat,
+//                    "depthStencilFormat cannot be null");
+//            return this;
+//        }
+//
+//        public Builder compareFunction(final CompareFunction compareFunction) {
+//            this.compareFunction = compareFunction;
+//            return this;
+//        }
 
         /**
          * Add one or more color output formats

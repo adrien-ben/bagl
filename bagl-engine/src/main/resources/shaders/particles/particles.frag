@@ -16,17 +16,6 @@ uniform bool hasTexture;
 uniform Camera uCamera;
 uniform Lights uLights;
 
-float computeFalloff(float distance, float radius) {
-    float distanceFactor = distance/radius;
-    float distanceFactor2 = distanceFactor*distanceFactor;
-    float distanceFactor4 = distanceFactor2*distanceFactor2;
-
-    float nominator = pow(clamp(1 - distanceFactor4, 0.0, 1.0), 2);
-    float denominator = distanceFactor2 + 1;
-
-    return nominator/denominator;
-}
-
 float computeLightAmountForFace(vec3 N, vec3 L, float opacity) {
     float NdotL = dot(N, L);
     if(NdotL >= 0.0) {
