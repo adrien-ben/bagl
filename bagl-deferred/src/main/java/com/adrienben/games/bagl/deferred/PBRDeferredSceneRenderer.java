@@ -255,14 +255,7 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
      */
     private void renderModelNodeToGBuffer(final ModelNode node) {
         if (CollectionUtils.isNotEmpty(node.getMeshes())) {
-            final var nodeTransform = node.getTransform();
-            gBufferShader.setWorldUniform(nodeTransform.getTransformMatrix());
-            node.getJoints().ifPresentOrElse(
-                    joints -> {
-                        gBufferShader.setIsSkinnedUniform(true);
-                        gBufferShader.setJointsUniforms(joints, nodeTransform);
-                    },
-                    () -> gBufferShader.setIsSkinnedUniform(false));
+            gBufferShader.setModelNodeUniforms(node);
             gBufferShader.setViewProjectionUniform(sceneRenderData.getCamera().getViewProj());
             node.getMeshes()
                     .entrySet()

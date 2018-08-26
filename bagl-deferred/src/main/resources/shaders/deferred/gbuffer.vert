@@ -6,8 +6,7 @@ struct Joint {
 
 struct Matrices {
 	mat4 world;
-	mat4 vp;
-	Joint joints[128];
+	mat4 viewProjection;
 };
 
 layout (location = 0) in vec4 vPosition;
@@ -22,19 +21,17 @@ out vec3 passNormal;
 out mat3 passTBN;
 
 uniform Matrices uMatrices;
-uniform bool isSkinned;
+uniform bool uIsSkinned;
+uniform Joint uJoints[128];
 
 void main() {
 
-mat4 world;
-	if(isSkinned) {
-        world = uMatrices.joints[vJointsIds.x].jointMatrix * vJointsWeights.x
-            + uMatrices.joints[vJointsIds.y].jointMatrix * vJointsWeights.y
-            + uMatrices.joints[vJointsIds.z].jointMatrix * vJointsWeights.z
-            + uMatrices.joints[vJointsIds.w].jointMatrix * vJointsWeights.w;
-        world = uMatrices.world * world;
-	} else {
-	    world = uMatrices.world;
+    mat4 world = uMatrices.world;
+	if(uIsSkinned) {
+        world *= uJoints[vJointsIds.x].jointMatrix * vJointsWeights.x
+            + uJoints[vJointsIds.y].jointMatrix * vJointsWeights.y
+            + uJoints[vJointsIds.z].jointMatrix * vJointsWeights.z
+            + uJoints[vJointsIds.w].jointMatrix * vJointsWeights.w;
 	}
 
 	vec3 tangent = normalize(vec3(world*vec4(vTangent, 0)));
@@ -48,5 +45,5 @@ mat4 world;
 	passCoords = vCoords;
 	passNormal = normal;
 
-	gl_Position = uMatrices.vp*world*vPosition;
+	gl_Position = uMatrices.viewProjection*world*vPosition;
 }
