@@ -1,7 +1,7 @@
 package com.adrienben.games.bagl.engine.resource.gltf.mappers;
 
 import com.adrienben.games.bagl.core.Color;
-import com.adrienben.games.bagl.engine.rendering.Material;
+import com.adrienben.games.bagl.engine.rendering.material.Material;
 import com.adrienben.games.bagl.opengl.texture.Texture2D;
 import com.adrienben.tools.gltf.models.*;
 

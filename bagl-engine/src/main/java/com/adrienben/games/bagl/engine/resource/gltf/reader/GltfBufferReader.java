@@ -2,6 +2,7 @@ package com.adrienben.games.bagl.engine.resource.gltf.reader;
 
 import com.adrienben.tools.gltf.models.GltfAccessor;
 import com.adrienben.tools.gltf.models.GltfBuffer;
+import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -55,6 +56,23 @@ public class GltfBufferReader {
      */
     public Vector3f readVector3(final GltfAccessor accessor, final int index) {
         return readData(accessor, index, data -> new Vector3f(data.getFloat(), data.getFloat(), data.getFloat()));
+    }
+
+    /**
+     * Read a {@link Matrix4f} referenced by {@code accessor}.
+     *
+     * @param accessor The data accessor.
+     * @param index    The index of the matrix to read.
+     * @return A new matrix.
+     */
+    public Matrix4f readMatrix4(final GltfAccessor accessor, final int index) {
+        return readData(accessor, index, data ->
+                new Matrix4f(
+                        data.getFloat(), data.getFloat(), data.getFloat(), data.getFloat(),
+                        data.getFloat(), data.getFloat(), data.getFloat(), data.getFloat(),
+                        data.getFloat(), data.getFloat(), data.getFloat(), data.getFloat(),
+                        data.getFloat(), data.getFloat(), data.getFloat(), data.getFloat())
+        );
     }
 
     private <T> T readData(final GltfAccessor accessor, final int index, final Function<ByteBuffer, T> readFunction) {

@@ -1,4 +1,4 @@
-package com.adrienben.games.bagl.engine.rendering;
+package com.adrienben.games.bagl.engine.rendering.material;
 
 import com.adrienben.games.bagl.core.Color;
 import com.adrienben.games.bagl.core.validation.Validation;

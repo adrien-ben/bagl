@@ -5,7 +5,7 @@ import com.adrienben.games.bagl.core.utils.CollectionUtils;
 import com.adrienben.games.bagl.deferred.data.SceneRenderData;
 import com.adrienben.games.bagl.deferred.shaders.ShadowShader;
 import com.adrienben.games.bagl.engine.Configuration;
-import com.adrienben.games.bagl.engine.rendering.Material;
+import com.adrienben.games.bagl.engine.rendering.material.Material;
 import com.adrienben.games.bagl.engine.rendering.model.AlphaMode;
 import com.adrienben.games.bagl.engine.rendering.model.Mesh;
 import com.adrienben.games.bagl.engine.rendering.model.Model;
@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static com.adrienben.games.bagl.deferred.shaders.ShadowShader.DIFFUSE_MAP_CHANNEL;
+import static com.adrienben.games.bagl.deferred.shaders.uniforms.MaterialUniformSetter.DIFFUSE_MAP_CHANNEL;
 import static com.adrienben.games.bagl.deferred.shadow.CascadedShadowMap.CASCADE_COUNT;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL32.GL_DEPTH_CLAMP;
@@ -144,9 +144,8 @@ public class CSMGenerator {
 
     private void renderModelNodeShadow(final ModelNode node) {
         if (CollectionUtils.isNotEmpty(node.getMeshes())) {
-            final var nodeTransform = node.getTransform().getTransformMatrix();
-            currentCSMSplit.getLightsViewProjection().mul(nodeTransform, wvpBuffer);
-            shadowShader.setWorldViewProjectionUniform(wvpBuffer);
+            shadowShader.setModelNodeUniforms(node);
+            shadowShader.setViewProjectionUniform(currentCSMSplit.getLightsViewProjection());
             node.getMeshes().forEach(this::renderMeshShadow);
         }
         node.getChildren().forEach(this::renderModelNodeShadow);

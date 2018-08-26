@@ -3,14 +3,11 @@ package com.adrienben.games.bagl.engine.resource.gltf;
 import com.adrienben.games.bagl.core.io.ResourcePath;
 import com.adrienben.games.bagl.core.utils.CollectionUtils;
 import com.adrienben.games.bagl.engine.animation.Animation;
-import com.adrienben.games.bagl.engine.rendering.Material;
+import com.adrienben.games.bagl.engine.rendering.material.Material;
 import com.adrienben.games.bagl.engine.rendering.model.Mesh;
 import com.adrienben.games.bagl.engine.rendering.model.Model;
 import com.adrienben.games.bagl.engine.rendering.model.ModelNode;
-import com.adrienben.games.bagl.engine.resource.gltf.mappers.AnimationMapper;
-import com.adrienben.games.bagl.engine.resource.gltf.mappers.MeshMapper;
-import com.adrienben.games.bagl.engine.resource.gltf.mappers.ModelNodeMapper;
-import com.adrienben.games.bagl.engine.resource.gltf.mappers.TextureMapper;
+import com.adrienben.games.bagl.engine.resource.gltf.mappers.*;
 import com.adrienben.games.bagl.opengl.texture.Texture2D;
 import com.adrienben.tools.gltf.models.*;
 
@@ -35,6 +32,7 @@ public class GltfLoader {
     private final MeshMapper meshMapper = new MeshMapper();
     private final AnimationMapper animationMapper = new AnimationMapper();
     private final ModelNodeMapper modelNodeMapper = new ModelNodeMapper();
+    private final JointMapper jointMapper = new JointMapper();
 
     private String directory;
     private final List<Texture2D> textures = new ArrayList<>();
@@ -56,6 +54,7 @@ public class GltfLoader {
         loadMeshes(gltfAsset);
         gltfAsset.getScenes().forEach(scene -> mapGltfScene(scene, model));
         model.setAnimations(loadAnimations(gltfAsset));
+        mapJoints(gltfAsset);
 
         cleanUp();
         return model;
@@ -106,6 +105,10 @@ public class GltfLoader {
 
     private Animation mapAnimation(final GltfAnimation animation) {
         return animationMapper.map(animation, nodes);
+    }
+
+    private void mapJoints(final GltfAsset gltfAsset) {
+        gltfAsset.getNodes().forEach(node -> jointMapper.map(node, nodes));
     }
 
     private void cleanUp() {

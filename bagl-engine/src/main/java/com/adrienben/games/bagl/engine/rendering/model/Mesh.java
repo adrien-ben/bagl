@@ -30,6 +30,10 @@ public class Mesh {
     public static final int ELEMENTS_PER_COORDINATES = 2;
     public static final int TANGENT_INDEX = 3;
     public static final int ELEMENTS_PER_TANGENT = 3;
+    public static final int JOINTS_IDS_INDEX = 4;
+    public static final int ELEMENTS_PER_JOINTS_IDS = 4;
+    public static final int JOINTS_WEIGHTS_INDEX = 5;
+    public static final int ELEMENTS_PER_JOINTS_WEIGHTS = 4;
 
     private final List<VertexBuffer> vBuffers;
     private final VertexArray vArray;

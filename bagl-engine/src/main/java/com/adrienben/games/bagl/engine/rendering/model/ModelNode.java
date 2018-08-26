@@ -1,12 +1,9 @@
 package com.adrienben.games.bagl.engine.rendering.model;
 
 import com.adrienben.games.bagl.engine.Transform;
-import com.adrienben.games.bagl.engine.rendering.Material;
+import com.adrienben.games.bagl.engine.rendering.material.Material;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * A node of a model
@@ -29,6 +26,7 @@ public final class ModelNode {
     private final Transform localTransform;
     private final Map<Mesh, Material> meshes = new HashMap<>();
     private final List<ModelNode> children = new ArrayList<>();
+    private List<Joint> joints;
 
     /**
      * Construct a new node
@@ -112,5 +110,13 @@ public final class ModelNode {
 
     public List<ModelNode> getChildren() {
         return this.children;
+    }
+
+    public Optional<List<Joint>> getJoints() {
+        return Optional.ofNullable(joints);
+    }
+
+    public void setJoints(final List<Joint> joints) {
+        this.joints = joints;
     }
 }

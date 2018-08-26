@@ -23,6 +23,7 @@ baGL is an OpenGL framework that I use for educational purpose. It uses [LWJGL 3
 - Shader #import directive
 - Basic assets management
 - Transform based model animations
+- Mesh skinning
 
 ## Modules
 
@@ -37,7 +38,6 @@ This project is separated in several modules :
 ## TODO
 
 - Rendering
-    - Mesh skinning
     - Sprites in 3D environment (debug icons, ...)
     - Area lights (sphere and tubes)
     - UI (third party ?)

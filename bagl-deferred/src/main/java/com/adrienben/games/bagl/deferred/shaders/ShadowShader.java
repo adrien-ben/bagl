@@ -1,9 +1,14 @@
 package com.adrienben.games.bagl.deferred.shaders;
 
-import com.adrienben.games.bagl.engine.rendering.Material;
+import com.adrienben.games.bagl.deferred.shaders.uniforms.MaterialUniformSetter;
+import com.adrienben.games.bagl.deferred.shaders.uniforms.SkinningUniformsSetter;
+import com.adrienben.games.bagl.engine.rendering.material.Material;
 import com.adrienben.games.bagl.engine.rendering.model.AlphaMode;
+import com.adrienben.games.bagl.engine.rendering.model.ModelNode;
 import com.adrienben.games.bagl.opengl.shader.Shader;
 import org.joml.Matrix4fc;
+
+import static com.adrienben.games.bagl.deferred.shaders.uniforms.MaterialUniformSetter.DIFFUSE_MAP_CHANNEL;
 
 /**
  * Wrapper for the shadow map shader.
@@ -12,18 +17,20 @@ import org.joml.Matrix4fc;
  */
 public class ShadowShader {
 
-    public static final int DIFFUSE_MAP_CHANNEL = 0;
-
     private final Shader shader;
+    private final SkinningUniformsSetter skinningUniformsSetter;
+    private final MaterialUniformSetter materialUniformSetter;
 
     public ShadowShader() {
         this.shader = ShaderFactory.createShadowShader();
+        this.skinningUniformsSetter = new SkinningUniformsSetter(shader);
+        this.materialUniformSetter = new MaterialUniformSetter(shader);
         setTextureChannelsUniforms();
     }
 
     private void setTextureChannelsUniforms() {
         bind();
-        shader.setUniform("uMaterial.diffuseMap", DIFFUSE_MAP_CHANNEL);
+        materialUniformSetter.setDiffuseMapChannelUniform();
         Shader.unbind();
     }
 
@@ -35,18 +42,22 @@ public class ShadowShader {
         shader.bind();
     }
 
-    public void setWorldViewProjectionUniform(final Matrix4fc worldViewProjectionMatrix) {
-        shader.setUniform("wvp", worldViewProjectionMatrix);
+    public void setModelNodeUniforms(final ModelNode modelNode) {
+        skinningUniformsSetter.setModelNodeUniforms(modelNode);
+    }
+
+    public void setViewProjectionUniform(final Matrix4fc viewProjectionMatrix) {
+        skinningUniformsSetter.setViewProjectionUniform(viewProjectionMatrix);
     }
 
     public void setMaterialUniforms(final Material material) {
-        shader.setUniform("uMaterial.diffuseColor", material.getDiffuseColor());
+        materialUniformSetter.setDiffuseColorUniform(material.getDiffuseColor());
 
         final var diffuseMap = material.getDiffuseMap();
-        shader.setUniform("uMaterial.hasDiffuseMap", diffuseMap.isPresent());
+        materialUniformSetter.setHasDiffuseMapUniform(diffuseMap.isPresent());
         diffuseMap.ifPresent(map -> map.bind(DIFFUSE_MAP_CHANNEL));
 
-        shader.setUniform("uMaterial.isOpaque", material.getAlphaMode() == AlphaMode.OPAQUE);
-        shader.setUniform("uMaterial.alphaCutoff", material.getAlphaCutoff());
+        materialUniformSetter.setIsOpaqueUniform(material.getAlphaMode() == AlphaMode.OPAQUE);
+        materialUniformSetter.setAlphaCutoffUniform(material.getAlphaCutoff());
     }
 }

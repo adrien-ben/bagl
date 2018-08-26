@@ -48,7 +48,7 @@ public class Animation<T> {
     private void updateCurrentTime(final Time time) {
         currentTime += time.getElapsedTime();
         if (currentTime > duration) {
-            currentTime -= duration;
+            currentTime = 0.0f;
         }
     }
 

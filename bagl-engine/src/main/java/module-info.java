@@ -23,6 +23,7 @@ module com.adrienben.games.bagl.engine {
     exports com.adrienben.games.bagl.engine.rendering;
     exports com.adrienben.games.bagl.engine.rendering.environment;
     exports com.adrienben.games.bagl.engine.rendering.light;
+    exports com.adrienben.games.bagl.engine.rendering.material;
     exports com.adrienben.games.bagl.engine.rendering.model;
     exports com.adrienben.games.bagl.engine.rendering.particles;
     exports com.adrienben.games.bagl.engine.rendering.postprocess;

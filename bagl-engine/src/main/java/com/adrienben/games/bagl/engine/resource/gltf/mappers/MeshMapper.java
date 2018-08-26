@@ -1,7 +1,7 @@
 package com.adrienben.games.bagl.engine.resource.gltf.mappers;
 
 import com.adrienben.games.bagl.core.utils.Tuple2;
-import com.adrienben.games.bagl.engine.rendering.Material;
+import com.adrienben.games.bagl.engine.rendering.material.Material;
 import com.adrienben.games.bagl.engine.rendering.model.Mesh;
 import com.adrienben.games.bagl.opengl.BufferUsage;
 import com.adrienben.games.bagl.opengl.texture.Texture2D;
@@ -31,7 +31,8 @@ import java.util.stream.Collectors;
 public class MeshMapper {
 
     private final ChannelMapper channelMapper = new ChannelMapper();
-    private final DataTypeMapper dataTypeMapper = new DataTypeMapper();
+    private final VertexDataTypeMapper vertexDataTypeMapper = new VertexDataTypeMapper();
+    private final IndexDataTypeMapper indexDataTypeMapper = new IndexDataTypeMapper();
     private final PrimitiveTypeMapper primitiveTypeMapper = new PrimitiveTypeMapper();
     private final MaterialMapper materialMapper = new MaterialMapper();
 
@@ -78,7 +79,7 @@ public class MeshMapper {
      */
     private IndexBuffer createIndexBuffer(final GltfAccessor accessor) {
         final var indices = extractIndices(accessor);
-        final var dataType = dataTypeMapper.map(accessor.getComponentType());
+        final var dataType = indexDataTypeMapper.map(accessor.getComponentType());
         final var indexBuffer = new IndexBuffer(indices, dataType, BufferUsage.STATIC_DRAW);
         MemoryUtil.memFree(indices);
         return indexBuffer;
@@ -154,7 +155,7 @@ public class MeshMapper {
 
     private VertexBufferParams mapVertexBufferParams(final int channel, final GltfAccessor accessor) {
         return VertexBufferParams.builder()
-                .dataType(dataTypeMapper.map(accessor.getComponentType()))
+                .dataType(vertexDataTypeMapper.map(accessor.getComponentType()))
                 .element(new VertexElement(channel, accessor.getType().getComponentCount(), accessor.getNormalized()))
                 .build();
     }

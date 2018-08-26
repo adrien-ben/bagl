@@ -1,7 +1,7 @@
 package com.adrienben.games.bagl.engine.resource.gltf.mappers;
 
 import com.adrienben.games.bagl.engine.Transform;
-import com.adrienben.games.bagl.engine.rendering.Material;
+import com.adrienben.games.bagl.engine.rendering.material.Material;
 import com.adrienben.games.bagl.engine.rendering.model.Mesh;
 import com.adrienben.games.bagl.engine.rendering.model.ModelNode;
 import com.adrienben.tools.gltf.models.GltfNode;
