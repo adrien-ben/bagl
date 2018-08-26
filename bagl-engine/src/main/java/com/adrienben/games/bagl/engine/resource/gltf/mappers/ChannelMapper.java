@@ -24,6 +24,10 @@ public class ChannelMapper {
                 return Mesh.TANGENT_INDEX;
             case "TEXCOORD_0":
                 return Mesh.COORDINATES_INDEX;
+            case "JOINTS_0":
+                return Mesh.JOINTS_IDS_INDEX;
+            case "WEIGHTS_0":
+                return Mesh.JOINTS_WEIGHTS_INDEX;
             default:
                 return -1;
         }

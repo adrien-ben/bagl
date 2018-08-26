@@ -1,9 +1,13 @@
 package com.adrienben.games.bagl.deferred.shaders;
 
+import com.adrienben.games.bagl.engine.Transform;
 import com.adrienben.games.bagl.engine.rendering.Material;
 import com.adrienben.games.bagl.engine.rendering.model.AlphaMode;
+import com.adrienben.games.bagl.engine.rendering.model.Joint;
 import com.adrienben.games.bagl.opengl.shader.Shader;
 import org.joml.Matrix4fc;
+
+import java.util.List;
 
 /**
  * Wrapper for the gbuffer shader.
@@ -43,12 +47,23 @@ public class GBufferShader {
         shader.bind();
     }
 
+
     public void setWorldUniform(final Matrix4fc worldMatrix) {
         shader.setUniform("uMatrices.world", worldMatrix);
     }
 
-    public void setWorldViewProjectionUniform(final Matrix4fc worldViewProjectionMatrix) {
-        shader.setUniform("uMatrices.wvp", worldViewProjectionMatrix);
+    public void setViewProjectionUniform(final Matrix4fc viewProjectionMatrix) {
+        shader.setUniform("uMatrices.vp", viewProjectionMatrix);
+    }
+
+    public void setIsSkinnedUniform(final boolean isSkinned) {
+        shader.setUniform("isSkinned", isSkinned);
+    }
+
+    public void setJointsUniforms(final List<Joint> joints, final Transform globalMeshTransform) {
+        for (int i = 0; i < joints.size(); i++) {
+            shader.setUniform("uMatrices.joints[" + i + "].jointMatrix", joints.get(i).computeAndGetJointMatrix(globalMeshTransform));
+        }
     }
 
     public void setMaterialUniforms(final Material material) {

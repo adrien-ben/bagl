@@ -78,7 +78,7 @@ public class MeshMapper {
      */
     private IndexBuffer createIndexBuffer(final GltfAccessor accessor) {
         final var indices = extractIndices(accessor);
-        final var dataType = dataTypeMapper.map(accessor.getComponentType());
+        final var dataType = dataTypeMapper.map(accessor.getComponentType(), true);
         final var indexBuffer = new IndexBuffer(indices, dataType, BufferUsage.STATIC_DRAW);
         MemoryUtil.memFree(indices);
         return indexBuffer;
@@ -154,7 +154,7 @@ public class MeshMapper {
 
     private VertexBufferParams mapVertexBufferParams(final int channel, final GltfAccessor accessor) {
         return VertexBufferParams.builder()
-                .dataType(dataTypeMapper.map(accessor.getComponentType()))
+                .dataType(dataTypeMapper.map(accessor.getComponentType(), false))
                 .element(new VertexElement(channel, accessor.getType().getComponentCount(), accessor.getNormalized()))
                 .build();
     }

@@ -30,7 +30,6 @@ import com.adrienben.games.bagl.opengl.shader.Shader;
 import com.adrienben.games.bagl.opengl.texture.Format;
 import org.joml.AABBf;
 import org.joml.FrustumIntersection;
-import org.joml.Matrix4f;
 
 import java.util.List;
 import java.util.Objects;
@@ -66,8 +65,6 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
     private FrustumIntersection cameraFrustum;
     private AABBf aabbBuffer;
 
-    private final Matrix4f wvpBuffer;
-
     private Mesh screenQuad;
     private Mesh cubeMapMesh;
 
@@ -98,8 +95,6 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
 
         cameraFrustum = new FrustumIntersection();
         aabbBuffer = new AABBf();
-
-        wvpBuffer = new Matrix4f();
 
         screenQuad = MeshFactory.createScreenQuad();
         cubeMapMesh = MeshFactory.createCubeMapMesh();
@@ -260,10 +255,15 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
      */
     private void renderModelNodeToGBuffer(final ModelNode node) {
         if (CollectionUtils.isNotEmpty(node.getMeshes())) {
-            final var nodeTransform = node.getTransform().getTransformMatrix();
-            sceneRenderData.getCamera().getViewProj().mul(nodeTransform, wvpBuffer);
-            gBufferShader.setWorldUniform(nodeTransform);
-            gBufferShader.setWorldViewProjectionUniform(wvpBuffer);
+            final var nodeTransform = node.getTransform();
+            gBufferShader.setWorldUniform(nodeTransform.getTransformMatrix());
+            node.getJoints().ifPresentOrElse(
+                    joints -> {
+                        gBufferShader.setIsSkinnedUniform(true);
+                        gBufferShader.setJointsUniforms(joints, nodeTransform);
+                    },
+                    () -> gBufferShader.setIsSkinnedUniform(false));
+            gBufferShader.setViewProjectionUniform(sceneRenderData.getCamera().getViewProj());
             node.getMeshes()
                     .entrySet()
                     .stream()
