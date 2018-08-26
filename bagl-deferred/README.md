@@ -69,7 +69,9 @@ won't be animated
 
 #### Mesh Skinning
 
-Mesh skinning is not yet supported.
+Mesh skinning is supported. Model nodes can have a list of Joints. These joints contain a transform, and an inverse bind matrix
+used to bring the vertices in the joint space. Skinned mesh animations can be perform with the animation API by creating animators
+that will animated the transform of the joint.
 
 ### Lights
 

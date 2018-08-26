@@ -27,3 +27,4 @@
 - [ADDED] GlTf transform based animations loading
 
 ## 0.0.6
+- [ADDED] Mesh skinning
