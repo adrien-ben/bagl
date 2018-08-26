@@ -1,7 +1,7 @@
 package com.adrienben.games.bagl.engine.rendering.model;
 
 import com.adrienben.games.bagl.core.io.ResourcePath;
-import com.adrienben.games.bagl.engine.rendering.Material;
+import com.adrienben.games.bagl.engine.rendering.material.Material;
 import com.adrienben.games.bagl.engine.resource.gltf.GltfLoader;
 
 /**

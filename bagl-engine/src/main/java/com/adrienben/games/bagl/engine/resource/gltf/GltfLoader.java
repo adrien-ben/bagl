@@ -3,26 +3,19 @@ package com.adrienben.games.bagl.engine.resource.gltf;
 import com.adrienben.games.bagl.core.io.ResourcePath;
 import com.adrienben.games.bagl.core.utils.CollectionUtils;
 import com.adrienben.games.bagl.engine.animation.Animation;
-import com.adrienben.games.bagl.engine.rendering.Material;
-import com.adrienben.games.bagl.engine.rendering.model.Joint;
+import com.adrienben.games.bagl.engine.rendering.material.Material;
 import com.adrienben.games.bagl.engine.rendering.model.Mesh;
 import com.adrienben.games.bagl.engine.rendering.model.Model;
 import com.adrienben.games.bagl.engine.rendering.model.ModelNode;
-import com.adrienben.games.bagl.engine.resource.gltf.mappers.AnimationMapper;
-import com.adrienben.games.bagl.engine.resource.gltf.mappers.MeshMapper;
-import com.adrienben.games.bagl.engine.resource.gltf.mappers.ModelNodeMapper;
-import com.adrienben.games.bagl.engine.resource.gltf.mappers.TextureMapper;
-import com.adrienben.games.bagl.engine.resource.gltf.reader.GltfBufferReader;
+import com.adrienben.games.bagl.engine.resource.gltf.mappers.*;
 import com.adrienben.games.bagl.opengl.texture.Texture2D;
 import com.adrienben.tools.gltf.models.*;
-import org.joml.Matrix4f;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * Gltf file loader
@@ -39,6 +32,7 @@ public class GltfLoader {
     private final MeshMapper meshMapper = new MeshMapper();
     private final AnimationMapper animationMapper = new AnimationMapper();
     private final ModelNodeMapper modelNodeMapper = new ModelNodeMapper();
+    private final JointMapper jointMapper = new JointMapper();
 
     private String directory;
     private final List<Texture2D> textures = new ArrayList<>();
@@ -114,44 +108,7 @@ public class GltfLoader {
     }
 
     private void mapJoints(final GltfAsset gltfAsset) {
-        gltfAsset.getNodes().forEach(this::mapNodeJoints);
-    }
-
-    private void mapNodeJoints(final GltfNode gltfNode) {
-        final var gltfSkin = gltfNode.getSkin();
-        if (Objects.nonNull(gltfSkin)) {
-            final var gltfSkinJoints = gltfSkin.getJoints();
-            final var inverseBindMatrices = mapInverseBindMatrices(gltfSkin);
-            final var joints = mapJoints(gltfSkinJoints, inverseBindMatrices);
-            nodes[gltfNode.getIndex()].setJoints(joints);
-        }
-    }
-
-    private List<Matrix4f> mapInverseBindMatrices(final GltfSkin gltfSkin) {
-        if (Objects.isNull(gltfSkin.getInverseBindMatrices())) {
-            return generateEntityMatrices(gltfSkin.getJoints().size());
-        }
-        return extractInverseBindMatrices(gltfSkin.getInverseBindMatrices());
-    }
-
-    private List<Matrix4f> generateEntityMatrices(final int count) {
-        return IntStream.range(0, count).mapToObj(index -> new Matrix4f()).collect(Collectors.toList());
-    }
-
-    private List<Matrix4f> extractInverseBindMatrices(final GltfAccessor accessor) {
-        final var inverseBindMatricesReader = new GltfBufferReader(accessor.getBufferView().getBuffer());
-        return IntStream.range(0, accessor.getCount()).mapToObj(index -> inverseBindMatricesReader.readMatrix4(accessor, index)).collect(Collectors.toList());
-    }
-
-    private List<Joint> mapJoints(final List<GltfNode> gltfJoints, final List<Matrix4f> inverseBindMatrices) {
-        final var joints = new ArrayList<Joint>();
-        for (int i = 0; i < gltfJoints.size(); i++) {
-            final var gltfSkinJoint = gltfJoints.get(i);
-            final var jointNode = nodes[gltfSkinJoint.getIndex()];
-            final var inverseBindMatrix = inverseBindMatrices.get(i);
-            joints.add(new Joint(jointNode.getTransform(), inverseBindMatrix));
-        }
-        return joints;
+        gltfAsset.getNodes().forEach(node -> jointMapper.map(node, nodes));
     }
 
     private void cleanUp() {

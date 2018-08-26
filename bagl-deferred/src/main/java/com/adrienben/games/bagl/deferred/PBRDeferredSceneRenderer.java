@@ -12,7 +12,7 @@ import com.adrienben.games.bagl.deferred.shadow.CSMGenerator;
 import com.adrienben.games.bagl.deferred.shadow.CascadedShadowMap;
 import com.adrienben.games.bagl.engine.Configuration;
 import com.adrienben.games.bagl.engine.Transform;
-import com.adrienben.games.bagl.engine.rendering.Material;
+import com.adrienben.games.bagl.engine.rendering.material.Material;
 import com.adrienben.games.bagl.engine.rendering.model.*;
 import com.adrienben.games.bagl.engine.rendering.particles.ParticleRenderer;
 import com.adrienben.games.bagl.engine.rendering.postprocess.PostProcessor;
@@ -36,6 +36,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static com.adrienben.games.bagl.deferred.shaders.DeferredShader.*;
+import static com.adrienben.games.bagl.deferred.shaders.uniforms.MaterialUniformSetter.*;
 import static org.lwjgl.opengl.GL11.*;
 
 /**
@@ -288,11 +289,11 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
         }
         gBufferShader.setMaterialUniforms(material);
         meshRenderer.render(mesh);
-        material.getDiffuseMap().ifPresent(map -> map.unbind(GBufferShader.DIFFUSE_MAP_CHANNEL));
-        material.getEmissiveMap().ifPresent(map -> map.unbind(GBufferShader.EMISSIVE_MAP_CHANNEL));
-        material.getRoughnessMetallicMap().ifPresent(map -> map.unbind(GBufferShader.ROUGHNESS_METALLIC_MAP_CHANNEL));
-        material.getNormalMap().ifPresent(map -> map.unbind(GBufferShader.NORMAL_MAP_CHANNEL));
-        material.getOcclusionMap().ifPresent(map -> map.unbind(GBufferShader.OCCLUSION_MAP_CHANNEL));
+        material.getDiffuseMap().ifPresent(map -> map.unbind(DIFFUSE_MAP_CHANNEL));
+        material.getEmissiveMap().ifPresent(map -> map.unbind(EMISSIVE_MAP_CHANNEL));
+        material.getRoughnessMetallicMap().ifPresent(map -> map.unbind(ROUGHNESS_METALLIC_MAP_CHANNEL));
+        material.getNormalMap().ifPresent(map -> map.unbind(NORMAL_MAP_CHANNEL));
+        material.getOcclusionMap().ifPresent(map -> map.unbind(OCCLUSION_MAP_CHANNEL));
         if (material.isDoubleSided()) {
             glEnable(GL_CULL_FACE);
         }
