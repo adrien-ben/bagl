@@ -1,5 +1,6 @@
 package com.adrienben.games.bagl.engine.rendering.model;
 
+import com.adrienben.games.bagl.core.utils.ObjectUtils;
 import com.adrienben.games.bagl.engine.Transform;
 import com.adrienben.games.bagl.engine.rendering.material.Material;
 
@@ -59,6 +60,7 @@ public final class ModelNode {
      */
     public void transform(final Transform toApply) {
         Transform.transform(localTransform, toApply, transform);
+        ObjectUtils.consumeIfPresent(joints, joints -> joints.forEach(joint -> joint.computeJointMatrix(transform)));
         children.forEach(child -> child.transform(transform));
     }
 

@@ -31,11 +31,14 @@ public class Joint {
      * Compute the actual matrix to apply the the skinned vertices.
      *
      * @param meshGlobalTransform The global transform of the mesh.
-     * @return The cached joint matrix.
      */
-    public Matrix4f computeAndGetJointMatrix(final Transform meshGlobalTransform) {
-        final Matrix4f invertMeshGlobalTransformMatrix = meshGlobalTransform.getTransformMatrix().invert(jointMatrix);
-        invertMeshGlobalTransformMatrix.mul(tranform.getTransformMatrix());
-        return invertMeshGlobalTransformMatrix.mul(inverseBindMatrix);
+    public void computeJointMatrix(final Transform meshGlobalTransform) {
+        meshGlobalTransform.getTransformMatrix().invert(jointMatrix);
+        jointMatrix.mul(tranform.getTransformMatrix());
+        jointMatrix.mul(inverseBindMatrix);
+    }
+
+    public Matrix4f getJointMatrix() {
+        return jointMatrix;
     }
 }

@@ -1,6 +1,5 @@
 package com.adrienben.games.bagl.deferred.shaders.uniforms;
 
-import com.adrienben.games.bagl.engine.Transform;
 import com.adrienben.games.bagl.engine.rendering.model.Joint;
 import com.adrienben.games.bagl.engine.rendering.model.ModelNode;
 import com.adrienben.games.bagl.opengl.shader.Shader;
@@ -22,17 +21,15 @@ public class SkinningUniformsSetter {
     }
 
     public void setModelNodeUniforms(final ModelNode modelNode) {
-        final var nodeTransform = modelNode.getTransform();
-        targetShader.setUniform("uMatrices.world", nodeTransform.getTransformMatrix());
-        modelNode.getJoints().ifPresentOrElse(
-                joints -> setJointsUniforms(joints, nodeTransform),
+        targetShader.setUniform("uMatrices.world", modelNode.getTransform().getTransformMatrix());
+        modelNode.getJoints().ifPresentOrElse(this::setJointsUniforms,
                 () -> setIsSkinnedUniform(false));
     }
 
-    private void setJointsUniforms(final List<Joint> joints, final Transform globalMeshTransform) {
+    private void setJointsUniforms(final List<Joint> joints) {
         setIsSkinnedUniform(true);
         for (int i = 0; i < joints.size(); i++) {
-            targetShader.setUniform("uJoints[" + i + "].jointMatrix", joints.get(i).computeAndGetJointMatrix(globalMeshTransform));
+            targetShader.setUniform("uJoints[" + i + "].jointMatrix", joints.get(i).getJointMatrix());
         }
     }
 
@@ -43,5 +40,4 @@ public class SkinningUniformsSetter {
     public void setViewProjectionUniform(final Matrix4fc viewProjectionMatrix) {
         targetShader.setUniform("uMatrices.viewProjection", viewProjectionMatrix);
     }
-
 }
