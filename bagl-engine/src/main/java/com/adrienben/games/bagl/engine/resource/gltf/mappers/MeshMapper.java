@@ -12,8 +12,6 @@ import com.adrienben.games.bagl.opengl.vertex.VertexElement;
 import com.adrienben.tools.gltf.models.GltfAccessor;
 import com.adrienben.tools.gltf.models.GltfMesh;
 import com.adrienben.tools.gltf.models.GltfPrimitive;
-import org.joml.AABBf;
-import org.joml.Vector3f;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
@@ -64,9 +62,8 @@ public class MeshMapper {
                 .flatMap(Optional::stream)
                 .collect(Collectors.toList());
         final var primitiveType = primitiveTypeMapper.map(primitive.getMode());
-        final var aabb = getMeshAabb(primitive);
 
-        final Mesh mesh = Mesh.builder().vertexBuffers(vBuffers).indexBuffer(iBuffer).primitiveType(primitiveType).aabb(aabb).build();
+        final Mesh mesh = Mesh.builder().vertexBuffers(vBuffers).indexBuffer(iBuffer).primitiveType(primitiveType).build();
         final Material material = materialMapper.map(primitive.getMaterial(), textureIndex);
         return new Tuple2<>(mesh, material);
     }
@@ -158,16 +155,5 @@ public class MeshMapper {
                 .dataType(vertexDataTypeMapper.map(accessor.getComponentType()))
                 .element(new VertexElement(channel, accessor.getType().getComponentCount(), accessor.getNormalized()))
                 .build();
-    }
-
-    private AABBf getMeshAabb(final GltfPrimitive primitive) {
-        final var positionAccessor = Optional.of(primitive.getAttributes()).map(attributes -> attributes.get("POSITION"));
-        final var min = positionAccessor.map(GltfAccessor::getMin).map(this::getVector3fFromAccessorsMinMax).orElse(new Vector3f());
-        final var max = positionAccessor.map(GltfAccessor::getMax).map(this::getVector3fFromAccessorsMinMax).orElse(new Vector3f());
-        return new AABBf(min, max);
-    }
-
-    private Vector3f getVector3fFromAccessorsMinMax(final List<Float> accessorsMinMax) {
-        return new Vector3f(accessorsMinMax.get(0), accessorsMinMax.get(1), accessorsMinMax.get(2));
     }
 }

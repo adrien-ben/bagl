@@ -11,7 +11,6 @@ import com.adrienben.games.bagl.deferred.shaders.ShaderFactory;
 import com.adrienben.games.bagl.deferred.shadow.CSMGenerator;
 import com.adrienben.games.bagl.deferred.shadow.CascadedShadowMap;
 import com.adrienben.games.bagl.engine.Configuration;
-import com.adrienben.games.bagl.engine.Transform;
 import com.adrienben.games.bagl.engine.rendering.material.Material;
 import com.adrienben.games.bagl.engine.rendering.model.*;
 import com.adrienben.games.bagl.engine.rendering.particles.ParticleRenderer;
@@ -28,7 +27,6 @@ import com.adrienben.games.bagl.opengl.FrameBuffer;
 import com.adrienben.games.bagl.opengl.FrameBufferParameters;
 import com.adrienben.games.bagl.opengl.shader.Shader;
 import com.adrienben.games.bagl.opengl.texture.Format;
-import org.joml.AABBf;
 import org.joml.FrustumIntersection;
 
 import java.util.List;
@@ -64,7 +62,6 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
     private SceneRenderData sceneRenderData;
 
     private FrustumIntersection cameraFrustum;
-    private AABBf aabbBuffer;
 
     private Mesh screenQuad;
     private Mesh cubeMapMesh;
@@ -95,7 +92,6 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
         sceneRenderDataCollector = new SceneRenderDataCollector();
 
         cameraFrustum = new FrustumIntersection();
-        aabbBuffer = new AABBf();
 
         screenQuad = MeshFactory.createScreenQuad();
         cubeMapMesh = MeshFactory.createCubeMapMesh();
@@ -261,17 +257,9 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
             node.getMeshes()
                     .entrySet()
                     .stream()
-                    .filter(entry -> isMeshVisibleFromCameraPOV(entry.getKey(), node.getTransform()))
                     .forEach(entry -> renderMeshToGBuffer(entry.getKey(), entry.getValue()));
         }
         node.getChildren().forEach(this::renderModelNodeToGBuffer);
-    }
-
-    private boolean isMeshVisibleFromCameraPOV(final Mesh mesh, final Transform meshTransform) {
-        final var meshAabb = meshTransform.transformAABB(mesh.getAabb(), aabbBuffer);
-        final var intersection = cameraFrustum.intersectAab(meshAabb.minX, meshAabb.minY, meshAabb.minZ,
-                meshAabb.maxX, meshAabb.maxY, meshAabb.maxZ);
-        return intersection == FrustumIntersection.INSIDE || intersection == FrustumIntersection.INTERSECT;
     }
 
     /**

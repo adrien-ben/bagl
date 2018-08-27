@@ -1,13 +1,11 @@
 package com.adrienben.games.bagl.engine.rendering.model;
 
-import com.adrienben.games.bagl.core.math.AABBs;
 import com.adrienben.games.bagl.core.utils.CollectionUtils;
 import com.adrienben.games.bagl.core.validation.Validation;
 import com.adrienben.games.bagl.opengl.PrimitiveType;
 import com.adrienben.games.bagl.opengl.vertex.IndexBuffer;
 import com.adrienben.games.bagl.opengl.vertex.VertexArray;
 import com.adrienben.games.bagl.opengl.vertex.VertexBuffer;
-import org.joml.AABBf;
 
 import java.util.*;
 
@@ -40,7 +38,6 @@ public class Mesh {
     private final int vertexCount;
     private final IndexBuffer iBuffer;
     private final PrimitiveType primitiveType;
-    private final AABBf aabb;
 
     private Mesh(final Builder builder) {
         this.vBuffers = new ArrayList<>(Validation.validate(builder.vertexBuffers, CollectionUtils::isNotEmpty, "Mesh requires at least one vertex buffer"));
@@ -48,7 +45,6 @@ public class Mesh {
         this.vertexCount = this.vBuffers.get(0).getVertexCount();
         this.iBuffer = builder.indexBuffer;
         this.primitiveType = builder.primitiveType;
-        this.aabb = builder.aabb;
     }
 
     private VertexArray generateVertexArray() {
@@ -93,10 +89,6 @@ public class Mesh {
         return this.vertexCount;
     }
 
-    public AABBf getAabb() {
-        return aabb;
-    }
-
     /**
      * Mesh builder.
      * <p>
@@ -104,14 +96,12 @@ public class Mesh {
      * <li>vertexBuffers (at least one required)</li>
      * <li>indexBuffer : default = null</li>
      * <li>primitiveType (required) : default = {@link PrimitiveType#TRIANGLES}</li>
-     * <li>aabb (required) : default = {@link AABBs#createZero()}</li>
      */
     public static class Builder {
 
         private List<VertexBuffer> vertexBuffers = new ArrayList<>();
         private IndexBuffer indexBuffer = null;
         private PrimitiveType primitiveType = PrimitiveType.TRIANGLES;
-        private AABBf aabb = AABBs.createZero();
 
         private Builder() {
         }
@@ -137,11 +127,6 @@ public class Mesh {
 
         public Builder primitiveType(final PrimitiveType primitiveType) {
             this.primitiveType = Objects.requireNonNull(primitiveType);
-            return this;
-        }
-
-        public Builder aabb(final AABBf aabb) {
-            this.aabb = Objects.requireNonNull(aabb);
             return this;
         }
     }

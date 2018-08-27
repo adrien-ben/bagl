@@ -1,6 +1,5 @@
 package com.adrienben.games.bagl.deferred.data;
 
-import com.adrienben.games.bagl.core.math.Vectors;
 import com.adrienben.games.bagl.engine.camera.Camera;
 import com.adrienben.games.bagl.engine.rendering.light.DirectionalLight;
 import com.adrienben.games.bagl.engine.rendering.light.PointLight;
@@ -8,7 +7,6 @@ import com.adrienben.games.bagl.engine.rendering.light.SpotLight;
 import com.adrienben.games.bagl.engine.rendering.model.Model;
 import com.adrienben.games.bagl.engine.rendering.particles.ParticleEmitter;
 import com.adrienben.games.bagl.opengl.texture.Cubemap;
-import org.joml.AABBf;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +27,6 @@ public class SceneRenderData {
     private final List<SpotLight> spotLights = new ArrayList<>();
     private final List<Model> models = new ArrayList<>();
     private final List<ParticleEmitter> particleEmitters = new ArrayList<>();
-    private final AABBf sceneAABB = new AABBf(Vectors.VEC3_ZERO, Vectors.VEC3_ZERO);
 
     /**
      * Reset the data to its initial state.
@@ -44,8 +41,6 @@ public class SceneRenderData {
         spotLights.clear();
         models.clear();
         particleEmitters.clear();
-        sceneAABB.setMin(Vectors.VEC3_ZERO);
-        sceneAABB.setMax(Vectors.VEC3_ZERO);
     }
 
     public void addDirectionalLight(final DirectionalLight directionalLight) {
@@ -118,9 +113,5 @@ public class SceneRenderData {
 
     public List<ParticleEmitter> getParticleEmitters() {
         return particleEmitters;
-    }
-
-    public AABBf getSceneAABB() {
-        return sceneAABB;
     }
 }

@@ -1,14 +1,8 @@
 package com.adrienben.games.bagl.deferred.data;
 
-import com.adrienben.games.bagl.engine.rendering.model.Mesh;
-import com.adrienben.games.bagl.engine.rendering.model.Model;
-import com.adrienben.games.bagl.engine.rendering.model.ModelNode;
 import com.adrienben.games.bagl.engine.scene.ComponentVisitor;
 import com.adrienben.games.bagl.engine.scene.Scene;
 import com.adrienben.games.bagl.engine.scene.components.*;
-import org.joml.AABBf;
-
-import java.util.Collection;
 
 /**
  * This class is responsible for collecting the data required for rendering a scene.
@@ -18,11 +12,9 @@ import java.util.Collection;
 public class SceneRenderDataCollector implements ComponentVisitor {
 
     private final SceneRenderData sceneRenderData;
-    private final AABBf aabBfBuffer;
 
     public SceneRenderDataCollector() {
         this.sceneRenderData = new SceneRenderData();
-        this.aabBfBuffer = new AABBf();
     }
 
     /**
@@ -31,22 +23,7 @@ public class SceneRenderDataCollector implements ComponentVisitor {
     public SceneRenderData collectDataForRendering(final Scene scene) {
         sceneRenderData.reset();
         scene.accept(this);
-        computeSceneAABB();
         return sceneRenderData;
-    }
-
-    private void computeSceneAABB() {
-        sceneRenderData.getModels().stream()
-                .map(Model::getNodes).flatMap(Collection::stream)
-                .forEach(this::computeModelNodeAABB);
-    }
-
-    private void computeModelNodeAABB(final ModelNode modelNode) {
-        final var transform = modelNode.getTransform();
-        modelNode.getMeshes().keySet().stream()
-                .map(Mesh::getAabb)
-                .map(aabb -> transform.transformAABB(aabb, aabBfBuffer))
-                .reduce(sceneRenderData.getSceneAABB(), AABBf::union);
     }
 
     /**

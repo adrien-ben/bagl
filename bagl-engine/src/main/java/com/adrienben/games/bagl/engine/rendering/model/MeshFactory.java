@@ -7,7 +7,6 @@ import com.adrienben.games.bagl.opengl.vertex.IndexBuffer;
 import com.adrienben.games.bagl.opengl.vertex.VertexBuffer;
 import com.adrienben.games.bagl.opengl.vertex.VertexBufferParams;
 import com.adrienben.games.bagl.opengl.vertex.VertexElement;
-import org.joml.AABBf;
 import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
@@ -50,9 +49,7 @@ public class MeshFactory {
                     .element(new VertexElement(Mesh.NORMAL_INDEX, Mesh.ELEMENTS_PER_NORMAL))
                     .build());
 
-            final var aabb = new AABBf(-halfWidth, 0, -halfDepth, halfWidth, 0, halfDepth);
-
-            return Mesh.builder().vertexBuffer(vBuffer).primitiveType(PrimitiveType.TRIANGLE_STRIP).aabb(aabb).build();
+            return Mesh.builder().vertexBuffer(vBuffer).primitiveType(PrimitiveType.TRIANGLE_STRIP).build();
         }
     }
 
@@ -192,9 +189,7 @@ public class MeshFactory {
                     .build());
         }
 
-        final var aabb = new AABBf(-halfSize, -halfSize, -halfSize, halfSize, halfSize, halfSize);
-
-        return Mesh.builder().vertexBuffer(vBuffer).indexBuffer(iBuffer).aabb(aabb).build();
+        return Mesh.builder().vertexBuffer(vBuffer).indexBuffer(iBuffer).build();
     }
 
     /**
@@ -268,9 +263,7 @@ public class MeshFactory {
         final var iBuffer = new IndexBuffer(indices, BufferUsage.STATIC_DRAW);
         MemoryUtil.memFree(indices);
 
-        final var aabb = new AABBf(-radius, -radius, -radius, radius, radius, radius);
-
-        return Mesh.builder().vertexBuffer(vBuffer).indexBuffer(iBuffer).aabb(aabb).build();
+        return Mesh.builder().vertexBuffer(vBuffer).indexBuffer(iBuffer).build();
     }
 
     /**
@@ -319,11 +312,7 @@ public class MeshFactory {
             iBuffer = new IndexBuffer(indices, BufferUsage.STATIC_DRAW);
         }
 
-        final var maxRadius = baseRadius > topRadius ? baseRadius : topRadius;
-        final var halfHeight = height / 2f;
-        final var aabb = new AABBf(-maxRadius, -halfHeight, -maxRadius, maxRadius, halfHeight, maxRadius);
-
-        return Mesh.builder().vertexBuffer(vBuffer).indexBuffer(iBuffer).aabb(aabb).build();
+        return Mesh.builder().vertexBuffer(vBuffer).indexBuffer(iBuffer).build();
     }
 
     /**
