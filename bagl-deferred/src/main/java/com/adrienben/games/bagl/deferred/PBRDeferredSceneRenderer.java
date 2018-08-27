@@ -1,41 +1,32 @@
 package com.adrienben.games.bagl.deferred;
 
 import com.adrienben.games.bagl.core.exception.EngineException;
-import com.adrienben.games.bagl.core.utils.CollectionUtils;
+import com.adrienben.games.bagl.core.utils.ObjectUtils;
 import com.adrienben.games.bagl.deferred.data.SceneRenderData;
 import com.adrienben.games.bagl.deferred.data.SceneRenderDataCollector;
-import com.adrienben.games.bagl.deferred.pbr.BrdfLookup;
-import com.adrienben.games.bagl.deferred.shaders.DeferredShader;
-import com.adrienben.games.bagl.deferred.shaders.GBufferShader;
-import com.adrienben.games.bagl.deferred.shaders.ShaderFactory;
+import com.adrienben.games.bagl.deferred.gbuffer.GBuffer;
+import com.adrienben.games.bagl.deferred.gbuffer.generator.GBufferGenerator;
+import com.adrienben.games.bagl.deferred.lightpass.LightPassRenderer;
 import com.adrienben.games.bagl.deferred.shadow.CSMGenerator;
 import com.adrienben.games.bagl.deferred.shadow.CascadedShadowMap;
+import com.adrienben.games.bagl.deferred.skybox.SkyboxRenderer;
 import com.adrienben.games.bagl.engine.Configuration;
-import com.adrienben.games.bagl.engine.rendering.material.Material;
-import com.adrienben.games.bagl.engine.rendering.model.*;
 import com.adrienben.games.bagl.engine.rendering.particles.ParticleRenderer;
 import com.adrienben.games.bagl.engine.rendering.postprocess.PostProcessor;
 import com.adrienben.games.bagl.engine.rendering.postprocess.fxaa.FxaaPresets;
 import com.adrienben.games.bagl.engine.rendering.postprocess.steps.BloomStep;
 import com.adrienben.games.bagl.engine.rendering.postprocess.steps.FxaaStep;
 import com.adrienben.games.bagl.engine.rendering.postprocess.steps.ToneMappingStep;
-import com.adrienben.games.bagl.engine.rendering.renderer.MeshRenderer;
 import com.adrienben.games.bagl.engine.rendering.renderer.Renderer;
 import com.adrienben.games.bagl.engine.scene.Scene;
 import com.adrienben.games.bagl.engine.scene.components.DirectionalLightComponent;
 import com.adrienben.games.bagl.opengl.FrameBuffer;
 import com.adrienben.games.bagl.opengl.FrameBufferParameters;
-import com.adrienben.games.bagl.opengl.shader.Shader;
 import com.adrienben.games.bagl.opengl.texture.Format;
 import org.joml.FrustumIntersection;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
-
-import static com.adrienben.games.bagl.deferred.shaders.DeferredShader.*;
-import static com.adrienben.games.bagl.deferred.shaders.uniforms.MaterialUniformSetter.*;
-import static org.lwjgl.opengl.GL11.*;
 
 /**
  * PBR Deferred Scene Renderer
@@ -60,25 +51,16 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
 
     private SceneRenderDataCollector sceneRenderDataCollector;
     private SceneRenderData sceneRenderData;
-
     private FrustumIntersection cameraFrustum;
 
-    private Mesh screenQuad;
-    private Mesh cubeMapMesh;
-
-    private FrameBuffer gBuffer;
     private FrameBuffer finalBuffer;
-
-    private Shader skyboxShader;
-    private GBufferShader gBufferShader;
-    private DeferredShader deferredShader;
-
-    private BrdfLookup brdfLookup;
-
-    private CascadedShadowMap cascadedShadowMap;
+    private GBufferGenerator gBufferGenerator;
+    private GBuffer gBuffer;
     private CSMGenerator csmGenerator;
+    private CascadedShadowMap cascadedShadowMap;
+    private LightPassRenderer lightPassRenderer;
+    private SkyboxRenderer skyboxRenderer;
     private ParticleRenderer particleRenderer;
-    private MeshRenderer meshRenderer;
     private PostProcessor postProcessor;
 
     /**
@@ -90,22 +72,17 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
         yResolution = config.getYResolution();
 
         sceneRenderDataCollector = new SceneRenderDataCollector();
-
         cameraFrustum = new FrustumIntersection();
 
-        screenQuad = MeshFactory.createScreenQuad();
-        cubeMapMesh = MeshFactory.createCubeMapMesh();
-
-        brdfLookup = new BrdfLookup();
-
+        finalBuffer = new FrameBuffer(xResolution, yResolution, createFinalFrameBufferParameters());
+        gBufferGenerator = new GBufferGenerator(xResolution, yResolution);
+        gBuffer = gBufferGenerator.getGBuffer();
         csmGenerator = new CSMGenerator();
+        lightPassRenderer = new LightPassRenderer();
+        skyboxRenderer = new SkyboxRenderer();
         particleRenderer = new ParticleRenderer();
-        meshRenderer = new MeshRenderer();
         postProcessor = new PostProcessor();
         setUpPostProcessor(config);
-
-        initFrameBuffers();
-        initShaders();
     }
 
     private void setUpPostProcessor(final Configuration config) {
@@ -118,42 +95,21 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
         }
     }
 
+    private FrameBufferParameters createFinalFrameBufferParameters() {
+        return FrameBufferParameters.builder().colorOutputFormat(Format.RGBA32F).build();
+    }
+
     /**
      * Release resources
      */
     public void destroy() {
-        skyboxShader.destroy();
-        gBufferShader.destroy();
-        deferredShader.destroy();
-        brdfLookup.destroy();
-        gBuffer.destroy();
+        gBufferGenerator.destroy();
         finalBuffer.destroy();
-        screenQuad.destroy();
-        cubeMapMesh.destroy();
         csmGenerator.destroy();
+        lightPassRenderer.destroy();
+        skyboxRenderer.destroy();
         particleRenderer.destroy();
         postProcessor.destroy();
-    }
-
-    /**
-     * Initializes the frame buffers
-     */
-    private void initFrameBuffers() {
-        gBuffer = new FrameBuffer(xResolution, yResolution, FrameBufferParameters.builder()
-                .colorOutputFormat(Format.RGBA8, Format.RGBA16F, Format.RGB16F, Format.RG8)
-                .build());
-        finalBuffer = new FrameBuffer(xResolution, yResolution, FrameBufferParameters.builder()
-                .colorOutputFormat(Format.RGBA32F)
-                .build());
-    }
-
-    /**
-     * Initializes the shaders
-     */
-    private void initShaders() {
-        skyboxShader = ShaderFactory.createSkyboxShader();
-        gBufferShader = new GBufferShader();
-        deferredShader = new DeferredShader();
     }
 
     /**
@@ -177,7 +133,6 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
      */
     public void render(final Scene scene) {
         sceneRenderData = sceneRenderDataCollector.collectDataForRendering(scene);
-
         if (Objects.isNull(sceneRenderData.getCamera())) {
             throw new EngineException("Impossible to render a scene if no camera is set up");
         }
@@ -188,8 +143,7 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
         performLightingPass();
         renderSkybox();
         renderParticles();
-
-        postProcessor.process(finalBuffer.getColorTexture(0));
+        applyPostProcess();
     }
 
     private void updateFrustum() {
@@ -201,96 +155,10 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
         cascadedShadowMap = csmGenerator.generateShadowMaps();
     }
 
-    /**
-     * Render the skybox from the environment map found in the scene if any
-     */
-    private void renderSkybox() {
-        final var environmentMap = sceneRenderData.getEnvironmentMap();
-        if (Objects.nonNull(environmentMap)) {
-            finalBuffer.bind();
-            environmentMap.bind();
-            skyboxShader.bind();
-            skyboxShader.setUniform("viewProj", sceneRenderData.getCamera().getViewProjAtOrigin());
-
-            glDepthFunc(GL_LEQUAL);
-            meshRenderer.render(cubeMapMesh);
-            glDepthFunc(GL_LESS);
-
-            Shader.unbind();
-            environmentMap.unbind();
-            finalBuffer.unbind();
-        }
-    }
-
-    /**
-     * Perform the GBuffer pass
-     */
     private void performGeometryPass() {
-        gBuffer.bind();
-        gBuffer.clear();
-        gBufferShader.bind();
-
-        sceneRenderData.getModels().forEach(this::renderModelToGBuffer);
-
-        Shader.unbind();
-        gBuffer.unbind();
+        gBuffer = gBufferGenerator.generateGBuffer(sceneRenderData);
     }
 
-    /**
-     * Render a model to the GBuffer
-     *
-     * @param model The model to render
-     */
-    private void renderModelToGBuffer(final Model model) {
-        model.getNodes().forEach(this::renderModelNodeToGBuffer);
-    }
-
-    /**
-     * Render a model node to the GBuffer
-     *
-     * @param node The node to render
-     */
-    private void renderModelNodeToGBuffer(final ModelNode node) {
-        if (CollectionUtils.isNotEmpty(node.getMeshes())) {
-            gBufferShader.setModelNodeUniforms(node);
-            gBufferShader.setViewProjectionUniform(sceneRenderData.getCamera().getViewProj());
-            node.getMeshes()
-                    .entrySet()
-                    .stream()
-                    .forEach(entry -> renderMeshToGBuffer(entry.getKey(), entry.getValue()));
-        }
-        node.getChildren().forEach(this::renderModelNodeToGBuffer);
-    }
-
-    /**
-     * Render a mesh to the GBuffer
-     *
-     * @param mesh     The mesh to render
-     * @param material The material to apply
-     */
-    private void renderMeshToGBuffer(final Mesh mesh, final Material material) {
-        if (material.getAlphaMode() == AlphaMode.BLEND) {
-            return;
-        }
-        if (material.isDoubleSided()) {
-            glDisable(GL_CULL_FACE);
-        }
-        gBufferShader.setMaterialUniforms(material);
-        meshRenderer.render(mesh);
-        material.getDiffuseMap().ifPresent(map -> map.unbind(DIFFUSE_MAP_CHANNEL));
-        material.getEmissiveMap().ifPresent(map -> map.unbind(EMISSIVE_MAP_CHANNEL));
-        material.getRoughnessMetallicMap().ifPresent(map -> map.unbind(ROUGHNESS_METALLIC_MAP_CHANNEL));
-        material.getNormalMap().ifPresent(map -> map.unbind(NORMAL_MAP_CHANNEL));
-        material.getOcclusionMap().ifPresent(map -> map.unbind(OCCLUSION_MAP_CHANNEL));
-        if (material.isDoubleSided()) {
-            glEnable(GL_CULL_FACE);
-        }
-    }
-
-    /**
-     * Perform the lighting pass using data from the GBuffer, environment maps if any and
-     * analytical light found in the scene
-     */
     private void performLightingPass() {
         prepareResourcesForLightingPass();
         renderLightingPass();
@@ -300,54 +168,26 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
     private void prepareResourcesForLightingPass() {
         finalBuffer.bind();
         finalBuffer.clear();
-        finalBuffer.copyFrom(gBuffer, true, false);
-
-        gBuffer.getColorTexture(0).bind(COLORS_TEXTURE_CHANNEL);
-        gBuffer.getColorTexture(1).bind(NORMALS_TEXTURE_CHANNEL);
-        gBuffer.getColorTexture(2).bind(EMISSIVE_TEXTURE_CHANNEL);
-        gBuffer.getColorTexture(3).bind(OCCLUSION_TEXTURE_CHANNEL);
-        gBuffer.getDepthTexture().bind(DEPTH_TEXTURE_CHANNEL);
-        brdfLookup.getTexture().bind(BRDF_LOOKUP_CHANNEL);
-
-        deferredShader.bind()
-                .setCameraUniforms(sceneRenderData.getCamera())
-                .setCSMUnforms(cascadedShadowMap)
-                .setDirectionalLightsUniforms(sceneRenderData.getDirectionalLights())
-                .setPointLightsUniforms(sceneRenderData.getPointLights())
-                .setSpotLightsUniforms(sceneRenderData.getSpotLights());
-
-        if (Objects.nonNull(sceneRenderData.getIrradianceMap())) {
-            sceneRenderData.getIrradianceMap().bind(IRRADIANCE_MAP_CHANNEL);
-        }
-        if (Objects.nonNull(sceneRenderData.getPreFilteredMap())) {
-            sceneRenderData.getPreFilteredMap().bind(PRE_FILTERED_MAP_CHANNEL);
-        }
+        gBuffer.copyDepthInto(finalBuffer);
     }
 
     private void renderLightingPass() {
-        glDepthFunc(GL_NOTEQUAL);
-        glDepthMask(false);
-        meshRenderer.render(screenQuad);
-        glDepthMask(true);
-        glDepthFunc(GL_LESS);
+        lightPassRenderer.setGBuffer(gBuffer);
+        lightPassRenderer.setCascadedShadowMap(cascadedShadowMap);
+        lightPassRenderer.setSceneRenderData(sceneRenderData);
+        lightPassRenderer.renderLightPass();
     }
 
     private void unbindResourcesPostLightingPass() {
-        Shader.unbind();
-        gBuffer.getColorTexture(0).unbind(COLORS_TEXTURE_CHANNEL);
-        gBuffer.getColorTexture(1).unbind(NORMALS_TEXTURE_CHANNEL);
-        gBuffer.getColorTexture(2).unbind(EMISSIVE_TEXTURE_CHANNEL);
-        gBuffer.getColorTexture(3).unbind(OCCLUSION_TEXTURE_CHANNEL);
-        gBuffer.getDepthTexture().unbind(DEPTH_TEXTURE_CHANNEL);
-        Optional.ofNullable(sceneRenderData.getIrradianceMap()).ifPresent(map -> map.unbind(IRRADIANCE_MAP_CHANNEL));
-        Optional.ofNullable(sceneRenderData.getPreFilteredMap()).ifPresent(map -> map.unbind(PRE_FILTERED_MAP_CHANNEL));
-        brdfLookup.getTexture().unbind(BRDF_LOOKUP_CHANNEL);
-        if (Objects.nonNull(cascadedShadowMap)) {
-            for (int i = 0; i < CascadedShadowMap.CASCADE_COUNT; i++) {
-                cascadedShadowMap.getShadowCascade(i).getShadowMap().unbind(SHADOW_MAP_0_CHANNEL + i);
-            }
-        }
         finalBuffer.unbind();
+    }
+
+    private void renderSkybox() {
+        ObjectUtils.consumeIfPresent(sceneRenderData.getEnvironmentMap(), environmentMap -> {
+            finalBuffer.bind();
+            skyboxRenderer.renderSkybox(environmentMap, sceneRenderData.getCamera());
+            finalBuffer.unbind();
+        });
     }
 
     private void renderParticles() {
@@ -362,11 +202,15 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
         finalBuffer.unbind();
     }
 
+    private void applyPostProcess() {
+        postProcessor.process(finalBuffer.getColorTexture(0));
+    }
+
     public List<FrameBuffer> getCSMBuffer() {
         return csmGenerator.getFrameBuffers();
     }
 
-    public FrameBuffer getGBuffer() {
+    public GBuffer getGBuffer() {
         return gBuffer;
     }
 

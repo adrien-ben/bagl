@@ -5,6 +5,7 @@ module com.adrienben.games.bagl.deferred {
 
     // EXPORTS
     exports com.adrienben.games.bagl.deferred;
+    exports com.adrienben.games.bagl.deferred.gbuffer;
 
     // OPENS
     opens shaders.deferred;
