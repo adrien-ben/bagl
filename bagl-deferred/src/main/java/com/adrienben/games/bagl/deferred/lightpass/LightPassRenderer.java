@@ -14,6 +14,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static com.adrienben.games.bagl.deferred.shaders.DeferredShader.*;
+import static com.adrienben.games.bagl.deferred.shaders.uniforms.ShadowUniformSetter.SHADOW_MAP_0_CHANNEL;
 import static org.lwjgl.opengl.GL11.*;
 
 /**
@@ -71,7 +72,7 @@ public class LightPassRenderer {
 
         deferredShader.bind()
                 .setCameraUniforms(sceneRenderData.getCamera())
-                .setCSMUnforms(cascadedShadowMap)
+                .setCSMUniforms(cascadedShadowMap)
                 .setDirectionalLightsUniforms(sceneRenderData.getDirectionalLights())
                 .setPointLightsUniforms(sceneRenderData.getPointLights())
                 .setSpotLightsUniforms(sceneRenderData.getSpotLights());

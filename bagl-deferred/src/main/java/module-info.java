@@ -9,5 +9,7 @@ module com.adrienben.games.bagl.deferred {
 
     // OPENS
     opens shaders.deferred;
+    opens shaders.forward;
+    opens shaders.pbr;
     opens shaders.shadow;
 }

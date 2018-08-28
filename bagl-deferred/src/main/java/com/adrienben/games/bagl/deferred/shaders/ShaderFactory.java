@@ -36,6 +36,13 @@ public final class ShaderFactory {
                 .build();
     }
 
+    public static Shader createForwardShader() {
+        return Shader.builder()
+                .vertexPath(ResourcePath.get("classpath:/shaders/forward/forward.vert"))
+                .fragmentPath(ResourcePath.get("classpath:/shaders/forward/forward.frag"))
+                .build();
+    }
+
     public static Shader createBrdfShader() {
         return Shader.builder()
                 .vertexPath(ResourcePath.get("classpath:/shaders/post/post_process.vert"))

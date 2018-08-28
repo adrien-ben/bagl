@@ -5,8 +5,8 @@ import com.adrienben.games.bagl.core.utils.ObjectUtils;
 import com.adrienben.games.bagl.deferred.data.SceneRenderData;
 import com.adrienben.games.bagl.deferred.data.SceneRenderDataCollector;
 import com.adrienben.games.bagl.deferred.gbuffer.GBuffer;
-import com.adrienben.games.bagl.deferred.gbuffer.generator.GBufferGenerator;
-import com.adrienben.games.bagl.deferred.lightpass.LightPassRenderer;
+import com.adrienben.games.bagl.deferred.paths.DeferredPath;
+import com.adrienben.games.bagl.deferred.paths.ForwardPath;
 import com.adrienben.games.bagl.deferred.shadow.CSMGenerator;
 import com.adrienben.games.bagl.deferred.shadow.CascadedShadowMap;
 import com.adrienben.games.bagl.deferred.skybox.SkyboxRenderer;
@@ -54,11 +54,11 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
     private FrustumIntersection cameraFrustum;
 
     private FrameBuffer finalBuffer;
-    private GBufferGenerator gBufferGenerator;
-    private GBuffer gBuffer;
+
     private CSMGenerator csmGenerator;
     private CascadedShadowMap cascadedShadowMap;
-    private LightPassRenderer lightPassRenderer;
+    private DeferredPath deferredPath;
+    private ForwardPath forwardPath;
     private SkyboxRenderer skyboxRenderer;
     private ParticleRenderer particleRenderer;
     private PostProcessor postProcessor;
@@ -75,10 +75,10 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
         cameraFrustum = new FrustumIntersection();
 
         finalBuffer = new FrameBuffer(xResolution, yResolution, createFinalFrameBufferParameters());
-        gBufferGenerator = new GBufferGenerator(xResolution, yResolution);
-        gBuffer = gBufferGenerator.getGBuffer();
+
         csmGenerator = new CSMGenerator();
-        lightPassRenderer = new LightPassRenderer();
+        deferredPath = new DeferredPath(finalBuffer);
+        forwardPath = new ForwardPath(finalBuffer);
         skyboxRenderer = new SkyboxRenderer();
         particleRenderer = new ParticleRenderer();
         postProcessor = new PostProcessor();
@@ -103,10 +103,10 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
      * Release resources
      */
     public void destroy() {
-        gBufferGenerator.destroy();
         finalBuffer.destroy();
         csmGenerator.destroy();
-        lightPassRenderer.destroy();
+        deferredPath.destroy();
+        forwardPath.destroy();
         skyboxRenderer.destroy();
         particleRenderer.destroy();
         postProcessor.destroy();
@@ -139,8 +139,8 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
 
         updateFrustum();
         renderShadowMap();
-        performGeometryPass();
-        performLightingPass();
+        renderSceneDataUsingForwardPath();
+//        renderSceneDataUsingDeferredPath();
         renderSkybox();
         renderParticles();
         applyPostProcess();
@@ -155,31 +155,16 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
         cascadedShadowMap = csmGenerator.generateShadowMaps();
     }
 
-    private void performGeometryPass() {
-        gBuffer = gBufferGenerator.generateGBuffer(sceneRenderData);
+    private void renderSceneDataUsingDeferredPath() {
+        deferredPath.setSceneRenderData(sceneRenderData);
+        deferredPath.setCascadedShadowMap(cascadedShadowMap);
+        deferredPath.renderSceneData();
     }
 
-    private void performLightingPass() {
-        prepareResourcesForLightingPass();
-        renderLightingPass();
-        unbindResourcesPostLightingPass();
-    }
-
-    private void prepareResourcesForLightingPass() {
-        finalBuffer.bind();
-        finalBuffer.clear();
-        gBuffer.copyDepthInto(finalBuffer);
-    }
-
-    private void renderLightingPass() {
-        lightPassRenderer.setGBuffer(gBuffer);
-        lightPassRenderer.setCascadedShadowMap(cascadedShadowMap);
-        lightPassRenderer.setSceneRenderData(sceneRenderData);
-        lightPassRenderer.renderLightPass();
-    }
-
-    private void unbindResourcesPostLightingPass() {
-        finalBuffer.unbind();
+    private void renderSceneDataUsingForwardPath() {
+        forwardPath.setSceneRenderData(sceneRenderData);
+        forwardPath.setCascadedShadowMap(cascadedShadowMap);
+        forwardPath.renderSceneData();
     }
 
     private void renderSkybox() {
@@ -211,7 +196,7 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
     }
 
     public GBuffer getGBuffer() {
-        return gBuffer;
+        return deferredPath.getGBuffer();
     }
 
     public FrameBuffer getFinalBuffer() {

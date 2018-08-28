@@ -24,8 +24,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static com.adrienben.games.bagl.deferred.shaders.uniforms.MaterialUniformSetter.DIFFUSE_MAP_CHANNEL;
 import static com.adrienben.games.bagl.deferred.shadow.CascadedShadowMap.CASCADE_COUNT;
+import static com.adrienben.games.bagl.engine.rendering.material.MaterialUniformSetter.DIFFUSE_MAP_CHANNEL;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL32.GL_DEPTH_CLAMP;
 

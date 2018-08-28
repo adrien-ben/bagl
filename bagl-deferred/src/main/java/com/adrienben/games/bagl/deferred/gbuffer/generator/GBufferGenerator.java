@@ -12,7 +12,7 @@ import com.adrienben.games.bagl.engine.rendering.model.ModelNode;
 import com.adrienben.games.bagl.engine.rendering.renderer.MeshRenderer;
 import com.adrienben.games.bagl.opengl.shader.Shader;
 
-import static com.adrienben.games.bagl.deferred.shaders.uniforms.MaterialUniformSetter.*;
+import static com.adrienben.games.bagl.engine.rendering.material.MaterialUniformSetter.*;
 import static org.lwjgl.opengl.GL11.*;
 
 /**

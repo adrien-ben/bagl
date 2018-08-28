@@ -20,48 +20,21 @@ void main() {
     }
 
     // diffuse color
-    colors.rgb = uMaterial.diffuseColor.rgb;
-    if(uMaterial.hasDiffuseMap) {
-        colors.rgb *= pow(texture2D(uMaterial.diffuseMap, passCoords).rgb, vec3(2.2));
-    }
+    colors.rgb = getDiffuseColor(uMaterial, passCoords).rgb;
 
     // roughness
-    float roughness = uMaterial.roughness;
-    if(uMaterial.hasRoughnessMetallicMap) {
-        roughness *= texture2D(uMaterial.roughnessMetallicMap, passCoords).g;
-    }
-    colors.a = clamp(roughness, 0.03, 1.0);
+    colors.a = getRoughness(uMaterial, passCoords);
 
     // normals
-	vec3 normal;
-	if(uMaterial.hasNormalMap) {
-		normal = normalize(texture2D(uMaterial.normalMap, passCoords).rgb*2 - 1);
-		normal = normalize(passTBN*normal);
-	} else {
-		normal = normalize(passNormal);
-	}
-	if(!gl_FrontFacing) {
-	    normal *= -1;
-    }
-
-	normals.rgb = normal*0.5 + 0.5;
+    normals.rgb = getNormal(uMaterial, passNormal, passTBN, passCoords)*0.5 + 0.5;
 
     // metallic
-	normals.a = uMaterial.metallic;
-	if(uMaterial.hasRoughnessMetallicMap) {
-	    normals.a *= texture2D(uMaterial.roughnessMetallicMap, passCoords).b;
-	}
+    normals.a = getMetallic(uMaterial, passCoords);
 
     // emissive color
-    emissive = uMaterial.emissiveColor.rgb*uMaterial.emissiveIntensity;
-    if(uMaterial.hasEmissiveMap) {
-        emissive *= pow(texture2D(uMaterial.emissiveMap, passCoords).rgb, vec3(2.2));
-    }
+    emissive = getEmissiveColor(uMaterial, passCoords);
 
     // occlusion
-    occlusion.r = uMaterial.occlusionStrength;
-    occlusion.g = 1.0;
-    if(uMaterial.hasOcclusionMap) {
-        occlusion.g = texture(uMaterial.occlusionMap, passCoords).r;
-    }
+    occlusion.r = getOcclusionStrength(uMaterial);
+    occlusion.g = getOcclusionValue(uMaterial, passCoords);
 }

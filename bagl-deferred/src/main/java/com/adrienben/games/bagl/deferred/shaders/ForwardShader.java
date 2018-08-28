@@ -1,6 +1,13 @@
 package com.adrienben.games.bagl.deferred.shaders;
 
+import com.adrienben.games.bagl.deferred.shaders.uniforms.ShadowUniformSetter;
 import com.adrienben.games.bagl.deferred.shaders.uniforms.SkinningUniformsSetter;
+import com.adrienben.games.bagl.deferred.shadow.CascadedShadowMap;
+import com.adrienben.games.bagl.engine.camera.Camera;
+import com.adrienben.games.bagl.engine.rendering.light.DirectionalLight;
+import com.adrienben.games.bagl.engine.rendering.light.LightUniformSetter;
+import com.adrienben.games.bagl.engine.rendering.light.PointLight;
+import com.adrienben.games.bagl.engine.rendering.light.SpotLight;
 import com.adrienben.games.bagl.engine.rendering.material.Material;
 import com.adrienben.games.bagl.engine.rendering.material.MaterialUniformSetter;
 import com.adrienben.games.bagl.engine.rendering.model.AlphaMode;
@@ -8,24 +15,30 @@ import com.adrienben.games.bagl.engine.rendering.model.ModelNode;
 import com.adrienben.games.bagl.opengl.shader.Shader;
 import org.joml.Matrix4fc;
 
+import java.util.List;
+
+import static com.adrienben.games.bagl.deferred.shaders.DeferredShader.*;
 import static com.adrienben.games.bagl.engine.rendering.material.MaterialUniformSetter.*;
 
-
 /**
- * Wrapper for the gbuffer shader.
+ * Wrapper class for the forward rendering shader.
  *
- * @author adrien
+ * @author adrien.
  */
-public class GBufferShader {
+public class ForwardShader {
 
     private final Shader shader;
     private final SkinningUniformsSetter skinningUniformsSetter;
     private final MaterialUniformSetter materialUniformSetter;
+    private final ShadowUniformSetter shadowUniformSetter;
+    private final LightUniformSetter lightUniformSetter;
 
-    public GBufferShader() {
-        this.shader = ShaderFactory.createGBufferShader();
+    public ForwardShader() {
+        this.shader = ShaderFactory.createForwardShader();
         this.skinningUniformsSetter = new SkinningUniformsSetter(shader);
         this.materialUniformSetter = new MaterialUniformSetter(shader);
+        this.shadowUniformSetter = new ShadowUniformSetter(shader);
+        this.lightUniformSetter = new LightUniformSetter(shader);
         setTextureChannelsUniforms();
     }
 
@@ -36,6 +49,10 @@ public class GBufferShader {
         materialUniformSetter.setRoughnessMetallicMapChannelUniform();
         materialUniformSetter.setNormalMapChannelUniform();
         materialUniformSetter.setOcclusionMapChannelUniform();
+        shader.setUniform("uEnvironment.irradiance", IRRADIANCE_MAP_CHANNEL)
+                .setUniform("uEnvironment.preFilteredMap", PRE_FILTERED_MAP_CHANNEL)
+                .setUniform("uEnvironment.brdf", BRDF_LOOKUP_CHANNEL);
+        shadowUniformSetter.setShadowMapsChannelsUniforms();
         Shader.unbind();
     }
 
@@ -85,5 +102,25 @@ public class GBufferShader {
 
         materialUniformSetter.setIsOpaqueUniform(material.getAlphaMode() == AlphaMode.OPAQUE);
         materialUniformSetter.setAlphaCutoffUniform(material.getAlphaCutoff());
+    }
+
+    public void setCameraUniforms(final Camera camera) {
+        shader.setUniform("uCamera.position", camera.getPosition());
+    }
+
+    public void setDirectionalLightsUniforms(final List<DirectionalLight> directionalLights) {
+        lightUniformSetter.setDirectionalLightsUniforms(directionalLights);
+    }
+
+    public void setPointLightsUniforms(final List<PointLight> pointLights) {
+        lightUniformSetter.setPointLightsUniforms(pointLights);
+    }
+
+    public void setSpotLightsUniforms(final List<SpotLight> spotLights) {
+        lightUniformSetter.setSpotLightsUniforms(spotLights);
+    }
+
+    public void setCSMUniforms(final CascadedShadowMap cascadedShadowMap) {
+        shadowUniformSetter.setCSMUniforms(cascadedShadowMap);
     }
 }
