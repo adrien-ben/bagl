@@ -15,7 +15,7 @@
         <module>bagl-core</module>
         <module>bagl-opengl</module>
         <module>bagl-engine</module>
-        <module>bagl-deferred</module>
+        <module>bagl-renderer</module>
         <module>bagl-tests</module>
     </modules>
 
