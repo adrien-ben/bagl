@@ -34,8 +34,8 @@ void main() {
             + uJoints[vJointsIds.w].jointMatrix * vJointsWeights.w;
 	}
 
-	vec3 tangent = normalize(vec3(world*vec4(vTangent, 0)));
-	vec3 normal = normalize(vec3(world*vec4(vNormal, 0)));
+	vec3 tangent = normalize(vec3(world*vec4(vTangent, 1.0)));
+	vec3 normal = normalize(vec3(world*vec4(vNormal, 0.0)));
 
 	tangent = normalize(tangent - dot(tangent, normal)*normal);
 
