@@ -8,6 +8,7 @@ import com.adrienben.games.bagl.deferred.shadow.CascadedShadowMap;
 import com.adrienben.games.bagl.engine.rendering.model.Mesh;
 import com.adrienben.games.bagl.engine.rendering.model.MeshFactory;
 import com.adrienben.games.bagl.engine.rendering.renderer.MeshRenderer;
+import com.adrienben.games.bagl.opengl.OpenGL;
 import com.adrienben.games.bagl.opengl.shader.Shader;
 
 import java.util.Objects;
@@ -87,9 +88,9 @@ public class LightPassRenderer {
 
     private void renderLightingPass() {
         glDepthFunc(GL_NOTEQUAL);
-        glDepthMask(false);
+        OpenGL.disableDepthWrite();
         meshRenderer.render(screenQuad);
-        glDepthMask(true);
+        OpenGL.enableDepthWrite();
         glDepthFunc(GL_LESS);
     }
 
