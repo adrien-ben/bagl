@@ -6,6 +6,7 @@ import com.adrienben.games.bagl.engine.rendering.light.LightUniformSetter;
 import com.adrienben.games.bagl.engine.rendering.light.PointLight;
 import com.adrienben.games.bagl.engine.rendering.light.SpotLight;
 import com.adrienben.games.bagl.opengl.shader.Shader;
+import com.adrienben.games.bagl.opengl.shader.ShaderWrapper;
 import com.adrienben.games.bagl.renderer.shaders.uniforms.ShadowUniformSetter;
 import com.adrienben.games.bagl.renderer.shadow.CascadedShadowMap;
 
@@ -16,7 +17,7 @@ import java.util.List;
  *
  * @author adrien
  */
-public class DeferredShader {
+public class DeferredShader extends ShaderWrapper {
 
     public static final int COLORS_TEXTURE_CHANNEL = 0;
     public static final int NORMALS_TEXTURE_CHANNEL = 1;
@@ -27,7 +28,6 @@ public class DeferredShader {
     public static final int PRE_FILTERED_MAP_CHANNEL = 6;
     public static final int BRDF_LOOKUP_CHANNEL = 7;
 
-    private final Shader shader;
     private final ShadowUniformSetter shadowUniformSetter;
     private final LightUniformSetter lightUniformSetter;
 
@@ -35,7 +35,7 @@ public class DeferredShader {
      * Construct the deferred shader and sets the constant uniforms
      */
     public DeferredShader() {
-        this.shader = ShaderFactory.createDeferredShader();
+        super(ShaderFactory.createDeferredShader());
         this.shadowUniformSetter = new ShadowUniformSetter(shader);
         this.lightUniformSetter = new LightUniformSetter(shader);
         setTextureChannelsUniforms();
@@ -53,15 +53,6 @@ public class DeferredShader {
                 .setUniform("uEnvironment.brdf", BRDF_LOOKUP_CHANNEL);
         shadowUniformSetter.setShadowMapsChannelsUniforms();
         Shader.unbind();
-    }
-
-    public void destroy() {
-        shader.destroy();
-    }
-
-    public DeferredShader bind() {
-        shader.bind();
-        return this;
     }
 
     public DeferredShader setCameraUniforms(final Camera camera) {

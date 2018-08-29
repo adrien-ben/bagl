@@ -9,6 +9,7 @@ import com.adrienben.games.bagl.engine.rendering.material.Material;
 import com.adrienben.games.bagl.engine.rendering.material.MaterialUniformSetter;
 import com.adrienben.games.bagl.engine.rendering.model.ModelNode;
 import com.adrienben.games.bagl.opengl.shader.Shader;
+import com.adrienben.games.bagl.opengl.shader.ShaderWrapper;
 import com.adrienben.games.bagl.renderer.shaders.uniforms.ShadowUniformSetter;
 import com.adrienben.games.bagl.renderer.shaders.uniforms.SkinningUniformsSetter;
 import com.adrienben.games.bagl.renderer.shadow.CascadedShadowMap;
@@ -24,16 +25,15 @@ import static com.adrienben.games.bagl.renderer.shaders.DeferredShader.*;
  *
  * @author adrien.
  */
-public class ForwardShader {
+public class ForwardShader extends ShaderWrapper {
 
-    private final Shader shader;
     private final SkinningUniformsSetter skinningUniformsSetter;
     private final MaterialUniformSetter materialUniformSetter;
     private final ShadowUniformSetter shadowUniformSetter;
     private final LightUniformSetter lightUniformSetter;
 
     public ForwardShader() {
-        this.shader = ShaderFactory.createForwardShader();
+        super(ShaderFactory.createForwardShader());
         this.skinningUniformsSetter = new SkinningUniformsSetter(shader);
         this.materialUniformSetter = new MaterialUniformSetter(shader);
         this.shadowUniformSetter = new ShadowUniformSetter(shader);
@@ -53,14 +53,6 @@ public class ForwardShader {
                 .setUniform("uEnvironment.brdf", BRDF_LOOKUP_CHANNEL);
         shadowUniformSetter.setShadowMapsChannelsUniforms();
         Shader.unbind();
-    }
-
-    public void destroy() {
-        shader.destroy();
-    }
-
-    public void bind() {
-        shader.bind();
     }
 
     public void setModelNodeUniforms(final ModelNode modelNode) {

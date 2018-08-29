@@ -71,8 +71,8 @@ public class LightPassRenderer {
         gBuffer.getDepthTexture().bind(DEPTH_TEXTURE_CHANNEL);
         brdfLookup.getTexture().bind(BRDF_LOOKUP_CHANNEL);
 
-        deferredShader.bind()
-                .setCameraUniforms(sceneRenderData.getCamera())
+        deferredShader.bind();
+        deferredShader.setCameraUniforms(sceneRenderData.getCamera())
                 .setCSMUniforms(cascadedShadowMap)
                 .setDirectionalLightsUniforms(sceneRenderData.getDirectionalLights())
                 .setPointLightsUniforms(sceneRenderData.getPointLights())

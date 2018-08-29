@@ -4,6 +4,7 @@ import com.adrienben.games.bagl.engine.rendering.material.Material;
 import com.adrienben.games.bagl.engine.rendering.material.MaterialUniformSetter;
 import com.adrienben.games.bagl.engine.rendering.model.ModelNode;
 import com.adrienben.games.bagl.opengl.shader.Shader;
+import com.adrienben.games.bagl.opengl.shader.ShaderWrapper;
 import com.adrienben.games.bagl.renderer.shaders.uniforms.SkinningUniformsSetter;
 import org.joml.Matrix4fc;
 
@@ -14,14 +15,13 @@ import static com.adrienben.games.bagl.engine.rendering.material.MaterialUniform
  *
  * @author adrien
  */
-public class ShadowShader {
+public class ShadowShader extends ShaderWrapper {
 
-    private final Shader shader;
     private final SkinningUniformsSetter skinningUniformsSetter;
     private final MaterialUniformSetter materialUniformSetter;
 
     public ShadowShader() {
-        this.shader = ShaderFactory.createShadowShader();
+        super(ShaderFactory.createShadowShader());
         this.skinningUniformsSetter = new SkinningUniformsSetter(shader);
         this.materialUniformSetter = new MaterialUniformSetter(shader);
         setTextureChannelsUniforms();
@@ -31,14 +31,6 @@ public class ShadowShader {
         bind();
         materialUniformSetter.setDiffuseMapChannelUniform();
         Shader.unbind();
-    }
-
-    public void destroy() {
-        shader.destroy();
-    }
-
-    public void bind() {
-        shader.bind();
     }
 
     public void setModelNodeUniforms(final ModelNode modelNode) {
