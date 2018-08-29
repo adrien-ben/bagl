@@ -3,7 +3,6 @@ package com.adrienben.games.bagl.deferred.shaders;
 import com.adrienben.games.bagl.deferred.shaders.uniforms.SkinningUniformsSetter;
 import com.adrienben.games.bagl.engine.rendering.material.Material;
 import com.adrienben.games.bagl.engine.rendering.material.MaterialUniformSetter;
-import com.adrienben.games.bagl.engine.rendering.model.AlphaMode;
 import com.adrienben.games.bagl.engine.rendering.model.ModelNode;
 import com.adrienben.games.bagl.opengl.shader.Shader;
 import org.joml.Matrix4fc;
@@ -57,7 +56,7 @@ public class ShadowShader {
         materialUniformSetter.setHasDiffuseMapUniform(diffuseMap.isPresent());
         diffuseMap.ifPresent(map -> map.bind(DIFFUSE_MAP_CHANNEL));
 
-        materialUniformSetter.setIsOpaqueUniform(material.getAlphaMode() == AlphaMode.OPAQUE);
+        materialUniformSetter.setAlphaMode(material.getAlphaMode());
         materialUniformSetter.setAlphaCutoffUniform(material.getAlphaCutoff());
     }
 }

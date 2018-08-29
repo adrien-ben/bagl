@@ -1,3 +1,7 @@
+const int ALPHA_MODE_OPAQUE = 0;
+const int ALPHA_MODE_MASK = 1;
+const int ALPHA_MODE_BLEND = 2;
+
 struct Material {
 	vec4 diffuseColor;
 	vec4 emissiveColor;
@@ -17,12 +21,12 @@ struct Material {
     bool hasOcclusionMap;
     sampler2D occlusionMap;
 
-    bool isOpaque;
+    int alphaMode;
     float alphaCutoff;
 };
 
 bool isTransparent(Material material, vec2 coords) {
-    if(!material.isOpaque) {
+    if(material.alphaMode == ALPHA_MODE_MASK) {
         float alpha = material.diffuseColor.a;
         if(material.hasDiffuseMap) {
             alpha = texture2D(material.diffuseMap, coords).a;

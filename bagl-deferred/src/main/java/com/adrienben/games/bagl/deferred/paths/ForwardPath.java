@@ -11,7 +11,9 @@ import com.adrienben.games.bagl.engine.rendering.model.Mesh;
 import com.adrienben.games.bagl.engine.rendering.model.Model;
 import com.adrienben.games.bagl.engine.rendering.model.ModelNode;
 import com.adrienben.games.bagl.engine.rendering.renderer.MeshRenderer;
+import com.adrienben.games.bagl.opengl.BlendMode;
 import com.adrienben.games.bagl.opengl.FrameBuffer;
+import com.adrienben.games.bagl.opengl.OpenGL;
 import com.adrienben.games.bagl.opengl.shader.Shader;
 
 import java.util.Objects;
@@ -21,11 +23,10 @@ import static com.adrienben.games.bagl.deferred.shaders.uniforms.ShadowUniformSe
 import static com.adrienben.games.bagl.engine.rendering.material.MaterialUniformSetter.*;
 import static org.lwjgl.opengl.GL11.*;
 
-// TODO: add depth pre pass
-// TODO: accumulate in buffer and blend with final buffer at the end
-
 /**
  * Forward rendering path.
+ * <p>
+ * This path only renders transparent meshes.
  *
  * @author adrien.
  */
@@ -60,13 +61,16 @@ public class ForwardPath extends AbstractRenderingPath {
     @Override
     public void renderSceneData() {
         targetBuffer.bind();
-        targetBuffer.clear();
         forwardShader.bind();
-
         setUpShaderUniforms();
-        sceneRenderData.getModels().forEach(this::renderModelToGBuffer);
-        cleanUp();
 
+        OpenGL.setBlendMode(BlendMode.TRANSPARENCY);
+        OpenGL.disableDepthWrite();
+        sceneRenderData.getModels().forEach(this::renderModel);
+        OpenGL.enableDepthWrite();
+        OpenGL.setBlendMode(BlendMode.NONE);
+
+        cleanUp();
         Shader.unbind();
         targetBuffer.unbind();
     }
@@ -86,27 +90,21 @@ public class ForwardPath extends AbstractRenderingPath {
         forwardShader.setCSMUniforms(cascadedShadowMap);
     }
 
-    private void renderModelToGBuffer(final Model model) {
-        model.getNodes().forEach(this::renderModelNodeToGBuffer);
+    private void renderModel(final Model model) {
+        model.getNodes().forEach(this::renderModelNode);
     }
 
-    private void renderModelNodeToGBuffer(final ModelNode node) {
+    private void renderModelNode(final ModelNode node) {
         if (CollectionUtils.isNotEmpty(node.getMeshes())) {
             forwardShader.setModelNodeUniforms(node);
             forwardShader.setViewProjectionUniform(sceneRenderData.getCamera().getViewProj());
-            node.getMeshes().forEach(this::renderMeshToGBuffer);
+            node.getMeshes().forEach(this::renderMesh);
         }
-        node.getChildren().forEach(this::renderModelNodeToGBuffer);
+        node.getChildren().forEach(this::renderModelNode);
     }
 
-    /**
-     * Render a mesh to the GBuffer
-     *
-     * @param mesh     The mesh to render
-     * @param material The material to apply
-     */
-    private void renderMeshToGBuffer(final Mesh mesh, final Material material) {
-        if (material.getAlphaMode() == AlphaMode.BLEND) {
+    private void renderMesh(final Mesh mesh, final Material material) {
+        if (material.getAlphaMode() != AlphaMode.BLEND) {
             return;
         }
         if (material.isDoubleSided()) {

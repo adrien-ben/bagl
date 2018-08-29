@@ -9,6 +9,8 @@ import com.adrienben.games.bagl.opengl.FrameBuffer;
  * The deferred rendering path will render scene data by first generating a
  * {@link GBuffer} and then using the data from that g-buffer to perform
  * lighting calculations.
+ * <p>
+ * The deferred path do not handle meshes with {@link com.adrienben.games.bagl.engine.rendering.model.AlphaMode#BLEND}.
  *
  * @author adrien.
  */
@@ -62,7 +64,6 @@ public class DeferredPath extends AbstractRenderingPath {
 
     private void prepareResourcesForLightingPass() {
         targetBuffer.bind();
-        targetBuffer.clear();
         gBuffer.copyDepthInto(targetBuffer);
     }
 

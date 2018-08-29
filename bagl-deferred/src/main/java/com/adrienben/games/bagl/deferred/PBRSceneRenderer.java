@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * PBR Deferred Scene Renderer
+ * PBR Scene Renderer
  * <p>
  * It is responsible for rendering a {@link Scene}.
  * <p>
@@ -39,12 +39,12 @@ import java.util.Objects;
  * <li>PBR rendering with IBL</li>
  * <li>Post processing pass (bloom/gamma correction/tone mapping from HDR to SDR</li>
  * <p>
- * When {@link PBRDeferredSceneRenderer#render(Scene)} is called, the data required for rendering is
+ * When {@link PBRSceneRenderer#render(Scene)} is called, the data required for rendering is
  * gathered from the scene before the actual rendering takes place.
  *
  * @author adrien
  */
-public class PBRDeferredSceneRenderer implements Renderer<Scene> {
+public class PBRSceneRenderer implements Renderer<Scene> {
 
     private final int xResolution;
     private final int yResolution;
@@ -66,7 +66,7 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
     /**
      * Construct the renderer
      */
-    public PBRDeferredSceneRenderer() {
+    public PBRSceneRenderer() {
         final var config = Configuration.getInstance();
         xResolution = config.getXResolution();
         yResolution = config.getYResolution();
@@ -117,15 +117,10 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
      * <p>
      * The method first collect data to use for rendering.
      * <p>
-     * Then if the scene contains at least one {@link DirectionalLightComponent}, it
-     * will generate the shadow map for the point of view of the first light found.
-     * <p>
-     * Then it will perform the actual scene rendering by first generating the GBuffer
-     * and then by computing the scene lighting.
-     * <p>
-     * After that it render the skybox and finally the particles.
-     * <p>
-     * Once the final image is generated, it passes it through a {@link PostProcessor}.
+     * Then if the scene contains at least one {@link DirectionalLightComponent}, it will generate the shadow map
+     * for the point of view of the first light found. Then a {@link DeferredPath} will be used to render all opaque
+     * and masked meshes. After that it render the skybox and the particles. Finally all transparent meshes will be
+     * renderer using the {@link ForwardPath}. Once the final image is generated, it passes it through a {@link PostProcessor}.
      * <p>
      * An {@link EngineException} will be thrown if the camera has no scene set up.
      *
@@ -139,10 +134,11 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
 
         updateFrustum();
         renderShadowMap();
-        renderSceneDataUsingForwardPath();
-//        renderSceneDataUsingDeferredPath();
+        clearFinalBuffer();
+        renderOpaqueObjects();
         renderSkybox();
         renderParticles();
+        renderTransparentObjects();
         applyPostProcess();
     }
 
@@ -155,13 +151,19 @@ public class PBRDeferredSceneRenderer implements Renderer<Scene> {
         cascadedShadowMap = csmGenerator.generateShadowMaps();
     }
 
-    private void renderSceneDataUsingDeferredPath() {
+    private void clearFinalBuffer() {
+        finalBuffer.bind();
+        finalBuffer.clear();
+        finalBuffer.unbind();
+    }
+
+    private void renderOpaqueObjects() {
         deferredPath.setSceneRenderData(sceneRenderData);
         deferredPath.setCascadedShadowMap(cascadedShadowMap);
         deferredPath.renderSceneData();
     }
 
-    private void renderSceneDataUsingForwardPath() {
+    private void renderTransparentObjects() {
         forwardPath.setSceneRenderData(sceneRenderData);
         forwardPath.setCascadedShadowMap(cascadedShadowMap);
         forwardPath.renderSceneData();

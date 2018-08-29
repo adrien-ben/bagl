@@ -30,6 +30,9 @@ public abstract class AbstractRenderingPath {
 
     /**
      * Render the content of the {@link SceneRenderData} provided to the path.
+     *
+     * @apiNote Implementations are free to render only parts of the scene data. For example, one path
+     * could draw onlu opaque objects when another could draw everything.
      */
     public abstract void renderSceneData();
 

@@ -6,7 +6,6 @@ import com.adrienben.games.bagl.deferred.data.SceneRenderData;
 import com.adrienben.games.bagl.deferred.shaders.ShadowShader;
 import com.adrienben.games.bagl.engine.Configuration;
 import com.adrienben.games.bagl.engine.rendering.material.Material;
-import com.adrienben.games.bagl.engine.rendering.model.AlphaMode;
 import com.adrienben.games.bagl.engine.rendering.model.Mesh;
 import com.adrienben.games.bagl.engine.rendering.model.Model;
 import com.adrienben.games.bagl.engine.rendering.model.ModelNode;
@@ -18,7 +17,6 @@ import com.adrienben.games.bagl.opengl.texture.CompareFunction;
 import com.adrienben.games.bagl.opengl.texture.Format;
 import com.adrienben.games.bagl.opengl.texture.TextureParameters;
 import com.adrienben.games.bagl.opengl.texture.Wrap;
-import org.joml.Matrix4f;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,7 +30,9 @@ import static org.lwjgl.opengl.GL32.GL_DEPTH_CLAMP;
 /**
  * Cascaded shadow maps (CSM) generator.
  * <p>
- * This class generated the CSM from {@link SceneRenderData}.
+ * This class generated the CSM from {@link SceneRenderData}. Shadow will be the
+ * same no matter the {@link com.adrienben.games.bagl.engine.rendering.model.AlphaMode}
+ * of meshes. It means that partially transparent meshes will get fully opaque shadows.
  *
  * @author adrien
  */
@@ -45,7 +45,6 @@ public class CSMGenerator {
     private final ShadowShader shadowShader;
     private final CSMSplitsComputer csmSplitsComputer;
     private final MeshRenderer meshRenderer;
-    private final Matrix4f wvpBuffer;
 
     private SceneRenderData sceneRenderData;
     private FrameBuffer currentFrameBuffer;
@@ -58,7 +57,6 @@ public class CSMGenerator {
         this.shadowShader = new ShadowShader();
         this.csmSplitsComputer = new CSMSplitsComputer();
         this.meshRenderer = new MeshRenderer();
-        this.wvpBuffer = new Matrix4f();
     }
 
     private FrameBuffer createFrameBuffer() {
@@ -152,9 +150,6 @@ public class CSMGenerator {
     }
 
     private void renderMeshShadow(final Mesh mesh, final Material material) {
-        if (material.getAlphaMode() == AlphaMode.BLEND) {
-            return;
-        }
         if (material.isDoubleSided()) {
             glDisable(GL_CULL_FACE);
         }

@@ -19,6 +19,8 @@ import static org.lwjgl.opengl.GL11.*;
  * {@link GBuffer} generator.
  * <p>
  * This class is responsible to render {@link SceneRenderData} into a geometry buffer.
+ * Only mesh with {@link AlphaMode#OPAQUE} and {@link AlphaMode#MASK} will be rendered to
+ * the gbuffer.
  *
  * @author adrien.
  */

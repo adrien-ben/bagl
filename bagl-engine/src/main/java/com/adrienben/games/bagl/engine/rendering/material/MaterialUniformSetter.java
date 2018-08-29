@@ -1,6 +1,7 @@
 package com.adrienben.games.bagl.engine.rendering.material;
 
 import com.adrienben.games.bagl.core.Color;
+import com.adrienben.games.bagl.engine.rendering.model.AlphaMode;
 import com.adrienben.games.bagl.opengl.shader.Shader;
 
 /**
@@ -15,6 +16,10 @@ public class MaterialUniformSetter {
     public static final int ROUGHNESS_METALLIC_MAP_CHANNEL = 2;
     public static final int NORMAL_MAP_CHANNEL = 3;
     public static final int OCCLUSION_MAP_CHANNEL = 4;
+
+    private static final int ALPHA_MODE_OPAQUE_VALUE = 0;
+    private static final int ALPHA_MODE_MASK_VALUE = 1;
+    private static final int ALPHA_MODE_BLEND_VALUE = 2;
 
     private final Shader shader;
 
@@ -86,8 +91,21 @@ public class MaterialUniformSetter {
         shader.setUniform("uMaterial.hasOcclusionMap", hasOcclusionMap);
     }
 
-    public void setIsOpaqueUniform(final boolean isOpaque) {
-        shader.setUniform("uMaterial.isOpaque", isOpaque);
+    public void setAlphaMode(final AlphaMode alphaMode) {
+        shader.setUniform("uMaterial.alphaMode", getAlphaModeValue(alphaMode));
+    }
+
+    private int getAlphaModeValue(final AlphaMode alphaMode) {
+        switch (alphaMode) {
+            case OPAQUE:
+                return ALPHA_MODE_OPAQUE_VALUE;
+            case MASK:
+                return ALPHA_MODE_MASK_VALUE;
+            case BLEND:
+                return ALPHA_MODE_BLEND_VALUE;
+            default:
+                throw new UnsupportedOperationException("Aplha mode " + alphaMode + " not supported by shaders");
+        }
     }
 
     public void setAlphaCutoffUniform(final float alphaCutoff) {
