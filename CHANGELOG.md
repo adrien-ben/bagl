@@ -28,3 +28,4 @@
 
 ## 0.0.6
 - [ADDED] Mesh skinning
+- [ADDED] Mesh transparency support via forward rendering
