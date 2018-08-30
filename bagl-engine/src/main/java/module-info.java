@@ -30,6 +30,7 @@ module com.adrienben.games.bagl.engine {
     exports com.adrienben.games.bagl.engine.rendering.postprocess.fxaa;
     exports com.adrienben.games.bagl.engine.rendering.postprocess.steps;
     exports com.adrienben.games.bagl.engine.rendering.renderer;
+    exports com.adrienben.games.bagl.engine.rendering.shaders;
     exports com.adrienben.games.bagl.engine.rendering.shape;
     exports com.adrienben.games.bagl.engine.rendering.sprite;
     exports com.adrienben.games.bagl.engine.rendering.text;

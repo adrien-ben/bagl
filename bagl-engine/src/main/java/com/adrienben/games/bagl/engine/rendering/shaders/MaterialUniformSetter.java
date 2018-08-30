@@ -1,4 +1,4 @@
-package com.adrienben.games.bagl.engine.rendering.material;
+package com.adrienben.games.bagl.engine.rendering.shaders;
 
 import com.adrienben.games.bagl.core.Color;
 import com.adrienben.games.bagl.engine.rendering.model.AlphaMode;

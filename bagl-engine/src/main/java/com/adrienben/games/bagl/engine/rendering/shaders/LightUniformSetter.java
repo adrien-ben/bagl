@@ -1,5 +1,9 @@
-package com.adrienben.games.bagl.engine.rendering.light;
+package com.adrienben.games.bagl.engine.rendering.shaders;
 
+import com.adrienben.games.bagl.core.utils.CollectionUtils;
+import com.adrienben.games.bagl.engine.rendering.light.DirectionalLight;
+import com.adrienben.games.bagl.engine.rendering.light.PointLight;
+import com.adrienben.games.bagl.engine.rendering.light.SpotLight;
 import com.adrienben.games.bagl.opengl.shader.Shader;
 
 import java.util.List;
@@ -18,10 +22,18 @@ public class LightUniformSetter {
     }
 
     public void setDirectionalLightsUniforms(final List<DirectionalLight> directionalLights) {
-        shader.setUniform("uLights.directionalCount", directionalLights.size());
-        for (var i = 0; i < directionalLights.size(); i++) {
-            setDirectionalLightUniforms(i, directionalLights.get(i));
+        if (CollectionUtils.isNotEmpty(directionalLights)) {
+            setDirectionalLightsCount(directionalLights.size());
+            for (var i = 0; i < directionalLights.size(); i++) {
+                setDirectionalLightUniforms(i, directionalLights.get(i));
+            }
+        } else {
+            setDirectionalLightsCount(0);
         }
+    }
+
+    private void setDirectionalLightsCount(final int count) {
+        shader.setUniform("uLights.directionalCount", count);
     }
 
     private void setDirectionalLightUniforms(final int index, final DirectionalLight light) {
@@ -31,10 +43,18 @@ public class LightUniformSetter {
     }
 
     public void setPointLightsUniforms(final List<PointLight> pointLights) {
-        shader.setUniform("uLights.pointCount", pointLights.size());
-        for (var i = 0; i < pointLights.size(); i++) {
-            setPointLightUniforms(i, pointLights.get(i));
+        if (CollectionUtils.isNotEmpty(pointLights)) {
+            setPointLightsCount(pointLights.size());
+            for (var i = 0; i < pointLights.size(); i++) {
+                setPointLightUniforms(i, pointLights.get(i));
+            }
+        } else {
+            setPointLightsCount(0);
         }
+    }
+
+    private void setPointLightsCount(final int count) {
+        shader.setUniform("uLights.pointCount", count);
     }
 
     private void setPointLightUniforms(final int index, final PointLight light) {
@@ -45,10 +65,18 @@ public class LightUniformSetter {
     }
 
     public void setSpotLightsUniforms(final List<SpotLight> spotLights) {
-        shader.setUniform("uLights.spotCount", spotLights.size());
-        for (var i = 0; i < spotLights.size(); i++) {
-            setSpotLightUniforms(i, spotLights.get(i));
+        if (CollectionUtils.isNotEmpty(spotLights)) {
+            setSpotLightsCount(spotLights.size());
+            for (var i = 0; i < spotLights.size(); i++) {
+                setSpotLightUniforms(i, spotLights.get(i));
+            }
+        } else {
+            setSpotLightsCount(0);
         }
+    }
+
+    private void setSpotLightsCount(final int count) {
+        shader.setUniform("uLights.spotCount", count);
     }
 
     private void setSpotLightUniforms(final int index, final SpotLight light) {

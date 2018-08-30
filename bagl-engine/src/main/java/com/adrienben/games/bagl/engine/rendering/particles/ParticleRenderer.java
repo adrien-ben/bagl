@@ -2,12 +2,13 @@ package com.adrienben.games.bagl.engine.rendering.particles;
 
 import com.adrienben.games.bagl.core.exception.EngineException;
 import com.adrienben.games.bagl.core.io.ResourcePath;
-import com.adrienben.games.bagl.core.utils.CollectionUtils;
 import com.adrienben.games.bagl.engine.camera.Camera;
 import com.adrienben.games.bagl.engine.rendering.light.DirectionalLight;
 import com.adrienben.games.bagl.engine.rendering.light.PointLight;
 import com.adrienben.games.bagl.engine.rendering.light.SpotLight;
 import com.adrienben.games.bagl.engine.rendering.renderer.Renderer;
+import com.adrienben.games.bagl.engine.rendering.shaders.CameraUniformSetter;
+import com.adrienben.games.bagl.engine.rendering.shaders.LightUniformSetter;
 import com.adrienben.games.bagl.opengl.BlendMode;
 import com.adrienben.games.bagl.opengl.BufferUsage;
 import com.adrienben.games.bagl.opengl.OpenGL;
@@ -42,6 +43,8 @@ public class ParticleRenderer implements Renderer<ParticleEmitter> {
     private static final int ELEMENTS_PER_SIZE = 1;
 
     private final Shader shader;
+    private final CameraUniformSetter cameraUniformSetter;
+    private final LightUniformSetter lightUniformSetter;
     private final FloatBuffer vertices;
     private final VertexBuffer vBuffer;
     private final VertexArray vArray;
@@ -61,6 +64,8 @@ public class ParticleRenderer implements Renderer<ParticleEmitter> {
                 .fragmentPath(ResourcePath.get("classpath:/shaders/particles/particles.frag"))
                 .geometryPath(ResourcePath.get("classpath:/shaders/particles/particles.geom"))
                 .build();
+        this.cameraUniformSetter = new CameraUniformSetter(shader);
+        this.lightUniformSetter = new LightUniformSetter(shader);
 
         this.vertices = MemoryUtil.memAllocFloat(ParticleEmitter.MAX_PARTICLE_COUNT * ELEMENTS_PER_VERTEX);
         this.vBuffer = new VertexBuffer(this.vertices, VertexBufferParams.builder()
@@ -165,64 +170,20 @@ public class ParticleRenderer implements Renderer<ParticleEmitter> {
     }
 
     private void setUpCameraShaderUniforms() {
-        shader.setUniform("uCamera.view", camera.getView());
-        shader.setUniform("uCamera.viewProj", camera.getViewProj());
+        cameraUniformSetter.setViewUniform(camera);
+        cameraUniformSetter.setViewProjectionUniform(camera);
     }
 
     private void setUpDirectionalLightsShaderUniforms() {
-        if (CollectionUtils.isNotEmpty(directionalLights)) {
-            shader.setUniform("uLights.directionalCount", directionalLights.size());
-            for (int i = 0; i < directionalLights.size(); i++) {
-                setUpDirectionalLightShaderUniforms(i, directionalLights.get(i));
-            }
-        } else {
-            shader.setUniform("uLights.directionalCount", 0);
-        }
+        lightUniformSetter.setDirectionalLightsUniforms(directionalLights);
     }
 
     private void setUpPointLightsShaderUniforms() {
-        if (CollectionUtils.isNotEmpty(pointLights)) {
-            shader.setUniform("uLights.pointCount", pointLights.size());
-            for (int i = 0; i < pointLights.size(); i++) {
-                setUpPointLightShaderUniforms(i, pointLights.get(i));
-            }
-        } else {
-            shader.setUniform("uLights.pointCount", 0);
-        }
+        lightUniformSetter.setPointLightsUniforms(pointLights);
     }
 
     private void setUpSpotLightsShaderUniforms() {
-        if (CollectionUtils.isNotEmpty(spotLights)) {
-            shader.setUniform("uLights.spotCount", spotLights.size());
-            for (int i = 0; i < spotLights.size(); i++) {
-                setUpSpotLightShaderUniforms(i, spotLights.get(i));
-            }
-        } else {
-            shader.setUniform("uLights.spotCount", 0);
-        }
-    }
-
-    private void setUpDirectionalLightShaderUniforms(final int index, final DirectionalLight light) {
-        shader.setUniform("uLights.directionals[" + index + "].base.intensity", light.getIntensity())
-                .setUniform("uLights.directionals[" + index + "].base.color", light.getColor())
-                .setUniform("uLights.directionals[" + index + "].direction", light.getDirection());
-    }
-
-    private void setUpPointLightShaderUniforms(final int index, final PointLight light) {
-        shader.setUniform("uLights.points[" + index + "].base.intensity", light.getIntensity())
-                .setUniform("uLights.points[" + index + "].base.color", light.getColor())
-                .setUniform("uLights.points[" + index + "].position", light.getPosition())
-                .setUniform("uLights.points[" + index + "].radius", light.getRadius());
-    }
-
-    private void setUpSpotLightShaderUniforms(final int index, final SpotLight light) {
-        shader.setUniform("uLights.spots[" + index + "].point.base.intensity", light.getIntensity())
-                .setUniform("uLights.spots[" + index + "].point.base.color", light.getColor())
-                .setUniform("uLights.spots[" + index + "].point.position", light.getPosition())
-                .setUniform("uLights.spots[" + index + "].point.radius", light.getRadius())
-                .setUniform("uLights.spots[" + index + "].direction", light.getDirection())
-                .setUniform("uLights.spots[" + index + "].cutOff", light.getCutOff())
-                .setUniform("uLights.spots[" + index + "].outerCutOff", light.getOuterCutOff());
+        lightUniformSetter.setSpotLightsUniforms(spotLights);
     }
 
     public void setCamera(final Camera camera) {

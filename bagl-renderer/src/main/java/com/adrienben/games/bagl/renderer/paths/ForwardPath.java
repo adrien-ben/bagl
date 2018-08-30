@@ -18,7 +18,7 @@ import com.adrienben.games.bagl.renderer.shadow.CascadedShadowMap;
 
 import java.util.Objects;
 
-import static com.adrienben.games.bagl.engine.rendering.material.MaterialUniformSetter.*;
+import static com.adrienben.games.bagl.engine.rendering.shaders.MaterialUniformSetter.*;
 import static com.adrienben.games.bagl.renderer.shaders.DeferredShader.*;
 import static com.adrienben.games.bagl.renderer.shaders.uniforms.ShadowUniformSetter.SHADOW_MAP_0_CHANNEL;
 import static org.lwjgl.opengl.GL11.*;

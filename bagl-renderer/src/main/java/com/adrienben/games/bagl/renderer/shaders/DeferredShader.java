@@ -2,9 +2,10 @@ package com.adrienben.games.bagl.renderer.shaders;
 
 import com.adrienben.games.bagl.engine.camera.Camera;
 import com.adrienben.games.bagl.engine.rendering.light.DirectionalLight;
-import com.adrienben.games.bagl.engine.rendering.light.LightUniformSetter;
 import com.adrienben.games.bagl.engine.rendering.light.PointLight;
 import com.adrienben.games.bagl.engine.rendering.light.SpotLight;
+import com.adrienben.games.bagl.engine.rendering.shaders.CameraUniformSetter;
+import com.adrienben.games.bagl.engine.rendering.shaders.LightUniformSetter;
 import com.adrienben.games.bagl.opengl.shader.Shader;
 import com.adrienben.games.bagl.opengl.shader.ShaderWrapper;
 import com.adrienben.games.bagl.renderer.shaders.uniforms.ShadowUniformSetter;
@@ -30,6 +31,7 @@ public class DeferredShader extends ShaderWrapper {
 
     private final ShadowUniformSetter shadowUniformSetter;
     private final LightUniformSetter lightUniformSetter;
+    private final CameraUniformSetter cameraUniformSetter;
 
     /**
      * Construct the deferred shader and sets the constant uniforms
@@ -38,6 +40,7 @@ public class DeferredShader extends ShaderWrapper {
         super(ShaderFactory.createDeferredShader());
         this.shadowUniformSetter = new ShadowUniformSetter(shader);
         this.lightUniformSetter = new LightUniformSetter(shader);
+        this.cameraUniformSetter = new CameraUniformSetter(shader);
         setTextureChannelsUniforms();
     }
 
@@ -56,8 +59,8 @@ public class DeferredShader extends ShaderWrapper {
     }
 
     public DeferredShader setCameraUniforms(final Camera camera) {
-        shader.setUniform("uCamera.invertedViewProj", camera.getInvertedViewProj())
-                .setUniform("uCamera.position", camera.getPosition());
+        cameraUniformSetter.setInvertedViewProjectionUniform(camera);
+        cameraUniformSetter.setPositionUniform(camera);
         return this;
     }
 
