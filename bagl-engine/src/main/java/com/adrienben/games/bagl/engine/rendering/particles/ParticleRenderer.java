@@ -122,9 +122,9 @@ public class ParticleRenderer implements Renderer<ParticleEmitter> {
         vArray.bind();
 
         OpenGL.setBlendMode(emitter.getBlendMode());
-        GL11.glDepthMask(false);
+        OpenGL.disableDepthWrite();
         GL11.glDrawArrays(GL11.GL_POINTS, 0, particlesToRender.size());
-        GL11.glDepthMask(true);
+        OpenGL.enableDepthWrite();
         OpenGL.setBlendMode(BlendMode.NONE);
 
         vArray.unbind();

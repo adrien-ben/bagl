@@ -119,4 +119,18 @@ public final class OpenGL {
             glBlendFunc(blendMode.getGlSource(), blendMode.getGlDestination());
         }
     }
+
+    /**
+     * Enable writing to the depth buffer.
+     */
+    public static void enableDepthWrite() {
+        glDepthMask(true);
+    }
+
+    /**
+     * Disable writing to the depth buffer.
+     */
+    public static void disableDepthWrite() {
+        glDepthMask(false);
+    }
 }
