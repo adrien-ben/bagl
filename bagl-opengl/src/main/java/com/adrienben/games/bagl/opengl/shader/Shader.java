@@ -42,16 +42,31 @@ public class Shader {
      * This create a openGL shader program
      */
     private Shader(final PipelineBuilder pipelineBuilder) {
-        this.matrix4fBuffer = MemoryUtil.memAllocFloat(16);
-        this.uniformToLocationMap = new HashMap<>();
-        this.attachedShaders = new ArrayList<>();
-        this.handle = GL20.glCreateProgram();
-
-        Objects.requireNonNull(pipelineBuilder.vertexPath, "You cannot build a shader with no vertex shader source");
+        this();
+        Objects.requireNonNull(pipelineBuilder.vertexPath, "You cannot build a pipeline shader with no vertex shader source");
         addSubShader(pipelineBuilder.vertexPath, SubShaderType.VERTEX);
         ObjectUtils.consumeIfPresent(pipelineBuilder.fragmentPath, path -> addSubShader(path, SubShaderType.FRAGMENT));
         ObjectUtils.consumeIfPresent(pipelineBuilder.geometryPath, path -> addSubShader(path, SubShaderType.GEOMETRY));
         compile();
+    }
+
+    /**
+     * Construct a shader
+     * <p>
+     * This create a openGL shader program
+     */
+    private Shader(final ComputeBuilder computeBuilder) {
+        this();
+        Objects.requireNonNull(computeBuilder.computePath, "You cannot build a compute shader with no compute shader source");
+        addSubShader(computeBuilder.computePath, SubShaderType.COMPUTE);
+        compile();
+    }
+
+    private Shader() {
+        this.matrix4fBuffer = MemoryUtil.memAllocFloat(16);
+        this.uniformToLocationMap = new HashMap<>();
+        this.attachedShaders = new ArrayList<>();
+        this.handle = GL20.glCreateProgram();
     }
 
     /**
@@ -62,6 +77,16 @@ public class Shader {
      */
     public static PipelineBuilder pipelineBuilder() {
         return new PipelineBuilder();
+    }
+
+    /**
+     * Return a new instance of a {@link ComputeBuilder}. A compute builder is used
+     * to create compute shaders.
+     *
+     * @return A new builder
+     */
+    public static ComputeBuilder computeBuilder() {
+        return new ComputeBuilder();
     }
 
     /**
@@ -297,9 +322,7 @@ public class Shader {
 
         /**
          * Sets the path of the resource file containing vertex shader
-         * source code
-         * <p>
-         * The file must be in the resource folder 'shaders'
+         * source code.
          *
          * @param path The path of the resource
          * @return This
@@ -311,9 +334,7 @@ public class Shader {
 
         /**
          * Sets the path of the resource file containing fragment shader
-         * source code
-         * <p>
-         * The file must be in the resource folder 'shaders'
+         * source code.
          *
          * @param path The path of the resource
          * @return This
@@ -325,15 +346,43 @@ public class Shader {
 
         /**
          * Sets the path of the resource file containing geometry shader
-         * source code
-         * <p>
-         * The file must be in the resource folder 'shaders'
+         * source code.
          *
          * @param path The path of the resource
          * @return This
          */
         public PipelineBuilder geometryPath(final ResourcePath path) {
             geometryPath = path;
+            return this;
+        }
+    }
+
+    /**
+     * Builder to create compute shaders.
+     */
+    public static class ComputeBuilder {
+
+        private ResourcePath computePath;
+
+        private ComputeBuilder() {
+        }
+
+        /**
+         * Private constructor to prevent instantiation.
+         */
+        public Shader build() {
+            return new Shader(this);
+        }
+
+        /**
+         * Sets the path of the resource file containing compute shader
+         * source code.
+         *
+         * @param path The path of the resource
+         * @return This
+         */
+        public ComputeBuilder computePath(final ResourcePath path) {
+            computePath = path;
             return this;
         }
     }
