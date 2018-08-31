@@ -1,16 +1,22 @@
 package com.adrienben.games.bagl.opengl;
 
 import com.adrienben.games.bagl.core.Color;
+import com.adrienben.games.bagl.core.utils.CollectionUtils;
+import com.adrienben.games.bagl.opengl.shader.compute.Barrier;
 import com.adrienben.games.bagl.opengl.texture.Texture;
 import com.adrienben.games.bagl.opengl.texture.Type;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
+import java.util.EnumSet;
 import java.util.Objects;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
 import static org.lwjgl.opengl.GL13.glActiveTexture;
+import static org.lwjgl.opengl.GL42.GL_ALL_BARRIER_BITS;
+import static org.lwjgl.opengl.GL42.glMemoryBarrier;
+import static org.lwjgl.opengl.GL43.glDispatchCompute;
 
 /**
  * OpenGL utility.
@@ -94,6 +100,55 @@ public final class OpenGL {
         COLOR_PARAM_BUFFER.put(2, color.getBlue());
         COLOR_PARAM_BUFFER.put(3, color.getAlpha());
         glTexParameterfv(type.getGlCode(), parameterCode, COLOR_PARAM_BUFFER);
+    }
+
+    /**
+     * Perform a 1D compute dispatch.
+     *
+     * @param x The number of work groups to start in the x dimension
+     */
+    public static void dispatchCompute(final int x) {
+        glDispatchCompute(x, 1, 1);
+    }
+
+    /**
+     * Perform a 2D compute dispatch.
+     *
+     * @param x The number of work groups to start in the x dimension
+     * @param y The number of work groups to start in the y dimension
+     */
+    public static void dispatchCompute(final int x, final int y) {
+        glDispatchCompute(x, y, 1);
+    }
+
+    /**
+     * Perform a 3D compute dispatch.
+     *
+     * @param x The number of work groups to start in the x dimension
+     * @param y The number of work groups to start in the y dimension
+     * @param z The number of work groups to start in the z dimension
+     */
+    public static void dispatchCompute(final int x, final int y, final int z) {
+        glDispatchCompute(x, y, z);
+    }
+
+    /**
+     * Set up memory barriers.
+     *
+     * @param barriers The barriers to set up.
+     */
+    public static void setMemoryBarriers(final EnumSet<Barrier> barriers) {
+        if (CollectionUtils.isNotEmpty(barriers)) {
+            final int bitField = barriers.stream().mapToInt(Barrier::getGlCode).reduce(0, (a, b) -> a | b);
+            glMemoryBarrier(bitField);
+        }
+    }
+
+    /**
+     * Set up all memory barriers
+     */
+    public static void setAllMemoryBarriers() {
+        glMemoryBarrier(GL_ALL_BARRIER_BITS);
     }
 
     /**

@@ -16,6 +16,7 @@ module com.adrienben.games.bagl.opengl {
     // EXPORTS
     exports com.adrienben.games.bagl.opengl;
     exports com.adrienben.games.bagl.opengl.shader;
+    exports com.adrienben.games.bagl.opengl.shader.compute;
     exports com.adrienben.games.bagl.opengl.texture;
     exports com.adrienben.games.bagl.opengl.vertex;
 }
