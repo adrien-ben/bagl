@@ -36,7 +36,7 @@ public abstract class PostProcessorStep {
      * {@code fragmentPath}.
      */
     protected Shader buildProcessShader(final ResourcePath fragmentPath) {
-        return Shader.builder()
+        return Shader.pipelineBuilder()
                 .vertexPath(ResourcePath.get(POST_PROCESS_VERTEX_SHADER_FILE))
                 .fragmentPath(fragmentPath)
                 .build();

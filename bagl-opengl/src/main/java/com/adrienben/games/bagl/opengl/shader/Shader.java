@@ -3,6 +3,9 @@ package com.adrienben.games.bagl.opengl.shader;
 import com.adrienben.games.bagl.core.Color;
 import com.adrienben.games.bagl.core.exception.EngineException;
 import com.adrienben.games.bagl.core.io.ResourcePath;
+import com.adrienben.games.bagl.core.utils.ObjectUtils;
+import com.adrienben.games.bagl.opengl.shader.subshader.SubShader;
+import com.adrienben.games.bagl.opengl.shader.subshader.SubShaderType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joml.Matrix4fc;
@@ -10,14 +13,11 @@ import org.joml.Vector2fc;
 import org.joml.Vector3fc;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL32;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Shader class
@@ -32,8 +32,8 @@ public class Shader {
     private static Shader boundShader;
 
     private final FloatBuffer matrix4fBuffer;
-    private final HashMap<String, Integer> uniformToLocationMap;
-    private final ArrayList<Integer> attachedShaders;
+    private final Map<String, Integer> uniformToLocationMap;
+    private final List<SubShader> attachedShaders;
     private final int handle;
 
     /**
@@ -41,75 +41,59 @@ public class Shader {
      * <p>
      * This create a openGL shader program
      */
-    private Shader(final Builder builder) {
+    private Shader(final PipelineBuilder pipelineBuilder) {
         this.matrix4fBuffer = MemoryUtil.memAllocFloat(16);
         this.uniformToLocationMap = new HashMap<>();
         this.attachedShaders = new ArrayList<>();
         this.handle = GL20.glCreateProgram();
 
-        if (Objects.isNull(builder.vertexPath)) {
-            throw new IllegalArgumentException("You cannot build a shader with no vertex shader source");
-        }
-
-        this.addShader(builder.vertexPath, GL20.GL_VERTEX_SHADER);
-        if (Objects.nonNull(builder.fragmentPath)) {
-            this.addShader(builder.fragmentPath, GL20.GL_FRAGMENT_SHADER);
-        }
-        if (Objects.nonNull(builder.geometryPath)) {
-            this.addShader(builder.geometryPath, GL32.GL_GEOMETRY_SHADER);
-        }
-        this.compile();
+        Objects.requireNonNull(pipelineBuilder.vertexPath, "You cannot build a shader with no vertex shader source");
+        addSubShader(pipelineBuilder.vertexPath, SubShaderType.VERTEX);
+        ObjectUtils.consumeIfPresent(pipelineBuilder.fragmentPath, path -> addSubShader(path, SubShaderType.FRAGMENT));
+        ObjectUtils.consumeIfPresent(pipelineBuilder.geometryPath, path -> addSubShader(path, SubShaderType.GEOMETRY));
+        compile();
     }
 
     /**
-     * Generate a shader builder
+     * Return a new instance of a {@link PipelineBuilder}. A pipeline builder is used
+     * to create shaders that will be performed by the graphic pipeline.
      *
      * @return A new builder
      */
-    public static Builder builder() {
-        return new Builder();
+    public static PipelineBuilder pipelineBuilder() {
+        return new PipelineBuilder();
     }
 
     /**
      * Release OpenGL resources
      */
     public void destroy() {
-        MemoryUtil.memFree(this.matrix4fBuffer);
-        for (final Integer i : this.attachedShaders) {
-            GL20.glDeleteShader(i);
-        }
-        GL20.glDeleteProgram(this.handle);
+        MemoryUtil.memFree(matrix4fBuffer);
+        attachedShaders.forEach(SubShader::destroy);
+        GL20.glDeleteProgram(handle);
     }
 
     /**
      * Load the source code of the shader.
      * <p>
-     * Create a new OpenGL shader object and compile it. Finally
-     * it attaches the shader to the OpenGL program object and add
-     * the handle to the attached shaders list
+     * Create a new {@link SubShader} and attach it to this shader.
      *
      * @param filePath The path file
      * @param type     The type of shader to load
-     * @throws EngineException If source loading or shader compilation fails
      */
-    private void addShader(final ResourcePath filePath, final int type) {
+    private void addSubShader(final ResourcePath filePath, final SubShaderType type) {
         final var source = loadSource(filePath);
-
-        final var shader = GL20.glCreateShader(type);
-        GL20.glShaderSource(shader, source);
-        GL20.glCompileShader(shader);
-
-        if (GL20.glGetShaderi(shader, GL20.GL_COMPILE_STATUS) == GL11.GL_FALSE) {
-            final var logLength = GL20.glGetShaderi(shader, GL20.GL_INFO_LOG_LENGTH);
-            final var message = GL20.glGetShaderInfoLog(shader, logLength);
-            throw new EngineException("Shader compilation error : " + message);
-        }
-        GL20.glAttachShader(this.handle, shader);
-        this.attachedShaders.add(shader);
+        final var subShader = new SubShader(source, type);
+        attachSubShader(subShader);
     }
 
     private String loadSource(final ResourcePath filePath) {
         return new ShaderSourceParser().parse(filePath);
+    }
+
+    private void attachSubShader(final SubShader subShader) {
+        GL20.glAttachShader(handle, subShader.getHandle());
+        attachedShaders.add(subShader);
     }
 
     /**
@@ -118,21 +102,28 @@ public class Shader {
      */
     private void compile() {
         LOG.trace("Compiling shader");
-        GL20.glLinkProgram(this.handle);
-        if (GL20.glGetProgrami(this.handle, GL20.GL_LINK_STATUS) == GL11.GL_FALSE) {
-            final var logLength = GL20.glGetProgrami(this.handle, GL20.GL_INFO_LOG_LENGTH);
-            final var message = GL20.glGetProgramInfoLog(this.handle, logLength);
+        GL20.glLinkProgram(handle);
+        checkLinkStatus();
+        fetchActiveUniforms();
+    }
+
+    private void checkLinkStatus() {
+        if (GL20.glGetProgrami(handle, GL20.GL_LINK_STATUS) == GL11.GL_FALSE) {
+            final var logLength = GL20.glGetProgrami(handle, GL20.GL_INFO_LOG_LENGTH);
+            final var message = GL20.glGetProgramInfoLog(handle, logLength);
             throw new EngineException("Shader linking error : " + message);
         }
+    }
 
-        final var uniformCount = GL20.glGetProgrami(this.handle, GL20.GL_ACTIVE_UNIFORMS);
-        final var maxLength = GL20.glGetProgrami(this.handle, GL20.GL_ACTIVE_UNIFORM_MAX_LENGTH);
+    private void fetchActiveUniforms() {
+        final var uniformCount = GL20.glGetProgrami(handle, GL20.GL_ACTIVE_UNIFORMS);
+        final var maxLength = GL20.glGetProgrami(handle, GL20.GL_ACTIVE_UNIFORM_MAX_LENGTH);
         try (final MemoryStack stack = MemoryStack.stackPush()) {
             final var size = stack.mallocInt(1);
             final var type = stack.mallocInt(1);
             for (var i = 0; i < uniformCount; i++) {
-                final var name = GL20.glGetActiveUniform(this.handle, i, maxLength, size, type);
-                this.uniformToLocationMap.put(name, i);
+                final var name = GL20.glGetActiveUniform(handle, i, maxLength, size, type);
+                uniformToLocationMap.put(name, i);
             }
         }
     }
@@ -145,8 +136,8 @@ public class Shader {
      * @return This for chaining
      */
     public Shader setUniform(final String name, final float value) {
-        this.checkIsShaderBound();
-        final var location = this.getLocation(name);
+        checkIsShaderBound();
+        final var location = getLocation(name);
         GL20.glUniform1f(location, value);
         return this;
     }
@@ -159,8 +150,8 @@ public class Shader {
      * @return This for chaining
      */
     public Shader setUniform(final String name, final int value) {
-        this.checkIsShaderBound();
-        final var location = this.getLocation(name);
+        checkIsShaderBound();
+        final var location = getLocation(name);
         GL20.glUniform1i(location, value);
         return this;
     }
@@ -173,9 +164,9 @@ public class Shader {
      * @return This for chaining
      */
     public Shader setUniform(final String name, final Matrix4fc matrix) {
-        this.checkIsShaderBound();
-        final var location = this.getLocation(name);
-        GL20.glUniformMatrix4fv(location, false, matrix.get(this.matrix4fBuffer));
+        checkIsShaderBound();
+        final var location = getLocation(name);
+        GL20.glUniformMatrix4fv(location, false, matrix.get(matrix4fBuffer));
         return this;
     }
 
@@ -187,8 +178,8 @@ public class Shader {
      * @return This for chaining
      */
     public Shader setUniform(final String name, final Vector2fc vector) {
-        this.checkIsShaderBound();
-        final var location = this.getLocation(name);
+        checkIsShaderBound();
+        final var location = getLocation(name);
         GL20.glUniform2f(location, vector.x(), vector.y());
         return this;
     }
@@ -201,8 +192,8 @@ public class Shader {
      * @return This for chaining
      */
     public Shader setUniform(final String name, final Vector3fc vector) {
-        this.checkIsShaderBound();
-        final var location = this.getLocation(name);
+        checkIsShaderBound();
+        final var location = getLocation(name);
         GL20.glUniform3f(location, vector.x(), vector.y(), vector.z());
         return this;
     }
@@ -215,8 +206,8 @@ public class Shader {
      * @return This for chaining
      */
     public Shader setUniform(final String name, final Color color) {
-        this.checkIsShaderBound();
-        final var location = this.getLocation(name);
+        checkIsShaderBound();
+        final var location = getLocation(name);
         GL20.glUniform4f(location, color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
         return this;
     }
@@ -229,7 +220,7 @@ public class Shader {
      * @return This for chaining
      */
     public Shader setUniform(final String name, final boolean bool) {
-        this.setUniform(name, bool ? 1 : 0);
+        setUniform(name, bool ? 1 : 0);
         return this;
     }
 
@@ -241,7 +232,7 @@ public class Shader {
      * @throws IllegalArgumentException if it does not exists
      */
     private int getLocation(final String name) {
-        final var location = this.uniformToLocationMap.get(name);
+        final var location = uniformToLocationMap.get(name);
         if (Objects.isNull(location)) {
             throw new IllegalArgumentException("The uniform '" + name + "' does not exist for the current shader.");
         }
@@ -281,9 +272,9 @@ public class Shader {
     }
 
     /**
-     * Shader builder
+     * A pipeline builder used to create shaders that will be performed by the graphic pipeline.
      */
-    public static class Builder {
+    public static class PipelineBuilder {
 
         private ResourcePath vertexPath;
         private ResourcePath fragmentPath;
@@ -292,7 +283,7 @@ public class Shader {
         /**
          * Private constructor to prevent instantiation
          */
-        private Builder() {
+        private PipelineBuilder() {
         }
 
         /**
@@ -313,8 +304,8 @@ public class Shader {
          * @param path The path of the resource
          * @return This
          */
-        public Builder vertexPath(final ResourcePath path) {
-            this.vertexPath = path;
+        public PipelineBuilder vertexPath(final ResourcePath path) {
+            vertexPath = path;
             return this;
         }
 
@@ -327,8 +318,8 @@ public class Shader {
          * @param path The path of the resource
          * @return This
          */
-        public Builder fragmentPath(final ResourcePath path) {
-            this.fragmentPath = path;
+        public PipelineBuilder fragmentPath(final ResourcePath path) {
+            fragmentPath = path;
             return this;
         }
 
@@ -341,8 +332,8 @@ public class Shader {
          * @param path The path of the resource
          * @return This
          */
-        public Builder geometryPath(final ResourcePath path) {
-            this.geometryPath = path;
+        public PipelineBuilder geometryPath(final ResourcePath path) {
+            geometryPath = path;
             return this;
         }
     }

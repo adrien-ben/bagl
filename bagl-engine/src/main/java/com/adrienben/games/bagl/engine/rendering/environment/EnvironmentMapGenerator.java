@@ -51,15 +51,15 @@ public class EnvironmentMapGenerator {
         this.irradianceFrameBuffer = new FrameBuffer(IRRADIANCE_MAP_RESOLUTION, IRRADIANCE_MAP_RESOLUTION, frameBufferParameters);
         this.preFilteredMapFrameBuffer = new FrameBuffer(PRE_FILTERED_MAP_RESOLUTION, PRE_FILTERED_MAP_RESOLUTION, frameBufferParameters);
 
-        this.environmentSphericalShader = Shader.builder()
+        this.environmentSphericalShader = Shader.pipelineBuilder()
                 .vertexPath(ResourcePath.get("classpath:/shaders/environment/environment.vert"))
                 .fragmentPath(ResourcePath.get("classpath:/shaders/environment/environment_spherical_sample.frag"))
                 .build();
-        this.irradianceShader = Shader.builder()
+        this.irradianceShader = Shader.pipelineBuilder()
                 .vertexPath(ResourcePath.get("classpath:/shaders/environment/environment.vert"))
                 .fragmentPath(ResourcePath.get("classpath:/shaders/environment/irradiance.frag"))
                 .build();
-        this.preFilteredMapShader = Shader.builder()
+        this.preFilteredMapShader = Shader.pipelineBuilder()
                 .vertexPath(ResourcePath.get("classpath:/shaders/environment/environment.vert"))
                 .fragmentPath(ResourcePath.get("classpath:/shaders/environment/pre_filtered_map.frag"))
                 .build();

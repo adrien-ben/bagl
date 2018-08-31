@@ -56,7 +56,7 @@ public class TextRenderer implements Renderer<Text> {
         this.iBuffer = this.initIndices();
 
         this.configuration = Configuration.getInstance();
-        this.shader = Shader.builder()
+        this.shader = Shader.pipelineBuilder()
                 .vertexPath(ResourcePath.get("classpath:/shaders/ui/text.vert"))
                 .fragmentPath(ResourcePath.get("classpath:/shaders/ui/text.frag"))
                 .build();

@@ -59,7 +59,7 @@ public class ParticleRenderer implements Renderer<ParticleEmitter> {
      * Construct the particle renderer
      */
     public ParticleRenderer() {
-        this.shader = Shader.builder()
+        this.shader = Shader.pipelineBuilder()
                 .vertexPath(ResourcePath.get("classpath:/shaders/particles/particles.vert"))
                 .fragmentPath(ResourcePath.get("classpath:/shaders/particles/particles.frag"))
                 .geometryPath(ResourcePath.get("classpath:/shaders/particles/particles.geom"))

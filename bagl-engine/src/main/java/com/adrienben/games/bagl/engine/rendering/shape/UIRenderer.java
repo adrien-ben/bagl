@@ -35,7 +35,7 @@ public class UIRenderer {
         this.started = false;
         this.bufferedCount = 0;
         this.vertices = MemoryUtil.memAllocFloat(BUFFER_SIZE * VERTICES_PER_SHAPE * ELEMENT_PER_VERTEX);
-        this.shader = Shader.builder()
+        this.shader = Shader.pipelineBuilder()
                 .vertexPath(ResourcePath.get("classpath:/shaders/ui/shape.vert"))
                 .fragmentPath(ResourcePath.get("classpath:/shaders/ui/shape.frag"))
                 .build();

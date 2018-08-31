@@ -74,7 +74,7 @@ public class Spritebatch implements Renderer<Sprite> {
         this.size = size;
 
         this.camera = new Camera2D(new Vector2f(width / 2, height / 2), width, height);
-        this.spriteShader = Shader.builder()
+        this.spriteShader = Shader.pipelineBuilder()
                 .vertexPath(ResourcePath.get("classpath:/shaders/sprite/sprite.vert"))
                 .fragmentPath(ResourcePath.get("classpath:/shaders/sprite/sprite.frag"))
                 .build();
