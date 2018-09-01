@@ -1,4 +1,4 @@
-package com.adrienben.games.bagl.opengl;
+package com.adrienben.games.bagl.opengl.buffer;
 
 import static org.lwjgl.opengl.GL15.*;
 

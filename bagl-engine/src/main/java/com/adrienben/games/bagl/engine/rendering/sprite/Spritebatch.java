@@ -5,7 +5,7 @@ import com.adrienben.games.bagl.core.exception.EngineException;
 import com.adrienben.games.bagl.core.io.ResourcePath;
 import com.adrienben.games.bagl.engine.camera.Camera2D;
 import com.adrienben.games.bagl.engine.rendering.renderer.Renderer;
-import com.adrienben.games.bagl.opengl.BufferUsage;
+import com.adrienben.games.bagl.opengl.buffer.BufferUsage;
 import com.adrienben.games.bagl.opengl.shader.Shader;
 import com.adrienben.games.bagl.opengl.texture.Texture2D;
 import com.adrienben.games.bagl.opengl.vertex.*;

@@ -1,8 +1,8 @@
 package com.adrienben.games.bagl.engine.rendering.model;
 
-import com.adrienben.games.bagl.opengl.BufferUsage;
 import com.adrienben.games.bagl.opengl.DataType;
 import com.adrienben.games.bagl.opengl.PrimitiveType;
+import com.adrienben.games.bagl.opengl.buffer.BufferUsage;
 import com.adrienben.games.bagl.opengl.vertex.IndexBuffer;
 import com.adrienben.games.bagl.opengl.vertex.VertexBuffer;
 import com.adrienben.games.bagl.opengl.vertex.VertexBufferParams;

@@ -1,8 +1,8 @@
 package com.adrienben.games.bagl.opengl.vertex;
 
 import com.adrienben.games.bagl.core.validation.Validation;
-import com.adrienben.games.bagl.opengl.BufferUsage;
 import com.adrienben.games.bagl.opengl.DataType;
+import com.adrienben.games.bagl.opengl.buffer.BufferUsage;
 
 import java.util.ArrayList;
 import java.util.Collections;

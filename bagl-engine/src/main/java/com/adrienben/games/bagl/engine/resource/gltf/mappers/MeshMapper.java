@@ -3,7 +3,7 @@ package com.adrienben.games.bagl.engine.resource.gltf.mappers;
 import com.adrienben.games.bagl.core.utils.Tuple2;
 import com.adrienben.games.bagl.engine.rendering.material.Material;
 import com.adrienben.games.bagl.engine.rendering.model.Mesh;
-import com.adrienben.games.bagl.opengl.BufferUsage;
+import com.adrienben.games.bagl.opengl.buffer.BufferUsage;
 import com.adrienben.games.bagl.opengl.texture.Texture2D;
 import com.adrienben.games.bagl.opengl.vertex.IndexBuffer;
 import com.adrienben.games.bagl.opengl.vertex.VertexBuffer;

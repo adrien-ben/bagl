@@ -1,8 +1,8 @@
 package com.adrienben.games.bagl.opengl.vertex;
 
 import com.adrienben.games.bagl.core.exception.EngineException;
-import com.adrienben.games.bagl.opengl.BufferUsage;
 import com.adrienben.games.bagl.opengl.DataType;
+import com.adrienben.games.bagl.opengl.buffer.BufferUsage;
 import org.lwjgl.opengl.GL15;
 
 import java.nio.ByteBuffer;
