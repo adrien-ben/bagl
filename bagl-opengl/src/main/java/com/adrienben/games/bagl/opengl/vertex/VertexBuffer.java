@@ -2,7 +2,8 @@ package com.adrienben.games.bagl.opengl.vertex;
 
 import com.adrienben.games.bagl.core.exception.EngineException;
 import com.adrienben.games.bagl.opengl.DataType;
-import org.lwjgl.opengl.GL15;
+import com.adrienben.games.bagl.opengl.buffer.Buffer;
+import com.adrienben.games.bagl.opengl.buffer.BufferTarget;
 
 import java.nio.*;
 
@@ -15,7 +16,7 @@ public class VertexBuffer {
 
     private static int boundBuffer = 0;
 
-    private final int vboId;
+    private final Buffer buffer;
     private final int vertexCount;
     private final int bufferSize;
     private final int stride;
@@ -26,43 +27,36 @@ public class VertexBuffer {
      * <p>
      * dataType must be {@link DataType#DOUBLE}
      *
-     * @param buffer The vertex data
+     * @param data   The vertex data
      * @param params The buffer parameters
      */
-    public VertexBuffer(final DoubleBuffer buffer, final VertexBufferParams params) {
+    public VertexBuffer(final DoubleBuffer data, final VertexBufferParams params) {
         this.checkType(params.getDataType(), DataType.DOUBLE, "DoubleBuffer is only compatible with DataType.DOUBLE");
 
-        this.vertexCount = this.checkBufferConsistenceWithParams(buffer, DataType.DOUBLE, params);
-        this.bufferSize = buffer.capacity();
+        this.vertexCount = this.checkBufferConsistenceWithParams(data, DataType.DOUBLE, params);
+        this.bufferSize = data.capacity();
         this.stride = this.computeStride(params);
         this.params = params;
-
-        this.vboId = GL15.glGenBuffers();
-        this.bind(this.vboId);
-        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, buffer, params.getUsage().getGlCode());
-        this.bind(0);
+        this.buffer = new Buffer(data, params.getUsage());
     }
+
 
     /**
      * Construct a vertex buffer
      * <p>
      * dataType must be {@link DataType#FLOAT}
      *
-     * @param buffer The vertex data
+     * @param data   The vertex data
      * @param params The buffer parameters
      */
-    public VertexBuffer(final FloatBuffer buffer, final VertexBufferParams params) {
+    public VertexBuffer(final FloatBuffer data, final VertexBufferParams params) {
         this.checkType(params.getDataType(), DataType.FLOAT, "FloatBuffer is only compatible with DataType.FLOAT");
 
-        this.vertexCount = this.checkBufferConsistenceWithParams(buffer, DataType.FLOAT, params);
-        this.bufferSize = buffer.capacity();
+        this.vertexCount = this.checkBufferConsistenceWithParams(data, DataType.FLOAT, params);
+        this.bufferSize = data.capacity();
         this.stride = this.computeStride(params);
         this.params = params;
-
-        this.vboId = GL15.glGenBuffers();
-        this.bind(this.vboId);
-        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, buffer, params.getUsage().getGlCode());
-        this.bind(0);
+        this.buffer = new Buffer(data, params.getUsage());
     }
 
     /**
@@ -70,21 +64,17 @@ public class VertexBuffer {
      * <p>
      * dataType must be {@link DataType#INT}
      *
-     * @param buffer The vertex data
+     * @param data   The vertex data
      * @param params The buffer parameters
      */
-    public VertexBuffer(final IntBuffer buffer, final VertexBufferParams params) {
+    public VertexBuffer(final IntBuffer data, final VertexBufferParams params) {
         this.checkType(params.getDataType(), DataType.INT, "IntBuffer is only compatible with DataType.INT");
 
-        this.vertexCount = this.checkBufferConsistenceWithParams(buffer, DataType.INT, params);
-        this.bufferSize = buffer.capacity();
+        this.vertexCount = this.checkBufferConsistenceWithParams(data, DataType.INT, params);
+        this.bufferSize = data.capacity();
         this.stride = this.computeStride(params);
         this.params = params;
-
-        this.vboId = GL15.glGenBuffers();
-        this.bind(this.vboId);
-        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, buffer, params.getUsage().getGlCode());
-        this.bind(0);
+        this.buffer = new Buffer(data, params.getUsage());
     }
 
     /**
@@ -92,21 +82,17 @@ public class VertexBuffer {
      * <p>
      * dataType must be {@link DataType#SHORT}
      *
-     * @param buffer The vertex data
+     * @param data   The vertex data
      * @param params The buffer parameters
      */
-    public VertexBuffer(final ShortBuffer buffer, final VertexBufferParams params) {
+    public VertexBuffer(final ShortBuffer data, final VertexBufferParams params) {
         this.checkType(params.getDataType(), DataType.SHORT, "ShortBuffer is only compatible with DataType.SHORT");
 
-        this.vertexCount = this.checkBufferConsistenceWithParams(buffer, DataType.SHORT, params);
-        this.bufferSize = buffer.capacity();
+        this.vertexCount = this.checkBufferConsistenceWithParams(data, DataType.SHORT, params);
+        this.bufferSize = data.capacity();
         this.stride = this.computeStride(params);
         this.params = params;
-
-        this.vboId = GL15.glGenBuffers();
-        this.bind(this.vboId);
-        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, buffer, params.getUsage().getGlCode());
-        this.bind(0);
+        this.buffer = new Buffer(data, params.getUsage());
     }
 
     /**
@@ -114,19 +100,15 @@ public class VertexBuffer {
      * <p>
      * Unlike other constructor this one allows and {@code dataType}.
      *
-     * @param buffer The vertex data
+     * @param data   The vertex data
      * @param params The buffer parameters
      */
-    public VertexBuffer(final ByteBuffer buffer, final VertexBufferParams params) {
-        this.vertexCount = this.checkBufferConsistenceWithParams(buffer, DataType.BYTE, params);
-        this.bufferSize = buffer.capacity() / params.getDataType().getSize();
+    public VertexBuffer(final ByteBuffer data, final VertexBufferParams params) {
+        this.vertexCount = this.checkBufferConsistenceWithParams(data, DataType.BYTE, params);
+        this.bufferSize = data.capacity() / params.getDataType().getSize();
         this.stride = this.computeStride(params);
         this.params = params;
-
-        this.vboId = GL15.glGenBuffers();
-        this.bind(this.vboId);
-        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, buffer, params.getUsage().getGlCode());
-        this.bind(0);
+        this.buffer = new Buffer(data, params.getUsage());
     }
 
     /**
@@ -168,7 +150,7 @@ public class VertexBuffer {
      * @return The number of vertex contained in the buffer
      */
     private int checkBufferConsistenceWithParams(
-            final Buffer buffer,
+            final java.nio.Buffer buffer,
             final DataType bufferDataType,
             final VertexBufferParams params
     ) {
@@ -187,10 +169,10 @@ public class VertexBuffer {
      * Unbinds the buffer if it is still bound
      */
     public void destroy() {
-        if (VertexBuffer.boundBuffer == this.vboId) {
-            this.bind(0);
+        if (VertexBuffer.boundBuffer == buffer.getHandle()) {
+            bind(0);
         }
-        GL15.glDeleteBuffers(this.vboId);
+        buffer.destroy();
     }
 
     /**
@@ -198,15 +180,14 @@ public class VertexBuffer {
      * <p>
      * dataType must be {@link DataType#DOUBLE}
      *
-     * @param buffer The vertex data
+     * @param data The vertex data
      * @throws EngineException if the buffer is not bound
      */
-    public void update(final DoubleBuffer buffer) {
-        this.checkIsBound("You cannot update a vertex buffer which is not bound");
-        this.checkType(params.getDataType(), DataType.DOUBLE, "DoubleBuffer is only compatible with DataType.DOUBLE. Current data type is "
-                + this.params.getDataType());
-        this.checkUpdateBufferSize(buffer);
-        GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, buffer);
+    public void update(final DoubleBuffer data) {
+        checkType(params.getDataType(), DataType.DOUBLE, "DoubleBuffer is only compatible with DataType.DOUBLE. Current data type is "
+                + params.getDataType());
+        checkUpdateBufferSize(data);
+        buffer.setSubData(data, 0);
     }
 
     /**
@@ -214,15 +195,14 @@ public class VertexBuffer {
      * <p>
      * dataType must be {@link DataType#FLOAT}
      *
-     * @param buffer The vertex data
+     * @param data The vertex data
      * @throws EngineException if the buffer is not bound
      */
-    public void update(final FloatBuffer buffer) {
-        this.checkIsBound("You cannot update a vertex buffer which is not bound");
-        this.checkType(params.getDataType(), DataType.FLOAT, "FloatBuffer is only compatible with DataType.FLOAT. Current data type is "
-                + this.params.getDataType());
-        this.checkUpdateBufferSize(buffer);
-        GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, buffer);
+    public void update(final FloatBuffer data) {
+        checkType(params.getDataType(), DataType.FLOAT, "FloatBuffer is only compatible with DataType.FLOAT. Current data type is "
+                + params.getDataType());
+        checkUpdateBufferSize(data);
+        buffer.setSubData(data, 0);
     }
 
     /**
@@ -230,15 +210,14 @@ public class VertexBuffer {
      * <p>
      * dataType must be {@link DataType#INT}
      *
-     * @param buffer The vertex data
+     * @param data The vertex data
      * @throws EngineException if the buffer is not bound
      */
-    public void update(final IntBuffer buffer) {
-        this.checkIsBound("You cannot update a vertex buffer which is not bound");
-        this.checkType(params.getDataType(), DataType.INT, "IntBuffer is only compatible with DataType.INT. Current data type is "
-                + this.params.getDataType());
-        this.checkUpdateBufferSize(buffer);
-        GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, buffer);
+    public void update(final IntBuffer data) {
+        checkType(params.getDataType(), DataType.INT, "IntBuffer is only compatible with DataType.INT. Current data type is "
+                + params.getDataType());
+        checkUpdateBufferSize(data);
+        buffer.setSubData(data, 0);
     }
 
     /**
@@ -246,15 +225,14 @@ public class VertexBuffer {
      * <p>
      * dataType must be {@link DataType#SHORT}
      *
-     * @param buffer The vertex data
+     * @param data The vertex data
      * @throws EngineException if the buffer is not bound
      */
-    public void update(final ShortBuffer buffer) {
-        this.checkIsBound("You cannot update a vertex buffer which is not bound");
-        this.checkType(params.getDataType(), DataType.SHORT, "ShortBuffer is only compatible with DataType.SHORT. Current data type is "
-                + this.params.getDataType());
-        this.checkUpdateBufferSize(buffer);
-        GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, buffer);
+    public void update(final ShortBuffer data) {
+        checkType(params.getDataType(), DataType.SHORT, "ShortBuffer is only compatible with DataType.SHORT. Current data type is "
+                + params.getDataType());
+        checkUpdateBufferSize(data);
+        buffer.setSubData(data, 0);
     }
 
     /**
@@ -262,13 +240,12 @@ public class VertexBuffer {
      * <p>
      * dataType must be {@link DataType#BYTE}
      *
-     * @param buffer The vertex data
+     * @param data The vertex data
      * @throws EngineException if the buffer is not bound
      */
-    public void update(final ByteBuffer buffer) {
-        this.checkIsBound("You cannot update a vertex buffer which is not bound");
-        this.checkUpdateBufferSize(buffer);
-        GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, buffer);
+    public void update(final ByteBuffer data) {
+        checkUpdateBufferSize(data);
+        buffer.setSubData(data, 0);
     }
 
     /**
@@ -277,9 +254,9 @@ public class VertexBuffer {
      *
      * @param buffer The update buffer
      */
-    private void checkUpdateBufferSize(final Buffer buffer) {
-        if (buffer.capacity() / this.params.getDataType().getSize() > this.bufferSize) {
-            throw new EngineException("The buffer has too much element. Max size is " + this.bufferSize);
+    private void checkUpdateBufferSize(final java.nio.Buffer buffer) {
+        if (buffer.capacity() / params.getDataType().getSize() > bufferSize) {
+            throw new EngineException("The buffer has too much element. Max size is " + bufferSize);
         }
     }
 
@@ -287,8 +264,8 @@ public class VertexBuffer {
      * Bind the buffer
      */
     public void bind() {
-        if (VertexBuffer.boundBuffer != this.vboId) {
-            this.bind(this.vboId);
+        if (boundBuffer != buffer.getHandle()) {
+            bind(buffer.getHandle());
         }
     }
 
@@ -298,8 +275,8 @@ public class VertexBuffer {
      * @throws EngineException if the buffer is not bound
      */
     public void unbind() {
-        this.checkIsBound("You cannot unbind a vertex buffer which is not bound");
-        this.bind(0);
+        checkIsBound("You cannot unbind a vertex buffer which is not bound");
+        bind(0);
     }
 
     /**
@@ -308,8 +285,8 @@ public class VertexBuffer {
      * @param vboId The id of the buffer to bind
      */
     private void bind(final int vboId) {
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vboId);
-        VertexBuffer.boundBuffer = vboId;
+        buffer.bind(BufferTarget.ARRAY);
+        boundBuffer = vboId;
     }
 
     /**
@@ -318,20 +295,20 @@ public class VertexBuffer {
      * @throws EngineException if the buffer is not bound
      */
     private void checkIsBound(final String message) {
-        if (VertexBuffer.boundBuffer != this.vboId) {
+        if (boundBuffer != buffer.getHandle()) {
             throw new EngineException(message);
         }
     }
 
     public int getVertexCount() {
-        return this.vertexCount;
+        return vertexCount;
     }
 
     public int getStride() {
-        return this.stride;
+        return stride;
     }
 
     public VertexBufferParams getParams() {
-        return this.params;
+        return params;
     }
 }

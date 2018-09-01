@@ -2,8 +2,9 @@ package com.adrienben.games.bagl.opengl.vertex;
 
 import com.adrienben.games.bagl.core.exception.EngineException;
 import com.adrienben.games.bagl.opengl.DataType;
+import com.adrienben.games.bagl.opengl.buffer.Buffer;
+import com.adrienben.games.bagl.opengl.buffer.BufferTarget;
 import com.adrienben.games.bagl.opengl.buffer.BufferUsage;
-import org.lwjgl.opengl.GL15;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
@@ -20,24 +21,18 @@ public class IndexBuffer {
 
     private final DataType dataType;
     private final int size;
-    private final int iboId;
+    private final Buffer buffer;
 
     public IndexBuffer(final IntBuffer buffer, final BufferUsage usage) {
         this.dataType = DataType.UNSIGNED_INT;
         this.size = buffer.capacity();
-        this.iboId = GL15.glGenBuffers();
-        this.bind(this.iboId);
-        GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, buffer, usage.getGlCode());
-        this.bind(0);
+        this.buffer = new Buffer(buffer, usage);
     }
 
     public IndexBuffer(final ShortBuffer buffer, final BufferUsage usage) {
         this.dataType = DataType.UNSIGNED_SHORT;
         this.size = buffer.capacity();
-        this.iboId = GL15.glGenBuffers();
-        this.bind(this.iboId);
-        GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, buffer, usage.getGlCode());
-        this.bind(0);
+        this.buffer = new Buffer(buffer, usage);
     }
 
     public IndexBuffer(final ByteBuffer buffer, final BufferUsage usage) {
@@ -57,10 +52,7 @@ public class IndexBuffer {
     public IndexBuffer(final ByteBuffer buffer, final DataType dataType, final BufferUsage usage) {
         this.dataType = dataType;
         this.size = buffer.capacity() / dataType.getSize();
-        this.iboId = GL15.glGenBuffers();
-        this.bind(this.iboId);
-        GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, buffer, usage.getGlCode());
-        this.bind(0);
+        this.buffer = new Buffer(buffer, usage);
     }
 
     /**
@@ -69,18 +61,18 @@ public class IndexBuffer {
      * Unbinds the buffer if it is still bound
      */
     public void destroy() {
-        if (IndexBuffer.boundBuffer == this.iboId) {
-            this.bind(0);
+        if (boundBuffer == buffer.getHandle()) {
+            bind(0);
         }
-        GL15.glDeleteBuffers(this.iboId);
+        buffer.destroy();
     }
 
     /**
      * Bind the buffer
      */
     public void bind() {
-        if (IndexBuffer.boundBuffer != this.iboId) {
-            this.bind(this.iboId);
+        if (boundBuffer != buffer.getHandle()) {
+            bind(buffer.getHandle());
         }
     }
 
@@ -90,8 +82,8 @@ public class IndexBuffer {
      * @throws EngineException if the buffer is not bound
      */
     public void unbind() {
-        this.checkIsBound("You cannot unbind an index buffer which is not bound");
-        this.bind(0);
+        checkIsBound("You cannot unbind an index buffer which is not bound");
+        bind(0);
     }
 
     /**
@@ -100,8 +92,8 @@ public class IndexBuffer {
      * @param iboId The id of the buffer to bind
      */
     private void bind(final int iboId) {
-        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, iboId);
-        IndexBuffer.boundBuffer = iboId;
+        buffer.bind(BufferTarget.ELEMENT_ARRAY);
+        boundBuffer = iboId;
     }
 
     /**
@@ -110,16 +102,16 @@ public class IndexBuffer {
      * @throws EngineException if the buffer is not bound
      */
     private void checkIsBound(final String message) {
-        if (IndexBuffer.boundBuffer != this.iboId) {
+        if (boundBuffer != buffer.getHandle()) {
             throw new EngineException(message);
         }
     }
 
     public DataType getDataType() {
-        return this.dataType;
+        return dataType;
     }
 
     public int getSize() {
-        return this.size;
+        return size;
     }
 }
