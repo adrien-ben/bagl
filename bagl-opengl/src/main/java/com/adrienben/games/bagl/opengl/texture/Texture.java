@@ -1,5 +1,7 @@
 package com.adrienben.games.bagl.opengl.texture;
 
+import com.adrienben.games.bagl.opengl.AccessMode;
+
 import static com.adrienben.games.bagl.opengl.OpenGL.*;
 import static org.lwjgl.opengl.EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT;
 import static org.lwjgl.opengl.GL11.*;
@@ -103,6 +105,32 @@ public abstract class Texture {
      */
     public void unbind(final int textureUnit) {
         unbindTexture(this, textureUnit);
+    }
+
+    /**
+     * Bind this texture as an image texture.
+     * <p>
+     * Note that not every texture format is compatible with image texture binding.
+     *
+     * @param imageUnit  The image unit to which to bind the image texture.
+     * @param level      The level of the texture to bind.
+     * @param layered    Whether to use layer texture binding.
+     * @param layer      The layer to bind.
+     * @param accessMode The access mode of the image texture.
+     */
+    public void bindAsImageTexture(final int imageUnit, final int level, final boolean layered, final int layer, final AccessMode accessMode) {
+        bindImageTexture(this, imageUnit, level, layered, layer, accessMode);
+    }
+
+    /**
+     * Unbind this texture as an image texture.
+     * <p>
+     * Note that not every texture format is compatible with image texture binding.
+     *
+     * @param imageUnit The image unit from which to unbind the image texture.
+     */
+    public void unbindAsImageTexture(final int imageUnit) {
+        unbindImageTexture(this, imageUnit);
     }
 
     public Type getType() {

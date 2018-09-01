@@ -14,8 +14,7 @@ import java.util.Objects;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
 import static org.lwjgl.opengl.GL13.glActiveTexture;
-import static org.lwjgl.opengl.GL42.GL_ALL_BARRIER_BITS;
-import static org.lwjgl.opengl.GL42.glMemoryBarrier;
+import static org.lwjgl.opengl.GL42.*;
 import static org.lwjgl.opengl.GL43.glDispatchCompute;
 
 /**
@@ -27,6 +26,8 @@ public final class OpenGL {
 
     private static final int TEXTURE_UNITS_COUNT = 1024;
     private static final Texture[] BOUND_TEXTURES = new Texture[TEXTURE_UNITS_COUNT];
+    private static final int IMAGE_UNITS_COUNT = 1024;
+    private static final Texture[] BOUND_IMAGES = new Texture[IMAGE_UNITS_COUNT];
     private static final FloatBuffer COLOR_PARAM_BUFFER = MemoryUtil.memAllocFloat(4);
 
     private OpenGL() {
@@ -100,6 +101,41 @@ public final class OpenGL {
         COLOR_PARAM_BUFFER.put(2, color.getBlue());
         COLOR_PARAM_BUFFER.put(3, color.getAlpha());
         glTexParameterfv(type.getGlCode(), parameterCode, COLOR_PARAM_BUFFER);
+    }
+
+    /**
+     * Bind a texture as an image texture.
+     * <p>
+     * Note that not every texture format is compatible with image texture binding.
+     *
+     * @param texture    The texture to bind.
+     * @param imageUnit  The image unit to which to bind the texture.
+     * @param level      The level of the texture to bind.
+     * @param layered    Whether to use layered binding.
+     * @param layer      The layer to bind.
+     * @param accessMode The access mode for the image data.
+     */
+    public static void bindImageTexture(final Texture texture, final int imageUnit, final int level, final boolean layered, final int layer, final AccessMode accessMode) {
+        if (Objects.nonNull(BOUND_IMAGES[imageUnit])) {
+            throw new IllegalArgumentException("You cannot bind several images to the same image unit");
+        }
+        glBindImageTexture(imageUnit, texture.getHandle(), level, layered, layer, accessMode.getGlCode(), texture.getParameters().getFormat().getGlInternalFormat());
+        BOUND_IMAGES[imageUnit] = texture;
+    }
+
+    /**
+     * Unbind a texture as an image texture.
+     *
+     * @param texture   The texture to unbind.
+     * @param imageUnit The image unit to which to bind the texture.
+     */
+    public static void unbindImageTexture(final Texture texture, final int imageUnit) {
+        final var boundImage = BOUND_IMAGES[imageUnit];
+        if (!texture.equals(boundImage)) {
+            throw new IllegalArgumentException(String.format("You cannot unbind image %d from unit %d since it is not bound", texture.getHandle(), imageUnit));
+        }
+        glBindImageTexture(imageUnit, 0, 0, false, 0, 0, 0);
+        BOUND_IMAGES[imageUnit] = null;
     }
 
     /**

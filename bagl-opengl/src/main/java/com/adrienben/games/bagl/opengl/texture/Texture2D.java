@@ -3,6 +3,7 @@ package com.adrienben.games.bagl.opengl.texture;
 import com.adrienben.games.bagl.core.Asset;
 import com.adrienben.games.bagl.core.io.ResourcePath;
 import com.adrienben.games.bagl.core.utils.Image;
+import com.adrienben.games.bagl.opengl.AccessMode;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
@@ -28,7 +29,7 @@ public final class Texture2D extends Texture implements Asset {
      * @param parameters The parameters of the texture
      */
     public Texture2D(final int width, final int height, final TextureParameters parameters) {
-        this(width, height, ByteBuffer.class.cast(null), parameters);
+        this(width, height, (ByteBuffer) null, parameters);
     }
 
     /**
@@ -175,6 +176,19 @@ public final class Texture2D extends Texture implements Asset {
         applyTWrapParameter();
         applyBorderColorParameter();
         applyCompareFunctionParameters();
+    }
+
+    /**
+     * Bind this texture as an image texture.
+     * <p>
+     * Note that not every texture format is compatible with image texture binding.
+     *
+     * @param imageUnit  The image unit to which to bind the image texture.
+     * @param level      The level of the texture to bind.
+     * @param accessMode The access mode of the image texture.
+     */
+    public void bindAsImageTexture(final int imageUnit, final int level, final AccessMode accessMode) {
+        bindAsImageTexture(imageUnit, level, false, 0, accessMode);
     }
 
     public int getWidth() {
