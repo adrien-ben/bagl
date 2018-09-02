@@ -3,6 +3,7 @@ package com.adrienben.games.bagl.opengl.buffer;
 import java.nio.*;
 
 import static org.lwjgl.opengl.GL15.*;
+import static org.lwjgl.opengl.GL30.glBindBufferBase;
 
 /**
  * OpenGL buffer object.
@@ -80,6 +81,14 @@ public class Buffer {
 
     public void unbind(final BufferTarget target) {
         glBindBuffer(target.getGlCode(), 0);
+    }
+
+    public void bind(final BufferTarget target, final int index) {
+        glBindBufferBase(target.getGlCode(), index, handle);
+    }
+
+    public void unbind(final BufferTarget target, final int index) {
+        glBindBufferBase(target.getGlCode(), index, 0);
     }
 
     public int getHandle() {

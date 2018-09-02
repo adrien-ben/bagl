@@ -300,6 +300,10 @@ public class VertexBuffer {
         }
     }
 
+    public Buffer getBuffer() {
+        return buffer;
+    }
+
     public int getVertexCount() {
         return vertexCount;
     }
