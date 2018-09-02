@@ -25,6 +25,7 @@ public class FPSCameraController extends CameraController {
     private final Vector3f side;
     private final Vector3f up;
     private final Vector3f direction;
+    private float movementSpeed = DEFAULT_MOVEMENT_SPEED;
 
     /**
      * Construct a FPS camera controller
@@ -96,7 +97,11 @@ public class FPSCameraController extends CameraController {
         }
 
         if (!Vectors.isZero(this.direction)) {
-            super.camera.move(this.direction.normalize().mul(elapsed * DEFAULT_MOVEMENT_SPEED));
+            super.camera.move(this.direction.normalize().mul(elapsed * movementSpeed));
         }
+    }
+
+    public void setMovementSpeed(final float movementSpeed) {
+        this.movementSpeed = movementSpeed;
     }
 }
