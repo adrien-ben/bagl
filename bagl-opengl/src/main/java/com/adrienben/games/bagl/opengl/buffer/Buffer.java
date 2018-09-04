@@ -62,6 +62,26 @@ public class Buffer {
         bindExecuteAndUnbind(() -> glBufferSubData(BufferTarget.COPY_WRITE.getGlCode(), offset, data));
     }
 
+    public void getSubData(final ByteBuffer data, final int offset) {
+        bindExecuteAndUnbind(() -> glGetBufferSubData(BufferTarget.COPY_WRITE.getGlCode(), offset, data));
+    }
+
+    public void getSubData(final ShortBuffer data, final int offset) {
+        bindExecuteAndUnbind(() -> glGetBufferSubData(BufferTarget.COPY_WRITE.getGlCode(), offset, data));
+    }
+
+    public void getSubData(final IntBuffer data, final int offset) {
+        bindExecuteAndUnbind(() -> glGetBufferSubData(BufferTarget.COPY_WRITE.getGlCode(), offset, data));
+    }
+
+    public void getSubData(final FloatBuffer data, final int offset) {
+        bindExecuteAndUnbind(() -> glGetBufferSubData(BufferTarget.COPY_WRITE.getGlCode(), offset, data));
+    }
+
+    public void getSubData(final DoubleBuffer data, final int offset) {
+        bindExecuteAndUnbind(() -> glGetBufferSubData(BufferTarget.COPY_WRITE.getGlCode(), offset, data));
+    }
+
     private void bindExecuteAndUnbind(final Runnable bufferAction) {
         glBindBuffer(BufferTarget.COPY_WRITE.getGlCode(), handle);
         bufferAction.run();
