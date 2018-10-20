@@ -20,7 +20,7 @@
     </modules>
 
     <properties>
-        <java.version>1.10</java.version>
+        <java.version>11</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- Dependencies versions -->
         <lwjgl.version>3.1.6</lwjgl.version>
@@ -28,12 +28,11 @@
         <gltf-loader.version>1.0.3-SNAPSHOT</gltf-loader.version>
         <log4j.version>2.11.0</log4j.version>
         <gson.version>2.8.5</gson.version>
-        <junit-jupiter-engine.version>5.2.0</junit-jupiter-engine.version>
+        <junit-jupiter-engine.version>5.3.1</junit-jupiter-engine.version>
         <!-- Plugins versions -->
-        <maven.compiler.plugin.version>3.7.0</maven.compiler.plugin.version>
+        <maven.compiler.plugin.version>3.8.0</maven.compiler.plugin.version>
         <maven.source.plugin.version>3.0.1</maven.source.plugin.version>
-        <maven-surefire-plugin.version>2.22.0</maven-surefire-plugin.version>
-        <junit-platform-surefire-provider.version>1.2.0</junit-platform-surefire-provider.version>
+        <maven-surefire-plugin.version>2.22.1</maven-surefire-plugin.version>
     </properties>
 
     <dependencyManagement>
@@ -140,13 +139,6 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>${maven.compiler.plugin.version}</version>
-                    <dependencies>
-                        <dependency>
-                            <groupId>org.ow2.asm</groupId>
-                            <artifactId>asm</artifactId>
-                            <version>6.1.1</version>
-                        </dependency>
-                    </dependencies>
                     <configuration>
                         <source>${java.version}</source>
                         <target>${java.version}</target>
@@ -169,18 +161,6 @@
                 <plugin>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${maven-surefire-plugin.version}</version>
-                    <dependencies>
-                        <dependency>
-                            <groupId>org.junit.platform</groupId>
-                            <artifactId>junit-platform-surefire-provider</artifactId>
-                            <version>${junit-platform-surefire-provider.version}</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.junit.jupiter</groupId>
-                            <artifactId>junit-jupiter-engine</artifactId>
-                            <version>${junit-jupiter-engine.version}</version>
-                        </dependency>
-                    </dependencies>
                 </plugin>
             </plugins>
         </pluginManagement>
