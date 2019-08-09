@@ -20,7 +20,7 @@
     </modules>
 
     <properties>
-        <java.version>11</java.version>
+        <java.version>12</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- Dependencies versions -->
         <lwjgl.version>3.2.0</lwjgl.version>
@@ -32,7 +32,7 @@
         <!-- Plugins versions -->
         <maven.compiler.plugin.version>3.8.0</maven.compiler.plugin.version>
         <maven.source.plugin.version>3.0.1</maven.source.plugin.version>
-        <maven-surefire-plugin.version>2.22.1</maven-surefire-plugin.version>
+        <maven-surefire-plugin.version>3.0.0-M3</maven-surefire-plugin.version>
     </properties>
 
     <dependencyManagement>
@@ -140,8 +140,7 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>${maven.compiler.plugin.version}</version>
                     <configuration>
-                        <source>${java.version}</source>
-                        <target>${java.version}</target>
+                        <release>${java.version}</release>
                     </configuration>
                 </plugin>
                 <plugin>

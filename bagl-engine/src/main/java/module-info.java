@@ -48,4 +48,7 @@ module com.adrienben.games.bagl.engine {
     opens shaders.particles;
     opens shaders.post;
     opens shaders.sprite;
+
+    opens com.adrienben.games.bagl.engine.resource.asset.json to gson;
+    opens com.adrienben.games.bagl.engine.resource.scene.json to gson;
 }

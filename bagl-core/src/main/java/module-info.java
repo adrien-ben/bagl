@@ -18,4 +18,7 @@ module com.adrienben.games.bagl.core {
     exports com.adrienben.games.bagl.core.utils;
     exports com.adrienben.games.bagl.core.utils.repository;
     exports com.adrienben.games.bagl.core.validation;
+
+    // OPENS
+    opens com.adrienben.games.bagl.core.math to gson;
 }

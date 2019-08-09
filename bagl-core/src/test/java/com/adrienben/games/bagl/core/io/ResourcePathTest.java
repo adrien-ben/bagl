@@ -33,7 +33,7 @@ class ResourcePathTest {
 
     @Test
     void itShouldFailToGetFromInvalidPath() {
-        Assertions.assertThrows(InvalidPathException.class, () -> ResourcePath.get("<Invalid"));
+        Assertions.assertThrows(InvalidPathException.class, () -> ResourcePath.get("\0Invalid"));
     }
 
     @Test
