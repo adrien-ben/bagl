@@ -96,16 +96,11 @@ public class MaterialUniformSetter {
     }
 
     private int getAlphaModeValue(final AlphaMode alphaMode) {
-        switch (alphaMode) {
-            case OPAQUE:
-                return ALPHA_MODE_OPAQUE_VALUE;
-            case MASK:
-                return ALPHA_MODE_MASK_VALUE;
-            case BLEND:
-                return ALPHA_MODE_BLEND_VALUE;
-            default:
-                throw new UnsupportedOperationException("Aplha mode " + alphaMode + " not supported by shaders");
-        }
+        return switch (alphaMode) {
+            case OPAQUE -> ALPHA_MODE_OPAQUE_VALUE;
+            case MASK -> ALPHA_MODE_MASK_VALUE;
+            case BLEND -> ALPHA_MODE_BLEND_VALUE;
+        };
     }
 
     public void setAlphaCutoffUniform(final float alphaCutoff) {

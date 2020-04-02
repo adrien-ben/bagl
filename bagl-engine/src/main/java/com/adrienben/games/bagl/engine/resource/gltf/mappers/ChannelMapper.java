@@ -15,21 +15,14 @@ public class ChannelMapper {
      * If the type of attribute is not supported it returns -1.
      */
     public int map(final String type) {
-        switch (type) {
-            case "POSITION":
-                return Mesh.POSITION_INDEX;
-            case "NORMAL":
-                return Mesh.NORMAL_INDEX;
-            case "TANGENT":
-                return Mesh.TANGENT_INDEX;
-            case "TEXCOORD_0":
-                return Mesh.COORDINATES_INDEX;
-            case "JOINTS_0":
-                return Mesh.JOINTS_IDS_INDEX;
-            case "WEIGHTS_0":
-                return Mesh.JOINTS_WEIGHTS_INDEX;
-            default:
-                return -1;
-        }
+        return switch (type) {
+            case "POSITION" -> Mesh.POSITION_INDEX;
+            case "NORMAL" -> Mesh.NORMAL_INDEX;
+            case "TANGENT" -> Mesh.TANGENT_INDEX;
+            case "TEXCOORD_0" -> Mesh.COORDINATES_INDEX;
+            case "JOINTS_0" -> Mesh.JOINTS_IDS_INDEX;
+            case "WEIGHTS_0" -> Mesh.JOINTS_WEIGHTS_INDEX;
+            default -> -1;
+        };
     }
 }

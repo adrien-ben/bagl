@@ -33,7 +33,7 @@ public class AnimationMapper {
      * @param nodeIndex     The index containing the nodes referenced in the animation.
      * @return A new {@link Animation}.
      */
-    public Animation map(final GltfAnimation gltfAnimation, final ModelNode[] nodeIndex) {
+    public Animation<Transform> map(final GltfAnimation gltfAnimation, final ModelNode[] nodeIndex) {
         this.nodeIndex = nodeIndex;
         animationBuilder = Animation.builder();
         gltfAnimation.getChannels().stream()
@@ -49,17 +49,10 @@ public class AnimationMapper {
 
     private void mapAnimator(final GltfChannel gltfChannel) {
         switch (gltfChannel.getTarget().getPath()) {
-            case TRANSLATION:
-                animationBuilder.animator(Vector3f.class, mapTranslationAnimator(gltfChannel));
-                break;
-            case ROTATION:
-                animationBuilder.animator(Quaternionf.class, mapRotationAnimator(gltfChannel));
-                break;
-            case SCALE:
-                animationBuilder.animator(Vector3f.class, mapScaleAnimator(gltfChannel));
-                break;
-            default:
-                throw new UnsupportedOperationException("Unsupported animation target path");
+            case TRANSLATION -> animationBuilder.animator(Vector3f.class, mapTranslationAnimator(gltfChannel));
+            case ROTATION -> animationBuilder.animator(Quaternionf.class, mapRotationAnimator(gltfChannel));
+            case SCALE -> animationBuilder.animator(Vector3f.class, mapScaleAnimator(gltfChannel));
+            default -> throw new UnsupportedOperationException("Unsupported animation target path");
         }
     }
 
@@ -79,25 +72,19 @@ public class AnimationMapper {
     }
 
     private Interpolator<Vector3f> getVector3fInterpolation(final GltfInterpolationType gltfInterpolationType) {
-        switch (gltfInterpolationType) {
-            case STEP:
-                return Interpolator.vector3fStep();
-            case LINEAR:
-                return Interpolator.vector3fLerp();
-            default:
-                throw new UnsupportedOperationException("Unsupported interpolation type " + gltfInterpolationType);
-        }
+        return switch (gltfInterpolationType) {
+            case STEP -> Interpolator.vector3fStep();
+            case LINEAR -> Interpolator.vector3fLerp();
+            default -> throw new UnsupportedOperationException("Unsupported interpolation type " + gltfInterpolationType);
+        };
     }
 
     private Interpolator<Quaternionf> getQuaternionfInterpolation(final GltfInterpolationType gltfInterpolationType) {
-        switch (gltfInterpolationType) {
-            case STEP:
-                return Interpolator.quaternionfStep();
-            case LINEAR:
-                return Interpolator.quaternionfSlerp();
-            default:
-                throw new UnsupportedOperationException("Unsupported interpolation type " + gltfInterpolationType);
-        }
+        return switch (gltfInterpolationType) {
+            case STEP -> Interpolator.quaternionfStep();
+            case LINEAR -> Interpolator.quaternionfSlerp();
+            default -> throw new UnsupportedOperationException("Unsupported interpolation type " + gltfInterpolationType);
+        };
     }
 
     private <T> Animator<Transform, T> mapAnimator(

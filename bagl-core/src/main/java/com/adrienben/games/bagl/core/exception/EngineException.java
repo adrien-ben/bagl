@@ -7,6 +7,8 @@ package com.adrienben.games.bagl.core.exception;
  */
 public class EngineException extends RuntimeException {
 
+    private static final long serialVersionUID = 1L;
+
     /**
      * Construct an engine exception
      *

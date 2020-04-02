@@ -15,15 +15,10 @@ public class AlphaModeMapper {
      * if {@code alphaMode} is not supported.
      */
     public AlphaMode map(final GltfAlphaMode alphaMode) {
-        switch (alphaMode) {
-            case OPAQUE:
-                return AlphaMode.OPAQUE;
-            case MASK:
-                return AlphaMode.MASK;
-            case BLEND:
-                return AlphaMode.BLEND;
-            default:
-                throw new UnsupportedOperationException("Unsupported alpha mode " + alphaMode);
-        }
+        return switch (alphaMode) {
+            case OPAQUE -> AlphaMode.OPAQUE;
+            case MASK -> AlphaMode.MASK;
+            case BLEND -> AlphaMode.BLEND;
+        };
     }
 }

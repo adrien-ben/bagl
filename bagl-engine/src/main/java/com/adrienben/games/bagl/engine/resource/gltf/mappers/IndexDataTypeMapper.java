@@ -15,21 +15,14 @@ public class IndexDataTypeMapper {
      * if {@code componentType} is not supported.
      */
     public DataType map(final GltfComponentType componentType) {
-        switch (componentType) {
-            case BYTE:
-                return DataType.BYTE;
-            case UNSIGNED_BYTE:
-                return DataType.UNSIGNED_BYTE;
-            case SHORT:
-                return DataType.SHORT;
-            case UNSIGNED_SHORT:
-                return DataType.UNSIGNED_SHORT;
-            case UNSIGNED_INT:
-                return DataType.UNSIGNED_INT;
-            case FLOAT:
-                return DataType.FLOAT;
-            default:
-                throw new UnsupportedOperationException("Unsupported component type " + componentType);
-        }
+        return switch (componentType) {
+            case BYTE -> DataType.BYTE;
+            case UNSIGNED_BYTE -> DataType.UNSIGNED_BYTE;
+            case SHORT -> DataType.SHORT;
+            case UNSIGNED_SHORT -> DataType.UNSIGNED_SHORT;
+            case UNSIGNED_INT -> DataType.UNSIGNED_INT;
+            case FLOAT -> DataType.FLOAT;
+            default -> throw new UnsupportedOperationException("Unsupported component type " + componentType);
+        };
     }
 }

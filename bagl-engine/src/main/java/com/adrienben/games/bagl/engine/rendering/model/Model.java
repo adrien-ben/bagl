@@ -19,7 +19,7 @@ public final class Model implements Asset {
 
     private final List<ModelNode> nodes = new ArrayList<>();
     private final Set<Mesh> meshes = new HashSet<>();
-    private List<Animation> animations;
+    private List<Animation<Transform>> animations;
 
     /**
      * {@inheritDoc}
@@ -87,11 +87,11 @@ public final class Model implements Asset {
         return this.nodes;
     }
 
-    public List<Animation> getAnimations() {
+    public List<Animation<Transform>> getAnimations() {
         return Collections.unmodifiableList(animations);
     }
 
-    public void setAnimations(final List<Animation> animations) {
+    public void setAnimations(final List<Animation<Transform>> animations) {
         this.animations = animations;
     }
 }

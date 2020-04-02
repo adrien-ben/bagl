@@ -15,21 +15,14 @@ public class FilterMapper {
      * if {@code filter} is not supported.
      */
     public Filter map(final GltfFilter filter) {
-        switch (filter) {
-            case NEAREST:
-                return Filter.NEAREST;
-            case LINEAR:
-                return Filter.LINEAR;
-            case NEAREST_MIPMAP_NEAREST:
-                return Filter.MIPMAP_NEAREST_NEAREST;
-            case NEAREST_MIPMAP_LINEAR:
-                return Filter.MIPMAP_NEAREST_LINEAR;
-            case LINEAR_MIPMAP_NEAREST:
-                return Filter.MIPMAP_LINEAR_NEAREST;
-            case LINEAR_MIPMAP_LINEAR:
-                return Filter.MIPMAP_LINEAR_LINEAR;
-            default:
-                throw new UnsupportedOperationException("Unsupported filter " + filter);
-        }
+        return switch (filter) {
+            case NEAREST -> Filter.NEAREST;
+            case LINEAR -> Filter.LINEAR;
+            case NEAREST_MIPMAP_NEAREST -> Filter.MIPMAP_NEAREST_NEAREST;
+            case NEAREST_MIPMAP_LINEAR -> Filter.MIPMAP_NEAREST_LINEAR;
+            case LINEAR_MIPMAP_NEAREST -> Filter.MIPMAP_LINEAR_NEAREST;
+            case LINEAR_MIPMAP_LINEAR -> Filter.MIPMAP_LINEAR_LINEAR;
+            default -> throw new UnsupportedOperationException("Unsupported filter " + filter);
+        };
     }
 }

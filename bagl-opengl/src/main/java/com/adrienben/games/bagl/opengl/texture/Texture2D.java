@@ -153,18 +153,13 @@ public final class Texture2D extends Texture implements Asset {
     }
 
     private static Format getFormat(final int channelCount, final boolean isHdr) {
-        switch (channelCount) {
-            case 1:
-                return isHdr ? Format.RED16F : Format.RED8;
-            case 2:
-                return isHdr ? Format.RG16F : Format.RG8;
-            case 3:
-                return isHdr ? Format.RGB16F : Format.RGB8;
-            case 4:
-                return isHdr ? Format.RGBA16F : Format.RGBA8;
-            default:
-                throw new IllegalArgumentException("A texture cannot be composed of less than 1 or more that 4 channels");
-        }
+        return switch (channelCount) {
+            case 1 -> isHdr ? Format.RED16F : Format.RED8;
+            case 2 -> isHdr ? Format.RG16F : Format.RG8;
+            case 3 -> isHdr ? Format.RGB16F : Format.RGB8;
+            case 4 -> isHdr ? Format.RGBA16F : Format.RGBA8;
+            default -> throw new IllegalArgumentException("A texture cannot be composed of less than 1 or more that 4 channels");
+        };
     }
 
     private void applyTextureParameters() {

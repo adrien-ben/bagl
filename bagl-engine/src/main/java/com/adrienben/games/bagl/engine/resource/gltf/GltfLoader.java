@@ -2,6 +2,7 @@ package com.adrienben.games.bagl.engine.resource.gltf;
 
 import com.adrienben.games.bagl.core.io.ResourcePath;
 import com.adrienben.games.bagl.core.utils.CollectionUtils;
+import com.adrienben.games.bagl.engine.Transform;
 import com.adrienben.games.bagl.engine.animation.Animation;
 import com.adrienben.games.bagl.engine.rendering.material.Material;
 import com.adrienben.games.bagl.engine.rendering.model.Mesh;
@@ -85,7 +86,7 @@ public class GltfLoader {
         return meshMapper.map(gltfMesh, textures);
     }
 
-    private List<Animation> loadAnimations(final GltfAsset gltfAsset) {
+    private List<Animation<Transform>> loadAnimations(final GltfAsset gltfAsset) {
         return gltfAsset.getAnimations().stream().map(this::mapAnimation).collect(Collectors.toList());
     }
 
@@ -103,7 +104,7 @@ public class GltfLoader {
         }
     }
 
-    private Animation mapAnimation(final GltfAnimation animation) {
+    private Animation<Transform> mapAnimation(final GltfAnimation animation) {
         return animationMapper.map(animation, nodes);
     }
 

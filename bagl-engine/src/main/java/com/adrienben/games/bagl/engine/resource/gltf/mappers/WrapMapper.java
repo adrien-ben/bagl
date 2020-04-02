@@ -15,15 +15,11 @@ public class WrapMapper {
      * if {@code wrapMode} is not supported.
      */
     public Wrap map(final GltfWrapMode wrapMode) {
-        switch (wrapMode) {
-            case REPEAT:
-                return Wrap.REPEAT;
-            case CLAMP_TO_EDGE:
-                return Wrap.CLAMP_TO_EDGE;
-            case MIRRORED_REPEAT:
-                return Wrap.MIRRORED_REPEAT;
-            default:
-                throw new UnsupportedOperationException("Unsupported wrap mode " + wrapMode);
-        }
+        return switch (wrapMode) {
+            case REPEAT -> Wrap.REPEAT;
+            case CLAMP_TO_EDGE -> Wrap.CLAMP_TO_EDGE;
+            case MIRRORED_REPEAT -> Wrap.MIRRORED_REPEAT;
+            default -> throw new UnsupportedOperationException("Unsupported wrap mode " + wrapMode);
+        };
     }
 }

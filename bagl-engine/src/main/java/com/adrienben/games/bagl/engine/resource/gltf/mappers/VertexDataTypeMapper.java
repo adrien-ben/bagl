@@ -15,19 +15,12 @@ public class VertexDataTypeMapper {
      * if {@code componentType} is not supported.
      */
     public DataType map(final GltfComponentType componentType) {
-        switch (componentType) {
-            case BYTE:
-            case UNSIGNED_BYTE:
-                return DataType.BYTE;
-            case SHORT:
-            case UNSIGNED_SHORT:
-                return DataType.SHORT;
-            case UNSIGNED_INT:
-                return DataType.INT;
-            case FLOAT:
-                return DataType.FLOAT;
-            default:
-                throw new UnsupportedOperationException("Unsupported component type " + componentType);
-        }
+        return switch (componentType) {
+            case BYTE, UNSIGNED_BYTE -> DataType.BYTE;
+            case SHORT, UNSIGNED_SHORT -> DataType.SHORT;
+            case UNSIGNED_INT -> DataType.INT;
+            case FLOAT -> DataType.FLOAT;
+            default -> throw new UnsupportedOperationException("Unsupported component type " + componentType);
+        };
     }
 }

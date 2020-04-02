@@ -17,14 +17,14 @@ public class Range<T> {
         this.max = Objects.requireNonNull(max);
     }
 
-    public static <T> Range from(final T min, final T max) {
+    public static <T> Range<T> from(final T min, final T max) {
         return new Range<>(min, max);
     }
 
     /**
      * Create a range with the min and max being equals.
      */
-    public static <T> Range from(final T value) {
+    public static <T> Range<T> from(final T value) {
         return new Range<>(value, value);
     }
 

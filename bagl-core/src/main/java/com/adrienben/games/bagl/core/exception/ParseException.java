@@ -7,6 +7,8 @@ package com.adrienben.games.bagl.core.exception;
  */
 public class ParseException extends Exception {
 
+    private static final long serialVersionUID = 1L;
+
     /**
      * Construct a parse exception
      *

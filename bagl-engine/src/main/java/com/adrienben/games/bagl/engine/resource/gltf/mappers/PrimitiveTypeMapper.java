@@ -15,15 +15,11 @@ public class PrimitiveTypeMapper {
      * if {@code mode} is not supported.
      */
     public PrimitiveType map(final GltfPrimitiveMode mode) {
-        switch (mode) {
-            case POINTS:
-                return PrimitiveType.POINTS;
-            case TRIANGLES:
-                return PrimitiveType.TRIANGLES;
-            case TRIANGLE_STRIP:
-                return PrimitiveType.TRIANGLE_STRIP;
-            default:
-                throw new UnsupportedOperationException("Unsupported primitive type " + mode);
-        }
+        return switch (mode) {
+            case POINTS -> PrimitiveType.POINTS;
+            case TRIANGLES -> PrimitiveType.TRIANGLES;
+            case TRIANGLE_STRIP -> PrimitiveType.TRIANGLE_STRIP;
+            default -> throw new UnsupportedOperationException("Unsupported primitive type " + mode);
+        };
     }
 }

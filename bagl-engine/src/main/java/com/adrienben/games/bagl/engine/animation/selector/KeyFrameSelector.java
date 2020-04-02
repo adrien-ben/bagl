@@ -72,7 +72,7 @@ public class KeyFrameSelector<T> {
         return new Tuple2<>(lastNodeKeyFrame, nextNodeKeyFrame);
     }
 
-    private boolean isCurrentTimeInNodeKeyFrameInterval(final KeyFrame firstKeyFrame, final KeyFrame secondKeyFrame) {
+    private boolean isCurrentTimeInNodeKeyFrameInterval(final KeyFrame<?> firstKeyFrame, final KeyFrame<?> secondKeyFrame) {
         return currentAnimationTime >= firstKeyFrame.getTime() && currentAnimationTime < secondKeyFrame.getTime();
     }
 }
