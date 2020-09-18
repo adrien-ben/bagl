@@ -59,7 +59,7 @@
         <dependency>
             <groupId>com.adrienben.games</groupId>
             <artifactId>bagl-tests</artifactId>
-            <version>${project.parent.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -67,7 +67,6 @@
         <plugins>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>${maven-surefire-plugin.version}</version>
                 <configuration>
                     <argLine>
                         --add-opens com.adrienben.games.bagl.core/com.adrienben.games.bagl.core.io=ALL-UNNAMED

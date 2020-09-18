@@ -16,7 +16,6 @@
         <dependency>
             <groupId>com.adrienben.games</groupId>
             <artifactId>bagl-engine</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
     </dependencies>
 

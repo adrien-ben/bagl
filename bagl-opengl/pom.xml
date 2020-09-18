@@ -44,7 +44,11 @@
         <dependency>
             <groupId>com.adrienben.games</groupId>
             <artifactId>bagl-core</artifactId>
-            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.adrienben.games</groupId>
+            <artifactId>bagl-tests</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -52,7 +56,6 @@
         <plugins>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>${maven-surefire-plugin.version}</version>
                 <configuration>
                     <argLine>
                         --add-opens com.adrienben.games.bagl.opengl/com.adrienben.games.bagl.opengl.shader=ALL-UNNAMED

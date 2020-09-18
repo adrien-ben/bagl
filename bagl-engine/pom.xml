@@ -54,7 +54,11 @@
         <dependency>
             <groupId>com.adrienben.games</groupId>
             <artifactId>bagl-opengl</artifactId>
-            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.adrienben.games</groupId>
+            <artifactId>bagl-tests</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -62,7 +66,6 @@
         <plugins>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>${maven-surefire-plugin.version}</version>
                 <configuration>
                     <argLine>
                         --add-opens

@@ -20,5 +20,5 @@ module com.adrienben.games.bagl.core {
     exports com.adrienben.games.bagl.core.validation;
 
     // OPENS
-    opens com.adrienben.games.bagl.core.math to gson;
+    opens com.adrienben.games.bagl.core.math to com.google.gson;
 }

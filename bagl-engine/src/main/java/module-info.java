@@ -8,7 +8,7 @@ module com.adrienben.games.bagl.engine {
 	requires org.lwjgl.jemalloc;
 	requires org.lwjgl.jemalloc.natives;
 	requires gltf.loader;
-	requires gson;
+	requires com.google.gson;
 	requires java.sql;
 
     requires transitive com.adrienben.games.bagl.opengl;
@@ -49,6 +49,6 @@ module com.adrienben.games.bagl.engine {
     opens shaders.post;
     opens shaders.sprite;
 
-    opens com.adrienben.games.bagl.engine.resource.asset.json to gson;
-    opens com.adrienben.games.bagl.engine.resource.scene.json to gson;
+    opens com.adrienben.games.bagl.engine.resource.asset.json to com.google.gson;
+    opens com.adrienben.games.bagl.engine.resource.scene.json to com.google.gson;
 }
