@@ -8,8 +8,8 @@ import com.adrienben.games.bagl.engine.Configuration;
 import com.adrienben.games.bagl.engine.camera.Camera;
 import com.adrienben.games.bagl.renderer.data.SceneRenderData;
 import org.joml.Matrix4f;
-import org.joml.Spheref;
 import org.joml.Vector3f;
+import org.joml.primitives.Spheref;
 
 import java.util.ArrayList;
 import java.util.List;

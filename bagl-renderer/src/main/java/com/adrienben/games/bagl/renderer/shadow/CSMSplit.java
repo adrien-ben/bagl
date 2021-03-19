@@ -2,7 +2,7 @@ package com.adrienben.games.bagl.renderer.shadow;
 
 import com.adrienben.games.bagl.core.math.Frustum;
 import org.joml.Matrix4f;
-import org.joml.Spheref;
+import org.joml.primitives.Spheref;
 
 /**
  * Split data for cascaded shadow mapping.

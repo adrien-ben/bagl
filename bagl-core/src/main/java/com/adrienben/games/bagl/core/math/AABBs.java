@@ -1,7 +1,7 @@
 package com.adrienben.games.bagl.core.math;
 
-import org.joml.AABBf;
 import org.joml.Vector3f;
+import org.joml.primitives.AABBf;
 
 /**
  * Utility class for {@link AABBf}.

@@ -37,7 +37,7 @@ public class Animator<T, U> {
         this.keyFrameSelector = new KeyFrameSelector<>(keyFrames);
         this.interpolator = Objects.requireNonNull(builder.interpolator);
         this.targetUpdater = Objects.requireNonNull(builder.targetUpdater);
-        this.endTime = keyFrames.get(keyFrames.size() - 1).getTime();
+        this.endTime = keyFrames.get(keyFrames.size() - 1).time();
         this.currentValue = Objects.requireNonNull(builder.currentValueSupplier).get();
     }
 
@@ -71,13 +71,13 @@ public class Animator<T, U> {
 
     private void updateCurrentKeyFrame() {
         final var currentInterval = keyFrameSelector.selectCurrentInterval(currentTime);
-        lastKeyFrame = currentInterval.getFirst();
-        nextKeyFrame = currentInterval.getSecond();
+        lastKeyFrame = currentInterval.start();
+        nextKeyFrame = currentInterval.end();
     }
 
     private void animateNode() {
         final float interpolationValue = computeAndGetInterpolationValue();
-        interpolator.interpolate(lastKeyFrame.getValue(), nextKeyFrame.getValue(), interpolationValue, currentValue);
+        interpolator.interpolate(lastKeyFrame.value(), nextKeyFrame.value(), interpolationValue, currentValue);
         targetUpdater.update(target, currentValue);
     }
 
@@ -85,7 +85,7 @@ public class Animator<T, U> {
         if (Objects.equals(lastKeyFrame, nextKeyFrame)) {
             return 0;
         }
-        return (currentTime - lastKeyFrame.getTime()) / (nextKeyFrame.getTime() - lastKeyFrame.getTime());
+        return (currentTime - lastKeyFrame.time()) / (nextKeyFrame.time() - lastKeyFrame.time());
     }
 
     public float getEndTime() {

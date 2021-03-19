@@ -40,8 +40,8 @@ public class ShadowUniformSetter {
 
     private void setShadowCascadeUniforms(final int shadowCascadeIndex, final ShadowCascade shadowCascade) {
         final var shadowCascadeUniformBaseName = String.format("uShadow.shadowCascades[%d]", shadowCascadeIndex);
-        shader.setUniform(shadowCascadeUniformBaseName + ".lightViewProj", shadowCascade.getLightViewProjection());
-        shader.setUniform(shadowCascadeUniformBaseName + ".splitValue", shadowCascade.getSplitValue());
-        shadowCascade.getShadowMap().bind(SHADOW_MAP_0_CHANNEL + shadowCascadeIndex);
+        shader.setUniform(shadowCascadeUniformBaseName + ".lightViewProj", shadowCascade.lightViewProjection());
+        shader.setUniform(shadowCascadeUniformBaseName + ".splitValue", shadowCascade.splitValue());
+        shadowCascade.shadowMap().bind(SHADOW_MAP_0_CHANNEL + shadowCascadeIndex);
     }
 }

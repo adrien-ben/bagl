@@ -1,7 +1,6 @@
 package com.adrienben.games.bagl.engine.animation.selector;
 
 import com.adrienben.games.bagl.core.utils.CollectionUtils;
-import com.adrienben.games.bagl.core.utils.Tuple2;
 import com.adrienben.games.bagl.engine.animation.KeyFrame;
 
 import java.util.List;
@@ -22,17 +21,17 @@ public class KeyFrameSelector<T> {
 
     public KeyFrameSelector(final List<KeyFrame<T>> keyFrames) {
         this.keyFrames = Objects.requireNonNull(keyFrames);
-        this.startTime = keyFrames.get(0).getTime();
-        this.endTime = keyFrames.get(keyFrames.size() - 1).getTime();
+        this.startTime = keyFrames.get(0).time();
+        this.endTime = keyFrames.get(keyFrames.size() - 1).time();
     }
 
     /**
      * Select the two key frames to interpolate at a given animation time value.
      *
      * @param currentAnimationTime The current animation time.
-     * @return A new {@link Tuple2} whose first element is the earliest keyframe and the second is the latest.
+     * @return A new {@link KeyFrameInterval} whose first element is the earliest keyframe and the second is the latest.
      */
-    public Tuple2<KeyFrame<T>, KeyFrame<T>> selectCurrentInterval(final float currentAnimationTime) {
+    public KeyFrameInterval<T> selectCurrentInterval(final float currentAnimationTime) {
         if (CollectionUtils.isEmpty(keyFrames)) {
             return null;
         }
@@ -40,13 +39,13 @@ public class KeyFrameSelector<T> {
         return computeAndGetLastAndNextKeyFrames();
     }
 
-    private Tuple2<KeyFrame<T>, KeyFrame<T>> computeAndGetLastAndNextKeyFrames() {
+    private KeyFrameInterval<T> computeAndGetLastAndNextKeyFrames() {
         if (!hasStarted() || keyFrames.size() == 1) {
             final var firstNodeKeyFrame = keyFrames.get(0);
-            return new Tuple2<>(firstNodeKeyFrame, firstNodeKeyFrame);
+            return new KeyFrameInterval<>(firstNodeKeyFrame, firstNodeKeyFrame);
         } else if (hasEnded()) {
             final var lastKeyFrame = keyFrames.get(keyFrames.size() - 1);
-            return new Tuple2<>(lastKeyFrame, lastKeyFrame);
+            return new KeyFrameInterval<>(lastKeyFrame, lastKeyFrame);
         }
         return findCurrentNodeKeyFrameInterval();
     }
@@ -59,7 +58,7 @@ public class KeyFrameSelector<T> {
         return currentAnimationTime > endTime;
     }
 
-    private Tuple2<KeyFrame<T>, KeyFrame<T>> findCurrentNodeKeyFrameInterval() {
+    private KeyFrameInterval<T> findCurrentNodeKeyFrameInterval() {
         var lastNodeKeyFrame = keyFrames.get(0);
         var nextNodeKeyFrame = lastNodeKeyFrame;
         for (int i = 1; i < keyFrames.size(); i++) {
@@ -69,10 +68,10 @@ public class KeyFrameSelector<T> {
             }
             lastNodeKeyFrame = nextNodeKeyFrame;
         }
-        return new Tuple2<>(lastNodeKeyFrame, nextNodeKeyFrame);
+        return new KeyFrameInterval<>(lastNodeKeyFrame, nextNodeKeyFrame);
     }
 
     private boolean isCurrentTimeInNodeKeyFrameInterval(final KeyFrame<?> firstKeyFrame, final KeyFrame<?> secondKeyFrame) {
-        return currentAnimationTime >= firstKeyFrame.getTime() && currentAnimationTime < secondKeyFrame.getTime();
+        return currentAnimationTime >= firstKeyFrame.time() && currentAnimationTime < secondKeyFrame.time();
     }
 }

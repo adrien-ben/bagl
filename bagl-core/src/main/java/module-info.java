@@ -2,6 +2,7 @@ module com.adrienben.games.bagl.core {
     // REQUIRES
     requires java.base;
     requires transitive org.joml;
+    requires transitive org.joml.primitives;
     requires transitive org.apache.logging.log4j;
     requires org.lwjgl;
     requires org.lwjgl.natives;

@@ -37,7 +37,7 @@ public class AssetFactory {
     }
 
     public Asset createAsset(final AssetDescriptor assetDescriptor) {
-        final var type = assetDescriptor.getType();
+        final var type = assetDescriptor.type();
         final var assetCreationCommand = assetCreationCommands.get(type);
         if (Objects.isNull(assetCreationCommand)) {
             throw new EngineException("Unsupported asset type " + type);
@@ -46,8 +46,8 @@ public class AssetFactory {
     }
 
     private Texture2D createTexture(final AssetDescriptor assetDescriptor) {
-        final var textureParametersBuilder = createTextureParametersBuilder(assetDescriptor.getParameters());
-        return Texture2D.fromFile(assetDescriptor.getPath(), textureParametersBuilder);
+        final var textureParametersBuilder = createTextureParametersBuilder(assetDescriptor.parameters());
+        return Texture2D.fromFile(assetDescriptor.path(), textureParametersBuilder);
     }
 
     private TextureParameters.Builder createTextureParametersBuilder(final Map<String, Object> parametersMap) {
@@ -72,15 +72,15 @@ public class AssetFactory {
     }
 
     private Model createModel(final AssetDescriptor assetDescriptor) {
-        return ModelFactory.fromFile(assetDescriptor.getPath());
+        return ModelFactory.fromFile(assetDescriptor.path());
     }
 
     private Scene createScene(final AssetDescriptor assetDescriptor) {
-        return sceneLoader.load(assetDescriptor.getPath());
+        return sceneLoader.load(assetDescriptor.path());
     }
 
     private Font createFont(final AssetDescriptor assetDescriptor) {
-        return new Font(assetDescriptor.getPath());
+        return new Font(assetDescriptor.path());
     }
 
 }

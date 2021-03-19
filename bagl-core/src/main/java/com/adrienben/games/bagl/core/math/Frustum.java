@@ -1,6 +1,10 @@
 package com.adrienben.games.bagl.core.math;
 
-import org.joml.*;
+import org.joml.Matrix4fc;
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
+import org.joml.primitives.AABBf;
+import org.joml.primitives.Spheref;
 
 import static org.joml.Matrix4fc.*;
 

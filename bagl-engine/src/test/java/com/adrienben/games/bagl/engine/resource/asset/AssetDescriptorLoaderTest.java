@@ -23,10 +23,10 @@ class AssetDescriptorLoaderTest {
 
         assertNotNull(assetsDescriptor);
         assertNotNull(testAssetDescriptor);
-        Assertions.assertEquals("test_asset", testAssetDescriptor.getId());
-        Assertions.assertEquals(AssetType.TEXTURE, testAssetDescriptor.getType());
-        Assertions.assertEquals(Paths.get(getTestFilePath()).toAbsolutePath().toString(), testAssetDescriptor.getPath().getAbsolutePath());
-        Assertions.assertEquals("NEAREST", testAssetDescriptor.getParameters().get("minFilter"));
+        Assertions.assertEquals("test_asset", testAssetDescriptor.id());
+        Assertions.assertEquals(AssetType.TEXTURE, testAssetDescriptor.type());
+        Assertions.assertEquals(Paths.get(getTestFilePath()).toAbsolutePath().toString(), testAssetDescriptor.path().getAbsolutePath());
+        Assertions.assertEquals("NEAREST", testAssetDescriptor.parameters().get("minFilter"));
     }
 
     @Test

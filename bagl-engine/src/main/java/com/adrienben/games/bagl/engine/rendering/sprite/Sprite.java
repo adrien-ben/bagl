@@ -2,9 +2,9 @@ package com.adrienben.games.bagl.engine.rendering.sprite;
 
 import com.adrienben.games.bagl.core.Color;
 import com.adrienben.games.bagl.opengl.texture.Texture2D;
-import org.joml.Rectanglef;
 import org.joml.Vector2f;
 import org.joml.Vector2fc;
+import org.joml.primitives.Rectanglef;
 
 import java.util.Objects;
 

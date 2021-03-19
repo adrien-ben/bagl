@@ -33,7 +33,7 @@ class AssetStoreTest {
 
     private Map<String, AssetDescriptor> createTestAssetDescriptorMap() {
         final var assetDescriptor = createTestAssetDescriptor();
-        return Collections.singletonMap(assetDescriptor.getId(), assetDescriptor);
+        return Collections.singletonMap(assetDescriptor.id(), assetDescriptor);
     }
 
     private AssetDescriptor createTestAssetDescriptor() {

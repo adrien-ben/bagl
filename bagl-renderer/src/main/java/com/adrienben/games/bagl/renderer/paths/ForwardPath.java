@@ -128,7 +128,7 @@ public class ForwardPath extends AbstractRenderingPath {
         brdfLookup.getTexture().unbind(BRDF_LOOKUP_CHANNEL);
         if (Objects.nonNull(cascadedShadowMap)) {
             for (int i = 0; i < CascadedShadowMap.CASCADE_COUNT; i++) {
-                cascadedShadowMap.getShadowCascade(i).getShadowMap().unbind(SHADOW_MAP_0_CHANNEL + i);
+                cascadedShadowMap.getShadowCascade(i).shadowMap().unbind(SHADOW_MAP_0_CHANNEL + i);
             }
         }
     }

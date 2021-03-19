@@ -1,6 +1,5 @@
 package com.adrienben.games.bagl.engine.resource.gltf.mappers;
 
-import com.adrienben.games.bagl.core.utils.Tuple2;
 import com.adrienben.games.bagl.engine.rendering.material.Material;
 import com.adrienben.games.bagl.engine.rendering.model.Mesh;
 import com.adrienben.games.bagl.opengl.buffer.BufferUsage;
@@ -46,7 +45,10 @@ public class MeshMapper {
         this.textureIndex = textureIndex;
         return mesh.getPrimitives().stream()
                 .map(this::createMesh)
-                .collect(Collectors.toMap(Tuple2::getFirst, Tuple2::getSecond));
+                .collect(Collectors.toMap(MeshAndMaterial::mesh, MeshAndMaterial::material));
+    }
+
+    private record MeshAndMaterial(Mesh mesh, Material material) {
     }
 
     /**
@@ -55,7 +57,7 @@ public class MeshMapper {
      * @param primitive The primitive from which to create the mesh
      * @return A new mesh
      */
-    private Tuple2<Mesh, Material> createMesh(final GltfPrimitive primitive) {
+    private MeshAndMaterial createMesh(final GltfPrimitive primitive) {
         final var iBuffer = createIndexBuffer(primitive.getIndices());
         final var vBuffers = primitive.getAttributes().entrySet().stream()
                 .map(entry -> createVertexBuffer(entry.getKey(), entry.getValue()))
@@ -65,7 +67,7 @@ public class MeshMapper {
 
         final Mesh mesh = Mesh.builder().vertexBuffers(vBuffers).indexBuffer(iBuffer).primitiveType(primitiveType).build();
         final Material material = materialMapper.map(primitive.getMaterial(), textureIndex);
-        return new Tuple2<>(mesh, material);
+        return new MeshAndMaterial(mesh, material);
     }
 
     /**

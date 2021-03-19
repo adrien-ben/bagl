@@ -169,15 +169,15 @@ public class TextRenderer implements Renderer<Text> {
         final var region = glyph.getRegion();
 
         final var left = caret.isNewLine() ? caret.getX() : glyph.getXOffset() * hScale + caret.getX();
-        final var right = left + (region.getRight() - region.getLeft()) * hScale;
+        final var right = left + (region.right() - region.left()) * hScale;
         final var bottom = caret.getY() + glyph.getYOffset() * vScale;
-        final var top = bottom + (region.getTop() - region.getBottom()) * vScale;
+        final var top = bottom + (region.top() - region.bottom()) * vScale;
 
         final var vertexIndex = this.bufferedChar * VERTICES_PER_CHAR;
-        this.updateVertex(vertexIndex, left, bottom, region.getLeft(), region.getBottom(), color);
-        this.updateVertex(vertexIndex + 1, right, bottom, region.getRight(), region.getBottom(), color);
-        this.updateVertex(vertexIndex + 2, left, top, region.getLeft(), region.getTop(), color);
-        this.updateVertex(vertexIndex + 3, right, top, region.getRight(), region.getTop(), color);
+        this.updateVertex(vertexIndex, left, bottom, region.left(), region.bottom(), color);
+        this.updateVertex(vertexIndex + 1, right, bottom, region.right(), region.bottom(), color);
+        this.updateVertex(vertexIndex + 2, left, top, region.left(), region.top(), color);
+        this.updateVertex(vertexIndex + 3, right, top, region.right(), region.top(), color);
 
         caret.advance(glyph.getXAdvance() * hScale);
         this.bufferedChar++;

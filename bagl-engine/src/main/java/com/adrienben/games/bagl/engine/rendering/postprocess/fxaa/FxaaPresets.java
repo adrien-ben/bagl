@@ -12,9 +12,9 @@ public enum FxaaPresets {
     MEDIUM(0.5f, 0.166f, 0.0833f),
     HIGH(0.75f, 0.125f, 0.0625f);
 
-    private float fxaaQualitySubpix;
-    private float fxaaQualityEdgeThreshold;
-    private float fxaaQualityEdgeThresholdMin;
+    private final float fxaaQualitySubpix;
+    private final float fxaaQualityEdgeThreshold;
+    private final float fxaaQualityEdgeThresholdMin;
 
     FxaaPresets(final float fxaaQualitySubpix, final float fxaaQualityEdgeThreshold, final float fxaaQualityEdgeThresholdMin) {
         this.fxaaQualitySubpix = fxaaQualitySubpix;

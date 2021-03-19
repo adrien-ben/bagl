@@ -2,6 +2,7 @@ package com.adrienben.games.bagl.engine;
 
 import com.adrienben.games.bagl.core.utils.Dirtiable;
 import org.joml.*;
+import org.joml.primitives.AABBf;
 
 /**
  * A transform represents a translation, rotation and scaling in space
