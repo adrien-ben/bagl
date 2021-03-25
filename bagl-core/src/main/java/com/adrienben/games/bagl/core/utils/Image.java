@@ -67,7 +67,7 @@ public class Image implements AutoCloseable {
 
             final var data = isHdr ? loadHDRImage(absoluteFilePath, width, height, comp) : loadSDRImage(absoluteFilePath, width, height, comp);
 
-            if (!data.isPresent()) {
+            if (data.isEmpty()) {
                 throw new EngineException(String.format("Failed to load image : '%s'. Cause: %s", absoluteFilePath, STBImage.stbi_failure_reason()));
             }
 

@@ -20,7 +20,6 @@ public class VertexDataTypeMapper {
             case SHORT, UNSIGNED_SHORT -> DataType.SHORT;
             case UNSIGNED_INT -> DataType.INT;
             case FLOAT -> DataType.FLOAT;
-            default -> throw new UnsupportedOperationException("Unsupported component type " + componentType);
         };
     }
 }

@@ -104,7 +104,7 @@ public class Frustum {
         destination.x = center.x;
         destination.y = center.y;
         destination.z = center.z;
-        destination.r = MathUtils.max(nearRadius, farRadius);
+        destination.r = Math.max(nearRadius, farRadius);
         return destination;
     }
 

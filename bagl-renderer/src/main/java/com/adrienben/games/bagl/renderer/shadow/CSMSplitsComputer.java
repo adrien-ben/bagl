@@ -1,7 +1,6 @@
 package com.adrienben.games.bagl.renderer.shadow;
 
 import com.adrienben.games.bagl.core.math.Frustum;
-import com.adrienben.games.bagl.core.math.MathUtils;
 import com.adrienben.games.bagl.core.math.Vectors;
 import com.adrienben.games.bagl.core.utils.CollectionUtils;
 import com.adrienben.games.bagl.engine.Configuration;
@@ -65,7 +64,7 @@ public class CSMSplitsComputer {
     private void updateZNearAndFar() {
         final var camera = sceneRenderData.getCamera();
         zNear = camera.getzNear();
-        zFar = MathUtils.min(Configuration.getInstance().getShadowMaxDistance(), camera.getzFar());
+        zFar = Math.min(Configuration.getInstance().getShadowMaxDistance(), camera.getzFar());
     }
 
     private void updateCSMSplits(final CSMSplit split) {

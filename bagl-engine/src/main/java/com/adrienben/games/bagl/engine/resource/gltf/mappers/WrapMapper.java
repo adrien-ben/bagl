@@ -19,7 +19,6 @@ public class WrapMapper {
             case REPEAT -> Wrap.REPEAT;
             case CLAMP_TO_EDGE -> Wrap.CLAMP_TO_EDGE;
             case MIRRORED_REPEAT -> Wrap.MIRRORED_REPEAT;
-            default -> throw new UnsupportedOperationException("Unsupported wrap mode " + wrapMode);
         };
     }
 }

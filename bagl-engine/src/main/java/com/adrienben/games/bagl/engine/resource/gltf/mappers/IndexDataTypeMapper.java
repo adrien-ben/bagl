@@ -22,7 +22,6 @@ public class IndexDataTypeMapper {
             case UNSIGNED_SHORT -> DataType.UNSIGNED_SHORT;
             case UNSIGNED_INT -> DataType.UNSIGNED_INT;
             case FLOAT -> DataType.FLOAT;
-            default -> throw new UnsupportedOperationException("Unsupported component type " + componentType);
         };
     }
 }

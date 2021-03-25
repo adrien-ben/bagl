@@ -139,7 +139,7 @@ public class MeshMapper {
         final var componentByteSize = accessor.getComponentType().getByteSize();
         final var componentCount = accessor.getType().getComponentCount();
         final var elementByteSize = componentByteSize * componentCount;
-        final var byteStride = Optional.ofNullable(bufferView.getByteStride()).orElse(elementByteSize);
+        final int byteStride = Optional.ofNullable(bufferView.getByteStride()).orElse(elementByteSize);
 
         final var extracted = MemoryUtil.memAlloc(count * elementByteSize);
         for (var index = 0; index < count; index++) {

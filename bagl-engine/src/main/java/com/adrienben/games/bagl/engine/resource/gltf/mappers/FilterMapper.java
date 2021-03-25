@@ -22,7 +22,6 @@ public class FilterMapper {
             case NEAREST_MIPMAP_LINEAR -> Filter.MIPMAP_NEAREST_LINEAR;
             case LINEAR_MIPMAP_NEAREST -> Filter.MIPMAP_LINEAR_NEAREST;
             case LINEAR_MIPMAP_LINEAR -> Filter.MIPMAP_LINEAR_LINEAR;
-            default -> throw new UnsupportedOperationException("Unsupported filter " + filter);
         };
     }
 }
